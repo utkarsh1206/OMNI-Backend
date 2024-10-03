@@ -1,0 +1,43 @@
+.container {
+    /* background-color: #f5f5f5; */
+    /* Light background color */
+    padding: 10px;
+}
+
+.custom-card {
+    background-color: #ffffff;
+    /* White card background */
+    border: none;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    /* Light shadow */
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.custom-header {
+    text-align: center;
+    font-weight: bold;
+    background-color: #d2dae1;
+    /* Light grey header background */
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 10px 0;
+}
+
+.data-head {
+    font-size: 18px;
+}
+
+.data-value {
+    font-size: 40px;
+}
+
+.text-green {
+    color: #28a745;
+    /* Bootstrap success color */
+}
+
+.text-red {
+    color: #dc3545;
+    /* Bootstrap danger color */
+}

@@ -1,0 +1,44 @@
+// Here you can add other styles
+.custom-backdrop {
+  background-image: url('../../src/assets/brand/heart.png'), linear-gradient(to bottom, #1F222A, #1B47C5);
+  background-position: right;
+  overflow: clip;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.login-message {
+  margin-top: 32px;
+  font-family: sans-serif;
+  font-size: xx-large;
+}
+
+.responsive-modal {
+  @media (min-width: 576px) {
+    .modal-dialog {
+      max-width: 90%; // Adjust as needed
+    }
+  }
+
+  @media (min-width: 768px) {
+    .modal-dialog {
+      max-width: 70%; // Adjust as needed
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .modal-dialog {
+      max-width: 60%; // Adjust as needed
+    }
+  }
+}
+
+.nav-group .nav-group-items .nav-group .nav-group-items .nav-item .nav-link {
+  padding-left: 30%;
+}
+
+.form-floating {
+  > label {
+    color: rgba(var(--cui-body-color-rgb),.65);
+  }
+}
