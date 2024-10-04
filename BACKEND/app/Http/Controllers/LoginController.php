@@ -8,7 +8,7 @@ use App\Models\Admins;
 use App\Models\Users;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log; 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
 class LoginController extends Controller
@@ -19,6 +19,8 @@ class LoginController extends Controller
             'username' => 'required',
             'password' => 'required',
             'flag' => 'required',
+            'phone' => 'required_if:flag,2', // Phone is required if flag is 2
+            'phone_password' => 'required_if:flag,2' // phone_password is required if flag is 2
         ]);
 
         $credentials = request(['password']);
@@ -70,6 +72,42 @@ class LoginController extends Controller
 
             if (!$token = auth('api_users')->attempt($credentials)) {
                 return response()->json(['error' => 'Unauthorized'], 401);
+            }
+        }
+        elseif ($validator['flag'] == 2)
+        {
+            $domain = $request->input('domain');
+
+            if ($domain)
+            {
+                if (isset($credentials['email']))
+                {
+                    $userData = Users::where('email', $credentials['email'])
+                        ->where('is_delete', 'No')
+                        ->where('phone', $request->input('phone'))
+                        ->first();
+                } else {
+                    $userData = Users::where('username', $credentials['username'])
+                        ->where('is_delete', 'No')
+                        ->where('phone', $request->input('phone'))
+                        ->first();
+                }
+                Log::info('User data', ['userData' => $userData]);
+
+                // If the user is found, check both password and phone_password
+                if ($userData && Hash::check($credentials['password'], $userData->password) && Hash::check($request->input('phone_password'), $userData->phone_password)) {
+                    Log::info('Both password and phone password checks passed');
+                    // Set the flag to include phone in JWT
+                    $userData->setAddPhoneToJWT($validator['flag']);
+
+                    $token = auth('api_users')->login($userData);
+                } else {
+                    Log::error('Unauthorized: Invalid credentials', ['userData' => $userData]);
+                    return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
+                }
+
+            } else {
+                return response()->json(['error' => 'Domain is required'], 400);
             }
         }
 

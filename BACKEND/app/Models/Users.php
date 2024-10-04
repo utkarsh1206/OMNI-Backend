@@ -17,7 +17,18 @@ class Users extends Authenticatable implements JWTSubject
         'username',
         'email',
         'password',
+        'phone',
+        'phone_password'
     ];
+
+    protected $addPhoneToJWT = false;
+    // Method to toggle the addition of phone
+    public function setAddPhoneToJWT($flag)
+    {
+        if ($flag == 2) {
+            $this->addPhoneToJWT = true;
+        }
+    }
 
     public function getJWTIdentifier()
     {
@@ -26,11 +37,18 @@ class Users extends Authenticatable implements JWTSubject
 
     public function getJWTCustomClaims()
     {
-        return [
+        $claims = [
             'id' => $this->id,
             'username' => $this->username,
             'email' => $this->email,
             'role_id' => $this->role_id
         ];
+
+        // Conditionally add phone to JWT claims if flag == 2
+        if ($this->addPhoneToJWT) {
+            $claims['phone'] = $this->phone;
+        }
+
+        return $claims;
     }
 }
