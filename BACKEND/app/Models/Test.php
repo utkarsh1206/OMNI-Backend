@@ -11,7 +11,6 @@ class Test extends Model
 
     public $timestamps = false;
     
-    // protected $table = 'tests';
     protected $fillable = [
         'testDomain',
         'test_ip',

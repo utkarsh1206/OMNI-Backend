@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Admins;
 use App\Models\Users;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
@@ -33,10 +31,8 @@ class LoginController extends Controller
             $credentials['username'] = $loginInput;
         }
 
-        if ($validator['flag'] == 0)
-        {
-            if (isset($credentials['email']))
-            {
+        if ($validator['flag'] == 0) {
+            if (isset($credentials['email'])) {
                 $userData = Admins::where('email', $credentials['email'])
                     ->where('is_delete', 'No')
                     ->first();
@@ -49,15 +45,11 @@ class LoginController extends Controller
             if (!$token = auth('api')->attempt($credentials)) {
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
-        }
-        elseif ($validator['flag'] == 1)
-        {
+        } elseif ($validator['flag'] == 1) {
             $domain = $request->input('domain');
 
-            if ($domain)
-            {
-                if (isset($credentials['email'])) 
-                {
+            if ($domain) {
+                if (isset($credentials['email'])) {
                     $userData = Users::where('email', $credentials['email'])
                         ->where('is_delete', 'No')
                         ->first();
@@ -73,15 +65,11 @@ class LoginController extends Controller
             if (!$token = auth('api_users')->attempt($credentials)) {
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
-        }
-        elseif ($validator['flag'] == 2)
-        {
+        } elseif ($validator['flag'] == 2) {
             $domain = $request->input('domain');
 
-            if ($domain)
-            {
-                if (isset($credentials['email']))
-                {
+            if ($domain) {
+                if (isset($credentials['email'])) {
                     $userData = Users::where('email', $credentials['email'])
                         ->where('is_delete', 'No')
                         ->where('phone', $request->input('phone'))
@@ -105,7 +93,6 @@ class LoginController extends Controller
                     Log::error('Unauthorized: Invalid credentials', ['userData' => $userData]);
                     return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
                 }
-
             } else {
                 return response()->json(['error' => 'Domain is required'], 400);
             }
@@ -122,7 +109,5 @@ class LoginController extends Controller
             'message' => 'Login successful',
             'token' => $token
         ], 200);
-
     }
-
 }

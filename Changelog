@@ -1,0 +1,8 @@
+2024-10-04 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : 
+	* Previous Commit ID : b570a09
+	* Version : main
+	* ReactJS : Changes in Dashboard page to display the page
+                WRT loggedin User.
+    * Laravel : Hardcoded role_id to the Admins module

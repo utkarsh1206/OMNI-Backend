@@ -9,7 +9,6 @@ import {
   CContainer,
   CForm,
   CFormInput,
-  CFormLabel,
   CFormSelect,
   CImage,
   CInputGroup,
@@ -22,13 +21,13 @@ import EyeClosedIcon from '../../../assets/images/icons/eye_closed.svg'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import { useNavigate } from 'react-router-dom'
 import { BASE_URL } from '../../../config'
+import { jwtDecode } from 'jwt-decode'
 
 const Login = () => {
-  const [userName, setUserName] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState('')
   const [domain, setDomain] = useState('')
-
   const [errorMsg, setErrorMsg] = useState('')
 
   const [showPassword, setShowPassword] = useState(false);
@@ -44,16 +43,17 @@ const Login = () => {
 
     setErrorMsg('')
 
-    let TENANT_AUTH_USER = userName
-    let TENANT_AUTH_PASS = password
+    let flag = role;
 
     try {
       const response = await axios.post(
         // 'http://192.168.0.118:9090/tenant/api/login.php',
-        `${BASE_URL}/tenant/api/login.php`,
+        `${BASE_URL}/api/login`,
         {
-          TENANT_AUTH_USER,
-          TENANT_AUTH_PASS,
+          username,
+          password,
+          flag,
+          ...(domain && { domain }),
         },
         {
           headers: {
@@ -66,31 +66,15 @@ const Login = () => {
 
       if (response.status == 200) {
         // Store the user's authentication token in local storage.
-        if (response.data.token) {
-          localStorage.setItem('authToken', response.data.token)
-
-          console.log(response.data.code + ' ' + response.data.message)
-          // alert(`Username: ${userName}\nPassword: ${password}`)
-          navigate('/agent')
-        } else {
-          console.log('200 but some issue exists');
-        }
+        localStorage.setItem('authToken', response.data.token)
+        // alert(`Username: ${userName}\nPassword: ${password}`)
+        navigate('/dashboard')
       } else {
         // Handle the error.
         console.log('Some Error Occured')
       }
     } catch (error) {
-      if (error.response.data.code === 1000001) {
-        console.log(error.response.data.code + ' ' + error.response.data.message)
-        {
-          setErrorMsg('Wrong Username or Password')
-        }
-      } else {
-        console.log(error.response.data.code + ' ' + error.response.data.message)
-        setErrorMsg(error.response.data.message)
-        // alert(error.response.data.message)
-      }
-      // }
+      console.error(error.response)
     }
   }
 
@@ -112,18 +96,20 @@ const Login = () => {
                       </CCallout>
                     )}
 
-                    <CInputGroup className="mb-2"><CFormLabel>Campaign</CFormLabel>
+                    <CInputGroup className="mb-2">
                       <CFormSelect
                         id="role"
                         value={role}
-                        onChange={(e) => setRole(e.target.value)}
+                        required
+                        onChange={(e) => { setRole(e.target.value); setDomain("") }}
                       >
-                        <option>--- Select Campaign ---</option>
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                        <option value="super-admin">Super Admin</option>
+                        <option value="">--- Select Role ---</option>
+                        <option value="0">Super Admin</option>
+                        <option value="1">Admin</option>
+                        <option value="2">User</option>
                       </CFormSelect>
                     </CInputGroup>
+
                     <CInputGroup className="mb-2">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
@@ -131,24 +117,34 @@ const Login = () => {
                       <CFormInput
                         type="text"
                         placeholder="Username"
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         invalid={errorMsg !== ''}
                         autoComplete="username"
                         required
                         id="usernameinput"
                       />
-                      <CInputGroupText>@</CInputGroupText>
-                      <CFormInput
-                        type="text"
-                        placeholder="Domain"
-                        value={domain}
-                        onChange={(e) => setDomain(e.target.value)}
-                        invalid={errorMsg !== ''}
-                        autoComplete="domain"
-                        required
-                        id="domainInput"
-                      />
+                      {
+                        (() => {
+                          if (role == "0") {
+                            return null;
+                          } else {
+                            return <>
+                              <CInputGroupText>@</CInputGroupText>
+                              <CFormInput
+                                type="text"
+                                placeholder="Domain"
+                                value={domain}
+                                onChange={(e) => setDomain(e.target.value)}
+                                invalid={errorMsg !== ''}
+                                autoComplete="domain"
+                                required
+                                id="domainInput"
+                              />
+                            </>
+                          }
+                        })()
+                      }
                     </CInputGroup>
                     <CInputGroup className="mb-4">
                       <CInputGroupText>

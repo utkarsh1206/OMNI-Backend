@@ -39,7 +39,8 @@ class Admins extends Authenticatable implements JWTSubject
             'id' => $this->id,
             'username' => $this->username,
             'email' => $this->email,
-            'admin_type' => $this->admin_type
+            'admin_type' => $this->admin_type,
+            'role_id' => 0
         ];
     }
 }

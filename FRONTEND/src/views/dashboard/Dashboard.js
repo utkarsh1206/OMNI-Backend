@@ -53,8 +53,11 @@ import avatar6 from 'src/assets/images/avatars/6.jpg'
 import WidgetsBrand from '../widgets/WidgetsBrand'
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
+import { jwtDecode } from 'jwt-decode'
 
 const Dashboard = () => {
+  const authToken = localStorage.getItem('authToken')
+
   const progressExample = [
     { title: 'Visits', value: '29.703 Users', percent: 40, color: 'success' },
     { title: 'Unique', value: '24.093 Users', percent: 20, color: 'info' },
@@ -178,6 +181,25 @@ const Dashboard = () => {
 
   return (
     <>
+      <CCard className="mb-4">
+        <CCardHeader>
+          <CIcon icon={cilPeople} className="me-2" />
+          Users
+        </CCardHeader>
+        <CCardBody>
+          {(() => {
+            const decoded = jwtDecode(authToken)
+            const { role_id } = decoded
+            if (role_id == 0) {
+              return <>This is a superUser card. Nice for any kind of content!</>
+            } else if (role_id == 1) {
+              return <>This is a Admin card. Nice for any kind of content!</>
+            } else if (role_id == 3) {
+              return <>This is a User card. Nice for any kind of content!</>
+            }
+          })()}
+        </CCardBody>
+      </CCard>
       <WidgetsDropdown className="mb-4" />
       <CCard className="mb-4">
         <CCardBody>
