@@ -21,7 +21,7 @@ import EyeClosedIcon from '../../../assets/images/icons/eye_closed.svg'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import { useNavigate } from 'react-router-dom'
 import { BASE_URL } from '../../../config'
-import { jwtDecode } from 'jwt-decode'
+import Login_User from './Login_User'
 
 const Login = () => {
   const [username, setUsername] = useState('')
@@ -29,6 +29,8 @@ const Login = () => {
   const [role, setRole] = useState('')
   const [domain, setDomain] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const [phone, setPhone] = useState('')
+  const [phonePassword, setPhonePassword] = useState('')
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -44,16 +46,17 @@ const Login = () => {
     setErrorMsg('')
 
     let flag = role;
+    let phone_password = phonePassword
 
     try {
       const response = await axios.post(
-        // 'http://192.168.0.118:9090/tenant/api/login.php',
         `${BASE_URL}/api/login`,
         {
           username,
           password,
           flag,
           ...(domain && { domain }),
+          ...(phone && { phone, phone_password }),
         },
         {
           headers: {
@@ -74,7 +77,8 @@ const Login = () => {
         console.log('Some Error Occured')
       }
     } catch (error) {
-      console.error(error.response)
+      setErrorMsg(error.response.data.error)
+      console.error(error.response.data.error)
     }
   }
 
@@ -101,7 +105,7 @@ const Login = () => {
                         id="role"
                         value={role}
                         required
-                        onChange={(e) => { setRole(e.target.value); setDomain("") }}
+                        onChange={(e) => { setRole(e.target.value); setDomain(""); setErrorMsg("") }}
                       >
                         <option value="">--- Select Role ---</option>
                         <option value="0">Super Admin</option>
@@ -146,7 +150,7 @@ const Login = () => {
                         })()
                       }
                     </CInputGroup>
-                    <CInputGroup className="mb-4">
+                    <CInputGroup className={role === "2" ? "mb-2" : "mb-4"}>
                       <CInputGroupText>
                         <CIcon icon={cilLockLocked} />
                       </CInputGroupText>
@@ -164,6 +168,20 @@ const Login = () => {
                         <img src={showPassword ? EyeClosedIcon : EyeOpenIcon} height={18} width={18} />
                       </CInputGroupText>
                     </CInputGroup>
+
+                    {role === "2" && (
+                      <Login_User
+                        phone={phone}
+                        setPhone={setPhone}
+                        phonePassword={phonePassword}
+                        setPhonePassword={setPhonePassword}
+                        userName={username}
+                        setUserName={setUsername}
+                        password={password}
+                        setPassword={setPassword}
+                      />
+                    )}
+
                     <CRow>
                       <CCol xs={6}>
                         <CButton color="primary" className="px-4" type="submit">
