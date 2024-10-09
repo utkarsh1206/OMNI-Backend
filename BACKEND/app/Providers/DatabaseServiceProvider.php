@@ -23,13 +23,10 @@ class DatabaseServiceProvider extends ServiceProvider
      */
     public function boot(Request $request): void
     {
-        // $domain = $request->host();
-        $domain = $request->input('domain'); 
+        $domain = $request->input('domain');
         $details = Detail::where('domain', $domain)->first();
 
         if ($details) {
-            // Log::info("Using database: " . $details->db);
-            
             $connectionDetails = [
                 'database' => $details->db,
                 'username' => $details->username,

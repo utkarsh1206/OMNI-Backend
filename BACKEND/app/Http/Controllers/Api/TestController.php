@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Models\Test;
 use App\Http\Controllers\Controller;
@@ -15,15 +15,14 @@ class TestController extends Controller
 
     public function create()
     {
-        
+        // Function for Create Test
     }
 
     public function store(Request $request)
     {
         $domain = $request->input('domain');
 
-        if ($domain) 
-        {
+        if ($domain){
             $validatedData = $request->validate([
                 'testDomain' => 'required|string|max:255',
                 'test_ip' => 'required|string|min:7|max:15',
@@ -45,7 +44,7 @@ class TestController extends Controller
 
     public function update(Request $request, Test $test)
     {
-        //
+        //  Function to update the test table
     }
 
     public function destroy(Test $test)

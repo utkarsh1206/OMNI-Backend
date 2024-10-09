@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import classNames from 'classnames'
 
 import {
@@ -54,9 +54,10 @@ import WidgetsBrand from '../widgets/WidgetsBrand'
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
 import { jwtDecode } from 'jwt-decode'
+import { AuthContext } from '../../context/AuthContext'
 
 const Dashboard = () => {
-  const authToken = localStorage.getItem('authToken')
+  const { user, logout } = useContext(AuthContext)
 
   const progressExample = [
     { title: 'Visits', value: '29.703 Users', percent: 40, color: 'success' },
@@ -188,14 +189,18 @@ const Dashboard = () => {
         </CCardHeader>
         <CCardBody>
           {(() => {
-            const decoded = jwtDecode(authToken)
-            const { role_id } = decoded
-            if (role_id == 0) {
+            if (user.role_id == 0) {
               return <>This is a superUser card. Nice for any kind of content!</>
-            } else if (role_id == 1) {
+            } else if (user.role_id == 1) {
               return <>This is a Admin card. Nice for any kind of content!</>
-            } else if (role_id == 3) {
-              return <>This is a User card. Nice for any kind of content!</>
+            } else if (user.role_id == 3) {
+              return (
+                <>
+                  This is a User card. Nice for any kind of content!
+                  <br />
+                  Phone number used is {user.phone}
+                </>
+              )
             }
           })()}
         </CCardBody>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import EyeOpenIcon from '../../../assets/images/icons/eye_open.svg'
 import EyeClosedIcon from '../../../assets/images/icons/eye_closed.svg'
-import axios from 'axios'
 import {
   CCol,
   CFormInput,
@@ -12,7 +11,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilPhone, cilReload, cilUser } from '@coreui/icons'
 
-const Login_User = ({ phone, setPhone, phonePassword, setPhonePassword }) => {
+const Login_User = ({ credentials, handleChange }) => {
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -29,12 +28,11 @@ const Login_User = ({ phone, setPhone, phonePassword, setPhonePassword }) => {
               <CIcon icon={cilPhone} />
             </CInputGroupText>
             <CFormInput
-              // size='sm'
               type="text"
+              name='phone'
               placeholder="Phone Login"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              // invalid={errorMsg !== ''}
+              value={credentials.phone}
+              onChange={handleChange}
               required
             />
           </CInputGroup>
@@ -47,10 +45,10 @@ const Login_User = ({ phone, setPhone, phonePassword, setPhonePassword }) => {
             <CFormInput
               // size='sm'
               type={showPassword ? 'text' : 'password'}
+              name='phone_password'
               placeholder="Phone Password"
-              value={phonePassword}
-              onChange={(e) => setPhonePassword(e.target.value)}
-              // invalid={errorMsg !== ''}
+              value={credentials.phone_password}
+              onChange={handleChange}
               autoComplete="current-password"
               required
             />

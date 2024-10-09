@@ -1,21 +1,25 @@
 import React, { Suspense, useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 
-// Pages
+// Pages (Public)
 const Login = React.lazy(() => import('./views/pages/login/Login'))
-// const Login_MultiFields = React.lazy(() => import('./views/pages/login/Login_User'))
 const Register = React.lazy(() => import('./views/pages/register/Register'))
 const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
+
+// Protected Components
 const Agent = React.lazy(() => import('./views/agent/Agent'))
 const NeoxDashboard = React.lazy(() => import('./views/neoxDashboard/NeoxDashboard'))
+
+// Import PrivateRoute
+import PrivateRoute from './components/PrivateRoute'
+import { AuthProvider } from './context/AuthContext'
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -33,29 +37,40 @@ const App = () => {
     }
 
     setColorMode(storedTheme)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
-    <BrowserRouter>
-      <Suspense
-        fallback={
-          <div className="pt-3 text-center">
-            <CSpinner color="primary" variant="grow" />
-          </div>
-        }
-      >
-        <Routes>
-          <Route exact path="/login" name="Login Page" element={<Login />} />
-          {/* <Route exact path="/login_agent" name="Agent Login Page" element={<Login_MultiFields />} /> */}
-          <Route exact path="/register" name="Register Page" element={<Register />} />
-          <Route exact path="/404" name="Page 404" element={<Page404 />} />
-          <Route exact path="/500" name="Page 500" element={<Page500 />} />
-          <Route path="*" name="Home" element={<DefaultLayout />} />
-          <Route path="/agent" name="Agent Home" element={<Agent />} />
-          <Route path="/neox_dash" name="Dashboard" element={<NeoxDashboard />} />
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Suspense
+          fallback={
+            <div className="pt-3 text-center">
+              <CSpinner color="primary" variant="grow" />
+            </div>
+          }
+        >
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/404" element={<Page404 />} />
+            <Route path="/500" element={<Page500 />} />
+
+            {/* Protected Routes */}
+            <Route element={<PrivateRoute />}>
+              {/* Nested Routes inside PrivateRoute will inherit the authentication check */}
+              <Route path="*" element={<DefaultLayout />} />
+              <Route path="/agent" element={<Agent />} />
+              <Route path="/neox_dash" element={<NeoxDashboard />} />
+              {/* Add more protected routes as needed */}
+            </Route>
+
+            {/* Fallback Route */}
+            <Route path="*" element={<Page404 />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 

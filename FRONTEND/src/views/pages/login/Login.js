@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import axios from 'axios'
 import {
   CButton,
@@ -19,66 +19,49 @@ import CIcon from '@coreui/icons-react'
 import EyeOpenIcon from '../../../assets/images/icons/eye_open.svg'
 import EyeClosedIcon from '../../../assets/images/icons/eye_closed.svg'
 import { cilLockLocked, cilUser } from '@coreui/icons'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, redirect, useNavigate } from 'react-router-dom'
 import { BASE_URL } from '../../../config'
 import Login_User from './Login_User'
+import { AuthContext } from '../../../context/AuthContext'
 
 const Login = () => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [role, setRole] = useState('')
-  const [domain, setDomain] = useState('')
-  const [errorMsg, setErrorMsg] = useState('')
-  const [phone, setPhone] = useState('')
-  const [phonePassword, setPhonePassword] = useState('')
+  const { login, authToken } = useContext(AuthContext)
+  const navigate = useNavigate()
 
-  const [showPassword, setShowPassword] = useState(false);
+  const [credentials, setCredentials] = useState({
+    username: '',
+    password: '',
+    domain: '',
+    phone: '',
+    phone_password: '',
+    flag: '',
+  })
+
+  const [showPassword, setShowPassword] = useState(false)
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+    setShowPassword(!showPassword)
+  }
 
-  const navigate = useNavigate() // Initialize the navigate function
+  const [errorMsg, setErrorMsg] = useState('')
+
+  if (authToken) {
+    // return <Redirect to="/dashboard" />
+    return <Navigate to="/dashboard" replace />
+  }
+
+  const handleChange = (e) => {
+    setCredentials({ ...credentials, [e.target.name]: e.target.value })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     setErrorMsg('')
-
-    let flag = role;
-    let phone_password = phonePassword
-
     try {
-      const response = await axios.post(
-        `${BASE_URL}/api/login`,
-        {
-          username,
-          password,
-          flag,
-          ...(domain && { domain }),
-          ...(phone && { phone, phone_password }),
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            // 'Access-Control-Allow-Origin': '*',
-          },
-          // withCredentials: true // if you are using cookies
-        },
-      )
-
-      if (response.status == 200) {
-        // Store the user's authentication token in local storage.
-        localStorage.setItem('authToken', response.data.token)
-        // alert(`Username: ${userName}\nPassword: ${password}`)
-        navigate('/dashboard')
-      } else {
-        // Handle the error.
-        console.log('Some Error Occured')
-      }
-    } catch (error) {
-      setErrorMsg(error.response.data.error)
-      console.error(error.response.data.error)
+      await login(credentials)
+      navigate('/dashboard')
+    } catch (err) {
+      setErrorMsg('Invalid email or password')
     }
   }
 
@@ -103,9 +86,10 @@ const Login = () => {
                     <CInputGroup className="mb-2">
                       <CFormSelect
                         id="role"
-                        value={role}
+                        name="flag"
+                        value={credentials.flag}
                         required
-                        onChange={(e) => { setRole(e.target.value); setDomain(""); setErrorMsg("") }}
+                        onChange={handleChange}
                       >
                         <option value="">--- Select Role ---</option>
                         <option value="0">Super Admin</option>
@@ -120,65 +104,63 @@ const Login = () => {
                       </CInputGroupText>
                       <CFormInput
                         type="text"
+                        name="username"
                         placeholder="Username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        value={credentials.username}
+                        onChange={handleChange}
                         invalid={errorMsg !== ''}
                         autoComplete="username"
                         required
                         id="usernameinput"
                       />
-                      {
-                        (() => {
-                          if (role == "0") {
-                            return null;
-                          } else {
-                            return <>
-                              <CInputGroupText>@</CInputGroupText>
-                              <CFormInput
-                                type="text"
-                                placeholder="Domain"
-                                value={domain}
-                                onChange={(e) => setDomain(e.target.value)}
-                                invalid={errorMsg !== ''}
-                                autoComplete="domain"
-                                required
-                                id="domainInput"
-                              />
-                            </>
-                          }
-                        })()
-                      }
+                      {credentials.flag !== '0' && (
+                        <>
+                          <CInputGroupText>@</CInputGroupText>
+                          <CFormInput
+                            type="text"
+                            name="domain"
+                            placeholder="Domain"
+                            value={credentials.domain}
+                            onChange={handleChange}
+                            invalid={errorMsg !== ''}
+                            autoComplete="domain"
+                            required
+                            id="domainInput"
+                          />
+                        </>
+                      )}
                     </CInputGroup>
-                    <CInputGroup className={role === "2" ? "mb-2" : "mb-4"}>
+                    <CInputGroup className={credentials.flag === '2' ? 'mb-2' : 'mb-4'}>
                       <CInputGroupText>
                         <CIcon icon={cilLockLocked} />
                       </CInputGroupText>
                       <CFormInput
                         type={showPassword ? 'text' : 'password'}
+                        name="password"
                         placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        value={credentials.password}
+                        onChange={handleChange}
                         invalid={errorMsg !== ''}
                         autoComplete="current-password"
                         required
                         id="passwordinput"
                       />
-                      <CInputGroupText onClick={togglePasswordVisibility} style={{ cursor: 'pointer' }}>
-                        <img src={showPassword ? EyeClosedIcon : EyeOpenIcon} height={18} width={18} />
+                      <CInputGroupText
+                        onClick={togglePasswordVisibility}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <img
+                          src={showPassword ? EyeClosedIcon : EyeOpenIcon}
+                          height={18}
+                          width={18}
+                        />
                       </CInputGroupText>
                     </CInputGroup>
 
-                    {role === "2" && (
+                    {credentials.flag === '2' && (
                       <Login_User
-                        phone={phone}
-                        setPhone={setPhone}
-                        phonePassword={phonePassword}
-                        setPhonePassword={setPhonePassword}
-                        userName={username}
-                        setUserName={setUsername}
-                        password={password}
-                        setPassword={setPassword}
+                        credentials={credentials}
+                        handleChange={handleChange}
                       />
                     )}
 
@@ -198,7 +180,7 @@ const Login = () => {
                 </CCardBody>
               </CCard>
             </CCol>
-            <CCol className='d-flex align-items-center justify-content-center'>
+            <CCol className="d-flex align-items-center justify-content-center">
               <CCard className="text-white bg-transparent py-5 border-0">
                 <CCardBody className="text-center">
                   <div>

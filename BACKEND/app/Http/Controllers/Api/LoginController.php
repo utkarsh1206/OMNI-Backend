@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
@@ -8,7 +8,7 @@ use App\Models\Admins;
 use App\Models\Users;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log; 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
 class LoginController extends Controller
@@ -34,12 +34,9 @@ class LoginController extends Controller
         }
 
         $userData = null;
-        if ($validator['flag'] == 0)
-        {
-            try
-            {
-                if (isset($credentials['email']))
-                {
+        if ($validator['flag'] == 0) {
+            try {
+                if (isset($credentials['email'])) {
                     $userData = Admins::where('email', $credentials['email'])
                         ->where('is_delete', 'No')
                         ->first();
@@ -52,7 +49,6 @@ class LoginController extends Controller
                 if (!$userData) {
                     return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
                 }
-                
 
                 if (!$token = auth('api')->attempt($credentials)) {
                     return response()->json(['error' => 'Unauthorized'], 401);
@@ -61,17 +57,11 @@ class LoginController extends Controller
                 Log::error('Database error: ' . $ex->getMessage());
                 return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
             }
-        }
-        elseif ($validator['flag'] == 1)
-        {
-            try
-            {
+        } elseif ($validator['flag'] == 1) {
+            try {
                 $domain = $request->input('domain');
-
-                if ($domain)
-                {
-                    if (isset($credentials['email']))
-                    {
+                if ($domain) {
+                    if (isset($credentials['email'])) {
                         $userData = Users::where('email', $credentials['email'])
                             ->where('is_delete', 'No')
                             ->first();
@@ -95,17 +85,11 @@ class LoginController extends Controller
                 Log::error('Database error: ' . $ex->getMessage());
                 return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
             }
-        }
-        elseif ($validator['flag'] == 2)
-        {
-            try
-            {
+        } elseif ($validator['flag'] == 2) {
+            try {
                 $domain = $request->input('domain');
-
-                if ($domain)
-                {
-                    if (isset($credentials['email']))
-                    {
+                if ($domain) {
+                    if (isset($credentials['email'])) {
                         $userData = Users::where('email', $credentials['email'])
                             ->where('is_delete', 'No')
                             ->where('phone', $request->input('phone'))
@@ -127,13 +111,11 @@ class LoginController extends Controller
                         Log::info('Both password and phone password checks passed');
                         // Set the flag to include phone in JWT
                         $userData->setAddPhoneToJWT($validator['flag']);
-
                         $token = auth('api_users')->login($userData);
                     } else {
                         Log::error('Unauthorized: Invalid credentials', ['userData' => $userData]);
                         return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
                     }
-
                 } else {
                     return response()->json(['error' => 'Domain is required'], 400);
                 }
@@ -154,7 +136,5 @@ class LoginController extends Controller
             'message' => 'Login successful',
             'token' => $token
         ], 200);
-
     }
-
 }

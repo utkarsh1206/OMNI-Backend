@@ -14,11 +14,17 @@ class Users extends Authenticatable implements JWTSubject
     protected $table = 'users';
 
     protected $fillable = [
+        "tenant_id",
+        "first_name",
+        "last_name",
         'username',
         'email',
         'password',
         'phone',
-        'phone_password'
+        'phone_password',
+        "domain",
+        "mobile",
+        "type"
     ];
 
     protected $addPhoneToJWT = false;

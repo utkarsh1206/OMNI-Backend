@@ -1,6 +1,17 @@
 2024-10-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : 
+	* Previous Commit ID : e36f450c
+	* Version : Dev
+	* ReactJS : Implemented Private Routes and AutContext
+				Pages only accessible when logged in, login page doesn't
+				show when logged in
+    * Laravel : Merged code for Tenant operations. Accordingly, added
+				migration, controllers, model etc.
+
+2024-10-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : 
 	* Previous Commit ID : e688f9f7
 	* Version : Dev
 	* ReactJS : Modified according to User Login API
