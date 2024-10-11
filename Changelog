@@ -1,6 +1,16 @@
 2024-10-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : 
+	* Previous Commit ID : 287a1461
+	* Version : Dev
+	* ReactJS : Added Tenant listing and create tenant pages.
+				Moved agent components to own folder.
+				Added Logout mechanism
+    * Laravel : 
+
+2024-10-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : 
 	* Previous Commit ID : e36f450c
 	* Version : Dev
 	* ReactJS : Implemented Private Routes and AutContext

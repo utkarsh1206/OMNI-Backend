@@ -14,7 +14,8 @@ import {
 import CIcon from '@coreui/icons-react'
 
 import { AppSidebarNav } from './AppSidebarNav'
-import { AppSidebarNavAgent } from './AppSidebarNavAgent'
+import { AppSidebarNavSuperAdmin } from './superAdmin/AppSidebarNavSuperAdmin'
+import { AppSidebarNavAgent } from './agent/AppSidebarNavAgent'
 import { AppSidebarNavNeoxDash } from './AppSidebarNavNeoxDash'
 
 import { logo } from 'src/assets/brand/logo'
@@ -75,7 +76,9 @@ const AppSidebar = () => {
         (() => {
           let pathname = window.location.pathname;
 
-          if (pathname.startsWith('/agent')) {
+          if (pathname.startsWith('/super_admin')) {
+            return <AppSidebarNavSuperAdmin items={navigation} />;
+          } else if (pathname.startsWith('/agent')) {
             return <AppSidebarNavAgent items={navigation} />;
           } else if (pathname.startsWith('/neox_dash')) {
             return <AppSidebarNavNeoxDash items={navigationDash} />;

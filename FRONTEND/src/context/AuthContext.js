@@ -71,22 +71,51 @@ export const AuthProvider = ({ children }) => {
   // try to use 
   // try to use below
   // Function to check if token is expired
-  // const isTokenExpired = (token) => {
-  //   try {
-  //     const decoded = jwtDecode(token)
-  //     const currentTime = Date.now() / 1000 // Current time in seconds
-  //     return decoded.exp < currentTime
-  //   } catch (error) {
-  //     console.error('Invalid token:', error)
-  //     return true
-  //   }
-  // }
+  const isTokenExpired = (token) => {
+    try {
+      const decoded = jwtDecode(token)
+      const currentTime = Date.now() / 1000 // Current time in seconds
+      return decoded.exp < currentTime
+    } catch (error) {
+      console.error('Invalid token:', error)
+      return true
+    }
+  }
   // try to use above
   // try to use 
 
   // Optional: Refresh user info if token changes
-  useEffect(() => {
-    if (authToken) {
+  // useEffect(() => {
+  //   if (authToken) {
+  //     try {
+  //       const decoded = jwtDecode(authToken)
+  //       // setUser(decoded.user); // Adjust based on your token's payload
+  //       setUser({
+  //         username: decoded.username,
+  //         email: decoded.email,
+  //         role_id: decoded.role_id,
+  //         phone: decoded.phone,
+  //       })
+  //     } catch (error) {
+  //       console.error('Failed to decode token:', error)
+  //       setUser(null)
+  //       logout()
+  //     }
+  //   }
+  // }, [authToken])
+
+// Try to use
+// Try to use below
+
+// Optional: Fetch user info on mount if token exists
+useEffect(() => {
+  if (authToken) {
+    // Example: Decode token or fetch user data
+    // setUser(decodedUser);
+    if (isTokenExpired(authToken)) {
+      console.log('Token expired');
+      logout();
+    } else {
       try {
         const decoded = jwtDecode(authToken)
         // setUser(decoded.user); // Adjust based on your token's payload
@@ -102,35 +131,8 @@ export const AuthProvider = ({ children }) => {
         logout()
       }
     }
-  }, [authToken])
-
-// Try to use
-// Try to use below
-
-// // Optional: Fetch user info on mount if token exists
-// useEffect(() => {
-//   if (authToken) {
-//     // Example: Decode token or fetch user data
-//     // setUser(decodedUser);
-//     if (isTokenExpired(authToken)) {
-//       console.log('Token expired');
-//       logout();
-//     } else {
-//       try {
-//         const decoded = jwtDecode(authToken);
-//         setUser({
-//           username: decoded.username,
-//           email: decoded.email,
-//           role_id: decoded.role_id,
-//         });
-//       } catch (error) {
-//         console.error('Failed to decode token:', error);
-//         setUser(null);
-//         logout();
-//       }
-//     }
-//   }
-// }, [authToken]);
+  }
+}, [authToken]);
 
 // // Axios interceptor to handle 401 errors
 // useEffect(() => {

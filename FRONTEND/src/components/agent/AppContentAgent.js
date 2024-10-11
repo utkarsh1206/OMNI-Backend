@@ -3,8 +3,8 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { CContainer, CSpinner } from '@coreui/react'
 
 // routes config
-import routes from '../routes'
-import AgentBody from '../views/agent/AgentBody'
+import routes from '../../routes'
+import AgentBody from '../../views/agent/AgentBody'
 
 const AppContent = () => {
   return (

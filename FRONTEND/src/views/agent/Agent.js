@@ -1,6 +1,6 @@
 import React from 'react'
 import { AppContent, AppSidebar, AppFooter, AppHeader } from '../../components/index'
-import AppContentAgent from '../../components/AppContentAgent'
+import AppContentAgent from '../../components/agent/AppContentAgent'
 import VerticalButtonGroup from './VerticalButtonGroup'
 
 const DefaultLayoutAgent = () => {

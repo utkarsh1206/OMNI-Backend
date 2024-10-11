@@ -65,6 +65,10 @@ const CreateCampaign = React.lazy(() => import('./views/campaign/CreateCampaign'
 const Ingroups = React.lazy(() => import('./views/inbound/Ingroups'))
 const CreateIngroups = React.lazy(() => import('./views/inbound/CreateIngroups'))
 
+// Tenant Management
+const Tenants = React.lazy(() => import('./views/tenant/Tenants'))
+const CreateTenants = React.lazy(() => import('./views/tenant/CreateTenants'))
+
 //Agent
 const Agent = React.lazy(() => import('./views/agent/Agent'))
 
@@ -134,6 +138,9 @@ const routes = [
   { path: '/inbound', name: 'Inbound Management', element: Ingroups, exact: true },
   { path: '/inbound/ingrps', name: 'In-Groups', element: Ingroups },
   { path: '/inbound/create_ingrps', name: 'Create In-Groups', element: CreateIngroups },
+
+  { path: '/tenants', name: 'Tenant Management', element: Tenants },
+  { path: '/tenants/crt_tenant', name: 'Create Tenant', element: CreateTenants },
 
   { path: '/agent', name: 'Agent', element: Agent, exact: true },
 

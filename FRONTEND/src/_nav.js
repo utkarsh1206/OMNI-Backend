@@ -5,6 +5,7 @@ import {
   cilBarcode,
   cilBasket,
   cilBell,
+  cilBuilding,
   cilChart,
   cilClock,
   cilCursor,
@@ -23,7 +24,7 @@ const _nav = [
     component: CNavItem,
     name: 'Test Report',
     to: '/test_report',
-    icon: <CIcon icon={cilChart} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilChart} customClassName="nav-icon" style={{color:"white"}} />,
     badge: {
       color: 'success',
       text: 'IMP',
@@ -32,6 +33,12 @@ const _nav = [
   {
     component: CNavTitle,
     name: 'Components',
+  },
+  {
+    component: CNavItem,
+    name: 'Tenants',
+    to: '/tenants',
+    icon: <CIcon icon={cilBuilding} customClassName="nav-icon" />,
   },
   {
     component: CNavGroup,
