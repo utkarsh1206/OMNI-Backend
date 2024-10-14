@@ -24,9 +24,19 @@ return new class extends Migration
             $table->string('phone_password')->nullable();
             $table->string('domain')->nullable();
             $table->bigInteger('mobile')->unsigned()->nullable();
-            $table->integer('status')->default(0);
-            $table->integer('is_deleted')->default(0);
+            $table->enum('status', ['Yes', 'No'])->default('No');
+            $table->enum('is_delete', ['Yes', 'No'])->default('No');
             $table->integer('role_id')->default(0);
+            $table->string('name_prefix')->nullable();
+            $table->string('level')->nullable();
+            $table->date('date_of_birth')->nullable();
+            $table->unsignedBigInteger('country_id')->nullable();
+            $table->unsignedBigInteger('state_id')->nullable();
+            $table->unsignedBigInteger('city_id')->nullable();
+            $table->unsignedBigInteger('occupation_id')->nullable();
+            $table->string('pincode')->nullable();
+            $table->text('address')->nullable();
+            $table->enum('gender', ['MALE', 'FEMALE', 'TRANSGENDER'])->nullable();
             $table->timestamps();
         });
     }

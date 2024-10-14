@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Support\Facades\Request;
+
+
 
 class Admins extends Authenticatable implements JWTSubject
 {
@@ -40,7 +43,8 @@ class Admins extends Authenticatable implements JWTSubject
             'username' => $this->username,
             'email' => $this->email,
             'admin_type' => $this->admin_type,
-            'role_id' => 0
+            'role_id' => 0,
+            'domain' => Request::getHost()
         ];
     }
 }

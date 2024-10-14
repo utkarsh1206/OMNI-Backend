@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Tenants;
-use App\Models\Users;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TenantsResource;
 use App\Http\Resources\UsersResource;
+use App\Models\Tenants;
+use App\Models\Users;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Artisan;
@@ -21,7 +22,7 @@ class TenantController extends Controller
         $searchTerm = $request->input('search', '');
 
         // Start the query for tenants
-        $query = Tenants::query()->where('is_deleted', 0);
+        $query = Tenants::query()->where('is_delete', 'No');
 
         // If there's a search term, apply it to the query
         if (!empty($searchTerm)) {
@@ -141,7 +142,8 @@ class TenantController extends Controller
         $tenant->update([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
-            'password' => bcrypt($request->password), // Ensure to hash the password
+            'password' => bcrypt($request->password),
+            'email' => $request->email,
             'mobile' => $request->mobile,
             'domain_name' => $request->domain_name,
             'company_code' => $request->company_code,
@@ -149,7 +151,7 @@ class TenantController extends Controller
             'server_serialnumber' => $request->server_serialnumber,
             'server_ip' => $request->server_ip,
             'server_mac' => $request->server_mac,
-            'domain_url' => $request->domain_url,
+//            'domain_url' => $request->domain_url,
             'status' => $request->status,
         ]);
         return response()->json([
@@ -159,7 +161,7 @@ class TenantController extends Controller
     }
     public function destroy(Tenants $tenant)
     {
-        $tenant->is_deleted = 1;
+        $tenant->is_delete = 'Yes';
         $tenant->save();
         return response()->json([
             'message' => 'Tenant deleted Successfully',

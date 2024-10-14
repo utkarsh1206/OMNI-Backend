@@ -65,7 +65,7 @@ class LoginController extends Controller
                         $userData = Users::where('email', $credentials['email'])
                             ->where('is_delete', 'No')
                             ->first();
-                    } else {
+                        } else {
                         $userData = Users::where('username', $credentials['username'])
                             ->where('is_delete', 'No')
                             ->first();
