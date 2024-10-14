@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Support\Facades\Request;
 
 class Users extends Authenticatable implements JWTSubject
 {
@@ -15,16 +16,29 @@ class Users extends Authenticatable implements JWTSubject
 
     protected $fillable = [
         "tenant_id",
+        "type",
         "first_name",
         "last_name",
-        'username',
-        'email',
-        'password',
-        'phone',
-        'phone_password',
+        "email",
+        "username",
+        "password",
+        "phone",
+        "phone_password",
         "domain",
         "mobile",
-        "type"
+        "status",
+        "is_delete",
+        "role_id",
+        "name_prefix",
+        "level",
+        "date_of_birth",
+        "country_id",
+        "state_id",
+        "city_id",
+        "occupation_id",
+        "pincode",
+        "address",
+        "gender"
     ];
 
     protected $addPhoneToJWT = false;
@@ -47,7 +61,8 @@ class Users extends Authenticatable implements JWTSubject
             'id' => $this->id,
             'username' => $this->username,
             'email' => $this->email,
-            'role_id' => $this->role_id
+            'role_id' => $this->role_id,
+            'domain' =>  $this->domain,
         ];
 
         // Conditionally add phone to JWT claims if flag == 2

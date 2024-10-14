@@ -26,8 +26,8 @@ return new class extends Migration
             $table->string('server_ip', 255)->nullable();
             $table->string('server_mac', 255)->nullable();
             $table->string('domain_url', 255)->nullable();
-            $table->integer('status')->default(0);
-            $table->integer('is_deleted')->default(0);
+            $table->enum('status', ['Yes', 'No'])->default('No');
+            $table->enum('is_delete', ['Yes', 'No'])->default('No');
             $table->timestamps();
             /*
             $table->text('address');
