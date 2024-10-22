@@ -30,10 +30,14 @@ class DatabaseServiceProvider extends ServiceProvider
         $lastSegment = $request->segment($request->segments() ? count($request->segments()) : 0);
         if($domain =='' && $lastSegment != 'login'){
             $token = $request->bearerToken();
-            $payload = JWTAuth::setToken($token)->getPayload();
-            $domain = $payload['domain'];
-            $domain =str_replace("https://","",$domain);
-            $domain = str_replace("http://","",$domain);
+            if($token != ""){
+                $payload = JWTAuth::setToken($token)->getPayload();
+                if($payload['admin_type'] != 'Super'){
+                    $domain = $payload['domain'];
+                    $domain =str_replace("https://","",$domain);
+                    $domain = str_replace("http://","",$domain);
+                }
+            }
         }
         $details = Detail::where('domain', $domain)->first();
 //        echo "<pre>111";

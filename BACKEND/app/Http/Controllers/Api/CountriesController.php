@@ -29,17 +29,27 @@ class CountriesController extends Controller
     
             // Paginate the results
             $perPage = $request->input('per_page', 10);
-            $countries = $query->paginate($perPage);
-    
-            // Return the response
-            return response()->json([
-                'data' => $countries->items(),
-                'meta' => [
-                    'current_page' => $countries->currentPage(),
-                    'last_page' => $countries->lastPage(),
-                    'per_page' => $countries->perPage(),
-                    'total' => $countries->total(),
-                ],
-            ]);
+            $page = $request->input('page', 1);
+
+            if ($page === 'all') {
+                // If 'page' is 'all', retrieve all records without pagination
+                $countires = $query->get();
+                return response()->json([
+                    'data' => $countires,
+                ]);
+            } else {
+                // Paginate the results
+                $countires = $query->paginate($perPage);
+                // Return the response with pagination meta
+                return response()->json([
+                    'data' => $countires->items(),
+                    'meta' => [
+                        'current_page' => $countires->currentPage(),
+                        'last_page' => $countires->lastPage(),
+                        'per_page' => $countires->perPage(),
+                        'total' => $countires->total(),
+                    ],
+                ]);
+            }
     }
 }

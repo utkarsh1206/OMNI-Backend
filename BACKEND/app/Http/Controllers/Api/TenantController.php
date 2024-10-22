@@ -91,10 +91,16 @@ class TenantController extends Controller
         ]);
         $lastInsertedId = $tenants->id;
 
-        $databaseName = $request->domain_name;
+        $databaseName = str_replace(".", "_", $request->domain_name);
 
         DB::statement("CREATE DATABASE $databaseName");
-
+        $details_array = [
+            'db'=> str_replace(".", "_", $request->domain_name),
+            'domain'=>$request->domain_name,
+            'username'=> env('DB_USERNAME'),
+            'password'=> env('DB_PASSWORD')
+        ];
+        DB::table('details')->insert($details_array);
         $newConnectionName = str_replace(".", "_", $request->domain_name);
 
         Config::set("database.connections.$newConnectionName", [
@@ -125,7 +131,7 @@ class TenantController extends Controller
             'username'   => $request->username,
             'domain'     => $request->domain_url,
             'mobile'     => $request->mobile,
-            'status' => $request->status,
+            'status' => 'Active',
             'role_id' => 0
         ]);
         return response()->json([

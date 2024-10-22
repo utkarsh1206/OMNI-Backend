@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 
 
 class UsersController extends Controller
@@ -18,7 +20,8 @@ class UsersController extends Controller
     {
         // Get the search term from the request
         $searchTerm = $request->input('search', '');
-
+        $token = $request->bearerToken();
+        $payload = JWTAuth::setToken($token)->getPayload();
         // Start the query for tenants
         $query = Users::query()->where('is_delete', 'No')->where('type','3');
 
@@ -43,16 +46,17 @@ class UsersController extends Controller
 
         // Paginate the results
         $perPage = $request->input('per_page', 10);
-        $tenants = $query->paginate($perPage);
-
+        $users = $query->paginate($perPage);
+        $newToken = JWTAuth::refresh(JWTAuth::getToken());
         // Return the response
         return response()->json([
-            'data' => $tenants->items(),
+            'data' => $users->items(),
             'meta' => [
-                'current_page' => $tenants->currentPage(),
-                'last_page' => $tenants->lastPage(),
-                'per_page' => $tenants->perPage(),
-                'total' => $tenants->total(),
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+                'refresh_token'=>$newToken
             ],
         ]);
     }
@@ -70,16 +74,14 @@ class UsersController extends Controller
 
         $users = Users::create([
             'username' => $request->username,
-            "tenant_id" => $request->tenant_id,
+           // "tenant_id" => $request->tenant_id,
             "type" => 3,
             "first_name" => $request->first_name,
             "last_name" => $request->last_name,
             "email" => $request->email,
             "username" => $request->username,
             "password" => bcrypt($request->password),
-            "phone" => $request->phone,
-            "phone_password" => $request->phone_password,
-            "domain" => $request->domain,
+           // "domain" => $request->domain,
             "mobile" => $request->mobile,
             "status" => $request->status,
             "is_delete" => $request->is_delete,
@@ -108,16 +110,14 @@ class UsersController extends Controller
     {
         $user->update([
             'username' => $request->username,
-            "tenant_id" => $request->tenant_id,
+           // "tenant_id" => $request->tenant_id,
             "type" => 3,
             "first_name" => $request->first_name,
             "last_name" => $request->last_name,
             "email" => $request->email,
             "username" => $request->username,
             "password" => bcrypt($request->password),
-            "phone" => $request->phone,
-            "phone_password" => $request->phone_password,
-            "domain" => $request->domain,
+            //"domain" => $request->domain,
             "mobile" => $request->mobile,
             "status" => $request->status,
             "is_delete" => $request->is_delete,

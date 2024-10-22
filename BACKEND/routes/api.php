@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\NameprefixesController;
 use App\Http\Controllers\Api\StatesController;
 use App\Http\Controllers\Api\CitiesController;
 use App\Http\Controllers\Api\UsersController;
+use App\Http\Controllers\Api\UsergroupController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -34,6 +35,7 @@ Route::get('states', [StatesController::class, 'index']);
 Route::get('cities', [CitiesController::class, 'index']);
 Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
 Route::apiResource('users', UsersController::class);
+Route::apiResource('usergroup', UsergroupController::class);
 #Route::middleware('auth:api')->apiResource('users', UsersController::class);
 
 Route::middleware(['auth:api'])->group(function () {

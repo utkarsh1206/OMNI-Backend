@@ -30,17 +30,27 @@ class StatesController extends Controller
     
             // Paginate the results
             $perPage = $request->input('per_page', 10);
-            $states = $query->paginate($perPage);
-    
-            // Return the response
-            return response()->json([
-                'data' => $states->items(),
-                'meta' => [
-                    'current_page' => $states->currentPage(),
-                    'last_page' => $states->lastPage(),
-                    'per_page' => $states->perPage(),
-                    'total' => $states->total(),
-                ],
-            ]);
+            $page = $request->input('page', 1);
+
+            if ($page === 'all') {
+                // If 'page' is 'all', retrieve all records without pagination
+                $states = $query->get();
+                return response()->json([
+                    'data' => $states,
+                ]);
+            } else {
+                // Paginate the results
+                $states = $query->paginate($perPage);
+                // Return the response with pagination meta
+                return response()->json([
+                    'data' => $states->items(),
+                    'meta' => [
+                        'current_page' => $states->currentPage(),
+                        'last_page' => $states->lastPage(),
+                        'per_page' => $states->perPage(),
+                        'total' => $states->total(),
+                    ],
+                ]);
+            }
     }
 }

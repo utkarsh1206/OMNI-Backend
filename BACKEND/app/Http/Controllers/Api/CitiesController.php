@@ -28,17 +28,27 @@ class CitiesController extends Controller
     
             // Paginate the results
             $perPage = $request->input('per_page', 10);
-            $cities = $query->paginate($perPage);
-    
-            // Return the response
-            return response()->json([
-                'data' => $cities->items(),
-                'meta' => [
-                    'current_page' => $cities->currentPage(),
-                    'last_page' => $cities->lastPage(),
-                    'per_page' => $cities->perPage(),
-                    'total' => $cities->total(),
-                ],
-            ]);
+            $page = $request->input('page', 1);
+
+            if ($page === 'all') {
+                // If 'page' is 'all', retrieve all records without pagination
+                $cities = $query->get();
+                return response()->json([
+                    'data' => $cities,
+                ]);
+            } else {
+                // Paginate the results
+                $cities = $query->paginate($perPage);
+                // Return the response with pagination meta
+                return response()->json([
+                    'data' => $cities->items(),
+                    'meta' => [
+                        'current_page' => $cities->currentPage(),
+                        'last_page' => $cities->lastPage(),
+                        'per_page' => $cities->perPage(),
+                        'total' => $cities->total(),
+                    ],
+                ]);
+            }
     }
 }
