@@ -15,15 +15,13 @@ class Users extends Authenticatable implements JWTSubject
     protected $table = 'users';
 
     protected $fillable = [
-        "tenant_id",
+        //"tenant_id",
         "type",
         "first_name",
         "last_name",
         "email",
         "username",
         "password",
-        "phone",
-        "phone_password",
         "domain",
         "mobile",
         "status",
@@ -57,12 +55,13 @@ class Users extends Authenticatable implements JWTSubject
 
     public function getJWTCustomClaims()
     {
+        $postData = Request::all(); // Accessing all post data
         $claims = [
             'id' => $this->id,
             'username' => $this->username,
             'email' => $this->email,
             'role_id' => $this->role_id,
-            'domain' =>  $this->domain,
+            'domain' =>  $postData['domain'],
         ];
 
         // Conditionally add phone to JWT claims if flag == 2

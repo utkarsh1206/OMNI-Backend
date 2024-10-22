@@ -13,20 +13,19 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id(); // Creates an auto-incrementing ID column
-            $table->unsignedBigInteger('tenant_id');
+            //$table->unsignedBigInteger('tenant_id');
             $table->integer('type')->default(0);
             $table->string('first_name', 255);
             $table->string('last_name', 255);
             $table->string('email')->unique();
             $table->string('username')->unique();
             $table->string('password');
-            $table->bigInteger('phone')->unsigned()->nullable();
-            $table->string('phone_password')->nullable();
             $table->string('domain')->nullable();
             $table->bigInteger('mobile')->unsigned()->nullable();
-            $table->enum('status', ['Yes', 'No'])->default('No');
+            $table->enum('status', ['Active', 'Inactive'])->default('Active');
             $table->enum('is_delete', ['Yes', 'No'])->default('No');
             $table->integer('role_id')->default(0);
+            $table->integer('usergroup_id')->default(0);
             $table->string('name_prefix')->nullable();
             $table->string('level')->nullable();
             $table->date('date_of_birth')->nullable();
