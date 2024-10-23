@@ -30,26 +30,26 @@ class UsergroupController extends Controller
         }
         // Paginate the results
         $perPage = $request->input('per_page', 10);
-        $usertgroup = $query->paginate($perPage);
+        $usergroup = $query->paginate($perPage);
         $page = $request->input('page', 1);
 
         if ($page === 'all') {
             // If 'page' is 'all', retrieve all records without pagination
-            $usertgroup = $query->get();
+            $usergroup = $query->get();
             return response()->json([
-                'data' => $usertgroup,
+                'data' => $usergroup,
             ]);
         } else {
             // Paginate the results
-            $usertgroup = $query->paginate($perPage);
+            $usergroup = $query->paginate($perPage);
             // Return the response with pagination meta
             return response()->json([
-                'data' => $usertgroup->items(),
+                'data' => $usergroup->items(),
                 'meta' => [
-                    'current_page' => $usertgroup->currentPage(),
-                    'last_page' => $usertgroup->lastPage(),
-                    'per_page' => $usertgroup->perPage(),
-                    'total' => $usertgroup->total(),
+                    'current_page' => $usergroup->currentPage(),
+                    'last_page' => $usergroup->lastPage(),
+                    'per_page' => $usergroup->perPage(),
+                    'total' => $usergroup->total(),
                 ],
             ]);
         }

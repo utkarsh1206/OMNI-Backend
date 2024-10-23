@@ -88,6 +88,7 @@ class TenantController extends Controller
             'server_mac' => $request->server_mac,
             'domain_url' => $request->domain_url,
             'status' => $request->status,
+            'tenant_role_id'=>$request->tenant_role_id
         ]);
         $lastInsertedId = $tenants->id;
 
@@ -159,6 +160,7 @@ class TenantController extends Controller
             'server_mac' => $request->server_mac,
 //            'domain_url' => $request->domain_url,
             'status' => $request->status,
+            'tenant_role_id'=>$request->tenant_role_id
         ]);
         return response()->json([
             'message' => 'Tenant Updated Successfully',
