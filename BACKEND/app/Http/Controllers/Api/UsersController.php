@@ -47,7 +47,7 @@ class UsersController extends Controller
         // Paginate the results
         $perPage = $request->input('per_page', 10);
         $users = $query->paginate($perPage);
-        $newToken = JWTAuth::refresh(JWTAuth::getToken());
+      //  $newToken = JWTAuth::refresh(JWTAuth::getToken());
         // Return the response
         return response()->json([
             'data' => $users->items(),
@@ -56,7 +56,7 @@ class UsersController extends Controller
                 'last_page' => $users->lastPage(),
                 'per_page' => $users->perPage(),
                 'total' => $users->total(),
-                'refresh_token'=>$newToken
+          //      'refresh_token'=>$newToken
             ],
         ]);
     }
@@ -84,7 +84,7 @@ class UsersController extends Controller
            // "domain" => $request->domain,
             "mobile" => $request->mobile,
             "status" => $request->status,
-            "is_delete" => $request->is_delete,
+            "is_delete" => 'No',
             "role_id" => $request->role_id,
             "name_prefix" => $request->name_prefix,
             "level" => $request->level,

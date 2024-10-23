@@ -24,6 +24,7 @@ class Tenants extends Model
         "server_serialnumber",
         "server_ip",
         "server_mac",
-        "domain_url"
+        "domain_url",
+        "tenant_role_id"
     ];
 }
