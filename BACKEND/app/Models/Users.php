@@ -7,6 +7,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\Tenantrole;
+
+
 
 class Users extends Authenticatable implements JWTSubject
 {
@@ -56,12 +60,23 @@ class Users extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         $postData = Request::all(); // Accessing all post data
+
+        $tenantRoleId = DB::table('omnichannel.tenants')
+    ->where('domain_name', $postData['domain'])
+    ->value('tenant_role_id');
+        $permissions = "";
+        if ($tenantRoleId) {
+            $permission = DB::table('omnichannel.tenant_role')
+            ->where('id', $tenantRoleId)
+            ->value('permission');
+        }
         $claims = [
             'id' => $this->id,
             'username' => $this->username,
             'email' => $this->email,
-            'role_id' => $this->role_id,
+            'role_id' => "1",
             'domain' =>  $postData['domain'],
+            'permission'=> $permission
         ];
 
         // Conditionally add phone to JWT claims if flag == 2

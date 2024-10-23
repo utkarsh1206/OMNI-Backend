@@ -152,7 +152,7 @@ class TenantController extends Controller
             'password' => bcrypt($request->password),
             'email' => $request->email,
             'mobile' => $request->mobile,
-            'domain_name' => $request->domain_name,
+//            'domain_name' => $request->domain_name,
             'company_code' => $request->company_code,
             'company_name' => $request->company_name,
             'server_serialnumber' => $request->server_serialnumber,
