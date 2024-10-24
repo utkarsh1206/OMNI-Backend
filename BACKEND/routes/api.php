@@ -39,6 +39,8 @@ Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
 Route::apiResource('users', UsersController::class);
 Route::apiResource('usergroup', UsergroupController::class);
 Route::apiResource('tenantrole', TenantroleController::class);
+Route::get('tenantrole-list', [TenantroleController::class, 'list']);
+
 #Route::middleware('auth:api')->apiResource('users', UsersController::class);
 
 Route::middleware(['auth:api'])->group(function () {
