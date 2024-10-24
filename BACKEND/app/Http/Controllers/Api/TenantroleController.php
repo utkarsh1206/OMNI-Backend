@@ -97,4 +97,10 @@ class TenantroleController extends Controller
             'message' => 'Tenant Role Deleted Successfully',
         ]);
     }
+    public function list(){
+        $role_list = array(0=>'user',1=>'user_group');
+        return  response()->json([
+            'data' => new TenantsResource($role_list),
+        ]);
+    }
 }
