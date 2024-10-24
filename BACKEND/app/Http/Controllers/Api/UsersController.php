@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Hash;
 
 
 
@@ -145,5 +146,24 @@ class UsersController extends Controller
         return response()->json([
             'message' => 'User deleted Successfully',
         ]);
+    }
+    public function updatepassword(Request $request){
+    $token = $request->bearerToken();
+        if($token != ""){
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $users = Users::findOrFail($payload['id']);
+            if (!Hash::check($request->old_password, $users->password)) {
+                return response()->json(['error' => 'Old Password Is Incorrect.'], 403);
+            }
+            if($request->new_password != $request->new_password_confirmation){
+                return response()->json(['error' => 'New Password And Confirm Not Matched.'], 403);
+            }
+            $users->password = Hash::make($request->new_password);
+            $users->save();
+            return response()->json(['message' => 'Password Updated Successfully.']);
+        }else{
+            return response()->json(['error' => 'User Not Found.'], 403);
+        }
+
     }
 }
