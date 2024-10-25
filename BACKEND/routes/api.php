@@ -40,6 +40,7 @@ Route::apiResource('users', UsersController::class);
 Route::apiResource('usergroup', UsergroupController::class);
 Route::apiResource('tenantrole', TenantroleController::class);
 Route::get('tenantrole-list', [TenantroleController::class, 'list']);
+Route::get('tenantrole-menu', [TenantroleController::class, 'menu']);
 Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);
 
 #Route::middleware('auth:api')->apiResource('users', UsersController::class);
