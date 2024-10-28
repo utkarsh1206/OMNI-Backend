@@ -70,13 +70,26 @@ class Users extends Authenticatable implements JWTSubject
             ->where('id', $tenantRoleId)
             ->value('permission');
         }
+        $permission_array = [];
+        if(!empty(json_decode($permission,true))){
+            foreach(json_decode($permission,true) as $permission_key=>$permission_value){
+
+                if($permission_value['view'] ==1){
+
+                    $view_name = DB::table('omnichannel.menu_permissions')
+                    ->where('module_name', $permission_key)
+                    ->value('view_name');            
+                    $permission_array[] = $view_name;
+                }
+            }
+        }
         $claims = [
             'id' => $this->id,
             'username' => $this->username,
             'email' => $this->email,
             'role_id' => "1",
             'domain' =>  $postData['domain'],
-            'permission'=> $permission
+            'permission'=> json_encode($permission_array)
         ];
 
         // Conditionally add phone to JWT claims if flag == 2
