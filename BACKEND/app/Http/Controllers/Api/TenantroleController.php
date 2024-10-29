@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Tenantrole;
 use App\Http\Resources\TenantsResource;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+
 
 
 class TenantroleController extends Controller
@@ -98,7 +100,19 @@ class TenantroleController extends Controller
         ]);
     }
     public function list(){
-        $role_list = array(0=>'user',1=>'user_group');
+        $final_permission_array = array();
+        $permissions = DB::table('omnichannel.menu_permissions')->get();
+        if(!empty($permissions)){
+            foreach($permissions as $permission_key=>$permission_value){
+                $final_permission_array[$permission_value->module_name]= explode(",",$permission_value->roles);
+            }
+        }
+        $role_list = array('user'=>['add', 'edit', 'delete', 'view'],'user_group'=>['add', 'edit', 'delete', 'view']);
+        echo "<pre>permission_value";
+        print_r( $final_permission_array);
+        print_r( $role_list);
+        exit;        
+
         return  response()->json([
             'data' => new TenantsResource($role_list),
         ]);

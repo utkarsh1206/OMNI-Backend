@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 28, 2024 at 12:42 PM
+-- Generation Time: Oct 29, 2024 at 09:57 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -30,16 +30,18 @@ SET time_zone = "+00:00";
 CREATE TABLE `menu_permissions` (
   `id` int(11) NOT NULL,
   `module_name` varchar(255) DEFAULT NULL,
-  `view_name` varchar(255) DEFAULT NULL
+  `view_name` varchar(255) DEFAULT NULL,
+  `roles` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `menu_permissions`
 --
 
-INSERT INTO `menu_permissions` (`id`, `module_name`, `view_name`) VALUES
-(1, 'user', 'viewUsers'),
-(2, 'user_group', 'viewUserGroups');
+INSERT INTO `menu_permissions` (`id`, `module_name`, `view_name`, `roles`) VALUES
+(1, 'user', 'viewUsers', 'add,edit,delete,view'),
+(2, 'user_group', 'viewUserGroups', 'add,edit,delete,view'),
+(3, 'support_ticket', 'viewSupportTicket', 'add,edit,delete,view');
 
 --
 -- Indexes for dumped tables
@@ -59,7 +61,7 @@ ALTER TABLE `menu_permissions`
 -- AUTO_INCREMENT for table `menu_permissions`
 --
 ALTER TABLE `menu_permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
