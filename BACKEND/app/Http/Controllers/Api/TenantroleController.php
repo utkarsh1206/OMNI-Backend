@@ -107,14 +107,9 @@ class TenantroleController extends Controller
                 $final_permission_array[$permission_value->module_name]= explode(",",$permission_value->roles);
             }
         }
-        $role_list = array('user'=>['add', 'edit', 'delete', 'view'],'user_group'=>['add', 'edit', 'delete', 'view']);
-        echo "<pre>permission_value";
-        print_r( $final_permission_array);
-        print_r( $role_list);
-        exit;        
 
         return  response()->json([
-            'data' => new TenantsResource($role_list),
+            'data' => new TenantsResource($final_permission_array),
         ]);
     }
     public function menu(){
