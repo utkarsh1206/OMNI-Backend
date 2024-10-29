@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\CitiesController;
 use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\UsergroupController;
 use App\Http\Controllers\Api\TenantroleController;
+use App\Http\Controllers\Api\SupportticketController;
+use App\Models\Supportticket;
 use App\Models\Tenantrole;
 
 Route::post('login', [LoginController::class, 'login_action']);
@@ -35,10 +37,13 @@ Route::get('nameprefixes', [NameprefixesController::class, 'index']);
 Route::get('occupations', [OccupationsController::class, 'index']);
 Route::get('states', [StatesController::class, 'index']);
 Route::get('cities', [CitiesController::class, 'index']);
-Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
+#Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
+Route::apiResource('tenants', TenantController::class);
+
 Route::apiResource('users', UsersController::class);
 Route::apiResource('usergroup', UsergroupController::class);
 Route::apiResource('tenantrole', TenantroleController::class);
+Route::apiResource('supportticket', SupportticketController::class);
 Route::get('tenantrole-list', [TenantroleController::class, 'list']);
 Route::get('tenantrole-menu', [TenantroleController::class, 'menu']);
 Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);

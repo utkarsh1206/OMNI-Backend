@@ -12,5 +12,7 @@ class Tenantrole extends Model
     protected $fillable = [
         "name",
         "permission",
+        "description",
         "status"
-    ];}
+    ];
+}
