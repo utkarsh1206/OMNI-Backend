@@ -46,6 +46,7 @@ Route::apiResource('tenantrole', TenantroleController::class);
 Route::apiResource('supportticket', SupportticketController::class);
 Route::get('tenantrole-list', [TenantroleController::class, 'list']);
 Route::get('tenantrole-menu', [TenantroleController::class, 'menu']);
+Route::get('tenant-dashboard', [TenantController::class, 'dashboard']);
 Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);
 
 #Route::middleware('auth:api')->apiResource('users', UsersController::class);

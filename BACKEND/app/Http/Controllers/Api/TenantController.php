@@ -175,4 +175,16 @@ class TenantController extends Controller
             'message' => 'Tenant deleted Successfully',
         ]);
     }
+    public function dashboard(){
+        $type_wise_ticket = array("Problem"=>"1","Help"=>"0","Incident"=>"2","Questions"=>"5","Feature Request"=>"0","Other"=>10);
+        $priority_wise_ticket = array("High"=>"5","Medium"=>"2","Low"=>"0","Urgent"=>"10");
+        $agent_status = array("ABC 101"=>array("Login","Pause","192.168.1.110"),"BCD 201"=>array("Login","Resume","192.168.1.111"),"XYZ 301"=>array("Logout","Pause","192.168.1.112"));
+        $lead_status= array("Unassigned"=>"0","Open"=>"100","Waiting On Customer"=>"5","Waiting On Third party"=>"5","Resolved"=>"50","Closed"=>"200");
+        $call_count_status= array("Success"=>"200","Failed"=>"30");
+        $agent_count =  Users::query()->where('is_delete', 'No')->where('type', '3')->count();
+        $final_array = array("type_wise_ticket"=>$type_wise_ticket,"priority_wise_ticket"=>$priority_wise_ticket,"agent_status"=>$agent_status,"lead_status"=>$lead_status,"call_count_status"=>$call_count_status,"agent_count"=>$agent_count);
+        return response()->json([
+            'data' => new TenantsResource($final_array)
+        ]);
+    }
 }
