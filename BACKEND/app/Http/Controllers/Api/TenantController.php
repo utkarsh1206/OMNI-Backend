@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
 
 class TenantController extends Controller
 {
@@ -66,9 +68,19 @@ class TenantController extends Controller
             'domain_name' => 'required|unique:tenants',
             'domain_url' => 'required|unique:tenants',
             'email' => 'required|unique:tenants',
+            'tenant_logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             // other validation rules...
         ]);
+        $tenant_logo_url = "";
+        if ($request->hasFile('tenant_logo')) {
+            $tenant_logo = $request->file('tenant_logo');
+            $filename = now()->format('Y_m_d_H_i_s') . '.' . $tenant_logo->getClientOriginalExtension();
+            // Store the image in the 'public' disk (storage/app/public)
+            $path = $tenant_logo->storeAs('tenant_logo',$filename, 'public');
 
+            // Return the URL to access the uploaded image
+            $tenant_logo_url = url('storage/' . $path);;
+        }
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
@@ -88,7 +100,11 @@ class TenantController extends Controller
             'server_mac' => $request->server_mac,
             'domain_url' => $request->domain_url,
             'status' => $request->status,
-            'tenant_role_id'=>$request->tenant_role_id
+            'tenant_role_id'=>$request->tenant_role_id,
+            'title'=>$request->title,
+            'footer_content'=>$request->footer_content,
+            'footer_url'=>$request->footer_url,
+            'tenant_logo'=>$tenant_logo_url
         ]);
         $lastInsertedId = $tenants->id;
 
@@ -145,23 +161,43 @@ class TenantController extends Controller
         return new TenantsResource($tenant);
     }
     public function update(Request $request, Tenants $tenant)
-    {
-        $tenant->update([
+    {       
+
+        $tenant_logo_url = "";
+        if ($request->hasFile('tenant_logo')) {
+            $tenant_logo = $request->file('tenant_logo');
+            $filename = now()->format('Y_m_d_H_i_s') . '.' . $tenant_logo->getClientOriginalExtension();
+            // Store the image in the 'public' disk (storage/app/public)
+            $path = $tenant_logo->storeAs('tenant_logo',$filename, 'public');
+
+            // Return the URL to access the uploaded image
+            $tenant_logo_url = url('storage/' . $path);;
+        }
+        $updateData = [
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'password' => bcrypt($request->password),
             'email' => $request->email,
             'mobile' => $request->mobile,
-//            'domain_name' => $request->domain_name,
             'company_code' => $request->company_code,
             'company_name' => $request->company_name,
             'server_serialnumber' => $request->server_serialnumber,
             'server_ip' => $request->server_ip,
             'server_mac' => $request->server_mac,
-//            'domain_url' => $request->domain_url,
             'status' => $request->status,
-            'tenant_role_id'=>$request->tenant_role_id
-        ]);
+            'tenant_role_id' => $request->tenant_role_id,
+            'title' => $request->title,
+            'footer_content' => $request->footer_content,
+            'footer_url' => $request->footer_url,
+        ];
+        
+        // Add tenant_logo to the array only if it is not empty or null
+        if (!empty($tenant_logo_url)) {
+            $updateData['tenant_logo'] = $tenant_logo_url;
+        }
+        
+        // Now update the tenant with the filtered data
+        $tenant->update($updateData);
         return response()->json([
             'message' => 'Tenant Updated Successfully',
             'data' => new TenantsResource($tenant)

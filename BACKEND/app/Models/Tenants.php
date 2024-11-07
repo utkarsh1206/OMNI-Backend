@@ -25,6 +25,10 @@ class Tenants extends Model
         "server_ip",
         "server_mac",
         "domain_url",
-        "tenant_role_id"
+        "tenant_role_id",
+        "title",
+        "footer_content",
+        "footer_url",
+        "tenant_logo"
     ];
 }
