@@ -69,6 +69,9 @@ const CreateIngroups = React.lazy(() => import('./views/inbound/CreateIngroups')
 const Tenants = React.lazy(() => import('./views/tenant/Tenants'))
 const CreateTenants = React.lazy(() => import('./views/tenant/CreateTenants'))
 
+// Report Management
+const CallCDRreport = React.lazy(() => import('./views/reports/CallCDRreport'))
+
 //Agent
 const Agent = React.lazy(() => import('./views/agent/Agent'))
 
@@ -141,6 +144,8 @@ const routes = [
 
   { path: '/tenants', name: 'Tenant Management', element: Tenants },
   { path: '/tenants/crt_tenant', name: 'Create Tenant', element: CreateTenants },
+
+  { path: '/report/callCDR', name: 'Report Management', element: CallCDRreport },
 
   { path: '/agent', name: 'Agent', element: Agent, exact: true },
 

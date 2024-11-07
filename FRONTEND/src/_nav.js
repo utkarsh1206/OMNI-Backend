@@ -261,6 +261,11 @@ const _nav = [
     items: [
       {
         component: CNavItem,
+        name: 'Call CDR Report',
+        to: '/report/callCDR',
+      },
+      {
+        component: CNavItem,
         name: 'Agent Report',
         to: '/report/agent',
       },

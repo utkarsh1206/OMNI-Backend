@@ -17,8 +17,26 @@ use App\Http\Controllers\Api\TenantroleController;
 use App\Http\Controllers\Api\SupportticketController;
 use App\Models\Supportticket;
 use App\Models\Tenantrole;
+use App\Http\Controllers\Api\CallCDRListController;
+use App\Http\Controllers\Api\IngroupListController;
+use App\Http\Controllers\Api\CampaignListController;
+use App\Http\Controllers\Api\UsersListController;
+use App\Http\Controllers\Api\CustomFieldController;
+use App\Http\Controllers\Api\UpdateCustomFieldsController;
 
 Route::post('login', [LoginController::class, 'login_action']);
+
+// TODO CDR report, START
+Route::get('callCDR', [CallCDRListController::class, 'getCallCDRList']);
+
+Route::get('custome-field/header', [CustomFieldController::class, 'custumFieldHeader']);
+Route::get('custome-field/value', [CustomFieldController::class, 'custumFieldvalue']);
+Route::post('insert-update-custom', [UpdateCustomFieldsController::class, 'updateInsertCustomField']);
+
+Route::get('ingroups', [IngroupListController::class, 'index']);
+Route::get('campaigns', [CampaignListController::class, 'index']);
+Route::get('users', [UsersListController::class, 'index']);
+//TODO CDR report, END
 
 Route::get('get_test', [TestController::class, 'index']);
 

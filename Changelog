@@ -1,3 +1,11 @@
+2024-11-07 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : dad98f9 
+	* Version : Dev
+	* Laravel & React : Call CDR Report Listing, Pagination, Filters, Graph and column Hide and show based on selection.
+	CSV and PDF download. PDF downloaf using jspdf in React.
+
 2024-10-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : 
