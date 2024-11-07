@@ -1,7 +1,17 @@
+2024-11-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : 
+	* Previous Commit ID : 101705d5
+	* Version : Dev
+	* ReactJS : Added various functionalities, including hide and show of sidebar menu options
+				Created various component for reuseability
+				Created pages for Tenants, Support Tickets, Users, etc.
+    * Laravel : -
+
 2024-11-07 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
-	* Previous Commit ID : dad98f9 
+	* Previous Commit ID : b8daecdd 
 	* Version : Dev
 	* Laravel & React : Call CDR Report Listing, Pagination, Filters, Graph and column Hide and show based on selection.
 	CSV and PDF download. PDF downloaf using jspdf in React.

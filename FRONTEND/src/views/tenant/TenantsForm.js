@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import {
   CButton,
   CCard,
@@ -11,10 +11,12 @@ import {
   CCol,
 } from '@coreui/react'
 import axios from 'axios'
+import { useNavigate, useParams } from 'react-router-dom'
 import { BASE_URL } from '../../config'
+import { AuthContext } from '../../context/AuthContext'
 
 // Define FormGroup outside the main component
-const FormGroup = ({ label, name, value, onChange, required, type }) => (
+const FormGroup = ({ label, name, value, onChange, required, type, disabled }) => (
   <CCol md="4" className="mb-3">
     <CFormLabel htmlFor={name}>
       {label} {required && <span style={{ color: 'red' }}>*</span>}
@@ -26,11 +28,18 @@ const FormGroup = ({ label, name, value, onChange, required, type }) => (
       value={value}
       onChange={onChange}
       required={required}
+      disabled={disabled}
     />
   </CCol>
 )
 
-const CreateTenant = () => {
+const TenantsForm = () => {
+  const { id } = useParams() // Get tenant ID from URL if present
+  const navigate = useNavigate()
+  const isEditMode = Boolean(id)
+  // const editAccess = boolean(id)
+  const { authToken } = useContext(AuthContext)
+
   const [formData, setFormData] = useState({
     // Basic Details
     username: '',
@@ -47,44 +56,103 @@ const CreateTenant = () => {
     server_ip: '',
     server_mac: '',
     domain_url: '',
-    // License Details
+    // Miscellaneous
+    title: '',
+    footer_content: '',
+    footer_url: '',
+    tenant_logo: null,
   })
 
-  // Debugging: Log formData whenever it changes
-  //   React.useEffect(() => {
-  //     console.log('Current formData:', formData);
-  //   }, [formData]);
+  useEffect(() => {
+    if (isEditMode) {
+      // Fetch tenant data to prefill the form
+      axios
+        .get(`${BASE_URL}/api/tenants/${id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            Authorization: `Bearer ${authToken}`,
+          },
+        })
+        .then((response) => {
+          setFormData(response.data.data)
+        })
+        .catch((error) => {
+          console.error('Error fetching tenant data:', error)
+          alert('Failed to fetch tenant data.')
+        })
+    }
+  }, [id, isEditMode])
+
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     [name]: value,
+  //   }))
+  // }
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }))
+    const { name, value, files } = e.target
+    if (files) {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: files[0],
+      }))
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }))
+    }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Form Data Submitted:', formData)
-    try {
-      const response = await axios.post(`${BASE_URL}/api/tenants`, formData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-        // withCredentials: true // if you are using cookies
-      })
 
-      if (response.status == 200) {
-        alert(response.data.message + "\nUsername: " + response.data.data.username + "\nCompany Name: " + response.data.data.company_name)
-      }
-      handleCancel();
-    } catch (error) {
-      console.error('Login failed:', error)
-      throw error
+    const form = new FormData()
+    for (const [key, value] of Object.entries(formData)) {
+      form.append(key, value)
     }
 
-    // You can add further processing here
+    try {
+      let response
+      if (isEditMode) {
+        // Update existing tenant
+        response = await axios.put(`${BASE_URL}/api/tenants/${id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Access-Control-Allow-Origin': '*',
+            Authorization: `Bearer ${authToken}`,
+          },
+        })
+      } else {
+        // Create new tenant
+        response = await axios.post(`${BASE_URL}/api/tenants`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Access-Control-Allow-Origin': '*',
+            Authorization: `Bearer ${authToken}`,
+          },
+        })
+      }
+
+      // if (response.status === 200 || response.status === 201) {
+      if (response.status === 200) {
+        alert(
+          response.data.message +
+            (isEditMode
+              ? // ? `\nTenant updated successfully.`
+                ``
+              : `\nUsername: ${response.data.data.username}\nCompany Name: ${response.data.data.company_name}`),
+        )
+        navigate('/tenants') // Redirect to tenants list after success
+      }
+      handleCancel()
+    } catch (error) {
+      console.error('Operation failed:', error)
+      alert('An error occurred while processing your request.')
+    }
   }
 
   const handleCancel = () => {
@@ -103,8 +171,14 @@ const CreateTenant = () => {
       server_ip: '',
       server_mac: '',
       domain_url: '',
+      title: '',
+      footer_content: '',
+      footer_url: '',
+      tenant_logo: null,
     })
-    console.log('Form Cancelled')
+    // if (isEditMode) {
+    navigate('/tenants') // Redirect to tenants list if editing
+    // }
   }
 
   return (
@@ -113,7 +187,7 @@ const CreateTenant = () => {
       <CRow>
         <CCol xs="12" md="12">
           <CCard>
-            <CCardHeader>Basic Details</CCardHeader>
+            <CCardHeader>{isEditMode ? 'Edit Tenant' : 'Create Tenant'}</CCardHeader>
             <CCardBody>
               <CRow>
                 <FormGroup
@@ -122,7 +196,8 @@ const CreateTenant = () => {
                   type="text"
                   value={formData.username}
                   onChange={handleChange}
-                  required
+                  required={!isEditMode} // Assuming username is not editable
+                  disabled={isEditMode} // Assuming username is not editable
                 />
                 <FormGroup
                   label="First Name"
@@ -140,14 +215,16 @@ const CreateTenant = () => {
                   onChange={handleChange}
                   required
                 />
-                <FormGroup
-                  label="Password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
+                {!isEditMode && ( // Show password field only in create mode
+                  <FormGroup
+                    label="Password"
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                )}
                 <FormGroup
                   label="Mobile"
                   name="mobile"
@@ -207,7 +284,6 @@ const CreateTenant = () => {
                   type="text"
                   value={formData.server_serialnumber}
                   onChange={handleChange}
-                  //   required={false}
                   required
                 />
                 <FormGroup
@@ -226,14 +302,16 @@ const CreateTenant = () => {
                   onChange={handleChange}
                   required
                 />
-                <FormGroup
-                  label="Domain URL"
-                  name="domain_url"
-                  type="text"
-                  value={formData.domain_url}
-                  onChange={handleChange}
-                  required
-                />
+                {!isEditMode && (
+                  <FormGroup
+                    label="Domain URL"
+                    name="domain_url"
+                    type="text"
+                    value={formData.domain_url}
+                    onChange={handleChange}
+                    required
+                  />
+                )}
               </CRow>
             </CCardBody>
           </CCard>
@@ -244,9 +322,43 @@ const CreateTenant = () => {
       <CRow className="mt-4">
         <CCol xs="12" md="12">
           <CCard>
-            <CCardHeader>License Details</CCardHeader>
+            <CCardHeader>Miscellaneous</CCardHeader>
             <CCardBody>
-              <CRow></CRow>
+              {/* Add License Details FormGroups here */}
+              <CRow>
+                <FormGroup
+                  label="Title"
+                  name="title"
+                  type="text"
+                  value={formData.title || ''}
+                  onChange={handleChange}
+                  required={false}
+                />
+                <FormGroup
+                  label="Footer Content"
+                  name="footer_content"
+                  type="text"
+                  value={formData.footer_content || ''}
+                  onChange={handleChange}
+                  required={false}
+                />
+                <FormGroup
+                  label="Footer URL"
+                  name="footer_url"
+                  type="url"
+                  value={formData.footer_url || ''}
+                  onChange={handleChange}
+                  required={false}
+                />
+                <FormGroup
+                  label="Logo"
+                  name="logo"
+                  type="file"
+                  // value={formData.tenant_logo || ''}
+                  onChange={handleChange}
+                  required={false}
+                />
+              </CRow>
             </CCardBody>
           </CCard>
         </CCol>
@@ -256,7 +368,7 @@ const CreateTenant = () => {
       <CRow className="mt-2 mb-4">
         <CCol xs="12" md="12" className="d-flex justify-content-end">
           <CButton type="submit" color="primary" className="me-2">
-            Submit
+            {isEditMode ? 'Update' : 'Submit'}
           </CButton>
           <CButton type="button" color="secondary" onClick={handleCancel}>
             Cancel
@@ -267,4 +379,4 @@ const CreateTenant = () => {
   )
 }
 
-export default CreateTenant
+export default TenantsForm

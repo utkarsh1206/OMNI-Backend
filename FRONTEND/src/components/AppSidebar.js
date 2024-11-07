@@ -38,13 +38,18 @@ const AppSidebar = () => {
   }
 
   const sidebarColor = {
-    '--cui-sidebar-bg': "url('../../src/assets/brand/bg_img.png'), linear-gradient(to bottom, #1F222A, #1B47C5)",
+    // '--cui-sidebar-bg': "url('../../src/assets/brand/bg_img.png'), linear-gradient(to bottom, #1F222A, #1B47C5)",
+    '--cui-sidebar-bg': "url('../../src/assets/brand/new_bg.png')",
+    // '--cui-sidebar-nav-link-hover-color': '#{$sidebar-nav-link-hover-color};',
+    // '--cui-sidebar-nav-link-hover-color': 'red;',
+    // '--cui-sidebar-nav-link-hover-bg': '#5856d6',
   }
 
   return (
-    <CSidebar style={sidebarColor}
+    <CSidebar
+      style={sidebarColor}
       className="border-end"
-      colorScheme="dark"
+      // colorScheme="dark"
       position="fixed"
       unfoldable={unfoldable}
       visible={sidebarShow}
@@ -56,7 +61,8 @@ const AppSidebar = () => {
         <CSidebarBrand to="/" as={NavLink}>
           <CImage
             // customClassName="sidebar-brand-full"
-            src="../src/assets/brand/Asset-1as.png"
+            // src="../src/assets/brand/Asset-1as.png"
+            src="../src/assets/brand/new_menu_logo.png"
             height={height}
           />
         </CSidebarBrand>
@@ -72,21 +78,19 @@ const AppSidebar = () => {
         <AppSidebarNavAgent items={navigation} />
       )
       } */}
-      {
-        (() => {
-          let pathname = window.location.pathname;
+      {(() => {
+        let pathname = window.location.pathname
 
-          if (pathname.startsWith('/super_admin')) {
-            return <AppSidebarNavSuperAdmin items={navigation} />;
-          } else if (pathname.startsWith('/agent')) {
-            return <AppSidebarNavAgent items={navigation} />;
-          } else if (pathname.startsWith('/neox_dash')) {
-            return <AppSidebarNavNeoxDash items={navigationDash} />;
-          } else {
-            return <AppSidebarNav items={navigation} />;
-          }
-        })()
-      }
+        if (pathname.startsWith('/super_admin')) {
+          return <AppSidebarNavSuperAdmin items={navigation} />
+        } else if (pathname.startsWith('/agent')) {
+          return <AppSidebarNavAgent items={navigation} />
+        } else if (pathname.startsWith('/neox_dash')) {
+          return <AppSidebarNavNeoxDash items={navigationDash} />
+        } else {
+          return <AppSidebarNav items={navigation} />
+        }
+      })()}
 
       <CSidebarFooter className="border-top d-none d-lg-flex">
         <CSidebarToggler

@@ -52,10 +52,16 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
 const TestReport = React.lazy(() => import('./views/reports/TestReport'))
 
+const Profile = React.lazy(() => import('./views/profile/Profile'))
+
+// Password Reset
+const TenantPasswordReset = React.lazy(() => import('./views/tenant/ForgotPassword'))
+
 // User Management
 const Users = React.lazy(() => import('./views/user/Users'))
+const CreateUser = React.lazy(() => import('./views/user/UserForm'))
 const UserGroups = React.lazy(() => import('./views/user/UserGroups'))
-const CreateUserGroups = React.lazy(() => import('./views/user/CrtUsrGrp'))
+const CreateUserGroups = React.lazy(() => import('./views/user/UserGroupForm'))
 
 // Campaign Management
 const Campaigns = React.lazy(() => import('./views/campaign/Campaigns'))
@@ -67,10 +73,16 @@ const CreateIngroups = React.lazy(() => import('./views/inbound/CreateIngroups')
 
 // Tenant Management
 const Tenants = React.lazy(() => import('./views/tenant/Tenants'))
-const CreateTenants = React.lazy(() => import('./views/tenant/CreateTenants'))
+const CreateTenants = React.lazy(() => import('./views/tenant/TenantsForm'))
 
-// Report Management
-const CallCDRreport = React.lazy(() => import('./views/reports/CallCDRreport'))
+// Tenant Role Management
+const TenantRoles = React.lazy(() => import('./views/roles/TenantRole'))
+const CreateTenantRoles = React.lazy(() => import('./views/roles/TenantRoleForm'))
+// const EditTenantRoles = React.lazy(() => import('./views/roles/TenantRoleForm'))
+
+const SupportTickets = React.lazy(() => import('./views/supportTicket/SupportTickets'))
+const CreateSupportTickets = React.lazy(() => import('./views/supportTicket/SupportTicketsForm'))
+const ViewSupportTickets = React.lazy(() => import('./views/supportTicket/ViewSupportTickets'))
 
 //Agent
 const Agent = React.lazy(() => import('./views/agent/Agent'))
@@ -79,6 +91,9 @@ const Agent = React.lazy(() => import('./views/agent/Agent'))
 const NeoxDashboard = React.lazy(() => import('./views/neoxDashboard/NeoxDashboard'))
 const LiveCalls = React.lazy(() => import('./views/neoxDashboard/LiveCalls'))
 const LiveAgents = React.lazy(() => import('./views/neoxDashboard/LiveAgents'))
+
+// Report Management
+const CallCDRreport = React.lazy(() => import('./views/reports/CallCDRreport'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
@@ -126,13 +141,15 @@ const routes = [
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
   { path: '/widgets', name: 'Widgets', element: Widgets },
 
-
-
+  { path: '/my_profile', name: 'Profile', element: Profile },
   { path: '/test_report', name: 'Test Report', element: TestReport },
   { path: '/user', name: 'User Management', element: Users, exact: true },
   { path: '/user/users', name: 'Users', element: Users },
+  { path: '/user/crt_usr', name: 'Create Users', element: CreateUser },
+  { path: '/user/edit/:id', name: 'Edit Tenant', element: CreateUser },
   { path: '/user/user_groups', name: 'Users Groups', element: UserGroups },
   { path: '/user/crt_usr_grp', name: 'Create User Groups', element: CreateUserGroups },
+  { path: '/user/edit_usergroup/:id', name: 'Edit UserGroup', element: CreateUserGroups },
 
   { path: '/campaign', name: 'Campaign Management', element: Campaigns, exact: true },
   { path: '/campaign/campaigns', name: 'Campaigns', element: Campaigns },
@@ -143,16 +160,33 @@ const routes = [
   { path: '/inbound/create_ingrps', name: 'Create In-Groups', element: CreateIngroups },
 
   { path: '/tenants', name: 'Tenant Management', element: Tenants },
+  { path: '/tenants/tenants', name: 'Tenants', element: Tenants },
   { path: '/tenants/crt_tenant', name: 'Create Tenant', element: CreateTenants },
+  { path: '/tenants/edit/:id', name: 'Edit Tenant', element: CreateTenants },
+
+  { path: '/tenants/tenant_role/', name: 'Create Tenant', element: TenantRoles },
+  {
+    path: '/tenants/tenant_role/crt_tenant_role',
+    name: 'Create Tenant Role',
+    element: CreateTenantRoles,
+  },
+  { path: '/tenants/tenant_role/edit/:id', name: 'Edit Tenant Role', element: CreateTenantRoles },
+
+  { path: '/password_reset', name: 'Tenant Password Reset', element: TenantPasswordReset },
 
   { path: '/report/callCDR', name: 'Report Management', element: CallCDRreport },
+
+  { path: '/spprt_tckt', name: 'Support Ticket', element: SupportTickets, exact: true },
+  { path: '/spprt_tckt/crt_tckt', name: 'Support Ticket', element: CreateSupportTickets },
+  { path: '/spprt_tckt/edit/:id', name: 'Support Ticket', element: CreateSupportTickets },
+
+  { path: '/spprt_tckt_view', name: 'Support Ticket', element: ViewSupportTickets },
 
   { path: '/agent', name: 'Agent', element: Agent, exact: true },
 
   { path: '/neox_dash', name: 'Dashboard', element: NeoxDashboard, exact: true },
   { path: '/neox_dash/live_calls', name: 'Live Calls', element: LiveCalls },
   { path: '/neox_dash/live_agents', name: 'Live Agents', element: LiveAgents },
-
 ]
 
 export default routes

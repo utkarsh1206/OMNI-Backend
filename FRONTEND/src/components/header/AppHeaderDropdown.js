@@ -34,7 +34,9 @@ const AppHeaderDropdown = () => {
         <CAvatar src={design} size="md" />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
-        <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Welcome {user.username}</CDropdownHeader>
+        <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">
+          Welcome {user.username}
+        </CDropdownHeader>
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Account</CDropdownHeader>
         <CDropdownItem href="#">
           <CIcon icon={cilBell} className="me-2" />
@@ -65,7 +67,7 @@ const AppHeaderDropdown = () => {
           </CBadge>
         </CDropdownItem>
         <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Settings</CDropdownHeader>
-        <CDropdownItem href="#">
+        <CDropdownItem as="a" href="/my_profile">
           <CIcon icon={cilUser} className="me-2" />
           Profile
         </CDropdownItem>
@@ -88,9 +90,13 @@ const AppHeaderDropdown = () => {
           </CBadge>
         </CDropdownItem>
         <CDropdownDivider />
-        <CDropdownItem onClick={logout} href='#'>
+        <CDropdownItem onClick={logout} href="#">
           <CIcon icon={cilLockLocked} className="me-2" />
           Log Out
+        </CDropdownItem>
+        <CDropdownItem as="a" href="/password_reset">
+          <CIcon icon={cilLockLocked} className="me-2" />
+          Change Password
         </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>

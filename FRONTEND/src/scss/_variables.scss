@@ -3,3 +3,13 @@
 // If you want to customize your project please add your variables below.
 
 $enable-deprecation-messages: false !default;
+
+$sidebar-nav-link-hover-color: #000;
+$sidebar-nav-link-hover-bg: #EBF0FF;
+// $sidebar-nav-link-hover-bg: #5856d669;
+$sidebar-nav-link-hover-icon-color: #1B47C5;
+
+$sidebar-nav-link-active-color: #1B47C5;
+// $sidebar-nav-link-active-bg: #5856d669;
+$sidebar-nav-link-active-bg: #EBF0FF;
+$sidebar-nav-link-active-icon-color: #1B47C5;

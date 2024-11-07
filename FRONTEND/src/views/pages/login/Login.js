@@ -123,7 +123,7 @@ const Login = () => {
                             value={credentials.domain}
                             onChange={handleChange}
                             invalid={errorMsg !== ''}
-                            autoComplete="domain"
+                            autoComplete="organization"
                             required
                             id="domainInput"
                           />
@@ -158,10 +158,7 @@ const Login = () => {
                     </CInputGroup>
 
                     {credentials.flag === '2' && (
-                      <Login_User
-                        credentials={credentials}
-                        handleChange={handleChange}
-                      />
+                      <Login_User credentials={credentials} handleChange={handleChange} />
                     )}
 
                     <CRow>
@@ -171,7 +168,7 @@ const Login = () => {
                         </CButton>
                       </CCol>
                       <CCol xs={6} className="text-end">
-                        <CButton color="link" className="px-0">
+                        <CButton as="a" href="/password_reset" color="link" className="px-0">
                           Forgot password?
                         </CButton>
                       </CCol>

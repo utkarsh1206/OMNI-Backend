@@ -1,30 +1,16 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import {
-  cilArrowThickFromTop,
-  cilBarcode,
-  cilBasket,
-  cilBell,
-  cilBuilding,
-  cilChart,
-  cilClock,
-  cilCursor,
-  cilFingerprint,
-  cilNotes,
-  cilPhone,
-  cilSpeedometer,
-  cilStar,
-  cilUser,
-  cilUserPlus,
-} from '@coreui/icons'
+import * as icon from '@coreui/icons'
 import { CNavGroup, CNavGroupItems, CNavItem, CNavTitle } from '@coreui/react'
+import { jwtDecode } from 'jwt-decode'
 
-const _nav = [
+const navItemList = [
   {
     component: CNavItem,
     name: 'Test Report',
     to: '/test_report',
-    icon: <CIcon icon={cilChart} customClassName="nav-icon" style={{color:"white"}} />,
+    // icon: <CIcon icon={icon.cilChart} customClassName="nav-icon" style={{ color: 'white' }} />,
+    icon: <CIcon icon={icon.cilChart} customClassName="nav-icon" />,
     badge: {
       color: 'success',
       text: 'IMP',
@@ -35,16 +21,28 @@ const _nav = [
     name: 'Components',
   },
   {
-    component: CNavItem,
-    name: 'Tenants',
+    component: CNavGroup,
+    name: 'Tenant Management',
     to: '/tenants',
-    icon: <CIcon icon={cilBuilding} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilBuilding} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Tenants',
+        to: '/tenants/tenants',
+      },
+      {
+        component: CNavItem,
+        name: 'Roles',
+        to: '/tenants/tenant_role',
+      },
+    ],
   },
   {
     component: CNavGroup,
     name: 'User Management',
     to: '/user',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilUser} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -59,10 +57,16 @@ const _nav = [
     ],
   },
   {
+    component: CNavItem,
+    name: 'Support Tickets',
+    to: '/spprt_tckt',
+    icon: <CIcon icon={icon.cilTags} customClassName="nav-icon" />,
+  },
+  {
     component: CNavGroup,
     name: 'Campaign Mgmt',
     to: '/campaign',
-    icon: <CIcon icon={cilCursor} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilCursor} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -100,7 +104,7 @@ const _nav = [
     component: CNavGroup,
     name: 'List Mgmt',
     to: '/list',
-    icon: <CIcon icon={cilNotes} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilNotes} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -143,7 +147,7 @@ const _nav = [
     component: CNavGroup,
     name: 'Inbound Mgmt',
     to: '/inbound',
-    icon: <CIcon icon={cilArrowThickFromTop} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilArrowThickFromTop} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -166,7 +170,7 @@ const _nav = [
     component: CNavGroup,
     name: 'Service & Feature',
     to: '/svc_n_ft',
-    icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilStar} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -211,7 +215,7 @@ const _nav = [
     component: CNavGroup,
     name: 'Call Time Mgmt',
     to: '/call_time_mgmt',
-    icon: <CIcon icon={cilClock} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilClock} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -234,7 +238,7 @@ const _nav = [
     component: CNavGroup,
     name: 'ACL Mgmt',
     to: '/acl_mgmt',
-    icon: <CIcon icon={cilFingerprint} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilFingerprint} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -257,7 +261,7 @@ const _nav = [
     component: CNavGroup,
     name: 'Report Mgmt',
     to: '/report',
-    icon: <CIcon icon={cilBarcode} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilBarcode} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -285,7 +289,7 @@ const _nav = [
     component: CNavGroup,
     name: 'Bulk Operations',
     to: '/bulk',
-    icon: <CIcon icon={cilBasket} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilBasket} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -318,13 +322,13 @@ const _nav = [
     component: CNavItem,
     name: 'Phones',
     to: '/phones',
-    icon: <CIcon icon={cilPhone} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilPhone} customClassName="nav-icon" />,
   },
   {
     component: CNavGroup,
     name: 'System Management',
     to: '/sys',
-    icon: <CIcon icon={cilBell} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilBell} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -346,7 +350,7 @@ const _nav = [
   {
     component: CNavGroup,
     name: 'Pages',
-    icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilStar} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -374,8 +378,89 @@ const _nav = [
     component: CNavItem,
     name: 'Agent',
     to: '/agent',
-    icon: <CIcon icon={cilUserPlus} customClassName="nav-icon" />,
+    icon: <CIcon icon={icon.cilUserPlus} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Support TIckets view',
+    to: '/spprt_tckt_view',
+    icon: <CIcon icon={icon.cilUserPlus} customClassName="nav-icon" />,
   },
 ]
+
+const NAV_PERMISSIONS = {
+  '/tenants/tenants': 'viewTenants',
+  '/tenants/tenant_role': 'viewRoles',
+  '/user/users': 'viewUsers',
+  '/user/user_groups': 'viewUserGroups',
+  '/spprt_tckt': 'viewSupportTicket',
+  '/campaign/campaigns': 'viewCampaigns',
+  '/campaign/pause_codes': 'viewPauseCodes',
+  '/campaign/list_mix': 'viewListMix',
+  '/campaign/dyn_prompt': 'viewDynamicPrompt',
+  '/campaign/conference': 'viewConference',
+  '/campaign/sms_api_gateway': 'viewSMSAPIGateway',
+  '/list/list': 'viewList',
+  '/list/load_n_leads': 'viewLoadNewList',
+  '/list/lst_cstm_flds': 'viewCustomFields',
+  '/list/cpy_cstm_flds': 'ViewCopyCustomFields',
+  '/list/lead_rchrn': 'viewLeadRechurn',
+  '/list/clbck_mgmt': 'viewCallbackManagement',
+  '/list/crm_db_conf': 'viewCRMDBConfig',
+  '/inbound/ingrps': 'viewIngroups',
+  '/inbound/dids': 'viewDIDs',
+  '/inbound/call_menu': 'viewCallMenu',
+  '/svc_n_ft/scripts': 'viewScripts',
+  '/svc_n_ft/dnc': 'viewDNC',
+  '/svc_n_ft/dnc/global': 'viewGlobalDNC',
+  '/svc_n_ft/dnc/local': 'viewLocalDNC',
+  '/svc_n_ft/num_prof': 'viewNumProf',
+  '/svc_n_ft/disp_status': 'viewDispoStatus',
+  '/svc_n_ft/auth_tkn_api': 'viewAuthTokenAPI',
+  '/call_time_mgmt/call_times': 'viewCallTimes',
+  '/call_time_mgmt/state_call_times': 'viewStateCallTimes',
+  '/call_time_mgmt/shifts': 'viewShifts',
+  '/acl_mgmt/acl_user': 'viewACLUsers',
+  '/acl_mgmt/acl_prof': 'viewACLProfile',
+  '/acl_mgmt/acl_usr_prof_bind': 'viewACLUserProfBinding',
+  '/report/agent': 'viewAgentReport',
+  '/report/inbound': 'viewInboundReport',
+  '/report/outbound': 'viewOutboundReport',
+  '/bulk/usr_usrgrp': 'viewBulkUserGroup',
+  '/bulk/usr_ingrp': 'viewBulkUserIngroup',
+  '/bulk/usr_camp': 'viewBulkUserCampaign',
+  '/bulk/phn_crtn': 'viewBulkPhoneCreation',
+  '/bulk/usr_crtn': 'viewBulkUserCreation',
+  '/phones': 'viewPhones',
+  '/sys/srvr': 'viewServerManagement',
+  '/sys/thrd_prty_auth': 'viewThirdPartyAuth',
+  '/sys/cstmz_gui': 'viewCustomizeGUI',
+  '/agent': 'viewAgent',
+}
+
+const filterNavItems = (navItems, userPermissions) => {
+  if (userPermissions != '') {
+    return navItems
+      .filter((item) => {
+        if (item.items) {
+          item.items = filterNavItems(item.items, userPermissions)
+        }
+        const requiredPermission = NAV_PERMISSIONS[item.to]
+        return !requiredPermission || userPermissions.includes(requiredPermission)
+      })
+      .filter((item) => !item.items || item.items.length > 0)
+  }
+  return navItems
+}
+
+const getUserPermissions = () => {
+  const token = localStorage.getItem('token')
+  const decoded = jwtDecode(token)
+  return decoded.permission || []
+}
+
+// Get user permissions and filtered navigation items
+const userPermissions = getUserPermissions()
+const _nav = filterNavItems(navItemList, userPermissions)
 
 export default _nav

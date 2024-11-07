@@ -1,3 +1,11 @@
+2024-11-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3706
+	* Previous Commit ID : 101705d5
+	* Version : Dev
+	* ReactJS : Added Multiple components, created various pages
+				Changed the Display CSS. Worked on Pagination etc.
+
 2024-10-03 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3706

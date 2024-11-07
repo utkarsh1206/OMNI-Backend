@@ -193,7 +193,7 @@ const Dashboard = () => {
               return <>This is a superUser card. Nice for any kind of content!</>
             } else if (user.role_id == 1) {
               return <>This is a Admin card. Nice for any kind of content!</>
-            } else if (user.role_id == 3) {
+            } else if (user.role_id == 2) {
               return (
                 <>
                   This is a User card. Nice for any kind of content!
