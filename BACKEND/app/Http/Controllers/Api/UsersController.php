@@ -178,6 +178,7 @@ class UsersController extends Controller
             $return_array['branding_information'] = (array)$tenants[0];
             $users = Users::where('id', $payload['id'])->first();
             $return_array['profile_info'] = $users->toArray();
+            unset($return_array['profile_info']['password']);            
             return response()->json([
                 'data' => new TenantsResource($return_array)
             ]);
