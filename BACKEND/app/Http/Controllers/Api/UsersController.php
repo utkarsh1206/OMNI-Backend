@@ -164,6 +164,25 @@ class UsersController extends Controller
         }else{
             return response()->json(['error' => 'User Not Found.'], 403);
         }
-
+    }
+    public function myprofile(Request $request){
+        $token = $request->bearerToken();
+        if($token != ""){
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $domain =$payload['domain'];
+            $tenants = DB::table('omnichannel.tenants')
+            ->select('title', 'footer_content', 'footer_url', 'tenant_logo')
+            ->where('domain_name', '=', $domain) 
+            ->get();
+            $return_array = array();
+            $return_array['branding_information'] = (array)$tenants[0];
+            $users = Users::where('id', $payload['id'])->first();
+            $return_array['profile_info'] = $users->toArray();
+            return response()->json([
+                'data' => new TenantsResource($return_array)
+            ]);
+        }else{
+            return response()->json(['error' => 'User Not Found.'], 403);
+        }
     }
 }
