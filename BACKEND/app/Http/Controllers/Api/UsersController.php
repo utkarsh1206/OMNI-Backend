@@ -34,7 +34,7 @@ class UsersController extends Controller
                     ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('email', 'like', '%' . $searchTerm . '%')
                     ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
+                    //->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('company_code', 'like', '%' . $searchTerm . '%')
                     ->orWhere('company_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
@@ -144,7 +144,7 @@ class UsersController extends Controller
         $user->is_delete = 'Yes';
         $user->save();
         return response()->json([
-            'message' => 'User deleted Successfully',
+            'message' => 'User Deleted Successfully',
         ]);
     }
     public function updatepassword(Request $request){
@@ -178,7 +178,7 @@ class UsersController extends Controller
             $return_array['branding_information'] = (array)$tenants[0];
             $users = Users::where('id', $payload['id'])->first();
             $return_array['profile_info'] = $users->toArray();
-            unset($return_array['profile_info']['password']);            
+            unset($return_array['profile_info']['password']);
             return response()->json([
                 'data' => new TenantsResource($return_array)
             ]);

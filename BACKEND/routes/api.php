@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\UsergroupController;
 use App\Http\Controllers\Api\TenantroleController;
 use App\Http\Controllers\Api\SupportticketController;
+use App\Http\Controllers\Api\EmailConfigureController;
+use App\Models\EmailConfigure;
 use App\Models\Supportticket;
 use App\Models\Tenantrole;
 
@@ -44,6 +46,7 @@ Route::apiResource('users', UsersController::class);
 Route::apiResource('usergroup', UsergroupController::class);
 Route::apiResource('tenantrole', TenantroleController::class);
 Route::apiResource('supportticket', SupportticketController::class);
+Route::apiResource('email-configure', EmailConfigureController::class);
 Route::get('tenantrole-list', [TenantroleController::class, 'list']);
 Route::get('tenantrole-menu', [TenantroleController::class, 'menu']);
 Route::get('tenant-dashboard', [TenantController::class, 'dashboard']);
