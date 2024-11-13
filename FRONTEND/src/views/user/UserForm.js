@@ -27,7 +27,7 @@ import { BASE_URL } from '../../config'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext'
 
-const FormGroup = ({ label, name, value, onChange, required, type, disabled }) => (
+const FormGroup = ({ label, name, value, onChange, required, type, disabled, placeholder, max }) => (
   <CCol md="4" className="mb-3">
     <CFormLabel htmlFor={name}>
       {label} {required && <span style={{ color: 'red' }}>*</span>}
@@ -40,6 +40,8 @@ const FormGroup = ({ label, name, value, onChange, required, type, disabled }) =
       onChange={onChange}
       required={required}
       disabled={disabled}
+      placeholder={placeholder}
+      max={max}
     />
   </CCol>
 )
@@ -51,10 +53,12 @@ const UserForm = ({ visible, setVisible, type }) => {
 
   const { authToken } = useContext(AuthContext)
 
+  const [occupations, setOccupations] = useState([])
   const [countries, setCountries] = useState([])
   const [states, setStates] = useState([])
   const [cities, setCities] = useState([])
 
+  const [loadingOccupations, setLoadingOccupations] = useState(false)
   const [loadingCountries, setLoadingCountries] = useState(false)
   const [loadingStates, setLoadingStates] = useState(false)
   const [loadingCities, setLoadingCities] = useState(false)
@@ -84,8 +88,26 @@ const UserForm = ({ visible, setVisible, type }) => {
     occupation_id: '',
     pincode: '',
     address: '',
-    gender: '',
+    gender: 'MALE',
   })
+
+  const today = new Date().toISOString().split('T')[0]
+
+  // Fetch Occupations on component mount
+  useEffect(() => {
+    const fetchOccupations = async () => {
+      setLoadingOccupations(true)
+      try {
+        const response = await axios.get(`${BASE_URL}/api/occupations?page=all`)
+        setOccupations(response.data.data)
+        setLoadingOccupations(false)
+      } catch (err) {
+        setError('Error fetching Occupations')
+        setLoadingOccupations(false)
+      }
+    }
+    fetchOccupations()
+  }, [])
 
   // Fetch countries on component mount
   useEffect(() => {
@@ -187,6 +209,15 @@ const UserForm = ({ visible, setVisible, type }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    if (name === 'username') {
+      // Regex to allow only letters, numbers, `_` and `.`
+      const regex = /^[a-zA-Z0-9._]*$/
+      // If the value doesn't match the regex, don't update the state
+      if (!regex.test(value)) {
+        return // Do nothing if the value contains invalid characters
+      }
+    }
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -288,19 +319,37 @@ const UserForm = ({ visible, setVisible, type }) => {
                     <FormGroup
                       label="Date Of Birth"
                       name="date_of_birth"
-                      type="text"
+                      type="date"
                       value={formData.date_of_birth}
                       onChange={handleChange}
+                      max={today}
                       required
                     />
-                    <FormGroup
-                      label="Gender"
-                      name="gender"
-                      type="text"
-                      value={formData.gender}
-                      onChange={handleChange}
-                      required
-                    />
+                    <CCol md="4" className="mb-3">
+                      <CFormLabel htmlFor="gender">
+                        Gender <span style={{ color: 'red' }}>*</span>
+                      </CFormLabel>
+                      <CFormSelect
+                        id="gender"
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleChange}
+                      >
+                        {/* <option value="">Select Gender</option> */}
+                        <option key="Male" value="MALE">
+                          Male
+                        </option>
+                        <option key="Female" value="FEMALE">
+                          Female
+                        </option>
+                        <option key="Transgender" value="TRANSGENDER">
+                          Transgender
+                        </option>
+                        <option key="" value="">
+                          Prefer Not To Say
+                        </option>
+                      </CFormSelect>
+                    </CCol>
                   </CRow>
                 </CAccordionBody>
               </CAccordionItem>
@@ -322,24 +371,49 @@ const UserForm = ({ visible, setVisible, type }) => {
                       type="text"
                       value={formData.username}
                       onChange={handleChange}
+                      placeholder="Only . and _ allowed"
                       required
                     />
-                    <FormGroup
-                      label="Password"
-                      name="password"
-                      type="text"
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                    />
-                    <FormGroup
+                    {!isEditMode && (
+                      <FormGroup
+                        label="Password"
+                        name="password"
+                        type="text"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                      />
+                    )}
+                    {/* <FormGroup
                       label="Role ID"
                       name="role_id"
                       type="text"
                       value={formData.role_id}
                       onChange={handleChange}
                       required
-                    />
+                    /> */}
+                    <CCol md="4" className="mb-3">
+                      <CFormLabel htmlFor="role_id">
+                        Role ID <span style={{ color: 'red' }}>*</span>
+                      </CFormLabel>
+                      <CFormSelect
+                        id="role_id"
+                        name="role_id"
+                        value={formData.role_id}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select Role ID</option>
+                        <option key="1" value="1">
+                          1
+                        </option>
+                        <option key="2" value="2">
+                          2
+                        </option>
+                        <option key="3" value="3">
+                          3
+                        </option>
+                      </CFormSelect>
+                    </CCol>
                   </CRow>
                 </CAccordionBody>
               </CAccordionItem>
@@ -451,31 +525,92 @@ const UserForm = ({ visible, setVisible, type }) => {
                 <CAccordionHeader>Other Details</CAccordionHeader>
                 <CAccordionBody>
                   <CRow>
-                    <FormGroup
+                    {/* <FormGroup
                       label="Status"
                       name="status"
                       type="text"
                       value={formData.status}
                       onChange={handleChange}
                       required
-                    />
-                    <FormGroup
+                    /> */}
+                    <CCol md="4" className="mb-3">
+                      <CFormLabel htmlFor="status">
+                        Status <span style={{ color: 'red' }}>*</span>
+                      </CFormLabel>
+                      <CFormSelect
+                        id="status"
+                        name="status"
+                        value={formData.status}
+                        onChange={handleChange}
+                      >
+                        <option key="Active" value="Active">
+                          Active
+                        </option>
+                        <option key="Inactive" value="Inactive">
+                          Inactive
+                        </option>
+                      </CFormSelect>
+                    </CCol>
+                    {/* <FormGroup
                       label="Level"
                       name="level"
                       type="text"
                       value={formData.level}
                       onChange={handleChange}
                       required
-                    />
+                    /> */}
+                    <CCol md="4" className="mb-3">
+                      <CFormLabel htmlFor="level">
+                        Level <span style={{ color: 'red' }}>*</span>
+                      </CFormLabel>
+                      <CFormSelect
+                        id="level"
+                        name="level"
+                        value={formData.level}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select Level</option>
+                        <option key="1" value="1">
+                          L1
+                        </option>
+                        <option key="2" value="2">
+                          L2
+                        </option>
+                        <option key="3" value="3">
+                          L3
+                        </option>
+                      </CFormSelect>
+                    </CCol>
 
-                    <FormGroup
+                    {/* <FormGroup
                       label="Occupation"
                       name="occupation_id"
                       type="text"
                       value={formData.occupation_id}
                       onChange={handleChange}
                       required
-                    />
+                    /> */}
+                    <CCol md="4" className="mb-3">
+                      <CFormLabel htmlFor="occupation_id">
+                        Occupation <span style={{ color: 'red' }}>*</span>
+                        {loadingOccupations && <small> Loading Occupations...</small>}
+                      </CFormLabel>
+                      <CFormSelect
+                        id="occupation_id"
+                        name="occupation_id"
+                        value={formData.occupation_id}
+                        onChange={handleChange}
+                        disabled={loadingOccupations}
+                      >
+                        <option value="">Select Occupation</option>
+                        {occupations.map((occupation) => (
+                          <option key={occupation.id} value={occupation.id}>
+                            {occupation.title}
+                          </option>
+                        ))}
+                      </CFormSelect>
+                    </CCol>
+
                   </CRow>
                 </CAccordionBody>
               </CAccordionItem>

@@ -119,7 +119,8 @@ const TenantsForm = () => {
       let response
       if (isEditMode) {
         // Update existing tenant
-        response = await axios.put(`${BASE_URL}/api/tenants/${id}`, formData, {
+        formData._method = 'put'
+        response = await axios.post(`${BASE_URL}/api/tenants/${id}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             'Access-Control-Allow-Origin': '*',
@@ -352,7 +353,7 @@ const TenantsForm = () => {
                 />
                 <FormGroup
                   label="Logo"
-                  name="logo"
+                  name="tenant_logo"
                   type="file"
                   // value={formData.tenant_logo || ''}
                   onChange={handleChange}

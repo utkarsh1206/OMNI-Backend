@@ -1,3 +1,13 @@
+2024-11-13 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3706
+	* Previous Commit ID : 427d93c2
+	* Version : Dev
+	* ReactJS : Worked on Custom Branding of the pages, which include Logo,
+				Footer, and title bar. Updated the pagination component to 
+				display pages better, Created a rough Dashboard template,
+				Updated the UserForm for better accessibility
+
 2024-11-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3706

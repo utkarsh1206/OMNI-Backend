@@ -1,7 +1,6 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-
 import {
   CCloseButton,
   CImage,
@@ -11,38 +10,25 @@ import {
   CSidebarHeader,
   CSidebarToggler,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
 
 import { AppSidebarNav } from './AppSidebarNav'
 import { AppSidebarNavSuperAdmin } from './superAdmin/AppSidebarNavSuperAdmin'
 import { AppSidebarNavAgent } from './agent/AppSidebarNavAgent'
 import { AppSidebarNavNeoxDash } from './AppSidebarNavNeoxDash'
 
-import { logo } from 'src/assets/brand/logo'
-import { sygnet } from 'src/assets/brand/sygnet'
-
-// sidebar nav config
 import navigation from '../_nav'
 import navigationDash from '../_navDash'
+import { AuthContext } from '../context/AuthContext'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
 
-  let height
-  if (unfoldable === false || unfoldable === undefined) {
-    height = 32
-  } else {
-    height = 16
-  }
+  const { user, brandingInfo } = useContext(AuthContext)
 
   const sidebarColor = {
-    // '--cui-sidebar-bg': "url('../../src/assets/brand/bg_img.png'), linear-gradient(to bottom, #1F222A, #1B47C5)",
-    '--cui-sidebar-bg': "url('../../src/assets/brand/new_bg.png')",
-    // '--cui-sidebar-nav-link-hover-color': '#{$sidebar-nav-link-hover-color};',
-    // '--cui-sidebar-nav-link-hover-color': 'red;',
-    // '--cui-sidebar-nav-link-hover-bg': '#5856d6',
+    '--cui-sidebar-bg': "url('../../src/assets/brand/new_bg.png'), #fff",
   }
 
   return (
@@ -53,17 +39,13 @@ const AppSidebar = () => {
       position="fixed"
       unfoldable={unfoldable}
       visible={sidebarShow}
-      onVisibleChange={(visible) => {
-        dispatch({ type: 'set', sidebarShow: visible })
-      }}
+      onVisibleChange={(visible) => dispatch({ type: 'set', sidebarShow: visible })}
     >
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand to="/" as={NavLink}>
           <CImage
-            // customClassName="sidebar-brand-full"
-            // src="../src/assets/brand/Asset-1as.png"
-            src="../src/assets/brand/new_menu_logo.png"
-            height={height}
+            src={brandingInfo?.tenant_logo || '../src/assets/brand/new_menu_logo.png'}
+            height={unfoldable ? 16 : 32}
           />
         </CSidebarBrand>
         <CCloseButton
@@ -72,15 +54,8 @@ const AppSidebar = () => {
           onClick={() => dispatch({ type: 'set', sidebarShow: false })}
         />
       </CSidebarHeader>
-      {/* {(window.location.pathname != '/agent') ? (
-        <AppSidebarNav items={navigation} />
-      ) : (
-        <AppSidebarNavAgent items={navigation} />
-      )
-      } */}
       {(() => {
         let pathname = window.location.pathname
-
         if (pathname.startsWith('/super_admin')) {
           return <AppSidebarNavSuperAdmin items={navigation} />
         } else if (pathname.startsWith('/agent')) {
@@ -91,7 +66,6 @@ const AppSidebar = () => {
           return <AppSidebarNav items={navigation} />
         }
       })()}
-
       <CSidebarFooter className="border-top d-none d-lg-flex">
         <CSidebarToggler
           onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
@@ -102,3 +76,23 @@ const AppSidebar = () => {
 }
 
 export default React.memo(AppSidebar)
+
+//       {/* {(window.location.pathname != '/agent') ? (
+//         <AppSidebarNav items={navigation} />
+//       ) : (
+//         <AppSidebarNavAgent items={navigation} />
+//       )
+//       } */}
+//       {(() => {
+//         let pathname = window.location.pathname
+
+//         if (pathname.startsWith('/super_admin')) {
+//           return <AppSidebarNavSuperAdmin items={navigation} />
+//         } else if (pathname.startsWith('/agent')) {
+//           return <AppSidebarNavAgent items={navigation} />
+//         } else if (pathname.startsWith('/neox_dash')) {
+//           return <AppSidebarNavNeoxDash items={navigationDash} />
+//         } else {
+//           return <AppSidebarNav items={navigation} />
+//         }
+//       })()}

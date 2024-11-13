@@ -51,7 +51,7 @@ Route::get('tenantrole-list', [TenantroleController::class, 'list']);
 Route::get('tenantrole-menu', [TenantroleController::class, 'menu']);
 Route::get('tenant-dashboard', [TenantController::class, 'dashboard']);
 Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);
-Route::post('my-profile', [UsersController::class, 'myprofile']);
+Route::get('my-profile', [UsersController::class, 'myprofile']);
 
 #Route::middleware('auth:api')->apiResource('users', UsersController::class);
 
