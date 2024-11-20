@@ -95,6 +95,10 @@ const LiveAgents = React.lazy(() => import('./views/neoxDashboard/LiveAgents'))
 // Report Management
 const CallCDRreport = React.lazy(() => import('./views/reports/CallCDRreport'))
 
+// Settings
+const EmailConfigSettings = React.lazy(() => import('./views/settings/EmailConfigSettings'))
+const CreateEmailConfigSettings = React.lazy(() => import('./views/settings/EmailConfigSettingsForm'))
+
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
@@ -177,10 +181,14 @@ const routes = [
   { path: '/report/callCDR', name: 'Report Management', element: CallCDRreport },
 
   { path: '/spprt_tckt', name: 'Support Ticket', element: SupportTickets, exact: true },
-  { path: '/spprt_tckt/crt_tckt', name: 'Support Ticket', element: CreateSupportTickets },
-  { path: '/spprt_tckt/edit/:id', name: 'Support Ticket', element: CreateSupportTickets },
+  { path: '/spprt_tckt/crt_tckt', name: 'Create Support Ticket', element: CreateSupportTickets },
+  { path: '/spprt_tckt/edit/:id', name: 'Edit Support Ticket', element: CreateSupportTickets },
 
   { path: '/spprt_tckt_view', name: 'Support Ticket', element: ViewSupportTickets },
+
+  { path: '/email_config_settings', name: 'Email Configuration Settings', element: EmailConfigSettings },
+  { path: '/email_config_settings/crt_config', name: 'Create Email Configuration Settings', element: CreateEmailConfigSettings },
+  { path: '/email_config_settings/edit/:id', name: 'Edit Email Configuration Settings', element: CreateEmailConfigSettings },
 
   { path: '/agent', name: 'Agent', element: Agent, exact: true },
 

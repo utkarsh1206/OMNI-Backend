@@ -6,6 +6,8 @@ import {
   CCardHeader,
   CCol,
   CContainer,
+  CFormInput,
+  CFormSelect,
   CRow,
   CTable,
   CTableBody,
@@ -28,8 +30,20 @@ const Users = () => {
   const [users, setUsers] = useState([])
   const { authToken } = useContext(AuthContext)
 
+  const [liveSearch, setLiveSearch] = useState(null)
+
+  const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(liveSearch) // Debounce input
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [liveSearch])
+
   const [filters, setFilters] = useState({
-    email: '',
+    // email: '',
     // status: '',
     // Add more filters here as needed
   })
@@ -79,8 +93,24 @@ const Users = () => {
       <CRow>
         <CCol xs={12}>
           <CCard className="mb-4">
-            <CCardHeader>
-              Search for <strong>Users</strong> <small>Filters will be filled later</small>
+            <CCardHeader className="d-flex justify-content-between align-items-center">
+              {/* Left Section */}
+              <div>
+                Search for <strong>Users</strong> <small>Filters will be filled later</small>
+              </div>
+
+              {/* Right Section: Search Text and Input */}
+              <div className="d-flex align-items-center">
+                <span className="me-2">Search:</span>
+                <CFormInput
+                  type="text"
+                  id="search"
+                  name="search"
+                  value={liveSearch}
+                  onChange={(e) => setLiveSearch(e.target.value)}
+                  size="sm"
+                />
+              </div>
             </CCardHeader>
             <CCardBody>
               This is a test body
@@ -104,27 +134,56 @@ const Users = () => {
       <CRow>
         <CCol>
           <CContainer>
-            <CRow fluid responsive>
-              <CCol md={8}>
+            <CRow className="mb-4 align-items-center">
+              {/* Left Section: Create, Delete, Download */}
+              <CCol md={6} className="d-flex">
                 <Link to="/user/crt_usr">
-                  <CButton color="primary" className="mb-4 me-2" size="sm">
+                  <CButton color="primary" className="me-2" size="sm">
                     Create User
                   </CButton>
                 </Link>
-                <CButton color="primary" className="mb-4 me-2" size="sm" onClick={handleDeleteUser}>
+                <CButton color="primary" className="me-2" size="sm" onClick={handleDeleteUser}>
                   Delete User
                 </CButton>
-                <CButton color="primary" className="mb-4 me-2" size="sm">
+                <CButton color="primary" className="me-2" size="sm">
                   Download CSV
                 </CButton>
               </CCol>
-              <CCol md={4} className="d-flex flex-row-reverse">
-                <CButton color="primary" className="mb-4 me-2" size="sm">
-                  Bulk User Creation
-                </CButton>
+
+              {/* Right Section: Bulk User Creation, Search, PerPage */}
+              <CCol md={6}>
+                <div className="d-flex justify-content-end align-items-center">
+                  {/* Bulk User Creation */}
+                  <CButton color="primary" className="me-2" size="sm">
+                    Bulk User Creation
+                  </CButton>
+
+                  {/* Search Label */}
+
+                  {/* PerPage Display */}
+                  {/* <span className="me-2">PerPage Display:</span>
+                  <CFormSelect
+                    id="perPage"
+                    name="perPage"
+                    value="perpage"
+                    className="me-2"
+                    size="sm"
+                  >
+                    <option key="1" value="1">
+                      1
+                    </option>
+                    <option key="10" value="10">
+                      10
+                    </option>
+                    <option key="100" value="100">
+                      100
+                    </option>
+                  </CFormSelect> */}
+                </div>
               </CCol>
             </CRow>
           </CContainer>
+
           <CTable hover bordered responsive="md">
             <CTableHead color="light">
               <CTableRow>
@@ -134,7 +193,6 @@ const Users = () => {
                 <CTableHeaderCell scope="col">Mobile</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Status</CTableHeaderCell>
                 <CTableHeaderCell scope="col">UserGroup</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Address</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Registration Date</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Controls</CTableHeaderCell>
               </CTableRow>
@@ -150,9 +208,6 @@ const Users = () => {
                   <CTableDataCell>{user.mobile}</CTableDataCell>
                   <CTableDataCell>{user.status}</CTableDataCell>
                   <CTableDataCell>{user.usergroup_id}</CTableDataCell>
-                  <CTableDataCell>
-                    {user.city_id}, {user.state_id}, {user.country_id}
-                  </CTableDataCell>
                   <CTableDataCell>{formatDate(user.created_at)}</CTableDataCell>
                   <CTableDataCell>
                     <CRow className="justify-content-center mx-0">
@@ -190,8 +245,8 @@ const Users = () => {
             authToken={authToken}
             onDataFetched={setUsers}
             filters={filters}
+            search={searchQuery}
           />
-          {console.log(filters)}
         </CCol>
       </CRow>
     </>

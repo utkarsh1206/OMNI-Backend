@@ -28,6 +28,7 @@ const Tenants = () => {
   const navigate = useNavigate()
   const [roles, setRoles] = useState([])
   const { authToken } = useContext(AuthContext)
+  const [filters, setFilters] = useState({})
 
   const handleDeleteRole = async (id, name) => {
     if (window.confirm('Are you sure to delete ' + name + '?')) {
@@ -146,7 +147,7 @@ const Tenants = () => {
             apiEndpoint={`${BASE_URL}/api/tenantrole`}
             authToken={authToken}
             onDataFetched={setRoles}
-            // params={[testing]}
+            filters={filters}
           />
         </CCol>
       </CRow>

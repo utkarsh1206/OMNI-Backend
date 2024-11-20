@@ -9,11 +9,13 @@ import {
   CFormInput,
   CRow,
   CCol,
+  CFormSelect,
 } from '@coreui/react'
 import axios from 'axios'
 import { useNavigate, useParams } from 'react-router-dom'
 import { BASE_URL } from '../../config'
 import { AuthContext } from '../../context/AuthContext'
+import DefaultCampaignComponent from '../campaign/DefaultCampaignComponent'
 
 // Define FormGroup outside the main component
 const FormGroup = ({ label, name, value, onChange, required, type, disabled }) => (
@@ -45,7 +47,7 @@ const UserGroupForm = () => {
     name: '',
     campaign_id: '',
     description: '',
-    status: '',
+    status: 'Active',
   })
 
   useEffect(() => {
@@ -149,14 +151,7 @@ const UserGroupForm = () => {
                   required={!isEditMode} // Assuming username is not editable
                   disabled={isEditMode} // Assuming username is not editable
                 />
-                <FormGroup
-                  label="Campaign ID"
-                  name="campaign_id"
-                  type="text"
-                  value={formData.campaign_id}
-                  onChange={handleChange}
-                  required
-                />
+                <DefaultCampaignComponent formData={formData} handleChange={handleChange} />
                 <FormGroup
                   label="Description"
                   name="description"
@@ -166,14 +161,24 @@ const UserGroupForm = () => {
                   required
                 />
 
-                <FormGroup
-                  label="Status"
-                  name="status"
-                  type="text"
-                  value={formData.status}
-                  onChange={handleChange}
-                  required
-                />
+                <CCol md="4" className="mb-3">
+                  <CFormLabel htmlFor="status">
+                    Status <span style={{ color: 'red' }}>*</span>
+                  </CFormLabel>
+                  <CFormSelect
+                    id="status"
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                  >
+                    <option key="Active" value="Active">
+                      Active
+                    </option>
+                    <option key="Inactive" value="Inactive">
+                      Inactive
+                    </option>
+                  </CFormSelect>
+                </CCol>
               </CRow>
             </CCardBody>
           </CCard>

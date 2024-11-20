@@ -53,6 +53,7 @@ const UserForm = ({ visible, setVisible, type }) => {
 
   const { authToken } = useContext(AuthContext)
 
+  const [userGroup, setUserGroup] = useState([])
   const [occupations, setOccupations] = useState([])
   const [countries, setCountries] = useState([])
   const [states, setStates] = useState([])
@@ -76,9 +77,10 @@ const UserForm = ({ visible, setVisible, type }) => {
     phone_password: '',
     // domain: '',
     mobile: '',
-    status: '',
+    status: 'Active',
     is_delete: 'No',
     role_id: '',
+    usergroup_id: '',
     name_prefix: '',
     level: '',
     date_of_birth: '',
@@ -92,6 +94,28 @@ const UserForm = ({ visible, setVisible, type }) => {
   })
 
   const today = new Date().toISOString().split('T')[0]
+
+  // Fetch UserGroups on component mount
+  useEffect(() => {
+    const fetchUserGroups = async () => {
+      // setLoadingOccupations(true)
+      try {
+        const response = await axios.get(`${BASE_URL}/api/usergroup?page=all`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            Authorization: `Bearer ${authToken}`,
+          },
+        })
+        setUserGroup(response.data.data)
+        // setLoadingOccupations(false)
+      } catch (err) {
+        setError('Error fetching UserGroups')
+        // setLoadingOccupations(false)
+      }
+    }
+    fetchUserGroups()
+  }, [])
 
   // Fetch Occupations on component mount
   useEffect(() => {
@@ -412,6 +436,25 @@ const UserForm = ({ visible, setVisible, type }) => {
                         <option key="3" value="3">
                           3
                         </option>
+                      </CFormSelect>
+                    </CCol>
+                    <CCol md="4" className="mb-3">
+                      <CFormLabel htmlFor="usergroup_id">
+                        User Group <span style={{ color: 'red' }}>*</span>
+                      </CFormLabel>
+                      <CFormSelect
+                        id="usergroup_id"
+                        name="usergroup_id"
+                        value={formData.usergroup_id}
+                        onChange={handleChange}
+                        // disabled={loadingCountries}
+                      >
+                        <option value="">Select User Group</option>
+                        {userGroup.map((userGroup) => (
+                          <option key={userGroup.id} value={userGroup.id}>
+                            {userGroup.name}
+                          </option>
+                        ))}
                       </CFormSelect>
                     </CCol>
                   </CRow>

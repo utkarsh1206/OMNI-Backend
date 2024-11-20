@@ -1,3 +1,13 @@
+2024-11-20 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3706
+	* Previous Commit ID : 89cad5fc
+	* Version : Dev
+	* ReactJS : Updates to Pagination component, Created default product
+				and campaign components, Created pages for email config
+				and support tickets. Added User group field to UserForms
+				Other minor changes
+
 2024-11-13 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3706

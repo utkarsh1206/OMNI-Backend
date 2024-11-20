@@ -14,6 +14,8 @@ import axios from 'axios'
 import { useNavigate, useParams } from 'react-router-dom'
 import { BASE_URL } from '../../config'
 import { AuthContext } from '../../context/AuthContext'
+import DefaultCampaignComponent from '../campaign/DefaultCampaignComponent'
+import DefaultProductsComponent from '../product/DefaultProductsComponent'
 
 // Define FormGroup outside the main component
 const FormGroup = ({ label, name, value, onChange, required, type, disabled }) => (
@@ -163,31 +165,17 @@ const SupportTicketsForm = () => {
             <CCardHeader>{isEditMode ? 'Edit Ticket' : 'Create Ticket'}</CCardHeader>
             <CCardBody>
               <CRow>
-                <FormGroup
-                  label="Product"
-                  name="product"
-                  type="text"
-                  value={formData.product_id}
-                  onChange={handleChange}
-                  required={!isEditMode} // Assuming username is not editable
-                  disabled={isEditMode} // Assuming username is not editable
-                />
-                <FormGroup
-                  label="Campaign"
-                  name="campaign"
-                  type="text"
-                  value={formData.campaign_id}
-                  onChange={handleChange}
-                  required
-                />
+                <DefaultProductsComponent formData={formData} handleChange={handleChange} />
+                <DefaultCampaignComponent formData={formData} handleChange={handleChange} />
                 <FormGroup
                   label="Inbound Group"
-                  name="inbound_group"
+                  name="inbound_group_id"
                   type="text"
                   value={formData.inbound_group_id}
                   onChange={handleChange}
                   required
                 />
+              
                 <FormGroup
                   label="Contact"
                   name="contact_id"
@@ -198,7 +186,7 @@ const SupportTicketsForm = () => {
                 />
                 <FormGroup
                   label="Assign To"
-                  name="assign_to"
+                  name="assign_to_id"
                   type="text"
                   value={formData.assign_to_id}
                   onChange={handleChange}

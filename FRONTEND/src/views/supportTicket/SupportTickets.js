@@ -29,6 +29,7 @@ const SupportTickets = () => {
   const navigate = useNavigate()
   const [tickets, setTickets] = useState([])
   const { authToken } = useContext(AuthContext)
+  const [filters, setFilters] = useState({})
 
   const handleDeleteTicket = async (id, username) => {
     if (window.confirm('Are you sure to delete ' + username + '?')) {
@@ -172,7 +173,7 @@ const SupportTickets = () => {
             apiEndpoint={`${BASE_URL}/api/supportticket`}
             authToken={authToken}
             onDataFetched={setTickets}
-            // params={[testing]}
+            filters={filters}
           />
         </CCol>
       </CRow>

@@ -380,11 +380,17 @@ const navItemList = [
     to: '/agent',
     icon: <CIcon icon={icon.cilUserPlus} customClassName="nav-icon" />,
   },
+  // {
+  //   component: CNavItem,
+  //   name: 'Support Tickets view',
+  //   to: '/spprt_tckt_view',
+  //   icon: <CIcon icon={icon.cilUserPlus} customClassName="nav-icon" />,
+  // },
   {
     component: CNavItem,
-    name: 'Support TIckets view',
-    to: '/spprt_tckt_view',
-    icon: <CIcon icon={icon.cilUserPlus} customClassName="nav-icon" />,
+    name: 'Settings',
+    to: '/email_config_settings',
+    icon: <CIcon icon={icon.cilSettings} customClassName="nav-icon" />,
   },
 ]
 

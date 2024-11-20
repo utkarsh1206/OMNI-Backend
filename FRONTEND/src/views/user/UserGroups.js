@@ -30,6 +30,7 @@ const UserGroups = () => {
   const navigate = useNavigate()
   const [userGroups, setUserGroups] = useState([])
   const { authToken } = useContext(AuthContext)
+  const [filters, setFilters] = useState({})
 
   const handleDeleteUserGroup = async (id, name) => {
     if (window.confirm('Are you sure to delete ' + name + '?')) {
@@ -151,7 +152,6 @@ const UserGroups = () => {
                   <CTableDataCell>{group.campaign_id}</CTableDataCell>
                   <CTableDataCell>{group.description}</CTableDataCell>
                   <CTableDataCell>{group.status}</CTableDataCell>
-                  <CTableDataCell>{group.status}</CTableDataCell>
                   <CTableDataCell>{formatDate(group.created_at)}</CTableDataCell>
                   <CTableDataCell>
                     <CRow className="justify-content-center mx-0">
@@ -188,7 +188,7 @@ const UserGroups = () => {
             apiEndpoint={`${BASE_URL}/api/usergroup`}
             authToken={authToken}
             onDataFetched={setUserGroups}
-            // params={[testing]}
+            filters={filters}
           />
         </CCol>
       </CRow>
