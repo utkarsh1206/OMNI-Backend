@@ -426,15 +426,15 @@ const UserForm = ({ visible, setVisible, type }) => {
                         value={formData.role_id}
                         onChange={handleChange}
                       >
-                        <option value="">Select Role ID</option>
+                        <option key="" value="" disabled>Select Role ID</option>
                         <option key="1" value="1">
-                          1
+                          Manager
                         </option>
                         <option key="2" value="2">
-                          2
+                          Admin
                         </option>
                         <option key="3" value="3">
-                          3
+                          User / Agent
                         </option>
                       </CFormSelect>
                     </CCol>

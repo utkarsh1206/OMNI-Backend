@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { CRow, CCol, CPagination, CPaginationItem, CFormSelect } from '@coreui/react'
 import axios from 'axios'
 
-const PaginationComponent = ({ apiEndpoint, authToken, onDataFetched, filters = {}, search }) => {
+const PaginationComponent = ({ apiEndpoint, authToken, onDataFetched, filters = {}, search, onPageChange, perPageValue }) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [lastPage, setLastPage] = useState(1)
@@ -64,6 +64,8 @@ const PaginationComponent = ({ apiEndpoint, authToken, onDataFetched, filters = 
 
   const handlePageChange = (page) => {
     fetchData(page)
+    onPageChange(page)
+    perPageValue(perPage)
   }
 
   // Function to generate pagination items with ellipses

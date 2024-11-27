@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react'
 import {
+  CBadge,
   CButton,
   CButtonGroup,
   CCard,
@@ -17,19 +18,29 @@ import {
   CTooltip,
 } from '@coreui/react'
 import { Link, useNavigate } from 'react-router-dom'
-import { BASE_URL } from '../../config'
+import {
+  BASE_URL,
+  CAMPAIGNS,
+  PRIORITY_TO_COLOR,
+  PRODUCTS,
+  STATUS_TO_COLOR,
+  TYPE_TO_COLOR,
+} from '../../config'
 import { cilEnvelopeOpen, cilPencil, cilXCircle } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { AuthContext } from '../../context/AuthContext'
 import PaginationComponent from '../../components/PaginationComponent' // import the reusable pagination component
-import { formatDate } from '../../utils/DateUtils'
+import { formatDate, formatDateWithTime } from '../../utils/DateUtils'
 import axios from 'axios'
+import SupportTicketModal from './SupportTicketModal'
 
 const SupportTickets = () => {
   const navigate = useNavigate()
   const [tickets, setTickets] = useState([])
   const { authToken } = useContext(AuthContext)
   const [filters, setFilters] = useState({})
+
+  const [ticketId, setTicketId] = useState()
 
   const handleDeleteTicket = async (id, username) => {
     if (window.confirm('Are you sure to delete ' + username + '?')) {
@@ -50,6 +61,12 @@ const SupportTickets = () => {
         alert('An error occurred while processing your request.')
       }
     }
+  }
+
+  const [visible, setVisible] = useState(false)
+  const handleTicketModal = (id) => {
+    setTicketId(id)
+    setVisible(true)
   }
 
   return (
@@ -93,7 +110,7 @@ const SupportTickets = () => {
           <CTable hover small bordered responsive="md">
             <CTableHead color="light">
               <CTableRow>
-                <CTableHeaderCell scope="col">#</CTableHeaderCell>
+                {/* <CTableHeaderCell scope="col">#</CTableHeaderCell> */}
                 <CTableHeaderCell scope="col">Ticket No</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Request From</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Product</CTableHeaderCell>
@@ -103,36 +120,67 @@ const SupportTickets = () => {
                 <CTableHeaderCell scope="col">Ticket Priority</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Ticket Status</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Assigned User</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Assigne Engg</CTableHeaderCell>
+                {/* <CTableHeaderCell scope="col">Assigne Engg</CTableHeaderCell> */}
                 <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {console.log(tickets)}
               {tickets.map((ticket) => (
                 <CTableRow key={ticket.id}>
-                  <CTableDataCell>{ticket.id}</CTableDataCell>
-                  <CTableDataCell>
-                    <CButton color="link" onClick={() => navigate(`/spprt_tckt_view`)}>
+                  {/* <CTableDataCell className="align-content-center">{ticket.id}</CTableDataCell> */}
+                  <CTableDataCell
+                    className="align-content-center"
+                    onClick={() => handleTicketModal(ticket.id)}
+                  >
+                    <Link to={`/spprt_tckt_view/${ticket.id}`}>{ticket.id}</Link>
+                    {/* <CButton color="link" onClick={() => navigate(`/spprt_tckt_view`)}>
                       {ticket.id}
-                    </CButton>
+                    </CButton> */}
                   </CTableDataCell>
                   {/* Ticket No will be generated later */}
-                  <CTableDataCell>{ticket.contact_id}</CTableDataCell>
-                  {/* Requesr From */}
-                  <CTableDataCell>{ticket.product_id}</CTableDataCell>
-                  <CTableDataCell>{ticket.campaign_id}</CTableDataCell>
-                  <CTableDataCell>
-                    <strong>{ticket.subject}</strong>{' '}
-                    <small className="blockquote-footer">{formatDate(ticket.created_at)}</small>
+                  <CTableDataCell className="align-content-center">
+                    {ticket.contact_id}
                   </CTableDataCell>
-                  <CTableDataCell>{ticket.default_type}</CTableDataCell>
-                  <CTableDataCell>{ticket.default_priority}</CTableDataCell>
-                  <CTableDataCell>{ticket.default_status}</CTableDataCell>
-                  <CTableDataCell>{ticket.assign_to_id}</CTableDataCell>
-                  <CTableDataCell>{ticket.department}</CTableDataCell>
+                  <CTableDataCell className="align-content-center">
+                    {PRODUCTS.find((product) => String(product.id) === String(ticket.product_id))
+                      ?.name || 'Product Not Found'}
+                  </CTableDataCell>
+                  <CTableDataCell className="align-content-center">
+                    {CAMPAIGNS.find(
+                      (campaign) => String(campaign.id) === String(ticket.campaign_id),
+                    )?.name || 'Campaign Not Found'}
+                  </CTableDataCell>
+                  <CTableDataCell className="align-content-center">
+                    <strong>{ticket.subject}</strong>
+                    {''}
+                    <br />
+                    <small className="blockquote-footer">
+                      {formatDateWithTime(ticket.created_at)}
+                    </small>
+                  </CTableDataCell>
+                  <CTableDataCell className="align-content-center">
+                    <CBadge color={TYPE_TO_COLOR[ticket.default_type] || 'secondary'}>
+                      {ticket.default_type}
+                    </CBadge>
+                  </CTableDataCell>
+                  <CTableDataCell className="align-content-center">
+                    <CBadge color={PRIORITY_TO_COLOR[ticket.default_priority] || 'secondary'}>
+                      {ticket.default_priority}
+                    </CBadge>
+                  </CTableDataCell>
+                  <CTableDataCell className="align-content-center">
+                    <CBadge color={STATUS_TO_COLOR[ticket.default_status] || 'secondary'}>
+                      {ticket.default_status}
+                    </CBadge>
+                  </CTableDataCell>
+                  <CTableDataCell className="align-content-center">
+                    {ticket.assign_to_id}
+                  </CTableDataCell>
+                  {/* <CTableDataCell className="align-content-center">
+                    {ticket.department}
+                  </CTableDataCell> */}
 
-                  <CTableDataCell>
+                  <CTableDataCell className="align-content-center">
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
                       <CTooltip content="Edit">
                         <CButton
@@ -177,6 +225,12 @@ const SupportTickets = () => {
           />
         </CCol>
       </CRow>
+      <SupportTicketModal
+        visible={visible}
+        setVisible={setVisible}
+        id={ticketId}
+        authToken={authToken}
+      />
     </>
   )
 }

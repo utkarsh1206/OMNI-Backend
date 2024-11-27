@@ -1,5 +1,6 @@
 import { CCol, CFormLabel, CFormSelect } from '@coreui/react'
 import React from 'react'
+import { CAMPAIGNS } from './../../config'
 
 function DefaultCampaignComponent({ formData, handleChange }) {
 
@@ -35,13 +36,11 @@ function DefaultCampaignComponent({ formData, handleChange }) {
         <option value="" disabled>
           Select Campaign
         </option>
-        <option key="Campaign1" value="1">
-          Default Campaign
-        </option>
-        {/* <option key="Campaign2" value="2">
-          Campaign 2
-        </option> */}
-        {/* Add more campaign options as needed */}
+        {CAMPAIGNS.map(campaign => (
+          <option key={campaign.name} value={campaign.id}>
+            {campaign.name}
+          </option>
+        ))}
       </CFormSelect>
     </CCol>
   )

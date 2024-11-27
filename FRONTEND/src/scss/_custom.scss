@@ -38,7 +38,28 @@
 }
 
 .form-floating {
-  > label {
-    color: rgba(var(--cui-body-color-rgb),.65);
+  >label {
+    color: rgba(var(--cui-body-color-rgb), .65);
   }
+}
+
+/* CSS for the dotted timeline line */
+.timeline-line {
+  position: absolute;
+  top: 5.5rem;
+  /* Adjust based on icon size OG 2.5 */
+  left: 65%;
+  /* Centered under the icon OG 50*/
+  width: 2px;
+  /* Thickness of the line */
+  height: calc(100% - 2.5rem);
+  /* Full height minus space for the icon */
+  background-color: transparent;
+  /* Light gray color */
+  border-left: 2px dotted #d3d3d3;
+  /* Dotted style */
+  transform: translateX(-50%);
+  /* Center align */
+  z-index: 0;
+  /* Place behind the icons */
 }

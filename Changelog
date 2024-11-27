@@ -1,3 +1,13 @@
+2024-11-27 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3769
+	* Previous Commit ID : 92bf9d43
+	* Version : Dev
+	* ReactJS : Made the default campaign and product to fetch data from
+				config file, Created pages for Support Tickets, that
+				include, modal, view ticket page, etc. Changes in search
+				and filter display
+
 2024-11-20 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3706

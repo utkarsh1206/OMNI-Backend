@@ -184,7 +184,7 @@ const routes = [
   { path: '/spprt_tckt/crt_tckt', name: 'Create Support Ticket', element: CreateSupportTickets },
   { path: '/spprt_tckt/edit/:id', name: 'Edit Support Ticket', element: CreateSupportTickets },
 
-  { path: '/spprt_tckt_view', name: 'Support Ticket', element: ViewSupportTickets },
+  { path: '/spprt_tckt_view/:id', name: 'Support Ticket', element: ViewSupportTickets },
 
   { path: '/email_config_settings', name: 'Email Configuration Settings', element: EmailConfigSettings },
   { path: '/email_config_settings/crt_config', name: 'Create Email Configuration Settings', element: CreateEmailConfigSettings },

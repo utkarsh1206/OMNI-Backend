@@ -1,5 +1,6 @@
 import { CCol, CFormLabel, CFormSelect } from '@coreui/react'
 import React, { useEffect } from 'react'
+import { PRODUCTS } from './../../config'
 
 function DefaultProductsComponent({ formData, handleChange }) {
 
@@ -35,15 +36,11 @@ function DefaultProductsComponent({ formData, handleChange }) {
         <option value="" disabled>
           Select Product
         </option>
-        <option key="Hosted" value="1">
-          Hosted
-        </option>
-        <option key="Neox" value="2">
-          Neox
-        </option>
-        <option key="OMNI" value="3">
-          OMNI
-        </option>
+        {PRODUCTS.map(product => (
+          <option key={product.name} value={product.id}>
+            {product.name}
+          </option>
+        ))}
         {/* Add more Product options as needed */}
       </CFormSelect>
     </CCol>

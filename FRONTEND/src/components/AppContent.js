@@ -9,7 +9,7 @@ const AppContent = () => {
   const authToken = localStorage.getItem('authToken');
 
   return (
-    <CContainer className="px-4" lg>
+    <CContainer className="px-2" lg>
       <Suspense fallback={<CSpinner color="primary" />}>
         <Routes>
           {routes.map((route, idx) => {
