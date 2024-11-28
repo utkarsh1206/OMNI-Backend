@@ -14,7 +14,7 @@ class Supportticket extends Model
         "id",
         "product_id",
         "campaign_id",
-        "inbound_group_id",
+        //"inbound_group_id",
         "contact_id",
         "assign_to_id",
         "default_type",
@@ -23,9 +23,11 @@ class Supportticket extends Model
         "subject",
         "departments",
         "to_emails",
+        "cc",
+        "bcc",
         "description",
         "attachment",
-        "status",
+        //"status",
         "is_delete"
     ];
 }
