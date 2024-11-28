@@ -13,20 +13,22 @@ return new class extends Migration
     {
         Schema::create('supportticket', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('product_id');
-            $table->unsignedBigInteger('campaign_id');
-            $table->unsignedBigInteger('inbound_group_id');
-            $table->unsignedBigInteger('contact_id');
-            $table->unsignedBigInteger('assign_to_id');
+            $table->unsignedBigInteger('support_ticket_id')->default(0);
+            $table->unsignedBigInteger('product_id')->default(0);
+            $table->unsignedBigInteger('campaign_id')->default(0);
+            $table->unsignedBigInteger('inbound_group_id')->default(0);
+            $table->unsignedBigInteger('account_id')->default(0);
+            $table->unsignedBigInteger('contact_id')->default(0);
             $table->string('default_type');
             $table->string('default_priority');
             $table->string('default_status');
             $table->string('subject');
-            $table->string('departments');
-            $table->string('to_emails');
+            $table->string('departments')->nullable();
+            $table->string('to_emails');            
+            $table->string('cc')->nullable();
+            $table->string('bcc')->nullable();
             $table->longText('description');
-            $table->string('attachment')->nullable();
-            $table->enum('status', ['Active', 'Inactive'])->default('Active');
+            $table->longText('attachment')->nullable();
             $table->enum('is_delete', ['Yes', 'No'])->default('No');
             $table->timestamps();
         });
