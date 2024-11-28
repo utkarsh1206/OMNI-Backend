@@ -94,6 +94,15 @@ const LiveAgents = React.lazy(() => import('./views/neoxDashboard/LiveAgents'))
 
 // Report Management
 const CallCDRreport = React.lazy(() => import('./views/reports/CallCDRreport'))
+const AgentActivityReport = React.lazy(() => import('./views/reports/AgentActivityReport'))
+
+//Accounts
+const Accounts = React.lazy(() => import('./views/accounts/Accounts'))
+const CreateAccounts = React.lazy(() => import('./views/accounts/AccountForm'))
+
+//Contacts
+const Contacts = React.lazy(() => import('./views/contacts/Contacts'))
+const CreateContacts = React.lazy(() => import('./views/contacts/ContactForm'))
 
 // Settings
 const EmailConfigSettings = React.lazy(() => import('./views/settings/EmailConfigSettings'))
@@ -179,6 +188,15 @@ const routes = [
   { path: '/password_reset', name: 'Tenant Password Reset', element: TenantPasswordReset },
 
   { path: '/report/callCDR', name: 'Report Management', element: CallCDRreport },
+  { path: '/report/agent-activity', name: 'Report Management', element: AgentActivityReport },
+
+  { path: '/accounts', name: 'Accounts', element: Accounts, exact: true  },
+  { path: '/accounts/create_accounts', name: 'Create Accounts', element: CreateAccounts },
+  { path: '/accounts/edit/:id', name: 'Edit Accounts', element: CreateAccounts },
+
+  { path: '/contacts', name: 'Contacts', element: Contacts, exact: true  },
+  { path: '/contacts/create_contacts', name: 'Create Contacts', element: CreateContacts },
+  { path: '/contacts/edit/:id', name: 'Edit Contacts', element: CreateContacts },
 
   { path: '/spprt_tckt', name: 'Support Ticket', element: SupportTickets, exact: true },
   { path: '/spprt_tckt/crt_tckt', name: 'Create Support Ticket', element: CreateSupportTickets },

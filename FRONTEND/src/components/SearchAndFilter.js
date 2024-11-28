@@ -23,7 +23,7 @@ const SearchAndFilter = ({ onSearch, filters, setFilters, renderFilters }) => {
   return (
     <>
       {/* <CRow className="d-flex justify-content-end mb-3 border border-3"> */}
-      <CCol xs="auto">
+      <CCol xs="auto" className='ms-auto'>
         <div className="d-flex align-items-center">
           <span className="me-2">Search:</span>
           <CFormInput

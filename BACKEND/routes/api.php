@@ -19,6 +19,17 @@ use App\Http\Controllers\Api\EmailConfigureController;
 use App\Models\EmailConfigure;
 use App\Models\Supportticket;
 use App\Models\Tenantrole;
+use App\Http\Controllers\Api\CallCDRListController;
+use App\Http\Controllers\Api\IngroupListController;
+use App\Http\Controllers\Api\CampaignListController;
+use App\Http\Controllers\Api\UsersListController;
+use App\Http\Controllers\Api\CustomFieldController;
+use App\Http\Controllers\Api\UpdateCustomFieldsController;
+use App\Http\Controllers\Api\AgentActivityController;
+use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\IndustryTypeController;
+use App\Http\Controllers\Api\BusinessTypeController;
+use App\Http\Controllers\Api\ContactController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -52,6 +63,23 @@ Route::get('tenantrole-menu', [TenantroleController::class, 'menu']);
 Route::get('tenant-dashboard', [TenantController::class, 'dashboard']);
 Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);
 Route::get('my-profile', [UsersController::class, 'myprofile']);
+
+Route::get('callCDR', [CallCDRListController::class, 'getCallCDRList']);
+Route::get('custome-field/header', [CustomFieldController::class, 'custumFieldHeader']);
+Route::get('custome-field/value', [CustomFieldController::class, 'custumFieldvalue']);
+Route::post('insert-update-custom', [UpdateCustomFieldsController::class, 'updateInsertCustomField']);
+
+Route::get('agent-activity', [AgentActivityController::class, 'getAgentActivity']);
+
+Route::get('ingroups', [IngroupListController::class, 'index']);
+Route::get('campaigns', [CampaignListController::class, 'index']);
+Route::get('usersList', [UsersListController::class, 'index']);
+
+Route::apiResource('accounts', AccountController::class);
+Route::get('industry_type', [IndustryTypeController::class, 'index']);
+Route::get('business_type', [BusinessTypeController::class, 'index']);
+
+Route::apiResource('contacts', ContactController::class);
 
 #Route::middleware('auth:api')->apiResource('users', UsersController::class);
 

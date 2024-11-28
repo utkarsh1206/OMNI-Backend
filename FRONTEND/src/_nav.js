@@ -63,6 +63,18 @@ const navItemList = [
     icon: <CIcon icon={icon.cilTags} customClassName="nav-icon" />,
   },
   {
+    component: CNavItem,
+    name: 'Accounts',
+    to: '/accounts',
+    icon: <CIcon icon={icon.cilNewspaper} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Contacts',
+    to: '/contacts',
+    icon: <CIcon icon={icon.cilContact} customClassName="nav-icon" />,
+  },
+  {
     component: CNavGroup,
     name: 'Campaign Mgmt',
     to: '/campaign',
@@ -270,6 +282,11 @@ const navItemList = [
       },
       {
         component: CNavItem,
+        name: 'Agent Activity Report',
+        to: '/report/agent-activity',
+      },
+      {
+        component: CNavItem,
         name: 'Agent Report',
         to: '/report/agent',
       },
@@ -442,6 +459,8 @@ const NAV_PERMISSIONS = {
   '/sys/thrd_prty_auth': 'viewThirdPartyAuth',
   '/sys/cstmz_gui': 'viewCustomizeGUI',
   '/agent': 'viewAgent',
+  '/accounts/accounts': 'viewAccounts',
+  '/contacts/contacts': 'viewContacts',
 }
 
 const filterNavItems = (navItems, userPermissions) => {
