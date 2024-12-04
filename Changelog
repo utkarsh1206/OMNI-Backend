@@ -1,6 +1,13 @@
 2024-12-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
+	* Previous Commit ID : 2fc3b319 
+	* Version : Dev
+	* Commit issue : Revoke changes. 
+	
+2024-12-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
 	* Previous Commit ID : 01513625 
 	* Version : Dev
 	* Laravel & React : Paignation changes for Agent Activity and Call CDR

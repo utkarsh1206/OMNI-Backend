@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await axios.post(`${BASE_URL}/api/login`, credentials, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       })
       const token = response.data.token
       setAuthToken(token)

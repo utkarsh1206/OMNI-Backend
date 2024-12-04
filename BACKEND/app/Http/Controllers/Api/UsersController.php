@@ -24,7 +24,13 @@ class UsersController extends Controller
         $token = $request->bearerToken();
         $payload = JWTAuth::setToken($token)->getPayload();
         // Start the query for tenants
-        $query = Users::query()->where('is_delete', 'No')->where('type','3');
+        
+        $is_all_users = $request->has('all_user') ? $request->input('all_user') : null;
+
+        $query = Users::query()->where('is_delete', 'No');
+
+        if ($is_all_users !== 'Y') {
+            $query->where('type', '3');
 
         // If there's a search term, apply it to the query
         if (!empty($searchTerm)) {
@@ -59,6 +65,14 @@ class UsersController extends Controller
                 'total' => $users->total(),
           //      'refresh_token'=>$newToken
             ],
+]);
+        }
+
+        $users = $query->get();
+
+        // Return all users
+        return response()->json([
+            'data' => $users,
         ]);
     }
     public function store(Request $request)
