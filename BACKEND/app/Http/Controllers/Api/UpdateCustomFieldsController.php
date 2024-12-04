@@ -14,12 +14,10 @@ class UpdateCustomFieldsController extends Controller
         $custom_query = $request->input('custom_query');
         $list_id = $request->input('list_id');
         $closecallid = $request->input('uniqueid');
-        $domain = $request->input('domain');
 
-        // Validate that custom_query is an array
         if (!is_array($custom_query)) {
             return response()->json([
-                'message' => 'The custom_query should be an array.'
+                'message' => 'The custom_query should be an associative array.'
             ], 400);
         }
 

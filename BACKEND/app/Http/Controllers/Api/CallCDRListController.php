@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Api\CustomeFieldController;
+// use App\Http\Controllers\Api\CustomeFieldController;
 use App\Models\EcdialCloserLog;
-use App\Models\AgentTransitionLog;
+// use App\Models\AgentTransitionLog;
 use App\Models\EcdialStatus;
-use App\Models\EcdialCampaign;
-use App\Models\EcdialInboundGroup;
+// use App\Models\EcdialCampaign;
+// use App\Models\EcdialInboundGroup;
 use App\Models\EcdialUser;
 use App\Models\InboundCallTransitionLog;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
+// use Illuminate\Support\Facades\Validator;
+// use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
+// use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Api\CustomFieldController;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -38,8 +38,7 @@ class CallCDRListController extends Controller
             'search_list' => 'nullable|integer',
             'group_status' => 'nullable|string|in:all,ans_call,abn_call',
             'search_agent_call_rank' => 'nullable|integer',
-            'format' => 'nullable|string|in:json,csv,pdf',
-            'graph' => 'nullable|string|in:Y'
+            'format' => 'nullable|string|in:json,csv,pdf,graph',
         ]);
 
         $startDate = $request->input('start_date');
@@ -54,7 +53,7 @@ class CallCDRListController extends Controller
             return $this->downloadPDF($request, $startDate, $endDate);
         }
 
-        if ($request->input('graph') === 'Y') {
+        if ($request->input('format') === 'graph') {
             return $this->todoForGraph($request, $startDate, $endDate);
         }
 
@@ -87,7 +86,7 @@ class CallCDRListController extends Controller
 
         $response = new StreamedResponse(function () use ($callLogs) {
             $handle = fopen('php://output', 'w');
-    
+
             // Add the CSV headers
             fputcsv($handle, [
                 'List ID',
@@ -116,20 +115,20 @@ class CallCDRListController extends Controller
                 'Agents Comment',
                 'Agent Call Rank',
             ]);
-    
+
             // Add the rows dynamically
             foreach ($callLogs as $listItem) {
                 $dataRow = $this->transformCallLogForCSV($listItem);
                 fputcsv($handle, $dataRow);
             }
-    
+
             fclose($handle);
         });
-    
+
         // Set the CSV headers
         $response->headers->set('Content-Type', 'text/csv');
         $response->headers->set('Content-Disposition', 'attachment; filename="call_data.csv"');
-    
+
         return $response;
     }
 
@@ -164,9 +163,9 @@ class CallCDRListController extends Controller
         $searchDuration = $request->input('search_duration');
         $searchSecond = $request->input('search_second');
         $searchPhone = $request->input('search_phone');
-        // $groupStatus = $request->input('group_status');
+        $groupStatus = $request->input('group_status');
         $searchAgentCallRank = $request->input('search_agent_call_rank');
-        $ingroup = $request->input('ingroup'); // Ingroup array
+        $ingroup = $request->input('ingroup');
         $search_list = $request->input('search_list');
 
         // if ($search_list !== null && 
@@ -175,7 +174,6 @@ class CallCDRListController extends Controller
 
         // }
 
-        // Build search query based on conditions
         if ($searchAgent) {
             $search_query .= " AND user = '$searchAgent'";
         }
@@ -202,20 +200,20 @@ class CallCDRListController extends Controller
             $search_query .= " AND phone_number = '$searchPhone'";
         }
 
-        // Handle multiple ingroups using IN() if provided
         if ($ingroup && is_array($ingroup)) {
-            $ingroupList = implode("','", $ingroup); // Convert array to string for SQL IN()
+            $ingroupList = implode("','", $ingroup);
             $search_query .= " AND group_id IN ('$ingroupList')";
         }
 
-        // if ($groupStatus === "all") {
-        //     // Assuming $status_query is defined somewhere in your code
-        //     $search_query .= $status_query; // Existing status query
-        // } elseif ($groupStatus === "ans_call") {
-        //     $search_query .= " AND status IN ($status_check_y)";
-        // } elseif ($groupStatus === "abn_call") {
-        //     $search_query .= " AND status IN ($status_check_n)";
-        // }
+        $statusQuery = EcdialStatus::all();
+        $statusCheckY = $statusQuery->where('human_answered', 'Y')->pluck('status')->toArray();
+        $statusCheckN = $statusQuery->where('human_answered', 'N')->pluck('status')->toArray();
+
+        if ($groupStatus === 'ans_call') {
+            $search_query .= " AND status IN ('" . implode("','", $statusCheckY) . "')";
+        } elseif ($groupStatus === 'abn_call') {
+            $search_query .= " AND status IN ('" . implode("','", $statusCheckN) . "')";
+        }
 
         if ($searchAgentCallRank) {
             $search_query .= " AND agent_call_rank = $searchAgentCallRank";
@@ -230,18 +228,10 @@ class CallCDRListController extends Controller
             $callLogs->whereRaw("1=1 $search_query");
         }
 
-        // Check if we need pagination
-        // if ($paginate) {
-        //     return $callLogs->orderBy('closecallid', 'desc')->paginate($request->input('per_page'));
-        // } else {
-        //     return $callLogs->orderBy('closecallid', 'desc')->get(); // Get all records without pagination
-        // }
-
-        // Check if we need pagination
         if ($paginate) {
             return $callLogs->orderBy('closecallid', 'desc')->paginate($request->input('per_page'));
         } else {
-            return $callLogs->orderBy('closecallid', 'desc')->get(); // Get all records without pagination
+            return $callLogs->orderBy('closecallid', 'desc')->get();
         }
     }
 
@@ -388,6 +378,7 @@ class CallCDRListController extends Controller
                 'uniqueid' => $listItem->uniqueid,
                 'agents_comment' => $listItem->agents_comment,
                 'agent_call_rank' => $listItem->agent_call_rank,
+                'closecallid' => $listItem->closecallid,
             ];
 
             $result[$listItem->list_id] = !empty($customFields) ? $customFields : $customFieldsh;
@@ -464,7 +455,7 @@ class CallCDRListController extends Controller
             'Customer Dispo Status' => $listItem->customer_dispo_status,
             'Term Reason' => $listItem->term_reason,
             'Customer Time' => $listItem->customer_time,
-            'Abandoned Time' =>$talkDuration === 0 ? gmdate('H:i:s', $totalDuration) : '',
+            'Abandoned Time' => $talkDuration === 0 ? gmdate('H:i:s', $totalDuration) : '',
             'Unique ID' => $listItem->uniqueid,
             'Agents Comment' => $listItem->agents_comment,
             'Agent Call Rank' => $listItem->agent_call_rank,

@@ -32,6 +32,7 @@ import { jsPDF } from 'jspdf';
 import "jspdf-autotable";
 import { CChart } from '@coreui/react-chartjs'
 import { AuthContext } from '../../context/AuthContext'
+import PaginationForReport from '../../components/PaginationForReport';
 
 const AgentActivityReport = () => {
   const { authToken } = useContext(AuthContext)
@@ -51,10 +52,14 @@ const AgentActivityReport = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1)
+  const [lastPage, setLastPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [perPage, setPerPage] = useState(10)
   const [pagination, setPagination] = useState({
     currentPage: 1,
     lastPage: 1,
-    perPage: 15,
+    perPage: 10,
     total: 0,
   });
   const [visibleDetails, setVisibleDetails] = useState(null);
@@ -519,12 +524,10 @@ const AgentActivityReport = () => {
         }
       } else {
         setData(response.data.data);
-        setPagination({
-          currentPage: response.data.meta.current_page,
-          lastPage: response.data.meta.last_page,
-          perPage: response.data.meta.per_page,
-          total: response.data.meta.total,
-        });
+        setCurrentPage(response.data.meta.current_page)
+        setLastPage(response.data.meta.last_page)
+        setTotal(response.data.meta.total)
+        setPerPage(response.data.meta.per_page)
       }
     } catch (error) {
       setError('Error fetching data');
@@ -543,35 +546,28 @@ const AgentActivityReport = () => {
   };
 
   useEffect(() => {
-    fetchData(pagination.currentPage);
-  }, [pagination.currentPage, users, startDate, endDate]);
+    fetchData(pagination.page);
+  }, [pagination.page, pagination.perPage, users, startDate, endDate]);
 
 
   const handleCampaignChange = (event) => {
     setSelectedCampaigns(event.target.value);
   };
 
-  const handlePageClick = (page) => {
-    setPagination((prev) => ({
-      ...prev,
-      currentPage: page,
-    }));
+  const handlePageChange = (newPage) => {
+    setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
-  const renderPaginationItems = () => {
-    const items = [];
-    for (let i = 1; i <= pagination.lastPage; i++) {
-      items.push(
-        <CPaginationItem
-          key={i}
-          active={i === pagination.currentPage}
-          onClick={() => handlePageClick(i)}
-        >
-          {i}
-        </CPaginationItem>
-      );
-    }
-    return items;
+  const handlePerPageValue = (perPage) => {
+    setPerPage(perPage)  // Update the current page when pagination changes
+  }
+
+  const handlePerPageChange = (e) => {
+    setPagination((prev) => ({
+      ...prev,
+      perPage: Number(e.target.value),
+      page: 1, // Reset to first page when perPage is changed
+    }));
   };
 
   const handleDetailClick = (transitionDetails) => {
@@ -766,7 +762,7 @@ const AgentActivityReport = () => {
         />
 
       </div>
-
+     
     );
   };
 
@@ -941,7 +937,8 @@ const AgentActivityReport = () => {
                     <React.Fragment key={item.id || index}>
                       <CTableRow>
                         <CTableDataCell>
-                          {(pagination.currentPage - 1) * pagination.perPage + index + 1}
+                          {/* {(pagination.currentPage - 1) * pagination.perPage + index + 1} */}
+                          {(currentPage - 1) * perPage + index + 1}
                         </CTableDataCell>
                         {Object.keys(visibleColumns).map(
                           (columnKey) =>
@@ -1151,22 +1148,33 @@ const AgentActivityReport = () => {
 
       {!showGraph ? (
         <CRow className="mt-3">
-          <CCol>
-            <CPagination align="center" aria-label="Page navigation">
-              <CPaginationItem
-                disabled={pagination.currentPage === 1}
-                onClick={() => handlePageClick(pagination.currentPage - 1)}
-              >
-                Previous
-              </CPaginationItem>
-              {renderPaginationItems()}
-              <CPaginationItem
-                disabled={pagination.currentPage === pagination.lastPage}
-                onClick={() => handlePageClick(pagination.currentPage + 1)}
-              >
-                Next
-              </CPaginationItem>
-            </CPagination>
+          <PaginationForReport
+            currentPage={currentPage}
+            lastPage={lastPage}
+            onPageChange={handlePageChange}
+            total={total}
+            perPage={handlePerPageValue} // Make sure to define and pass itemsPerPage here
+            setPerPage={setPerPage}
+            setCurrentPage={setCurrentPage}
+          />
+
+          <CCol className="d-flex justify-content-end align-items-baseline">
+            <span className="me-2">PerPage Display:</span>
+            <CFormSelect
+              id="perPage"
+              value={pagination.perPage}
+              onChange={handlePerPageChange}
+              className="me-2"
+              size="sm"
+              style={{ width: '80px' }}
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </CFormSelect>
           </CCol>
         </CRow>
       ) : (null)}

@@ -461,7 +461,7 @@ const ContactForm = () => {
                     <option value="">Select Owner</option>
                     {owner.map((owners) => (
                       <option key={owners.id} value={owners.id}>
-                        {owners.username}
+                        {owners.first_name} {owners.last_name}
                       </option>
                     ))}
                   </CFormSelect>

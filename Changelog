@@ -1,3 +1,22 @@
+2024-12-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 01513625 
+	* Version : Dev
+	* Laravel & React : Paignation changes for Agent Activity and Call CDR
+	Reports. 
+	Script 'ImportSQLFiles.php' to import .sql files which is run at installation Deploymnet.
+	Take sql files from path BACKEND/storage/app/sql/
+
+2024-11-28 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 70fcff70 
+	* Version : Dev
+	* Laravel & React : Account & Contact - CRUD API and UI with pagination and live
+	and Advance search.
+	Agent Activity Report with graphs and required filters.
+
 2024-11-27 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3769

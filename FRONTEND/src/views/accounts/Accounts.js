@@ -47,7 +47,6 @@ const Accounts = () => {
   useEffect(() => {
     const fetchOwner = async () => {
       try {
-        console.log("token", authToken)
         const response = await axios.get(`${BASE_URL}/api/users?all_user=Y`, {
           headers: {
             'Content-Type': 'application/json',
@@ -55,7 +54,6 @@ const Accounts = () => {
             Authorization: `Bearer ${authToken}`,
           },
         })
-        console.log("user ", response.data.data)
         setOwners(response.data.data)
       } catch (err) {
         // setError('Error fetching Owner')
@@ -66,7 +64,7 @@ const Accounts = () => {
 
   const getOwnerName = (owner_id) => {
     const owner = owners.find((owner) => String(owner.id) === String(owner_id))
-    return owner ? owner.username : ''
+    return owner ? `${owner.first_name} ${owner.last_name}` : '';
   }
 
   const handleDeleteAccount = async (id, name) => {
@@ -184,7 +182,7 @@ const Accounts = () => {
           <option value="">Select Owner</option>
           {owners.map((owner) => (
             <option key={owner.id} value={owner.id}>
-              {owner.username}
+              {owner.first_name} {owner.last_name}
             </option>
           ))}
         </CFormSelect>

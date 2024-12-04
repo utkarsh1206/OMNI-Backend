@@ -51,7 +51,6 @@ const Contacts = () => {
   }
 
   const handleDeleteAccount = async (id) => {
-    console.log("authToken ", authToken)
     if (window.confirm('Are you sure to delete?')) {
       try {
         let response = await axios.delete(`${BASE_URL}/api/contacts/${id}`, {
@@ -97,7 +96,6 @@ const Contacts = () => {
   useEffect(() => {
     const fetchOwner = async () => {
       try {
-        console.log("token", authToken)
         const response = await axios.get(`${BASE_URL}/api/users?all_user=Y`, {
           headers: {
             'Content-Type': 'application/json',
@@ -115,7 +113,7 @@ const Contacts = () => {
 
   const getOwnerName = (owner_id) => {
     const owner = owners.find((owner) => String(owner.id) === String(owner_id))
-    return owner ? owner.username : ''
+    return owner ? `${owner.first_name} ${owner.last_name}` : '';
   }
 
   const handleProductChange = (e) => {
@@ -205,7 +203,7 @@ const Contacts = () => {
           <option value="">Select Owner</option>
           {owners.map((owner) => (
             <option key={owner.id} value={owner.id}>
-              {owner.username}
+              {owner.first_name} {owner.last_name}
             </option>
           ))}
         </CFormSelect>

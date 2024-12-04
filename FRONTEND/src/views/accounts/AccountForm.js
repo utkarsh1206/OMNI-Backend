@@ -251,7 +251,6 @@ const AccountForm = () => {
     const fetchIndustryType = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/api/industry_type?page=all`)
-        console.log("ind ", response.data.data)
         setIndustryTpye(response.data.data)
       } catch (err) {
         setError('Error fetching Industry Types')
@@ -265,7 +264,6 @@ const AccountForm = () => {
     const fetchBusinessType = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/api/business_type?page=all`)
-        console.log("busi ", response.data.data)
 
         setBusinessTpye(response.data.data)
       } catch (err) {
@@ -279,7 +277,6 @@ const AccountForm = () => {
   useEffect(() => {
     const fetchOwner = async () => {
       try {
-        console.log("token", authToken)
         const response = await axios.get(`${BASE_URL}/api/users?all_user=Y`, {
           headers: {
             'Content-Type': 'application/json',
@@ -287,7 +284,6 @@ const AccountForm = () => {
             Authorization: `Bearer ${authToken}`,
           },
         })
-        console.log("user ", response.data.data)
         setOwner(response.data.data)
       } catch (err) {
         setError('Error fetching Owner')
@@ -312,9 +308,6 @@ const AccountForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Form submitted!");
-
-    console.log("authToken ", authToken)
 
     if (!authToken || !BASE_URL) {
       console.error("Missing auth token or API base URL.");
@@ -423,7 +416,7 @@ const AccountForm = () => {
   return (
     <CCard className="mb-4">
       <CCardHeader>
-        <CCardTitle>Create User</CCardTitle>
+        <CCardTitle>Account</CCardTitle>
       </CCardHeader>
       <CCardBody>
         <CForm id='accountForm' onSubmit={handleSubmit}>
@@ -601,7 +594,7 @@ const AccountForm = () => {
                           <option value="">Select Owner</option>
                           {owner.map((owners) => (
                             <option key={owners.id} value={owners.id}>
-                              {owners.username}
+                              {owners.first_name  } {owners.last_name}
                             </option>
                           ))}
                         </CFormSelect>
