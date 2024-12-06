@@ -14,7 +14,7 @@ import {
 } from '@coreui/react'
 import axios from 'axios'
 import { useNavigate, useParams } from 'react-router-dom'
-import { BASE_URL } from '../../config'
+import { BASE_URL, PRIORITY_TO_COLOR, STATUS_TO_COLOR, TYPE_TO_COLOR } from '../../config'
 import { AuthContext } from '../../context/AuthContext'
 import DefaultCampaignComponent from '../campaign/DefaultCampaignComponent'
 import DefaultProductsComponent from '../product/DefaultProductsComponent'
@@ -46,6 +46,11 @@ const SupportTicketsForm = () => {
   const [users, setUsers] = useState([])
   const { authToken } = useContext(AuthContext)
 
+  const [accounts, setAccounts] = useState([])
+  const [loadingAccounts, setLoadingAccounts] = useState(false)
+  const [contacts, setContacts] = useState([])
+  const [loadingContacts, setLoadingContacts] = useState(false)
+
   const [formData, setFormData] = useState({
     // Basic Details
     product_id: '',
@@ -61,8 +66,8 @@ const SupportTicketsForm = () => {
     // Server Details
     departments: '',
     to_emails: '',
-    cc_mails: '',
-    bcc_mails: '',
+    cc: '',
+    bcc: '',
     description: '',
     attachment: '',
     status: 'Active',
@@ -111,6 +116,75 @@ const SupportTicketsForm = () => {
     }
     fetchUsers()
   }, [])
+
+  // Fetch Accounts when product_id changes
+  useEffect(() => {
+    if (formData.product_id) {
+      const fetchAccounts = async () => {
+        setLoadingAccounts(true)
+        try {
+          const response = await axios.get(
+            `${BASE_URL}/api/accounts?product_id=${formData.product_id}&page=all`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                Authorization: `Bearer ${authToken}`,
+              },
+            },
+          )
+          setAccounts(response.data.data)
+          setLoadingAccounts(false)
+        } catch (err) {
+          // setError('Error fetching accounts')
+          setLoadingAccounts(false)
+        }
+      }
+      fetchAccounts()
+    } else {
+      setAccounts([])
+      setFormData((prevData) => ({
+        ...prevData,
+        account_id: '',
+        contact_id: '',
+      }))
+      // setCities([])
+    }
+  }, [formData.product_id])
+
+  // Fetch Contacts when account_id changes
+  useEffect(() => {
+    if (formData.account_id) {
+      const fetchContacts = async () => {
+        setLoadingContacts(true)
+        try {
+          const response = await axios.get(
+            `${BASE_URL}/api/contacts?account_id=${formData.account_id}&page=all`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                Authorization: `Bearer ${authToken}`,
+              },
+            },
+          )
+          setContacts(response.data.data)
+          setLoadingContacts(false)
+        } catch (err) {
+          // setError('Error fetching accounts')
+          setLoadingContacts(false)
+        }
+      }
+      fetchContacts()
+    } else {
+      setContacts([])
+      setFormData((prevData) => ({
+        ...prevData,
+        contact_id: '',
+      }))
+      // setCities([])
+    }
+  }, [formData.account_id])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -177,8 +251,8 @@ const SupportTicketsForm = () => {
       subject: '',
       departments: '',
       to_emails: '',
-      cc_mails: '',
-      bcc_mails: '',
+      cc: '',
+      bcc: '',
       description: '',
       attachment: '',
       status: 'Active',
@@ -198,15 +272,39 @@ const SupportTicketsForm = () => {
             <CCardBody>
               <CRow>
                 <DefaultProductsComponent formData={formData} handleChange={handleChange} />
-                 <FormGroup
+                {/* <FormGroup
                   label="Account"
                   name="account_id"
                   type="text"
                   value={formData.account_id}
                   onChange={handleChange}
                   required
-                /> 
+                /> */}
+                <CCol md="4" className="mb-3">
+                  <CFormLabel htmlFor="account_id">
+                    Account <span style={{ color: 'red' }}>*</span>
+                    {loadingAccounts && <small>Loading Accounts...</small>}
+                  </CFormLabel>
+                  <CFormSelect
+                    id="account_id"
+                    name="account_id"
+                    value={formData.account_id}
+                    onChange={handleChange}
+                    disabled={loadingAccounts}
+                  >
+                    <option value="" disabled>
+                      Select Account
+                    </option>
+                    {accounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.name}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                </CCol>
                 <DefaultCampaignComponent formData={formData} handleChange={handleChange} />
+
+                {/* to be removed inbound group */}
                 {/* <FormGroup
                   label="Inbound Group"
                   name="inbound_group_id"
@@ -216,14 +314,28 @@ const SupportTicketsForm = () => {
                   required
                 /> */}
 
-                <FormGroup
-                  label="Contact"
-                  name="contact_id"
-                  type="text"
-                  value={formData.contact_id}
-                  onChange={handleChange}
-                  required
-                />
+                <CCol md="4" className="mb-3">
+                  <CFormLabel htmlFor="contact_id">
+                    Contact <span style={{ color: 'red' }}>*</span>
+                    {loadingContacts && <small>Loading Contacts...</small>}
+                  </CFormLabel>
+                  <CFormSelect
+                    id="contact_id"
+                    name="contact_id"
+                    value={formData.contact_id}
+                    onChange={handleChange}
+                    disabled={loadingContacts}
+                  >
+                    <option value="" disabled>
+                      Select Contact
+                    </option>
+                    {contacts.map((contact) => (
+                      <option key={contact.id} value={contact.id}>
+                        {contact.first_name} {contact.last_name}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                </CCol>
                 <CCol md="4" className="mb-3">
                   <CFormLabel htmlFor="assign_to_id">
                     Assign To {/* <span style={{ color: 'red' }}>*</span> */}
@@ -254,39 +366,14 @@ const SupportTicketsForm = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="" disabled>
-                      Select Default Type
+                    <option key="" value="" disabled>
+                      Select Type
                     </option>
-                    <option key="Problems" value="Problems">
-                      Problems
-                    </option>
-                    <option key="Help" value="Help">
-                      Help
-                    </option>
-                    <option key="Incident" value="Incident">
-                      Incident
-                    </option>
-                    <option key="Service Request" value="Service Request">
-                      Service Request
-                    </option>
-                    <option key="Service Delivery" value="Service Delivery">
-                      Service Delivery
-                    </option>
-                    <option key="Service Assurance" value="Service Assurance">
-                      Service Assurance
-                    </option>
-                    <option key="Questions" value="Questions">
-                      Questions
-                    </option>
-                    <option key="Feature Request" value="Feature Request">
-                      Feature Request
-                    </option>
-                    <option key="Other" value="Other">
-                      Other
-                    </option>
-                    <option key="Change Management" value="Change Management">
-                      Change Management
-                    </option>
+                    {Object.keys(TYPE_TO_COLOR).map((key) => (
+                      <option key={key} value={key}>
+                        {key}
+                      </option>
+                    ))}
                   </CFormSelect>
                 </CCol>
                 <CCol md="4" className="mb-3">
@@ -300,21 +387,14 @@ const SupportTicketsForm = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="" disabled>
-                      Select Default Priority
+                    <option key="" value="" disabled>
+                      Select Priority
                     </option>
-                    <option key="Medium" value="Medium">
-                      Medium
-                    </option>
-                    <option key="Low" value="Low">
-                      Low
-                    </option>
-                    <option key="High" value="High">
-                      High
-                    </option>
-                    <option key="Critical" value="Critical">
-                      Critical
-                    </option>
+                    {Object.keys(PRIORITY_TO_COLOR).map((key) => (
+                      <option key={key} value={key}>
+                        {key}
+                      </option>
+                    ))}
                   </CFormSelect>
                 </CCol>
                 <CCol md="4" className="mb-3">
@@ -328,27 +408,14 @@ const SupportTicketsForm = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="" disabled>
-                      Select Default Status
+                    <option key="" value="" disabled>
+                      Select Status
                     </option>
-                    <option key="Unassigned" value="Unassigned">
-                      Unassigned
-                    </option>
-                    <option key="Open" value="Open">
-                      Open
-                    </option>
-                    <option key="Waiting on Customer" value="Waiting on Customer">
-                      Waiting on Customer
-                    </option>
-                    <option key="Waiting on Third Party" value="Waiting on Third Party">
-                      Waiting on Third Party
-                    </option>
-                    <option key="Resolved" value="Resolved">
-                      Resolved
-                    </option>
-                    <option key="Closed" value="Closed">
-                      Closed
-                    </option>
+                    {Object.keys(STATUS_TO_COLOR).map((key) => (
+                      <option key={key} value={key}>
+                        {key}
+                      </option>
+                    ))}
                   </CFormSelect>
                 </CCol>
               </CRow>
@@ -380,16 +447,16 @@ const SupportTicketsForm = () => {
                 />
                 <FormGroup
                   label="CC"
-                  name="cc_mails"
+                  name="cc"
                   type="text"
-                  value={formData.cc_mails}
+                  value={formData.cc}
                   onChange={handleChange}
                 />
                 <FormGroup
                   label="BCC"
-                  name="bcc_mails"
+                  name="bcc"
                   type="text"
-                  value={formData.bcc_mails}
+                  value={formData.bcc}
                   onChange={handleChange}
                 />
                 <CCol md="12" className="mb-3">

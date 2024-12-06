@@ -25,12 +25,28 @@ import PaginationComponent from '../../components/PaginationComponent'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilXCircle } from '@coreui/icons'
 import { BASE_URL } from '../../config'
+import { formatDate } from '../../utils/DateUtils'
+import SearchAndFilter from '../../components/SearchAndFilter'
 
 const UserGroups = () => {
   const navigate = useNavigate()
   const [userGroups, setUserGroups] = useState([])
   const { authToken } = useContext(AuthContext)
-  const [filters, setFilters] = useState({})
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filters, setFilters] = useState({
+    email: '',
+    status: '',
+  })
+
+  const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
+  const [perPage, setPerPage] = useState(10) // Add state to track the current page
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page) // Update the current page when pagination changes
+  }
+  const handlePerPageValue = (perPage) => {
+    setPerPage(perPage) // Update the current page when pagination changes
+  }
 
   const handleDeleteUserGroup = async (id, name) => {
     if (window.confirm('Are you sure to delete ' + name + '?')) {
@@ -58,79 +74,72 @@ const UserGroups = () => {
     }
   }
 
-  // Format date
-  const formatDate = (string) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' }
-    return new Date(string).toLocaleDateString([], options)
-  }
+  // Define custom filter card for UserGroups
+  const renderUserGroupFilters = (filters, setFilters) => (
+    <>
+      <div>
+        <label>
+          Email:
+          <input
+            type="text"
+            name="email"
+            value={filters.email || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, email: e.target.value }))}
+            placeholder="Enter email"
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          Status:
+          <select
+            name="status"
+            value={filters.status || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
+          >
+            <option value="">Select status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </label>
+      </div>
+    </>
+  )
 
   return (
     <>
-      <CRow>
-        <CCol xs={12}>
-          <CCard className="mb-3">
-            <CCardHeader>
-              Search for <strong>User Groups</strong> <small>Filters will be filled later</small>
-            </CCardHeader>
-            <CCardBody>
-              <CForm id="userGroupFilter">
-                <CRow className="mb-2">
-                  <CCol>
-                    <CRow className="mb-2">
-                      <CFormLabel htmlFor="groupID" className="col-sm-3 col-form-label">
-                        {<small>User Group ID</small>}
-                      </CFormLabel>
-                      <CCol>
-                        <CFormInput type="text" id="groupID" />
-                      </CCol>
-                    </CRow>
-                  </CCol>
-                  <CCol>
-                    <CRow className="mb-2 align-middle">
-                      <CFormLabel htmlFor="groupName" className="col-sm-3 col-form-label">
-                        {<small> Group Name</small>}
-                      </CFormLabel>
-                      <CCol>
-                        <CFormInput type="text" id="groupName" />
-                      </CCol>
-                    </CRow>
-                  </CCol>
-                </CRow>
-                <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                  <CButton type="submit" color="primary" form="userGroupFilter">
-                    Submit
-                  </CButton>
-                </div>
-              </CForm>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
-      <h6>User Groups Listing</h6>
-      <hr />
+      {/* <h6>User Groups Listing</h6> */}
+
       <CRow>
         <CCol>
-          <CContainer>
+          <CContainer className="mb-3">
             <CRow fluid responsive>
               <CCol md={8}>
                 <Link to="/user/crt_usr_grp">
-                  <CButton color="primary" className="mb-4 me-2" size="sm">
+                  <CButton color="primary" className=" me-2" size="sm">
                     Create User Group
                   </CButton>
                 </Link>
                 <CButton
                   color="primary"
-                  className="mb-4 me-2"
+                  className=" me-2"
                   size="sm"
                   onClick={handleDeleteUserGroup}
                 >
                   Delete User Group
                 </CButton>
-                <CButton color="primary" className="mb-4 me-2" size="sm">
+                <CButton color="primary" className=" me-2" size="sm">
                   Download CSV
                 </CButton>
               </CCol>
+              <SearchAndFilter
+                onSearch={setSearchQuery} // Callback for live search
+                filters={filters} // Current filters
+                setFilters={setFilters} // Update filters
+                renderFilters={renderUserGroupFilters} // Custom filter UI for users
+              />
             </CRow>
+            <hr />
           </CContainer>
           <CTable hover bordered responsive="md">
             <CTableHead color="light">
@@ -145,9 +154,9 @@ const UserGroups = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {userGroups.map((group) => (
+              {userGroups.map((group, index) => (
                 <CTableRow key={group.id}>
-                  <CTableDataCell>{group.id}</CTableDataCell>
+                  <CTableDataCell>{index + 1 + (currentPage - 1) * perPage}</CTableDataCell>
                   <CTableDataCell>{group.name}</CTableDataCell>
                   <CTableDataCell>{group.campaign_id}</CTableDataCell>
                   <CTableDataCell>{group.description}</CTableDataCell>
@@ -189,6 +198,9 @@ const UserGroups = () => {
             authToken={authToken}
             onDataFetched={setUserGroups}
             filters={filters}
+            search={searchQuery}
+            onPageChange={handlePageChange}
+            perPageValue={handlePerPageValue}
           />
         </CCol>
       </CRow>

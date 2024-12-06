@@ -1,0 +1,15 @@
+import React from 'react'
+import { CCard, CCardBody, CCardHeader, CCardTitle } from '@coreui/react'
+
+const Tasks = () => {
+  return (
+    <CCard>
+      <CCardHeader>
+        <CCardTitle>Tasks</CCardTitle>
+      </CCardHeader>
+      <CCardBody>Any Tasks Assigned</CCardBody>
+    </CCard>
+  )
+}
+
+export default Tasks

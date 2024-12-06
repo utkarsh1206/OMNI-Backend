@@ -33,14 +33,29 @@ import PaginationComponent from '../../components/PaginationComponent' // import
 import { formatDate, formatDateWithTime } from '../../utils/DateUtils'
 import axios from 'axios'
 import SupportTicketModal from './SupportTicketModal'
+import SearchAndFilter from '../../components/SearchAndFilter'
 
 const SupportTickets = () => {
   const navigate = useNavigate()
   const [tickets, setTickets] = useState([])
   const { authToken } = useContext(AuthContext)
-  const [filters, setFilters] = useState({})
-
   const [ticketId, setTicketId] = useState()
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filters, setFilters] = useState({
+    email: '',
+    status: '',
+  })
+
+  // const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
+  // const [perPage, setPerPage] = useState(10) // Add state to track the current page
+
+  // const handlePageChange = (page) => {
+  //   setCurrentPage(page) // Update the current page when pagination changes
+  // }
+  // const handlePerPageValue = (perPage) => {
+  //   setPerPage(perPage) // Update the current page when pagination changes
+  // }
 
   const handleDeleteTicket = async (id, username) => {
     if (window.confirm('Are you sure to delete ' + username + '?')) {
@@ -69,44 +84,60 @@ const SupportTickets = () => {
     setVisible(true)
   }
 
+  // Define custom filter card for UserGroups
+  const renderTicketFilters = (filters, setFilters) => (
+    <>
+      <div>
+        <label>
+          Email:
+          <input
+            type="text"
+            name="email"
+            value={filters.email || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, email: e.target.value }))}
+            placeholder="Enter email"
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          Status:
+          <select
+            name="status"
+            value={filters.status || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
+          >
+            <option value="">Select status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </label>
+      </div>
+    </>
+  )
+
   return (
     <>
       <CRow>
-        <CCol xs={12}>
-          <CCard className="mb-2">
-            <CCardHeader>
-              Search for <strong>Tickets</strong> <small>Filters will be filled later</small>
-            </CCardHeader>
-            <CCardBody>
-              Placeholder for ticket search fields
-              <CRow className="mt-3">
-                <CCol>
-                  <input type="datetime-local" className="form-control" />
-                </CCol>
-                <CCol>
-                  <CButton color="primary" onClick={() => fetchTenants(1)}>
-                    Search
-                  </CButton>
-                </CCol>
-              </CRow>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
-      <hr />
-      <CRow>
         <CCol>
-          <CContainer>
+          <CContainer className="mb-3">
             <CRow fluid responsive>
               <CCol md={8}>
                 <Link to="/spprt_tckt/crt_tckt">
-                  <CButton color="primary" className="mb-4 me-2" size="sm">
+                  <CButton color="primary" className="me-2" size="sm">
                     Create Ticket
                   </CButton>
                 </Link>
               </CCol>
+              <SearchAndFilter
+                onSearch={setSearchQuery} // Callback for live search
+                filters={filters} // Current filters
+                setFilters={setFilters} // Update filters
+                renderFilters={renderTicketFilters} // Custom filter UI for users
+              />
             </CRow>
           </CContainer>
+          <hr />
           <CTable hover small bordered responsive="md">
             <CTableHead color="light">
               <CTableRow>
@@ -222,6 +253,9 @@ const SupportTickets = () => {
             authToken={authToken}
             onDataFetched={setTickets}
             filters={filters}
+            search={searchQuery}
+            // onPageChange={handlePageChange}
+            // perPageValue={handlePerPageValue}
           />
         </CCol>
       </CRow>

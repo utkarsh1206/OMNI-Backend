@@ -5,17 +5,17 @@ import { CNavGroup, CNavGroupItems, CNavItem, CNavTitle } from '@coreui/react'
 import { jwtDecode } from 'jwt-decode'
 
 const navItemList = [
-  {
-    component: CNavItem,
-    name: 'Test Report',
-    to: '/test_report',
-    // icon: <CIcon icon={icon.cilChart} customClassName="nav-icon" style={{ color: 'white' }} />,
-    icon: <CIcon icon={icon.cilChart} customClassName="nav-icon" />,
-    badge: {
-      color: 'success',
-      text: 'IMP',
-    },
-  },
+  // {
+  //   component: CNavItem,
+  //   name: 'Test Report',
+  //   to: '/test_report',
+  //   // icon: <CIcon icon={icon.cilChart} customClassName="nav-icon" style={{ color: 'white' }} />,
+  //   icon: <CIcon icon={icon.cilChart} customClassName="nav-icon" />,
+  //   badge: {
+  //     color: 'success',
+  //     text: 'IMP',
+  //   },
+  // },
   {
     component: CNavTitle,
     name: 'Components',

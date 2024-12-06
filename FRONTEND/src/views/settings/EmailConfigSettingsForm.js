@@ -13,14 +13,16 @@ import {
   CCardText,
   CCardFooter,
   CFormTextarea,
+  CFormSelect,
 } from '@coreui/react'
 import axios from 'axios'
 import { useNavigate, useParams } from 'react-router-dom'
-import { BASE_URL } from '../../config'
+import { BASE_URL, STATUS_TO_COLOR, TYPE_TO_COLOR } from '../../config'
 import { AuthContext } from '../../context/AuthContext'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilUser } from '@coreui/icons'
 import DefaultCampaignComponent from '../campaign/DefaultCampaignComponent'
+import DefaultProductsComponent from '../product/DefaultProductsComponent'
 
 // Define FormGroup outside the main component
 // const FormGroup = ({ label, name, value, onChange, required, type, disabled }) => (
@@ -40,8 +42,8 @@ import DefaultCampaignComponent from '../campaign/DefaultCampaignComponent'
 //   </CCol>
 // )
 
-const formDatasForm = () => {
-  const { id } = useParams() // Get tenant ID from URL if present
+const EmailConfigSettingsForm = () => {
+  const { id } = useParams() // Get Config ID from URL if present
   const navigate = useNavigate()
   const isEditMode = Boolean(id)
   // const editAccess = boolean(id)
@@ -51,7 +53,7 @@ const formDatasForm = () => {
     type: 'gmail',
     product_id: '',
     campaign_id: '',
-    inbound_id: '',
+    // inbound_id: '',
     smtp_host: '',
     smtp_port: '',
     smtp_user: '',
@@ -70,7 +72,7 @@ const formDatasForm = () => {
 
   useEffect(() => {
     if (isEditMode) {
-      // Fetch tenant data to prefill the form
+      // Fetch Config data to prefill the form
       axios
         .get(`${BASE_URL}/api/email-configure/${id}`, {
           headers: {
@@ -123,7 +125,7 @@ const formDatasForm = () => {
     try {
       let response
       if (isEditMode) {
-        // Update existing tenant
+        // Update existing Config
         response = await axios.put(`${BASE_URL}/api/email-configure/${id}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -132,7 +134,7 @@ const formDatasForm = () => {
           },
         })
       } else {
-        // Create new tenant
+        // Create new Config
         response = await axios.post(`${BASE_URL}/api/email-configure`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -147,11 +149,11 @@ const formDatasForm = () => {
         alert(
           response.data.message +
             (isEditMode
-              ? // ? `\nTenant updated successfully.`
+              ? // ? `\n Config updated successfully.`
                 ``
               : `\nUsername: ${response.data.data.username}\nCompany Name: ${response.data.data.company_name}`),
         )
-        navigate('/tenants') // Redirect to tenants list after success
+        navigate('/email_config_settings') // Redirect to Configs list after success
       }
       handleCancel()
     } catch (error) {
@@ -163,10 +165,10 @@ const formDatasForm = () => {
   const handleCancel = () => {
     // Reset form or handle cancellation as needed
     setFormData({
-      type: '',
+      type: 'gmail',
       product_id: '',
       campaign_id: '',
-      inbound_id: '',
+      // inbound_id: '',
       smtp_host: '',
       smtp_port: '',
       smtp_user: '',
@@ -183,7 +185,7 @@ const formDatasForm = () => {
       signature: '',
     })
     // if (isEditMode) {
-    navigate('/tenants') // Redirect to tenants list if editing
+    navigate('/email_config_settings') // Redirect to config list if editing
     // }
   }
 
@@ -196,23 +198,13 @@ const formDatasForm = () => {
             <CCol xs="12" md="12">
               <CCard className="mb-4">
                 <CCardHeader>
-                  <CCardTitle>{isEditMode ? 'Edit Tenant' : 'Create Tenant'}</CCardTitle>
+                  <CCardTitle>
+                    {isEditMode ? 'Edit Email Config' : 'Create Email Config'}
+                  </CCardTitle>
                 </CCardHeader>
                 <CCardBody>
                   <CRow>
-                    <CCol md="4" className="mb-3">
-                      <CFormLabel htmlFor="product_id">
-                        Product <span style={{ color: 'red' }}>*</span>
-                      </CFormLabel>
-                      <CFormInput
-                        type="text"
-                        id="product_id"
-                        name="product_id"
-                        value={formData.product_id}
-                        onChange={handleChange}
-                        required
-                      />
-                    </CCol>
+                    <DefaultProductsComponent formData={formData} handleChange={handleChange} />
                     <DefaultCampaignComponent formData={formData} handleChange={handleChange} />
                     <CCol md="4" className="mb-3">
                       <CFormLabel htmlFor="inbound_id">
@@ -279,31 +271,47 @@ const formDatasForm = () => {
                         required
                       />
                     </CCol>
-                    <CCol md="4" className="mb-3">
+                    <CCol md="6" className="mb-3">
                       <CFormLabel htmlFor="default_type">
                         Default Type <span style={{ color: 'red' }}>*</span>
                       </CFormLabel>
-                      <CFormInput
-                        type="text"
+                      <CFormSelect
                         id="default_type"
                         name="default_type"
                         value={formData.default_type}
                         onChange={handleChange}
                         required
-                      />
+                      >
+                        <option key="" value="" disabled>
+                          Select Type
+                        </option>
+                        {Object.keys(TYPE_TO_COLOR).map((key) => (
+                          <option key={key} value={key}>
+                            {key}
+                          </option>
+                        ))}
+                      </CFormSelect>
                     </CCol>
-                    <CCol md="4" className="mb-3">
+                    <CCol md="6" className="mb-3">
                       <CFormLabel htmlFor="default_status">
                         Default Status <span style={{ color: 'red' }}>*</span>
                       </CFormLabel>
-                      <CFormInput
-                        type="text"
+                      <CFormSelect
                         id="default_status"
                         name="default_status"
                         value={formData.default_status}
                         onChange={handleChange}
                         required
-                      />
+                      >
+                        <option key="" value="" disabled>
+                          Select Type
+                        </option>
+                        {Object.keys(STATUS_TO_COLOR).map((key) => (
+                          <option key={key} value={key}>
+                            {key}
+                          </option>
+                        ))}
+                      </CFormSelect>
                     </CCol>
                     <CCol md="6" className="mb-3">
                       <CFormLabel htmlFor="imap_host">
@@ -387,14 +395,23 @@ const formDatasForm = () => {
                       <CFormLabel htmlFor="assign_method">
                         Assign Method <span style={{ color: 'red' }}>*</span>
                       </CFormLabel>
-                      <CFormInput
-                        type="text"
+                      <CFormSelect
                         id="assign_method"
                         name="assign_method"
                         value={formData.assign_method}
                         onChange={handleChange}
                         required
-                      />
+                      >
+                        <option key="" value="" disabled>
+                          Select Assign Method
+                        </option>
+                        <option key="random" value="random">
+                          Random
+                        </option>
+                        <option key="round-robin" value="round-robin">
+                          Round-Robin
+                        </option>
+                      </CFormSelect>
                     </CCol>
                     <CCol md="12" className="mb-3">
                       <CFormLabel htmlFor="signature">
@@ -480,4 +497,4 @@ const formDatasForm = () => {
   )
 }
 
-export default formDatasForm
+export default EmailConfigSettingsForm

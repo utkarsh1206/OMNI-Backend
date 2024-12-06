@@ -2,7 +2,15 @@ import React, { useEffect, useState } from 'react'
 import { CRow, CCol, CPagination, CPaginationItem, CFormSelect } from '@coreui/react'
 import axios from 'axios'
 
-const PaginationComponent = ({ apiEndpoint, authToken, onDataFetched, filters = {}, search, onPageChange, perPageValue }) => {
+const PaginationComponent = ({
+  apiEndpoint,
+  authToken,
+  onDataFetched,
+  filters = {},
+  search,
+  onPageChange,
+  perPageValue,
+}) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [lastPage, setLastPage] = useState(1)
@@ -31,7 +39,7 @@ const PaginationComponent = ({ apiEndpoint, authToken, onDataFetched, filters = 
           page: page,
           per_page: perPage,
           ...filters,
-          search,
+          ...search,
         },
         cancelToken: source.token, // Attach cancel token to the request
       })

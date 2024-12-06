@@ -97,15 +97,15 @@ const SupportTicketModal = ({ visible, setVisible, id, authToken }) => {
               </CCol>
               <CCol>
                 <h6>
-                  #{tickets.id} - {formatDateWithTime(tickets.created_at)}
+                  Ticket Number : #{tickets.id} - {formatDateWithTime(tickets.created_at)}
                 </h6>
                 <h5>
-                  <Link to={`#`}>{tickets.contact_id}Utkarsh Rokade</Link>
+                  <Link to={`#`}>{tickets.contact_id}</Link>
                 </h5>
                 <p>
                   <CIcon icon={cilBuilding} />{' '}
                   <Link to={`#`}>
-                    <strong>{tickets.account_id}Sterlite Technologies Ltd.</strong>
+                    <strong>{tickets.account_id}</strong>
                   </Link>
                 </p>
                 <p>
