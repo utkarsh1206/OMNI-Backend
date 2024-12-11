@@ -26,6 +26,7 @@ class NotesController extends Controller
             'supportticket_id'=>$request->supportticket_id,
             'date' =>gmdate('Y-m-d H:i:s'),
             'note' =>$request->note,
+            'created_by' =>isset($request->user_id)?$request->user_id:0,
         ]);
         return response()->json([
             'message' => 'Note create successfully.',

@@ -12,6 +12,7 @@ class Notes extends Model
     protected $fillable = [
         'date',
         'note',
-        'supportticket_id'
+        'supportticket_id',
+        'created_by'
     ];
 }

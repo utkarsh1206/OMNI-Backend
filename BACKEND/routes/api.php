@@ -19,6 +19,10 @@ use App\Http\Controllers\Api\EmailConfigureController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\MailDetailController;
 use App\Http\Controllers\Api\NotesController;
+use App\Http\Controllers\Api\SupportticketnotificationController;
+use App\Http\Controllers\Api\SupporttickettransferController;
+use App\Http\Controllers\Api\SupportticketmergeController;
+
 use App\Models\EmailConfigure;
 use App\Models\Supportticket;
 use App\Models\Tenantrole;
@@ -71,6 +75,9 @@ Route::get('mail-details', [MailDetailController::class, 'index']);
 Route::post('mail-details', [MailDetailController::class, 'store']); 
 Route::get('note', [NotesController::class, 'index']);  
 Route::post('note', [NotesController::class, 'store']); 
+Route::get('notification', [SupportticketnotificationController::class, 'index']);  
+Route::post('transfer', [SupporttickettransferController::class, 'store']);  
+Route::post('merge', [SupportticketmergeController::class, 'store']);  
 
 Route::get('callCDR', [CallCDRListController::class, 'getCallCDRList']);
 Route::get('custome-field/header', [CustomFieldController::class, 'custumFieldHeader']);

@@ -28,6 +28,7 @@ class Supportticket extends Model
         "description",
         "attachment",
         //"status",
-        "is_delete"
+        "is_delete",
+        "support_ticket_id"
     ];
 }
