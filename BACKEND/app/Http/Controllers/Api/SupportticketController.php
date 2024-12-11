@@ -9,6 +9,7 @@ use App\Models\Supportticket;
 use App\Models\MailDetail;
 use App\Models\EmailConfigure;
 use Illuminate\Support\Facades\Validator;
+use App\Models\SupportTicketnotification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -97,6 +98,7 @@ class SupportticketController extends Controller
             }
         }
         $supportticket = SupportTicket::create([
+            'support_ticket_id' => "#".gmdate('ymdhis'),
             'product_id' => isset($request->product_id) ? $request->product_id : 0,
             'campaign_id' => isset($request->campaign_id) ? $request->campaign_id : 0,
             'inbound_group_id' => isset($request->inbound_group_id) ? $request->inbound_group_id : 0,
@@ -115,19 +117,25 @@ class SupportticketController extends Controller
         ]);    
         $mail_details = MailDetail::create([
             'default_type' => isset($request->default_type) ? $request->default_type : "",
-            'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
-            'default_status' => isset($request->default_status) ? $request->default_status : "",
+            'priority' => isset($request->default_priority) ? $request->default_priority : "",
+            'status' => isset($request->default_status) ? $request->default_status : "",
             'to' => isset($request->to_emails) ? $request->to_emails : "",
             'cc' => isset($request->cc) ? $request->cc : "",
             'bcc' => isset($request->bcc) ? $request->bcc : "",
             'body' => isset($request->description) ? $request->description : "",
             'attachment' =>json_encode($attachment_urls),
+            'date'=> gmdate('Y-m-d H:i:s')
         ]);  
           
         $datePrefix = now()->format('dmy'); // Get the current date in ddmmyy format
         $supportTicketId = $datePrefix . $supportticket->id; // Use the newly inserted ID
         $supportticket->update(['support_ticket_id' => $supportTicketId]);
-
+        $notification = SupportTicketNotification::create([
+            'type' => isset($request->default_type) ? $request->default_type : "",
+            'comment' => "",
+            'support_ticket_id' => $supportTicketId,
+            'date' =>gmdate('Y-m-d H:i:s'),
+        ]);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host;
         $smtpPort = $emailConfig->smtp_port;
@@ -218,7 +226,12 @@ class SupportticketController extends Controller
             $updateData['attachment'] = $attachment_urls;
         }
         $supportticket->update($updateData);
-      
+        $notification = SupportTicketNotification::create([
+            'type' => isset($request->default_status) ? $request->default_status : "",
+            'comment' => "Edit Support Ticket",
+            'support_ticket_id' => $supportticket->id,
+            'date' =>gmdate('Y-m-d H:i:s'),
+        ]);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host;
         $smtpPort = $emailConfig->smtp_port;

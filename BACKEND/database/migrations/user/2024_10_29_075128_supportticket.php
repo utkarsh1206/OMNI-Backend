@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('supportticket', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('support_ticket_id')->default(0);
+            $table->string('support_ticket_id')->default(0);
             $table->unsignedBigInteger('product_id')->default(0);
             $table->unsignedBigInteger('campaign_id')->default(0);
             $table->unsignedBigInteger('inbound_group_id')->default(0);

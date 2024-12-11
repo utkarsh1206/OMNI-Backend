@@ -41,13 +41,14 @@ class UsersController extends Controller
                     ->orWhere('email', 'like', '%' . $searchTerm . '%')
                     ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
                     //->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_code', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_url', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('status', 'like', '%' . $searchTerm . '%'); // Add any additional fields as needed
+                    //->orWhere('company_code', 'like', '%' . $searchTerm . '%')
+                    //->orWhere('company_name', 'like', '%' . $searchTerm . '%')
+                    //->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
+                    //->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
+                    //->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
+                    //->orWhere('domain_url', 'like', '%' . $searchTerm . '%')
+                    //->orWhere('status', 'like', '%' . $searchTerm . '%')
+                    ; // Add any additional fields as needed
             });
         }
 

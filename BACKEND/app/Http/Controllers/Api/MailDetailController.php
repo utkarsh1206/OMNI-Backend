@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\MailDetail;
 use App\Models\EmailConfigure;
+use App\Models\SupportTicketnotification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -84,6 +85,12 @@ class MailDetailController extends Controller
             'bcc' => $request->bcc,
             'body' => $request->body,
             'attachment' => json_encode($attachment_urls),
+        ]);
+        $notification = SupportTicketNotification::create([
+            'type' => isset($request->default_status) ? $request->default_status : "",
+            'comment' => "",
+            'support_ticket_id' => $request->supportticket_id,
+            'date' =>gmdate('Y-m-d H:i:s'),
         ]);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host;

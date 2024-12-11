@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('supportticket_id');
             $table->longText('note');
+            $table->unsignedBigInteger('created_by');
             $table->timestamp('date')->nullable();
             $table->timestamps();
 
