@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('support_ticket_notifications', function (Blueprint $table) {
+        Schema::create('support_ticket_notification', function (Blueprint $table) {
             $table->id(); // Auto-incrementing primary key
             $table->string('type'); // String column for notification type
             $table->text('comment');

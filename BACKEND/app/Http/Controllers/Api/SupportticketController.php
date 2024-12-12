@@ -115,6 +115,9 @@ class SupportticketController extends Controller
             'description' => isset($request->description) ? $request->description : "",
             'attachment' =>json_encode($attachment_urls),
         ]);    
+          
+        $datePrefix = now()->format('dmy'); // Get the current date in ddmmyy format
+        $supportTicketId = $datePrefix . $supportticket->id; // Use the newly inserted ID
         $mail_details = MailDetail::create([
             'default_type' => isset($request->default_type) ? $request->default_type : "",
             'priority' => isset($request->default_priority) ? $request->default_priority : "",
@@ -124,11 +127,10 @@ class SupportticketController extends Controller
             'bcc' => isset($request->bcc) ? $request->bcc : "",
             'body' => isset($request->description) ? $request->description : "",
             'attachment' =>json_encode($attachment_urls),
+            'supportticket_id'=>$supportTicketId,
             'date'=> gmdate('Y-m-d H:i:s')
         ]);  
-          
-        $datePrefix = now()->format('dmy'); // Get the current date in ddmmyy format
-        $supportTicketId = $datePrefix . $supportticket->id; // Use the newly inserted ID
+
         $supportticket->update(['support_ticket_id' => $supportTicketId]);
         $notification = SupportTicketNotification::create([
             'type' => isset($request->default_type) ? $request->default_type : "",
