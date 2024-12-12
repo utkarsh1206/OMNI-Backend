@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('mail_details', function (Blueprint $table) {
             $table->id(); // Auto-increment primary key
             $table->unsignedBigInteger('supportticket_id'); // Foreign key to supportticket table
-            $table->dateTime('date')->default('NULL'); // Date and time in YYYY-mm-dd H:i:s format
+            $table->dateTime('date')->default(now()); // Date and time in YYYY-mm-dd H:i:s format
             $table->unsignedBigInteger('user_id'); // User ID
             $table->string('type')->default('open'); // Email type
             $table->string('priority')->default('High'); // Email priority (e.g., High, Medium, Low)
