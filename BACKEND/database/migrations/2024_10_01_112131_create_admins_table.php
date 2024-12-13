@@ -25,7 +25,7 @@ return new class extends Migration
             $table->enum('status', ['Active', 'Inactive'])->default('Active');
             $table->enum('is_delete', ['Yes', 'No'])->default('No');
             $table->timestamps(0);
-            $table->string('license_key');
+            $table->string('license_key')->nullable();
             $table->timestamp('license_updated_date')->default(DB::raw('CURRENT_TIMESTAMP'))->nullable();
 
             $table->primary('id');

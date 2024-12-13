@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('tenant_licenses', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tenant_id');
-            $table->date('start_date');
-            $table->date('expire_date');
-            $table->integer('admin_ct')->default(0);
+            $table->unsignedBigInteger('start_date');
+            $table->unsignedBigInteger('expire_date');
+            $table->integer('admin_ct')->nullable();
             $table->integer('agent_ct')->default(0);
             $table->integer('live_agent_ct')->default(0);
             $table->integer('manager_ct')->default(0);
-            $table->integer('phone_ct')->default(0);
+            $table->integer('phone_ct')->nullable();
             $table->timestamps();
 
             // $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
