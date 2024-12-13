@@ -10,9 +10,17 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Api\LicenseController;
 
 class LoginController extends Controller
 {
+    protected $licenseController;
+
+    public function __construct(LicenseController $licenseController)
+    {
+        $this->licenseController = $licenseController;  // Inject LicenseController
+    }
+    
     public function login_action(Request $request)
     {
         $validator = $request->validate([
@@ -65,7 +73,7 @@ class LoginController extends Controller
                         $userData = Users::where('email', $credentials['email'])
                             ->where('is_delete', 'No')
                             ->first();
-                        } else {
+                    } else {
                         $userData = Users::where('username', $credentials['username'])
                             ->where('is_delete', 'No')
                             ->first();
@@ -76,6 +84,11 @@ class LoginController extends Controller
                     }
                 } else {
                     return response()->json(['error' => 'Domain is required'], 400);
+                }
+
+                // Check if the license is expired for this user
+                if ($this->isLicenseExpired($request)) {
+                    return response()->json(['error' => 'License expired'], 403);
                 }
 
                 if (!$token = auth('api_users')->attempt($credentials)) {
@@ -106,6 +119,10 @@ class LoginController extends Controller
                         return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
                     }
 
+                    if ($this->isLicenseExpired($request)) {
+                        return response()->json(['error' => 'License expired'], 403);
+                    }
+
                     // If the user is found, check both password and phone_password
                     if ($userData && Hash::check($credentials['password'], $userData->password) && Hash::check($request->input('phone_password'), $userData->phone_password)) {
                         Log::info('Both password and phone password checks passed');
@@ -119,6 +136,11 @@ class LoginController extends Controller
                 } else {
                     return response()->json(['error' => 'Domain is required'], 400);
                 }
+
+                // Check if the license is expired for this user
+                // if ($this->isLicenseExpired($userData)) {
+                //     return response()->json(['error' => 'License expired'], 403);
+                // }
             } catch (\Illuminate\Database\QueryException $ex) {
                 Log::error('Database error: ' . $ex->getMessage());
                 return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
@@ -136,5 +158,25 @@ class LoginController extends Controller
             'message' => 'Login successful',
             'token' => $token
         ], 200);
+    }
+
+    private function isLicenseExpired(Request $request)
+    {
+        $is_tanant = false;
+        $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant'=> $is_tanant]));
+        $licenseInfo = $licenseResponse->getData(true);
+
+        if (isset($licenseInfo['validity_date'])) {
+            if ($licenseInfo['validity_date'] <= time()) {
+                Log::info('License expired');
+                return true;
+            }
+        } else {
+            return response()->json(['error' => 'License data invalid'], 400);
+        }
+
+        
+
+        return false;
     }
 }

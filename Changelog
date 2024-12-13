@@ -1,3 +1,36 @@
+2024-12-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 
+	* Version : Dev
+	* Commit issue : 
+	    SuperAdmin License Generation
+
+	 Purpose: The License Generator allows the creation of SuperAdmin licenses.
+	How it Works:
+	Granting full access to the system and the ability to manage other tenant users.
+	 The SuperAdmin license has a defined expiration date, and its validity is essential for system access. If the SuperAdmin license expires, all operations tied to SuperAdmin privileges will cease to function.
+
+	Tenant SuperAdmin License Management
+	If the SuperAdmin has a license that allows 100 Enterprise, the SuperAdmin can generate up to 100 licenses for Tenant. The number of licenses created cannot exceed the total available under the SuperAdmin’s license.
+	License Expiry & User Access:
+	If the SuperAdmin license expires, Tenant users will no longer be able to log in or access the system.
+	 The expiration of the SuperAdmin license will trigger the expiration of all associated tenant licenses, as access rights are bound by the validity of the SuperAdmin’s license.
+
+	License Usage Flow
+	The SuperAdmin creates individual licenses for Tenant.
+	 The number of Tenant licenses cannot exceed the number granted by the SuperAdmin.
+	License validity:
+	Each Tenant user’s access is valid as long as the SuperAdmin’s license remains active.
+	If the SuperAdmin’s license expires, all Tenant user licenses become inactive, and users will be unable to log in to the system.
+
+	Key Considerations
+	License Renewal:
+	 The SuperAdmin must renew their license before it expires to ensure continued access for both themselves and the Tenant users.
+	If the SuperAdmin’s license expires, the Tenant users lose access, regardless of their individual license status.
+	License Validation:
+	The system should continuously validate that the SuperAdmin license is active before allowing access for Tenant users.
+	
 2024-12-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3769

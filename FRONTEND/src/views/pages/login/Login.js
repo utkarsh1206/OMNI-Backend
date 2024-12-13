@@ -61,7 +61,11 @@ const Login = () => {
       await login(credentials)
       navigate('/dashboard')
     } catch (err) {
-      setErrorMsg('Invalid email or password')
+      if (err.response.data.error) {
+        setErrorMsg(err.response.data.error);
+      } else {
+        setErrorMsg('Invalid email or password')
+      }
     }
   }
 

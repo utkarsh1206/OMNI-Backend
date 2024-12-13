@@ -104,6 +104,10 @@ const CreateAccounts = React.lazy(() => import('./views/accounts/AccountForm'))
 const Contacts = React.lazy(() => import('./views/contacts/Contacts'))
 const CreateContacts = React.lazy(() => import('./views/contacts/ContactForm'))
 
+//License
+const License = React.lazy(() => import('./views/license/License'))
+const CreateTenantsLicense = React.lazy(() => import('./views/license/TenantsLicenseForm'))
+
 // Settings
 const EmailConfigSettings = React.lazy(() => import('./views/settings/EmailConfigSettings'))
 const CreateEmailConfigSettings = React.lazy(() => import('./views/settings/EmailConfigSettingsForm'))
@@ -213,6 +217,9 @@ const routes = [
   { path: '/neox_dash', name: 'Dashboard', element: NeoxDashboard, exact: true },
   { path: '/neox_dash/live_calls', name: 'Live Calls', element: LiveCalls },
   { path: '/neox_dash/live_agents', name: 'Live Agents', element: LiveAgents },
+
+  { path: '/license', name: 'License', element: License, exact: true },
+  { path: '/tenant_license/:id', name: 'Edit Tenant', element: CreateTenantsLicense },
 ]
 
 export default routes

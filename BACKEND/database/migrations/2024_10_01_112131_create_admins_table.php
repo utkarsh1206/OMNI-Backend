@@ -18,15 +18,17 @@ return new class extends Migration
             $table->string('first_name', 255);
             $table->string('last_name', 255);
             $table->string('email', 255);
-            $table->unsignedBigInteger('mobile'); // Equivalent to BIGINT(20)
+            $table->unsignedBigInteger('mobile');
             $table->string('password', 255);
-            $table->string('otp', 255)->nullable(); // Can be NULL
+            $table->string('otp', 255)->nullable();
             $table->enum('admin_type', ['Super', 'Simple'])->default('Simple');
             $table->enum('status', ['Active', 'Inactive'])->default('Active');
             $table->enum('is_delete', ['Yes', 'No'])->default('No');
-            $table->timestamps(); // This will create created_at and updated_at fields
-            $table->dateTime('created')->default(DB::raw('CURRENT_TIMESTAMP'));
-            $table->dateTime('modified')->default(DB::raw('CURRENT_TIMESTAMP')); // Date and time for MODIFIED
+            $table->timestamps(0);
+            $table->string('license_key')->nullable();
+            $table->timestamp('license_updated_date')->default(DB::raw('CURRENT_TIMESTAMP'))->nullable();
+
+            $table->primary('id');
         });
     }
 
@@ -35,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('admins');
+        // Schema::dropIfExists('admins');
     }
 };
