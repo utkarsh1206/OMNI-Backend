@@ -67,6 +67,7 @@ Route::apiResource('tenants', TenantController::class);
 Route::apiResource('users', UsersController::class);
 Route::apiResource('usergroup', UsergroupController::class);
 Route::apiResource('tenantrole', TenantroleController::class);
+Route::post('updateticketstatus/{supportticket}', [SupportticketController::class, 'statusupdate']);
 Route::apiResource('supportticket', SupportticketController::class);
 Route::apiResource('email-configure', EmailConfigureController::class);
 Route::get('tenantrole-list', [TenantroleController::class, 'list']);
