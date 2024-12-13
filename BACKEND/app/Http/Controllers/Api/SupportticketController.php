@@ -115,6 +115,9 @@ class SupportticketController extends Controller
             'description' => isset($request->description) ? $request->description : "",
             'attachment' =>json_encode($attachment_urls),
         ]);    
+          
+        $datePrefix = now()->format('dmy'); // Get the current date in ddmmyy format
+        $supportTicketId = $datePrefix . $supportticket->id; // Use the newly inserted ID
         $mail_details = MailDetail::create([
             'default_type' => isset($request->default_type) ? $request->default_type : "",
             'priority' => isset($request->default_priority) ? $request->default_priority : "",
@@ -124,11 +127,10 @@ class SupportticketController extends Controller
             'bcc' => isset($request->bcc) ? $request->bcc : "",
             'body' => isset($request->description) ? $request->description : "",
             'attachment' =>json_encode($attachment_urls),
+            'supportticket_id'=>$supportTicketId,
             'date'=> gmdate('Y-m-d H:i:s')
         ]);  
-          
-        $datePrefix = now()->format('dmy'); // Get the current date in ddmmyy format
-        $supportTicketId = $datePrefix . $supportticket->id; // Use the newly inserted ID
+
         $supportticket->update(['support_ticket_id' => $supportTicketId]);
         $notification = SupportTicketNotification::create([
             'type' => isset($request->default_type) ? $request->default_type : "",
@@ -268,7 +270,45 @@ class SupportticketController extends Controller
             'message' => 'Support Ticket Updated Successfully',
             'data' => new TenantsResource($supportticket)
         ]);
-    }    
+    }
+    public function statusupdate(Request $request, Supportticket $supportticket)
+    {
+        $type = "";
+        $comment = "";
+        if(isset($request->default_status)){
+            $type = $request->default_status;
+            $comment = "Change ticket status to: ".$request->default_status;
+            $updateData = [
+                'default_status' => isset($request->default_status) ? $request->default_status : "",
+            ];
+        }
+        if(isset($request->default_priority)){
+            $type = $request->default_status;
+            $comment = "Change ticket priority to: ".$request->default_priority;
+            $updateData = [
+                'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
+            ];
+        }
+        if(isset($request->default_type)){
+            $type = $request->default_status;
+            $comment = "Change ticket type to: ".$request->default_type;
+            $updateData = [
+                'default_type' => isset($request->default_type) ? $request->default_type : "",
+            ];
+        }
+        $supportticket->update($updateData);
+        $notification = SupportTicketNotification::create([
+            'type' => $type,
+            'comment' =>  $comment,
+            'support_ticket_id' => $supportticket->id,
+            'date' =>gmdate('Y-m-d H:i:s'),
+        ]);
+ 
+        return response()->json([
+            'message' => 'Support Ticket Status Updated Successfully',
+            'data' => new TenantsResource($supportticket)
+        ]);
+    }      
     public function destroy(Supportticket $supportticket)
     {
         $supportticket->is_delete = 'Yes';
