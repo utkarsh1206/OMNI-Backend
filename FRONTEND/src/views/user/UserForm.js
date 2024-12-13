@@ -284,7 +284,12 @@ const UserForm = ({ visible, setVisible, type }) => {
       handleCancel()
     } catch (error) {
       console.error('Operation failed: ', error)
-      alert('An error occurred while processing your request.')
+      if (error.response && error.response.data && error.response.data.message) {
+        alert(error.response.data.message);
+      } else {
+        alert('An error occurred while processing your request.')
+      }
+      
     }
   }
 
@@ -402,7 +407,7 @@ const UserForm = ({ visible, setVisible, type }) => {
                       <FormGroup
                         label="Password"
                         name="password"
-                        type="text"
+                        type="password"
                         value={formData.password}
                         onChange={handleChange}
                         required

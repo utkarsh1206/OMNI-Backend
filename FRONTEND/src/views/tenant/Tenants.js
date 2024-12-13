@@ -17,7 +17,7 @@ import {
 } from '@coreui/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { BASE_URL } from '../../config'
-import { cilPencil, cilXCircle } from '@coreui/icons'
+import { cilPencil, cilXCircle, cilLockLocked } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { AuthContext } from '../../context/AuthContext'
 import PaginationComponent from '../../components/PaginationComponent' // import the reusable pagination component
@@ -136,6 +136,17 @@ const Tenants = () => {
                             onClick={() => navigate(`/tenants/edit/${tenant.id}`)}
                           >
                             <CIcon icon={cilPencil} />
+                          </CButton>
+                        </CTooltip>
+                      </CCol>
+                      <CCol className="mx-auto d-flex justify-content-center">
+                        <CTooltip content="License">
+                          <CButton
+                            color="primary"
+                            size="sm"
+                            onClick={() => navigate(`/tenant_license/${tenant.id}`)}
+                          >
+                            <CIcon icon={cilLockLocked} />
                           </CButton>
                         </CTooltip>
                       </CCol>

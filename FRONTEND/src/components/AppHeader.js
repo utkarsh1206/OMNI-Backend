@@ -25,6 +25,7 @@ import {
   cilMenu,
   cilMoon,
   cilSun,
+  cilLockLocked,
 } from '@coreui/icons'
 
 import { AppBreadcrumb } from './index'
@@ -86,6 +87,17 @@ const AppHeader = () => {
                 style={{ opacity: 0.2 }}
               >
                 <CIcon icon={cilBrowser} size="lg" />
+              </CTooltip>
+            </CNavLink>
+          </CNavItem>
+          <CNavItem>
+            <CNavLink to="/license" as={NavLink}>
+              <CTooltip
+                content="License"
+                placement="bottom"
+                style={{ opacity: 0.2 }}
+              >
+                <CIcon icon={cilLockLocked} size="lg" />
               </CTooltip>
             </CNavLink>
           </CNavItem>

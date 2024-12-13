@@ -12,11 +12,18 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Hash;
-
-
+use App\Http\Controllers\Api\LicenseController;
 
 class UsersController extends Controller
 {
+    protected $licenseController;
+
+    // Inject LicenseController in the constructor
+    public function __construct(LicenseController $licenseController)
+    {
+        $this->licenseController = $licenseController;
+    }
+
     public function index(Request $request)
     {
         // Get the search term from the request
@@ -24,7 +31,7 @@ class UsersController extends Controller
         $token = $request->bearerToken();
         $payload = JWTAuth::setToken($token)->getPayload();
         // Start the query for tenants
-        
+
         $is_all_users = $request->has('all_user') ? $request->input('all_user') : null;
 
         $query = Users::query()->where('is_delete', 'No');
@@ -52,21 +59,21 @@ class UsersController extends Controller
             });
         }
 
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $users = $query->paginate($perPage);
-      //  $newToken = JWTAuth::refresh(JWTAuth::getToken());
-        // Return the response
-        return response()->json([
-            'data' => $users->items(),
-            'meta' => [
-                'current_page' => $users->currentPage(),
-                'last_page' => $users->lastPage(),
-                'per_page' => $users->perPage(),
-                'total' => $users->total(),
-          //      'refresh_token'=>$newToken
-            ],
-]);
+            // Paginate the results
+            $perPage = $request->input('per_page', 10);
+            $users = $query->paginate($perPage);
+            //  $newToken = JWTAuth::refresh(JWTAuth::getToken());
+            // Return the response
+            return response()->json([
+                'data' => $users->items(),
+                'meta' => [
+                    'current_page' => $users->currentPage(),
+                    'last_page' => $users->lastPage(),
+                    'per_page' => $users->perPage(),
+                    'total' => $users->total(),
+                    //      'refresh_token'=>$newToken
+                ],
+            ]);
         }
 
         $users = $query->get();
@@ -78,6 +85,23 @@ class UsersController extends Controller
     }
     public function store(Request $request)
     {
+        $is_tanant = false;
+        $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant'=> $is_tanant]));
+        $licenseInfo = $licenseResponse->getData(true);
+
+        $maxAgents = $licenseInfo['number_of_agents'];
+
+        $currentAgentCount = Users::where('type', '3')
+            ->where('is_delete', 'No')
+            ->count();
+
+        // Check if the limit is reached
+        if ($currentAgentCount >= $maxAgents) {
+            return response()->json([
+                'message' => 'User limit reached. You cannot add more agents.',
+            ], 400);
+        }
+
         $validator = Validator::make($request->all(), [
             'username' => 'required|unique:users',
             'email' => 'required|unique:users',
@@ -90,14 +114,14 @@ class UsersController extends Controller
 
         $users = Users::create([
             'username' => $request->username,
-           // "tenant_id" => $request->tenant_id,
+            // "tenant_id" => $request->tenant_id,
             "type" => 3,
             "first_name" => $request->first_name,
             "last_name" => $request->last_name,
             "email" => $request->email,
             "username" => $request->username,
             "password" => bcrypt($request->password),
-           // "domain" => $request->domain,
+            // "domain" => $request->domain,
             "mobile" => $request->mobile,
             "status" => $request->status,
             "is_delete" => 'No',
@@ -111,7 +135,7 @@ class UsersController extends Controller
             "occupation_id" => $request->occupation_id,
             "pincode" => $request->pincode,
             "address" => $request->address,
-            "gender" => $request->gender      
+            "gender" => $request->gender
         ]);
         return response()->json([
             'message' => 'User Created Successfully',
@@ -126,7 +150,7 @@ class UsersController extends Controller
     {
         $user->update([
             'username' => $request->username,
-           // "tenant_id" => $request->tenant_id,
+            // "tenant_id" => $request->tenant_id,
             "type" => 3,
             "first_name" => $request->first_name,
             "last_name" => $request->last_name,
@@ -147,13 +171,13 @@ class UsersController extends Controller
             "occupation_id" => $request->occupation_id,
             "pincode" => $request->pincode,
             "address" => $request->address,
-            "gender" => $request->gender       
+            "gender" => $request->gender
         ]);
         return response()->json([
             'message' => 'User Updated Successfully',
             'data' => new TenantsResource($user)
         ]);
-    }    
+    }
     public function destroy(Users $user)
     {
         $user->is_delete = 'Yes';
@@ -162,33 +186,35 @@ class UsersController extends Controller
             'message' => 'User Deleted Successfully',
         ]);
     }
-    public function updatepassword(Request $request){
-    $token = $request->bearerToken();
-        if($token != ""){
+    public function updatepassword(Request $request)
+    {
+        $token = $request->bearerToken();
+        if ($token != "") {
             $payload = JWTAuth::setToken($token)->getPayload();
             $users = Users::findOrFail($payload['id']);
             if (!Hash::check($request->old_password, $users->password)) {
                 return response()->json(['error' => 'Old Password Is Incorrect.'], 403);
             }
-            if($request->new_password != $request->new_password_confirmation){
+            if ($request->new_password != $request->new_password_confirmation) {
                 return response()->json(['error' => 'New Password And Confirm Not Matched.'], 403);
             }
             $users->password = Hash::make($request->new_password);
             $users->save();
             return response()->json(['message' => 'Password Updated Successfully.']);
-        }else{
+        } else {
             return response()->json(['error' => 'User Not Found.'], 403);
         }
     }
-    public function myprofile(Request $request){
+    public function myprofile(Request $request)
+    {
         $token = $request->bearerToken();
-        if($token != ""){
+        if ($token != "") {
             $payload = JWTAuth::setToken($token)->getPayload();
-            $domain =$payload['domain'];
+            $domain = $payload['domain'];
             $tenants = DB::table('omnichannel.tenants')
-            ->select('title', 'footer_content', 'footer_url', 'tenant_logo')
-            ->where('domain_name', '=', $domain) 
-            ->get();
+                ->select('title', 'footer_content', 'footer_url', 'tenant_logo')
+                ->where('domain_name', '=', $domain)
+                ->get();
             $return_array = array();
             $return_array['branding_information'] = (array)$tenants[0];
             $users = Users::where('id', $payload['id'])->first();
@@ -197,7 +223,7 @@ class UsersController extends Controller
             return response()->json([
                 'data' => new TenantsResource($return_array)
             ]);
-        }else{
+        } else {
             return response()->json(['error' => 'User Not Found.'], 403);
         }
     }
