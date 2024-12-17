@@ -114,10 +114,10 @@ class FetchEmails extends Command
             $messageTextBody = $message->getTextBody();  // Example message body
             // Insert record manually
             $lastInsertId = DB::table('ha11.supportticket')->insertGetId([
-                'product_id' => 1,
-                'campaign_id' => 1,
-                'inbound_group_id' => 1,
-                'contact_id' => 1,
+                'product_id' => $emailConfig->product_id,
+                'campaign_id' => $emailConfig->campaign_id,
+                'inbound_group_id' => $emailConfig->inbound_id,
+                'contact_id' => 0,
                 'assign_to_id' => 0,
                 'default_type' => $default_type,
                 'default_priority' => 'High',
