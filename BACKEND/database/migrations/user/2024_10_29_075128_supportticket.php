@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('support_ticket_id')->default(0);
             $table->unsignedBigInteger('product_id')->default(0);
-            $table->unsignedBigInteger('assign_to_id')->default(0);
+            $table->unsignedBigInteger('assign_to_id')->default(0); 
             $table->unsignedBigInteger('campaign_id')->default(0);
             $table->unsignedBigInteger('inbound_group_id')->default(0);
             $table->unsignedBigInteger('account_id')->default(0);
