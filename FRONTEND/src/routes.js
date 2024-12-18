@@ -1,3 +1,4 @@
+import { element } from 'prop-types'
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
@@ -112,6 +113,10 @@ const CreateTenantsLicense = React.lazy(() => import('./views/license/TenantsLic
 const EmailConfigSettings = React.lazy(() => import('./views/settings/EmailConfigSettings'))
 const CreateEmailConfigSettings = React.lazy(() => import('./views/settings/EmailConfigSettingsForm'))
 
+//Phones
+const Phone = React.lazy(() => import('./views/phone/Phones'))
+const CreatePhones = React.lazy(() => import('./views/phone/PhonesForm'))
+
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
@@ -194,11 +199,11 @@ const routes = [
   { path: '/report/callCDR', name: 'Report Management', element: CallCDRreport },
   { path: '/report/agent-activity', name: 'Report Management', element: AgentActivityReport },
 
-  { path: '/accounts', name: 'Accounts', element: Accounts, exact: true  },
+  { path: '/accounts', name: 'Accounts', element: Accounts, exact: true },
   { path: '/accounts/create_accounts', name: 'Create Accounts', element: CreateAccounts },
   { path: '/accounts/edit/:id', name: 'Edit Accounts', element: CreateAccounts },
 
-  { path: '/contacts', name: 'Contacts', element: Contacts, exact: true  },
+  { path: '/contacts', name: 'Contacts', element: Contacts, exact: true },
   { path: '/contacts/create_contacts', name: 'Create Contacts', element: CreateContacts },
   { path: '/contacts/edit/:id', name: 'Edit Contacts', element: CreateContacts },
 
@@ -214,12 +219,21 @@ const routes = [
 
   { path: '/agent', name: 'Agent', element: Agent, exact: true },
 
+  { path: '/agent/spprt_tckt', name: 'Support Ticket', element: SupportTickets, exact: true },
+  { path: '/agent/spprt_tckt/crt_tckt', name: 'Create Support Ticket', element: CreateSupportTickets },
+  { path: '/agent/spprt_tckt/edit/:id', name: 'Edit Support Ticket', element: CreateSupportTickets },
+  { path: '/agent/spprt_tckt_view/:id', name: 'Support Ticket', element: ViewSupportTickets },
+
   { path: '/neox_dash', name: 'Dashboard', element: NeoxDashboard, exact: true },
   { path: '/neox_dash/live_calls', name: 'Live Calls', element: LiveCalls },
   { path: '/neox_dash/live_agents', name: 'Live Agents', element: LiveAgents },
 
   { path: '/license', name: 'License', element: License, exact: true },
   { path: '/tenant_license/:id', name: 'Edit Tenant', element: CreateTenantsLicense },
+
+  { path: '/phones', name: 'Phones', element: Phone, exact: true },
+  { path: '/phones/create_phone', name: 'Create Phone', element: CreatePhones },
+  { path: '/phones/edit/:id', name: 'Edit Phone', element: CreatePhones },
 ]
 
 export default routes

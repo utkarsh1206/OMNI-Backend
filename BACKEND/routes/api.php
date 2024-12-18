@@ -41,6 +41,7 @@ use App\Http\Controllers\Api\LicenseUpdateController;
 use App\Http\Controllers\Api\LicenseController;
 use App\Http\Controllers\Api\TenantLicenseUpdateController;
 use App\Http\Controllers\Api\TenantLicenseController;
+use App\Http\Controllers\Api\PhoneController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -105,18 +106,10 @@ Route::middleware('auth:api')->post('license_update', [LicenseUpdateController::
 Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
 Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
 
-// Route::put('/tenants/{id}/license', [TenantLicenseUpdateController::class, 'updateLicense']);
 Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
 Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
 
-// Route::prefix('license')->group(function () {
-//     // Route to encode (generate) a license key
-//     Route::post('encode', [LicenseController::class, 'encodeLicense']);
-    
-//     // Route to decode an existing license key
-//     Route::post('decode', [LicenseController::class, 'decodeLicense']);
-// });
-
+Route::apiResource('phones', PhoneController::class);
 
 #Route::middleware('auth:api')->apiResource('users', UsersController::class);
 

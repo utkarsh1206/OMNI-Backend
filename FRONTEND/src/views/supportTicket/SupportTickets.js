@@ -38,7 +38,7 @@ import SearchAndFilter from '../../components/SearchAndFilter'
 const SupportTickets = () => {
   const navigate = useNavigate()
   const [tickets, setTickets] = useState([])
-  const { authToken } = useContext(AuthContext)
+  const { authToken, user } = useContext(AuthContext)
   const [ticketId, setTicketId] = useState()
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -47,6 +47,11 @@ const SupportTickets = () => {
     status: '',
   })
 
+  // const [isUser, setIsUser] = Boolean(flase);
+  const isUser = (user.role_id == 3)
+
+  console.log("roles ", user.role_id)
+  console.log("isUser", isUser)
   // const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
   // const [perPage, setPerPage] = useState(10) // Add state to track the current page
 
@@ -123,11 +128,13 @@ const SupportTickets = () => {
           <CContainer className="mb-3">
             <CRow fluid responsive>
               <CCol md={8}>
-                <Link to="/spprt_tckt/crt_tckt">
-                  <CButton color="primary" className="me-2" size="sm">
-                    Create Ticket
-                  </CButton>
-                </Link>
+                {!isUser && (
+                  <Link to="/spprt_tckt/crt_tckt">
+                    <CButton color="primary" className="me-2" size="sm">
+                      Create Ticket
+                    </CButton>
+                  </Link>
+                )}
               </CCol>
               <SearchAndFilter
                 onSearch={setSearchQuery} // Callback for live search
@@ -163,7 +170,12 @@ const SupportTickets = () => {
                     className="align-content-center"
                     onClick={() => handleTicketModal(ticket.id)}
                   >
-                    <Link to={`/spprt_tckt_view/${ticket.id}`}>{ticket.id}</Link>
+                    {!isUser ? (
+                      <Link to={`/spprt_tckt_view/${ticket.id}`}>{ticket.id}</Link>
+                    ) : (
+                      <Link to={`/agent/spprt_tckt_view/${ticket.id}`}>{ticket.id}</Link>
+                    )}
+
                     {/* <CButton color="link" onClick={() => navigate(`/spprt_tckt_view`)}>
                       {ticket.id}
                     </CButton> */}
@@ -213,33 +225,37 @@ const SupportTickets = () => {
 
                   <CTableDataCell className="align-content-center">
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                      <CTooltip content="Edit">
-                        <CButton
-                          color="warning"
-                          size="sm"
-                          onClick={() => navigate(`/spprt_tckt/edit/${ticket.id}`)}
-                        >
-                          <CIcon icon={cilPencil} />
-                        </CButton>
-                      </CTooltip>
+                      {!isUser && (
+                        <CTooltip content="Edit">
+                          <CButton
+                            color="warning"
+                            size="sm"
+                            onClick={() => navigate(`/spprt_tckt/edit/${ticket.id}`)}
+                          >
+                            <CIcon icon={cilPencil} />
+                          </CButton>
+                        </CTooltip>
+                      )}
                       <CTooltip content="Mail">
                         <CButton
                           color="secondary"
                           size="sm"
-                          // onClick={() => handleMailTicket(ticket.id)}
+                        // onClick={() => handleMailTicket(ticket.id)}
                         >
                           <CIcon icon={cilEnvelopeOpen} />
                         </CButton>
                       </CTooltip>
-                      <CTooltip content="Delete">
-                        <CButton
-                          color="danger"
-                          size="sm"
-                          onClick={() => handleDeleteTicket(ticket.id, ticket.username)}
-                        >
-                          <CIcon icon={cilXCircle} />
-                        </CButton>
-                      </CTooltip>
+                      {!isUser && (
+                        <CTooltip content="Delete">
+                          <CButton
+                            color="danger"
+                            size="sm"
+                            onClick={() => handleDeleteTicket(ticket.id, ticket.username)}
+                          >
+                            <CIcon icon={cilXCircle} />
+                          </CButton>
+                        </CTooltip>
+                      )}
                     </div>
                   </CTableDataCell>
                 </CTableRow>
@@ -254,8 +270,8 @@ const SupportTickets = () => {
             onDataFetched={setTickets}
             filters={filters}
             search={searchQuery}
-            // onPageChange={handlePageChange}
-            // perPageValue={handlePerPageValue}
+          // onPageChange={handlePageChange}
+          // perPageValue={handlePerPageValue}
           />
         </CCol>
       </CRow>

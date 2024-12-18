@@ -59,7 +59,13 @@ const Login = () => {
     setErrorMsg('')
     try {
       await login(credentials)
-      navigate('/dashboard')
+      if (credentials.flag == '2') 
+      {
+        navigate('/agent')
+      } else {
+        navigate('/dashboard')
+      }
+
     } catch (err) {
       if (err.response.data.error) {
         setErrorMsg(err.response.data.error);

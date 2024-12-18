@@ -454,7 +454,7 @@ const NAV_PERMISSIONS = {
   '/bulk/usr_camp': 'viewBulkUserCampaign',
   '/bulk/phn_crtn': 'viewBulkPhoneCreation',
   '/bulk/usr_crtn': 'viewBulkUserCreation',
-  '/phones': 'viewPhones',
+  // '/phones': 'viewPhones',
   '/sys/srvr': 'viewServerManagement',
   '/sys/thrd_prty_auth': 'viewThirdPartyAuth',
   '/sys/cstmz_gui': 'viewCustomizeGUI',

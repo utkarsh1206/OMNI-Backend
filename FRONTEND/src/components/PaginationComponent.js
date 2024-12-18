@@ -39,7 +39,7 @@ const PaginationComponent = ({
           page: page,
           per_page: perPage,
           ...filters,
-          ...search,
+          search,
         },
         cancelToken: source.token, // Attach cancel token to the request
       })

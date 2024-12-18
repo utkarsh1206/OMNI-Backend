@@ -1,9 +1,21 @@
+2024-12-16 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 35856735 
+	* Version : Dev
+	* React & Laravel : Phone Module with CRUD Opration and Front UI.
+	Made changes in Login API for Agent/User Login.
+	Create screen for Agent/User loing after display.
+	Added supoort ticket menu for User/Agent.
+	User can see only own tickets which is assigned this his/her.
+	User can not create, update, delete tickets.
+	   
 2024-12-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
 	* Previous Commit ID : 
 	* Version : Dev
-	* Commit issue : 
+	* React & Laravel : 
 	    SuperAdmin License Generation
 
 	 Purpose: The License Generator allows the creation of SuperAdmin licenses.

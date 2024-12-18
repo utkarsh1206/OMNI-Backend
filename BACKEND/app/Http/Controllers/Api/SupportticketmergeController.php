@@ -12,7 +12,7 @@ class SupportticketmergeController extends Controller
 {
     public function store(Request $request)
     {
-        $affectedRows = Supportticket::where('id', $request->merge_supportticket_id)->update(['default_status' => 'closed']);
+        $affectedRows = Supportticket::where('id', $request->merge_supportticket_id)->update(['default_status' => 'Closed']);
         $Supportticket = Supportticket::where('id', $request->merge_supportticket_id)->get();
 
 
@@ -24,7 +24,7 @@ class SupportticketmergeController extends Controller
             'date' =>gmdate('Y-m-d H:i:s'),
         ]);
         return response()->json([
-            'message' => 'Transfer ticket successfully.',
+            'message' => 'Tickets Merge Successfully.',
         ], 201);
     }
 }

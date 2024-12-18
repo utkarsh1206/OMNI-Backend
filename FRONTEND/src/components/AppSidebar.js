@@ -19,6 +19,7 @@ import { AppSidebarNavNeoxDash } from './AppSidebarNavNeoxDash'
 import navigation from '../_nav'
 import navigationDash from '../_navDash'
 import { AuthContext } from '../context/AuthContext'
+import navigationAgent from '../_navAgent'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
@@ -59,7 +60,7 @@ const AppSidebar = () => {
         if (pathname.startsWith('/super_admin')) {
           return <AppSidebarNavSuperAdmin items={navigation} />
         } else if (pathname.startsWith('/agent')) {
-          return <AppSidebarNavAgent items={navigation} />
+          return <AppSidebarNavAgent items={navigationAgent} />
         } else if (pathname.startsWith('/neox_dash')) {
           return <AppSidebarNavNeoxDash items={navigationDash} />
         } else {

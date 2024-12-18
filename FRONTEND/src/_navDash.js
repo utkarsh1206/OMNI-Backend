@@ -6,6 +6,7 @@ import {
   cilCursor,
   cilPhone,
   cilUser,
+  cilTags,
 } from '@coreui/icons'
 import { CNavGroup, CNavGroupItems, CNavItem, CNavTitle } from '@coreui/react'
 

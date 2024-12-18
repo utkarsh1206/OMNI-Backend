@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Supportticketnotification extends Model
 {
     use HasFactory;
-    protected $table = 'support_ticket_notification';
+    protected $table = 'support_ticket_notifications';
     protected $fillable = [
         'type',
         'comment',

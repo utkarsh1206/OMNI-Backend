@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Admins;
 use App\Models\Users;
+use App\Models\Phones;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -20,7 +21,7 @@ class LoginController extends Controller
     {
         $this->licenseController = $licenseController;  // Inject LicenseController
     }
-    
+
     public function login_action(Request $request)
     {
         $validator = $request->validate([
@@ -105,26 +106,35 @@ class LoginController extends Controller
                     if (isset($credentials['email'])) {
                         $userData = Users::where('email', $credentials['email'])
                             ->where('is_delete', 'No')
-                            ->where('phone', $request->input('phone'))
+                            ->where('role_id', 3)
                             ->first();
                     } else {
                         $userData = Users::where('username', $credentials['username'])
                             ->where('is_delete', 'No')
-                            ->where('phone', $request->input('phone'))
+                            ->where('role_id', 3)
                             ->first();
                     }
-                    Log::info('User data', ['userData' => $userData]);
+
+                    $phoneData = Phones::where('login', $request->input('phone'))
+                        ->where('status', 'ACTIVE')
+                        ->first();
 
                     if (!$userData) {
+                        Log::error('User not found or deleted', ['credentials' => $credentials]);
                         return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
                     }
 
-                    if ($this->isLicenseExpired($request)) {
-                        return response()->json(['error' => 'License expired'], 403);
+                    if (!$phoneData) {
+                        Log::error('Phone not found or inactive', ['phone' => $request->input('phone')]);
+                        return response()->json(['error' => 'Unauthorized: Invalid phone credentials'], 401);
                     }
 
+                    Log::info('Phone data retrieved:', ['phoneData' => $phoneData]);
+
                     // If the user is found, check both password and phone_password
-                    if ($userData && Hash::check($credentials['password'], $userData->password) && Hash::check($request->input('phone_password'), $userData->phone_password)) {
+                    // if ($userData && Hash::check($credentials['password'], $userData->password) && Hash::check($request->input('phone_password'), $userData->phone_password)) {
+                    if ($userData && Hash::check($credentials['password'], $userData->password) && $request->input('phone_password') == $phoneData->pass) {
+
                         Log::info('Both password and phone password checks passed');
                         // Set the flag to include phone in JWT
                         $userData->setAddPhoneToJWT($validator['flag']);
@@ -137,10 +147,10 @@ class LoginController extends Controller
                     return response()->json(['error' => 'Domain is required'], 400);
                 }
 
-                // Check if the license is expired for this user
-                // if ($this->isLicenseExpired($userData)) {
-                //     return response()->json(['error' => 'License expired'], 403);
-                // }
+                //Check if the license is expired for this user
+                if ($this->isLicenseExpired($request)) {
+                    return response()->json(['error' => 'License expired'], 403);
+                }
             } catch (\Illuminate\Database\QueryException $ex) {
                 Log::error('Database error: ' . $ex->getMessage());
                 return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
@@ -155,7 +165,7 @@ class LoginController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Login successful',
+            'message' => 'User Login successful',
             'token' => $token
         ], 200);
     }
@@ -163,7 +173,7 @@ class LoginController extends Controller
     private function isLicenseExpired(Request $request)
     {
         $is_tanant = false;
-        $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant'=> $is_tanant]));
+        $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant' => $is_tanant]));
         $licenseInfo = $licenseResponse->getData(true);
 
         if (isset($licenseInfo['validity_date'])) {
@@ -175,7 +185,7 @@ class LoginController extends Controller
             return response()->json(['error' => 'License data invalid'], 400);
         }
 
-        
+
 
         return false;
     }
