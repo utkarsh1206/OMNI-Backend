@@ -174,6 +174,11 @@ class TenantController extends Controller
             'status' => 'Active',
             'role_id' => 0
         ]);
+
+        Artisan::call('db:seed', [
+            '--database' => $newConnectionName, // Specify the new connection if needed
+            '--force' => true, // Run seeders in production if necessary
+        ]);
         return response()->json([
             'message' => 'Tenant Created Successfully',
             'data' => new TenantsResource($tenants)

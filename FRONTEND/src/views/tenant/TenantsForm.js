@@ -153,6 +153,7 @@ const TenantsForm = () => {
       }
       handleCancel()
     } catch (error) {
+      alert(error.response.data.message)
       console.error('Operation failed:', error)
       alert('An error occurred while processing your request.')
     }

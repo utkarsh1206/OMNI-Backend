@@ -1,3 +1,18 @@
+2024-12-19 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3878
+	* Previous Commit ID : a763a803 
+	* Version : Dev
+	* Laravel : 
+	1. API Creation for Email Template CRUD: Developed an API to handle the 
+	Create, Read, Update, and Delete operations for email templates. This API 
+	enables full management of email templates within the system.
+
+	2. Migration and Seeder Creation: Created a migration file to define and 
+	generate the necessary table structure in the tenant database for email 
+	templates. Additionally, a seeder was implemented to insert predefined 
+	entries into the table for initial setup.
+
 2024-12-16 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
