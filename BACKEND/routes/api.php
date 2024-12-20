@@ -43,6 +43,7 @@ use App\Http\Controllers\Api\TenantLicenseUpdateController;
 use App\Http\Controllers\Api\TenantLicenseController;
 use App\Http\Controllers\Api\PhoneController;
 use App\Http\Controllers\Api\MailTemplateController;
+use App\Http\Controllers\Api\SlaSettingController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -113,6 +114,8 @@ Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense'
 Route::apiResource('phones', PhoneController::class);
 
 Route::apiResource('mail-templates', MailTemplateController::class);
+
+Route::apiResource('sla-settings', SlaSettingController::class);
 
 #Route::middleware('auth:api')->apiResource('users', UsersController::class);
 

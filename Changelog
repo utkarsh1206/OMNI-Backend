@@ -1,3 +1,19 @@
+2024-12-20 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3879
+	* Previous Commit ID : 7127167c 
+	* Version : Dev
+	* Laravel : 
+	The SLA Settings CRUD API allows users to manage SLA configurations, 
+	including defining working hours, off days, holidays, and 
+	response/resolve targets. Users can create, read, update, and 
+	delete SLA settings, with each SLA entry identified by a unique 'name'. 
+	The API supports associating off days, holidays, and service level targets (
+	such as response and resolution times) to specific SLA configurations, 
+	ensuring comprehensive management of SLA requirements. All operations 
+	are fully integrated with relational tables for off days, holidays, 
+	and service level targets, ensuring data integrity through foreign key relationships.
+
 2024-12-19 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3878
