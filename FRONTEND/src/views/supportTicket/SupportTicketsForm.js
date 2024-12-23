@@ -418,6 +418,32 @@ const SupportTicketsForm = () => {
                     ))}
                   </CFormSelect>
                 </CCol>
+                <CCol md="4" className="mb-3">
+                  <CFormLabel htmlFor="default_status">
+                    Incident Type <span style={{ color: 'red' }}>*</span> <small>should be changed on camp select</small>
+                  </CFormLabel>
+                  <CFormSelect
+                    id="default_status"
+                    name="default_status"
+                    // value={formData.default_status}
+                    // onChange={handleChange}
+                    // required
+                  >
+                    <option key="" value="" disabled>
+                      Select Incident Type
+                    </option>
+                    {/* {Object.keys(STATUS_TO_COLOR).map((key) => (
+                      <option key={key} value={key}>
+                        {key}
+                      </option>
+                    ))} */}
+                    <option>Type 1</option>
+                    <option>Type 2</option>
+                    <option>Type 3</option>
+                    <option>Type 4</option>
+                    <option>Type 5</option>
+                  </CFormSelect>
+                </CCol>
               </CRow>
             </CCardBody>
           </CCard>

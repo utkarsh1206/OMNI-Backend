@@ -403,10 +403,18 @@ const navItemList = [
   //   to: '/spprt_tckt_view',
   //   icon: <CIcon icon={icon.cilUserPlus} customClassName="nav-icon" />,
   // },
+
+
+  // {
+  //   component: CNavItem,
+  //   name: 'Settings1',
+  //   to: '/email_config_settings',
+  //   icon: <CIcon icon={icon.cilSettings} customClassName="nav-icon" />,
+  // },
   {
     component: CNavItem,
     name: 'Settings',
-    to: '/email_config_settings',
+    to: '/settings',
     icon: <CIcon icon={icon.cilSettings} customClassName="nav-icon" />,
   },
 ]

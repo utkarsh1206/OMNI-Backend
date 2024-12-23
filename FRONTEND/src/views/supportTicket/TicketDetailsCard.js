@@ -1,4 +1,6 @@
-import React from 'react'
+//edited
+
+import React, { useContext, useState } from 'react'
 import {
   CBadge,
   CCard,
@@ -8,14 +10,23 @@ import {
   CCol,
   CRow,
   CSpinner,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem,
 } from '@coreui/react'
 import { Link } from 'react-router-dom'
 import { cilBuilding, cilMap, cilMobile } from '@coreui/icons'
 import CIcon, { CIconSvg } from '@coreui/icons-react'
 import { formatDateWithTime } from '../../utils/DateUtils'
-import { PRIORITY_TO_COLOR, STATUS_TO_COLOR, TYPE_TO_COLOR } from '../../config'
+import { BASE_URL, PRIORITY_TO_COLOR, STATUS_TO_COLOR, TYPE_TO_COLOR } from '../../config'
+import axios from 'axios'
+import { AuthContext } from '../../context/AuthContext'
 
 const TicketDetailsCard = ({ ticket, account, contact }) => {
+  const { authToken } = useContext(AuthContext)
+  const [loadingField, setLoadingField] = useState(null) // Track the loading state for each dropdown
+
   if (!ticket || !ticket.id)
     return (
       <CCard className="mb-3">
@@ -26,7 +37,31 @@ const TicketDetailsCard = ({ ticket, account, contact }) => {
           </div>
         </CCardBody>
       </CCard>
-    ) // Avoid rendering until data is loaded
+    )
+
+  // Update ticket fields via PUT request
+  const handleFieldUpdate = async (field, value) => {
+    try {
+      setLoadingField(field) // Show loading spinner for the specific field
+      await axios.post(
+        `${BASE_URL}/api/updateticketstatus/${ticket.id}`,
+        { [field]: value },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            Authorization: `Bearer ${authToken}`,
+          },
+        },
+      ) // Adjust the API endpoint
+      // Update the ticket field locally (optional)
+      ticket[field] = value
+    } catch (error) {
+      console.error(`Failed to update ${field}:`, error)
+    } finally {
+      setLoadingField(null) // Reset the loading state
+    }
+  }
 
   return (
     <CCard className="mb-3">
@@ -61,7 +96,7 @@ const TicketDetailsCard = ({ ticket, account, contact }) => {
           </CCol>
           <CCol>
             <h6>
-              #{ticket.id} - {formatDateWithTime(ticket.created_at)}
+              {ticket.support_ticket_id} - {formatDateWithTime(ticket.created_at)}
             </h6>
             <h5>
               <Link to="#">
@@ -86,23 +121,78 @@ const TicketDetailsCard = ({ ticket, account, contact }) => {
             {ticket.subject}
 
             <CRow className="my-3">
+              {/* Type Dropdown */}
               <CCol sm={4}>
-                <strong>Type: </strong>{' '}
-                <CBadge color={TYPE_TO_COLOR[ticket.default_type] || 'secondary'}>
-                  {ticket.default_type}
-                </CBadge>
+                <strong>Type: </strong>
+                {loadingField === 'default_type' ? (
+                  <CSpinner size="sm" />
+                ) : (
+                  <CDropdown>
+                    <CDropdownToggle color={TYPE_TO_COLOR[ticket.default_type] || 'secondary'}>
+                      {ticket.default_type}
+                    </CDropdownToggle>
+                    <CDropdownMenu>
+                      {Object.keys(TYPE_TO_COLOR).map((key) => (
+                        <CDropdownItem
+                          key={key}
+                          onClick={() => handleFieldUpdate('default_type', key)}
+                        >
+                          {key}
+                        </CDropdownItem>
+                      ))}
+                    </CDropdownMenu>
+                  </CDropdown>
+                )}
               </CCol>
+
+              {/* Priority Dropdown */}
               <CCol sm={4}>
-                <strong>Priority: </strong>{' '}
-                <CBadge color={PRIORITY_TO_COLOR[ticket.default_priority] || 'secondary'}>
-                  {ticket.default_priority}
-                </CBadge>
+                <strong>Priority: </strong>
+                {loadingField === 'default_priority' ? (
+                  <CSpinner size="sm" />
+                ) : (
+                  <CDropdown>
+                    <CDropdownToggle
+                      color={PRIORITY_TO_COLOR[ticket.default_priority] || 'secondary'}
+                    >
+                      {ticket.default_priority}
+                    </CDropdownToggle>
+                    <CDropdownMenu>
+                      {Object.keys(PRIORITY_TO_COLOR).map((key) => (
+                        <CDropdownItem
+                          key={key}
+                          onClick={() => handleFieldUpdate('default_priority', key)}
+                        >
+                          {key}
+                        </CDropdownItem>
+                      ))}
+                    </CDropdownMenu>
+                  </CDropdown>
+                )}
               </CCol>
+
+              {/* Status Dropdown */}
               <CCol sm={4}>
-                <strong>Status: </strong>{' '}
-                <CBadge color={STATUS_TO_COLOR[ticket.default_status] || 'secondary'}>
-                  {ticket.default_status}
-                </CBadge>
+                <strong>Status: </strong>
+                {loadingField === 'default_status' ? (
+                  <CSpinner size="sm" />
+                ) : (
+                  <CDropdown>
+                    <CDropdownToggle color={STATUS_TO_COLOR[ticket.default_status] || 'secondary'}>
+                      {ticket.default_status}
+                    </CDropdownToggle>
+                    <CDropdownMenu>
+                      {Object.keys(STATUS_TO_COLOR).map((key) => (
+                        <CDropdownItem
+                          key={key}
+                          onClick={() => handleFieldUpdate('default_status', key)}
+                        >
+                          {key}
+                        </CDropdownItem>
+                      ))}
+                    </CDropdownMenu>
+                  </CDropdown>
+                )}
               </CCol>
             </CRow>
           </CCol>

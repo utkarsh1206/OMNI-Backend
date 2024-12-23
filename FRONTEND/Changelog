@@ -1,3 +1,12 @@
+2024-12-23 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3831, 3832, 3833, 3834, 3837
+	* Previous Commit ID : c464fc85
+	* Version : Dev
+	* ReactJS : Created Settings page which will include email config, email
+				templates, SLA Settings, and others. Created Pages for Email Config,
+				email templates. Updated view support ticket pages. Other Small Changes
+				
 2024-12-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3769

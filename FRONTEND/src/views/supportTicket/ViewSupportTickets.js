@@ -73,7 +73,7 @@ const ViewSupportTickets = () => {
   //       })
   //   }
   // }, [tickets.account_id])
- 
+
   useEffect(() => {
     if (tickets.account_id) {
       axios
@@ -102,17 +102,17 @@ const ViewSupportTickets = () => {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${authToken}`,
             },
-          });
-          setAccount(response.data.data);
+          })
+          setAccount(response.data.data)
         } catch (error) {
-          console.error('Error fetching account details:', error);
-          alert('Failed to fetch Account details');
+          console.error('Error fetching account details:', error)
+          alert('Failed to fetch Account details')
         }
       }
-    };
-  
-    fetchAccountDetails();
-  }, [tickets.account_id]);
+    }
+
+    fetchAccountDetails()
+  }, [tickets.account_id])
 
   const handleSideMenu = (id) => {
     setSideMenu((prev) => (prev === id ? null : id))
@@ -136,10 +136,10 @@ const ViewSupportTickets = () => {
           <SideMenuActions sideMenu={sideMenu} onToggle={handleSideMenu} />
 
           {/* Ticket Activity */}
-          {!sideMenu && <TicketActivity />}
+          {!sideMenu && <TicketActivity ticket={tickets} />}
 
           {/* Reply */}
-          {sideMenu === 1 && <Reply onClose={handleOffcanvasClose} />}
+          {sideMenu === 1 && <Reply onClose={handleOffcanvasClose} ticket={tickets} />}
 
           {/* Notes */}
           {sideMenu === 2 && <Notes ticket={tickets} />}
@@ -148,13 +148,15 @@ const ViewSupportTickets = () => {
           {sideMenu === 3 && <Tasks />}
 
           {/* Transfers */}
-          {sideMenu === 4 && <Transfers />}
+          {sideMenu === 4 && <Transfers ticket={tickets} />}
 
           {/* Account Details */}
-          {sideMenu === 5 && <AccountDetails onClose={handleOffcanvasClose} />}
+          {sideMenu === 5 && (
+            <AccountDetails onClose={handleOffcanvasClose} accountId={tickets.account_id} />
+          )}
 
           {/* Merge Tickets */}
-          {sideMenu === 6 && <MergeTickets />}
+          {sideMenu === 6 && <MergeTickets ticket={tickets}/>}
         </CCol>
       </CRow>
     </CContainer>

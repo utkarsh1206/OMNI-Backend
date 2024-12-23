@@ -15,17 +15,18 @@ import {
   CTableRow,
   CTooltip,
 } from '@coreui/react'
-import { Link, useNavigate } from 'react-router-dom'
-import { BASE_URL } from '../../config'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { BASE_URL } from '../../../config'
 import { cilPencil, cilXCircle } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-import { AuthContext } from '../../context/AuthContext'
-import PaginationComponent from '../../components/PaginationComponent' // import the reusable pagination component
-import { formatDate } from '../../utils/DateUtils'
+import { AuthContext } from '../../../context/AuthContext'
+import PaginationComponent from '../../../components/PaginationComponent' // import the reusable pagination component
+import { formatDate } from '../../../utils/DateUtils'
 import axios from 'axios'
 
 const EmailConfigSettings = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [emailConfigs, setEmailConfigs] = useState([])
   const { authToken } = useContext(AuthContext)
 
@@ -35,6 +36,10 @@ const EmailConfigSettings = () => {
 
     // Add more filters here as needed
   })
+
+  // Extract type from query string
+  const searchParams = new URLSearchParams(location.search);
+  const emailType = searchParams.get("type");
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target
@@ -71,7 +76,7 @@ const EmailConfigSettings = () => {
         <CCol xs={12}>
           <CCard className="mb-2">
             <CCardHeader>
-              Search for <strong>Email COnfiguration</strong> <small>Filters will be filled later</small>
+              Search for <strong>Email Configuration</strong> <small>Filters will be filled later</small>
             </CCardHeader>
             <CCardBody>
               Placeholder for tenant search fields
@@ -90,12 +95,13 @@ const EmailConfigSettings = () => {
         </CCol>
       </CRow>
       <hr />
+      {/* <h5>Email Configurations for: {emailType?.toUpperCase()}</h5> */}
       <CRow>
         <CCol>
           <CContainer>
             <CRow fluid responsive>
               <CCol md={8}>
-                <Link to="/email_config_settings/crt_config">
+                <Link to={`/settings/email_config_settings/crt_config?type=${emailType}`}>
                   <CButton color="primary" className="mb-4 me-2" size="sm">
                     Configure
                   </CButton>

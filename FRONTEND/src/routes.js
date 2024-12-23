@@ -110,8 +110,15 @@ const License = React.lazy(() => import('./views/license/License'))
 const CreateTenantsLicense = React.lazy(() => import('./views/license/TenantsLicenseForm'))
 
 // Settings
-const EmailConfigSettings = React.lazy(() => import('./views/settings/EmailConfigSettings'))
-const CreateEmailConfigSettings = React.lazy(() => import('./views/settings/EmailConfigSettingsForm'))
+const SettingsOptions = React.lazy(() => import('./views/settings/SettingsOptions'))
+const EmailSettingsOptions = React.lazy(() => import('./views/settings/email/EmailSettingsOptions'))
+const EmailConfigSettings = React.lazy(() => import('./views/settings/email/EmailConfigSettings'))
+const CreateEmailConfigSettings = React.lazy(() => import('./views/settings/email/EmailConfigSettingsForm'))
+
+const EmailTemplates = React.lazy(() => import('./views/settings/emailTemplate/EmailTemplates'))
+const CreateEmailTemplate = React.lazy(() => import('./views/settings/emailTemplate/EmailTemplatesForm'))
+
+const SLAConfiguration = React.lazy(() => import('./views/settings/sla/SLAConfigurationForm'))
 
 //Phones
 const Phone = React.lazy(() => import('./views/phone/Phones'))
@@ -213,9 +220,17 @@ const routes = [
 
   { path: '/spprt_tckt_view/:id', name: 'Support Ticket', element: ViewSupportTickets },
 
-  { path: '/email_config_settings', name: 'Email Configuration Settings', element: EmailConfigSettings },
-  { path: '/email_config_settings/crt_config', name: 'Create Email Configuration Settings', element: CreateEmailConfigSettings },
-  { path: '/email_config_settings/edit/:id', name: 'Edit Email Configuration Settings', element: CreateEmailConfigSettings },
+  { path: '/settings', name: 'Settings', element: SettingsOptions },
+ 
+  { path: '/settings/email_options', name: 'Email Options', element: EmailSettingsOptions },
+  { path: '/settings/email_config_settings', name: 'Email Configuration Settings', element: EmailConfigSettings },
+  { path: '/settings/email_config_settings/crt_config', name: 'Create Email Configuration Settings', element: CreateEmailConfigSettings },
+  { path: '/settings/email_config_settings/edit/:id', name: 'Edit Email Configuration Settings', element: CreateEmailConfigSettings },
+
+  { path: '/settings/email_templates', name: 'Email Templates', element: EmailTemplates },
+  { path: '/settings/email_templates/crt_tmplt', name: 'Create Email Template', element: CreateEmailTemplate },
+  { path: '/settings/email_templates/edit/:id', name: 'Edit Email Template', element: CreateEmailTemplate },
+  { path: '/settings/SLA_configuration', name: 'SLA Configuration', element: SLAConfiguration },
 
   { path: '/agent', name: 'Agent', element: Agent, exact: true },
 

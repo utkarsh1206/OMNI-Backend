@@ -23,6 +23,7 @@ export const TYPE_TO_COLOR = {
 
 export const PRIORITY_TO_COLOR = {
   Low: 'info',
+  Normal: 'primary',
   Medium: 'success',
   High: 'warning',
   Criticial: 'danger',
@@ -38,7 +39,12 @@ export const STATUS_TO_COLOR = {
 }
 
 export const CAMPAIGNS = [
-  { id: '1', name: 'Default Campaign' },
+  { id: '1', name: 'Camp_1' },
+  { id: '2', name: 'Camp_2' },
+  { id: '3', name: 'Camp_3' },
+  { id: '4', name: 'Camp_4' },
+  { id: '5', name: 'Camp_5' },
+  { id: '6', name: 'Camp_6' },
   // Add more campaigns as needed
 ]
 

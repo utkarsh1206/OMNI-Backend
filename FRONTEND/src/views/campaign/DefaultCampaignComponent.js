@@ -25,7 +25,7 @@ function DefaultCampaignComponent({ formData, handleChange }) {
   return (
     <CCol md="4" className="mb-3">
       <CFormLabel htmlFor="campaign_id">
-        Campaign <span style={{ color: 'red' }}>*</span>
+        Campaign/Department <span style={{ color: 'red' }}>*</span>
       </CFormLabel>
       <CFormSelect
         id="campaign_id"
@@ -34,7 +34,7 @@ function DefaultCampaignComponent({ formData, handleChange }) {
         onChange={handleChange}
       >
         <option value="" disabled>
-          Select Campaign
+          Select Campaign/Department
         </option>
         {CAMPAIGNS.map(campaign => (
           <option key={campaign.name} value={campaign.id}>

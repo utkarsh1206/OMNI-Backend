@@ -27,7 +27,17 @@ import { BASE_URL } from '../../config'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext'
 
-const FormGroup = ({ label, name, value, onChange, required, type, disabled, placeholder, max }) => (
+const FormGroup = ({
+  label,
+  name,
+  value,
+  onChange,
+  required,
+  type,
+  disabled,
+  placeholder,
+  max,
+}) => (
   <CCol md="4" className="mb-3">
     <CFormLabel htmlFor={name}>
       {label} {required && <span style={{ color: 'red' }}>*</span>}
@@ -285,11 +295,10 @@ const UserForm = ({ visible, setVisible, type }) => {
     } catch (error) {
       console.error('Operation failed: ', error)
       if (error.response && error.response.data && error.response.data.message) {
-        alert(error.response.data.message);
+        alert(error.response.data.message)
       } else {
         alert('An error occurred while processing your request.')
       }
-      
     }
   }
 
@@ -431,12 +440,14 @@ const UserForm = ({ visible, setVisible, type }) => {
                         value={formData.role_id}
                         onChange={handleChange}
                       >
-                        <option key="" value="" disabled>Select Role ID</option>
+                        <option key="" value="" disabled>
+                          Select Role ID
+                        </option>
                         <option key="1" value="1">
-                          Manager
+                          Admin
                         </option>
                         <option key="2" value="2">
-                          Admin
+                          Manager
                         </option>
                         <option key="3" value="3">
                           User / Agent
@@ -658,7 +669,6 @@ const UserForm = ({ visible, setVisible, type }) => {
                         ))}
                       </CFormSelect>
                     </CCol>
-
                   </CRow>
                 </CAccordionBody>
               </CAccordionItem>

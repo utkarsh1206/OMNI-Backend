@@ -9,6 +9,8 @@ import {
   CFormTextarea,
   CListGroup,
   CListGroupItem,
+  CRow,
+  CCol,
 } from '@coreui/react'
 import axios from 'axios'
 import { BASE_URL } from '../../config'
@@ -18,6 +20,7 @@ import { formatDateWithTime } from '../../utils/DateUtils'
 const Notes = ({ ticket }) => {
   const { authToken } = useContext(AuthContext)
   const [notes, setNotes] = useState([])
+  const [newNote, setNewNote] = useState('')
 
   useEffect(() => {
     axios
@@ -36,25 +39,71 @@ const Notes = ({ ticket }) => {
       })
   }, [ticket])
 
+  const handleSaveNote = async () => {
+    if (!newNote.trim()) {
+      alert('Please enter a note.')
+      return
+    }
+
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/note`,
+        {
+          supportticket_id: ticket.id,
+          note: newNote,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`,
+          },
+        },
+      )
+
+      // Update the notes state with the new note
+      setNotes([response.data.data, ...notes])
+      setNewNote('') // Clear the textarea
+    } catch (error) {
+      console.error('Error saving note:', error)
+      alert('Failed to save the note')
+    }
+  }
+
   return (
     <CCard>
       <CCardHeader>
         <CCardTitle>Notes</CCardTitle>
       </CCardHeader>
       <CCardBody>
-        <CFormTextarea id="notes" name="notes" rows={3} placeholder="Enter Notes Here..." />
+        <CRow>
+          <CCol>
+            <CFormTextarea
+              id="notes"
+              name="notes"
+              rows={3}
+              placeholder="Enter Notes Here..."
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+            />
+          </CCol>
+        </CRow>
+        <CRow>
+          <CCol className="mt-2 d-grid gap-2 d-md-flex justify-content-md-end">
+            <CButton color="primary" onClick={handleSaveNote}>
+              Save
+            </CButton>
+          </CCol>
+        </CRow>
         <hr />
         <CListGroup>
-          {notes.map((note, index) => (
+          {notes.map((note) => (
             // <CListGroupItem as="a" href="#" active>
             <CListGroupItem>
               <div className="d-flex w-100 justify-content-between">
-                <h5 className="mb-1">Note {index + 1}</h5>
+                <h5 className="mb-1">Note</h5>
                 <small>{formatDateWithTime(note.created_at)}</small>
               </div>
-              <p className="mb-1">
-                {note.note}
-              </p>
+              <p className="mb-1">{note.note}</p>
               <small>Donec id elit non mi porta.</small>
             </CListGroupItem>
           ))}
@@ -82,9 +131,9 @@ const Notes = ({ ticket }) => {
           </CListGroupItem> */}
         </CListGroup>
       </CCardBody>
-      <CCardFooter className="d-grid gap-2 d-md-flex justify-content-md-end">
-        <CButton color="primary">Save</CButton>
-      </CCardFooter>
+      {/* <CCardFooter className="d-grid gap-2 d-md-flex justify-content-md-end"> */}
+
+      {/* </CCardFooter> */}
     </CCard>
   )
 }

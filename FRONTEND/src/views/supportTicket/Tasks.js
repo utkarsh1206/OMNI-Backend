@@ -7,7 +7,7 @@ const Tasks = () => {
       <CCardHeader>
         <CCardTitle>Tasks</CCardTitle>
       </CCardHeader>
-      <CCardBody>Any Tasks Assigned</CCardBody>
+      <CCardBody>Coming Soon...</CCardBody>
     </CCard>
   )
 }

@@ -16,13 +16,13 @@ import {
   CFormSelect,
 } from '@coreui/react'
 import axios from 'axios'
-import { useNavigate, useParams } from 'react-router-dom'
-import { BASE_URL, STATUS_TO_COLOR, TYPE_TO_COLOR } from '../../config'
-import { AuthContext } from '../../context/AuthContext'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { BASE_URL, STATUS_TO_COLOR, TYPE_TO_COLOR } from '../../../config'
+import { AuthContext } from '../../../context/AuthContext'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilUser } from '@coreui/icons'
-import DefaultCampaignComponent from '../campaign/DefaultCampaignComponent'
-import DefaultProductsComponent from '../product/DefaultProductsComponent'
+import DefaultCampaignComponent from '../../campaign/DefaultCampaignComponent'
+import DefaultProductsComponent from '../../product/DefaultProductsComponent'
 
 // Define FormGroup outside the main component
 // const FormGroup = ({ label, name, value, onChange, required, type, disabled }) => (
@@ -49,8 +49,14 @@ const EmailConfigSettingsForm = () => {
   // const editAccess = boolean(id)
   const { authToken } = useContext(AuthContext)
 
+  const location = useLocation()
+
+   // Extract type from query string
+   const searchParams = new URLSearchParams(location.search);
+   const emailType = searchParams.get("type");
+
   const [formData, setFormData] = useState({
-    type: 'gmail',
+    type: emailType,
     product_id: '',
     campaign_id: '',
     // inbound_id: '',
@@ -153,7 +159,7 @@ const EmailConfigSettingsForm = () => {
                 ``
               : `\nUsername: ${response.data.data.username}\nCompany Name: ${response.data.data.company_name}`),
         )
-        navigate('/email_config_settings') // Redirect to Configs list after success
+        navigate('/settings/email_config_settings') // Redirect to Configs list after success
       }
       handleCancel()
     } catch (error) {
@@ -165,7 +171,7 @@ const EmailConfigSettingsForm = () => {
   const handleCancel = () => {
     // Reset form or handle cancellation as needed
     setFormData({
-      type: 'gmail',
+      type: emailType,
       product_id: '',
       campaign_id: '',
       // inbound_id: '',
@@ -185,7 +191,7 @@ const EmailConfigSettingsForm = () => {
       signature: '',
     })
     // if (isEditMode) {
-    navigate('/email_config_settings') // Redirect to config list if editing
+    navigate('/settings/email_config_settings') // Redirect to config list if editing
     // }
   }
 
@@ -408,7 +414,7 @@ const EmailConfigSettingsForm = () => {
                         <option key="random" value="random">
                           Random
                         </option>
-                        <option key="round-robin" value="round-robin">
+                        <option key="round-robin" value="round_robin">
                           Round-Robin
                         </option>
                       </CFormSelect>
