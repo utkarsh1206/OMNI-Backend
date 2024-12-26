@@ -1,3 +1,11 @@
+2024-12-26 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3889, NEOX-3896, NEOX-3897 
+	* Previous Commit ID : 1d38a7bc
+	* Version : Dev
+	* Laravel : CRUD API for Department, Category, Incident type for SLA.
+	Change validation for SLA setting off days.
+
 2024-12-23 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3831, 3832, 3833, 3834, 3837

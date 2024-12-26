@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class IncidentType extends Model
+{
+    use HasFactory;
+
+    protected $table = 'incident_types';
+    protected $fillable = ['name', 'description', 'priority','category_id', 'priority'];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function department()
+    {
+        return $this->category->department;
+    }
+}

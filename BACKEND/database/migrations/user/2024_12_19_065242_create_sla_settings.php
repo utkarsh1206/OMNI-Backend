@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100)->unique();
             $table->string('description', 255)->nullable();
-            $table->boolean('is_24_hours');
+            $table->string('is_24_hours', 10);
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
             $table->timestamps();

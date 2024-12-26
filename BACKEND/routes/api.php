@@ -44,6 +44,9 @@ use App\Http\Controllers\Api\TenantLicenseController;
 use App\Http\Controllers\Api\PhoneController;
 use App\Http\Controllers\Api\MailTemplateController;
 use App\Http\Controllers\Api\SlaSettingController;
+use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\IncidentTypeController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -116,6 +119,10 @@ Route::apiResource('phones', PhoneController::class);
 Route::apiResource('mail-templates', MailTemplateController::class);
 
 Route::apiResource('sla-settings', SlaSettingController::class);
+Route::apiResource('departments', DepartmentController::class);
+Route::apiResource('categories', CategoryController::class);
+Route::apiResource('incident-types', IncidentTypeController::class);
+
 
 #Route::middleware('auth:api')->apiResource('users', UsersController::class);
 

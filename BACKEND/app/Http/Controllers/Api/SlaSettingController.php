@@ -191,12 +191,13 @@ class SlaSettingController extends Controller
             $validated = $request->validate([
                 'sla.name' => 'required|string|max:100',
                 'sla.description' => 'nullable|string|max:255',
-                'sla.is_24_hours' => 'required|boolean',
+                'sla.is_24_hours' => 'required|in:1,0,true,false',
                 'sla.start_time' => 'nullable|date_format:H:i',
                 'sla.end_time' => 'nullable|date_format:H:i',
 
-                'off_days' => 'required|array',
-                'off_days.*' => 'required|string|in:Mon,Tue,Wed,Thu,Fri,Sat,Sun',
+                'off_days' => 'nullable|array', // off_days is optional, but if provided, must be an array
+                'off_days.*' => 'required_if:off_days,*|in:Mon,Tue,Wed,Thu,Fri,Sat,Sun', // Validate individual days only if off_days is not empty
+
 
                 'holidays' => 'nullable|array',
                 'holidays.*.holiday_date' => 'required_if:holidays.*,.*|date', // Only required if holidays are provided
