@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('cc')->nullable();
             $table->string('bcc')->nullable();
             $table->longText('description');
+            $table->integer('incident_id');
             $table->longText('attachment')->nullable();
             $table->enum('is_delete', ['Yes', 'No'])->default('No');
             $table->timestamps();

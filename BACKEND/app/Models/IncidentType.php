@@ -10,7 +10,7 @@ class IncidentType extends Model
     use HasFactory;
 
     protected $table = 'incident_types';
-    protected $fillable = ['name', 'description', 'priority','category_id', 'priority'];
+    protected $fillable = ['name', 'description', 'priority', 'category_id', 'priority', 'sla_id'];
 
     public function category()
     {
@@ -19,6 +19,11 @@ class IncidentType extends Model
 
     public function department()
     {
-        return $this->category->department;
+        return $this->category->belongsTo(Department::class);
+    }
+
+    public function sla_settings()
+    {
+        return $this->belongsTo(SlaSetting::class, 'sla_id');
     }
 }

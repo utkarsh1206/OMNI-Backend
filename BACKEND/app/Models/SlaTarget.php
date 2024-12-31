@@ -11,6 +11,7 @@ class SlaTarget extends Model
 
     protected $fillable = [
         'sla_id',
+        'escalation_level',
         'priority_type',
         'response_time_value',
         'response_time_unit',

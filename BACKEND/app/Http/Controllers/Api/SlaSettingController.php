@@ -204,15 +204,16 @@ class SlaSettingController extends Controller
                 'holidays.*.description' => 'nullable|string|max:255',
 
                 'targets' => 'required|array',
-                'targets.*.priority_type' => 'required|string|in:Critical,High,Medium,Low',
-                'targets.*.response_time_value' => 'required|integer|min:1',
-                'targets.*.response_time_unit' => 'required|string|in:Minute,Hour',
-                'targets.*.alert_before_response_value' => 'required|integer|min:1',
-                'targets.*.alert_before_response_unit' => 'required|string|in:Minute,Hour',
-                'targets.*.resolve_time_value' => 'required|integer|min:1',
-                'targets.*.resolve_time_unit' => 'required|string|in:Minute,Hour',
-                'targets.*.alert_before_resolve_value' => 'required|integer|min:1',
-                'targets.*.alert_before_resolve_unit' => 'required|string|in:Minute,Hour',
+                'targets.*' => 'required|array',  // Ensure each target group is an array
+                'targets.*.*.priority_type' => 'required|string|in:Critical,High,Medium,Low',
+                'targets.*.*.response_time_value' => 'required|integer|min:1',
+                'targets.*.*.response_time_unit' => 'required|string|in:Minute,Hour',
+                'targets.*.*.alert_before_response_value' => 'required|integer|min:1',
+                'targets.*.*.alert_before_response_unit' => 'required|string|in:Minute,Hour',
+                'targets.*.*.resolve_time_value' => 'required|integer|min:1',
+                'targets.*.*.resolve_time_unit' => 'required|string|in:Minute,Hour',
+                'targets.*.*.alert_before_resolve_value' => 'required|integer|min:1',
+                'targets.*.*.alert_before_resolve_unit' => 'required|string|in:Minute,Hour',
             ]);
 
             return $validated;
@@ -243,20 +244,24 @@ class SlaSettingController extends Controller
                 ]);
             }
         }
+        
         // Save Targets
-        foreach ($validated['targets'] as $target) {
-            SlaTarget::create([
-                'sla_id' => $sla->id,
-                'priority_type' => $target['priority_type'],
-                'response_time_value' => $target['response_time_value'],
-                'response_time_unit' => $target['response_time_unit'],
-                'alert_before_response_value' => $target['alert_before_response_value'],
-                'alert_before_response_unit' => $target['alert_before_response_unit'],
-                'resolve_time_value' => $target['resolve_time_value'],
-                'resolve_time_unit' => $target['resolve_time_unit'],
-                'alert_before_resolve_value' => $target['alert_before_resolve_value'],
-                'alert_before_resolve_unit' => $target['alert_before_resolve_unit'],
-            ]);
+        foreach ($validated['targets'] as $escalationLevel => $targetGroup) {    
+            foreach ($targetGroup as $target) {
+                SlaTarget::create([
+                    'sla_id' => $sla->id,
+                    'escalation_level' => $escalationLevel, // Store the dynamic escalation level
+                    'priority_type' => $target['priority_type'],
+                    'response_time_value' => $target['response_time_value'],
+                    'response_time_unit' => $target['response_time_unit'],
+                    'alert_before_response_value' => $target['alert_before_response_value'],
+                    'alert_before_response_unit' => $target['alert_before_response_unit'],
+                    'resolve_time_value' => $target['resolve_time_value'],
+                    'resolve_time_unit' => $target['resolve_time_unit'],
+                    'alert_before_resolve_value' => $target['alert_before_resolve_value'],
+                    'alert_before_resolve_unit' => $target['alert_before_resolve_unit'],
+                ]);
+            }
         }
     }
 }
