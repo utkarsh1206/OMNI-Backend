@@ -32,7 +32,7 @@ class TenantController extends Controller
 
         // Start the query for tenants
         $query = Tenants::query()->where('is_delete', 'No');
-
+    
         // If there's a search term, apply it to the query
         if (!empty($searchTerm)) {
             $query->where(function ($q) use ($searchTerm) {
@@ -132,7 +132,7 @@ class TenantController extends Controller
         $lastInsertedId = $tenants->id;
 
         $databaseName = str_replace(".", "_", $request->domain_name);
-
+       
         DB::statement("CREATE DATABASE $databaseName");
         $details_array = [
             'db' => str_replace(".", "_", $request->domain_name),

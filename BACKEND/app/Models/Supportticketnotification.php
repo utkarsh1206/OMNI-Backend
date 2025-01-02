@@ -8,11 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Supportticketnotification extends Model
 {
     use HasFactory;
-    protected $table = 'support_ticket_notifications';
+    protected $table = 'support_ticket_notification';
     protected $fillable = [
         'type',
         'comment',
         'date',
-        'support_ticket_id'
+        'support_ticket_id',
+        'created_by',
+        'icon',
+        'color'
     ];
 }

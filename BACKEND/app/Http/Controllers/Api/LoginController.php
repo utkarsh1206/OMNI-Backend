@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\LicenseController;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class LoginController extends Controller
 {
@@ -88,9 +89,9 @@ class LoginController extends Controller
                 }
 
                 // Check if the license is expired for this user
-                if ($this->isLicenseExpired($request)) {
-                    return response()->json(['error' => 'License expired'], 403);
-                }
+                // if ($this->isLicenseExpired($request)) {
+                //     return response()->json(['error' => 'License expired'], 403);
+                // }
 
                 if (!$token = auth('api_users')->attempt($credentials)) {
                     return response()->json(['error' => 'Unauthorized'], 401);
@@ -138,7 +139,8 @@ class LoginController extends Controller
                         Log::info('Both password and phone password checks passed');
                         // Set the flag to include phone in JWT
                         $userData->setAddPhoneToJWT($validator['flag']);
-                        $token = auth('api_users')->login($userData);
+                       // $token = auth('api_users')->login($userData);
+                        $token = JWTAuth::attempt($credentials);
                     } else {
                         Log::error('Unauthorized: Invalid credentials', ['userData' => $userData]);
                         return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
@@ -148,9 +150,9 @@ class LoginController extends Controller
                 }
 
                 //Check if the license is expired for this user
-                if ($this->isLicenseExpired($request)) {
-                    return response()->json(['error' => 'License expired'], 403);
-                }
+                // if ($this->isLicenseExpired($request)) {
+                //     return response()->json(['error' => 'License expired'], 403);
+                // }
             } catch (\Illuminate\Database\QueryException $ex) {
                 Log::error('Database error: ' . $ex->getMessage());
                 return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);

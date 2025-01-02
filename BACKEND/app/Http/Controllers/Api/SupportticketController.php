@@ -73,6 +73,7 @@ class SupportticketController extends Controller
     }
     public function store(Request $request)
     {
+        $apiUser = auth()->user();
         $validator = Validator::make($request->all(), [
             'product_id' => 'required',
             'to_emails' => 'required',
@@ -132,6 +133,7 @@ class SupportticketController extends Controller
         $supportTicketId = $datePrefix . $supportticket->id; // Use the newly inserted ID
         $mail_details = MailDetail::create([
             'default_type' => isset($request->default_type) ? $request->default_type : "",
+            'user_id'=> $apiUser->id ?? '',
             'priority' => isset($request->default_priority) ? $request->default_priority : "",
             'status' => isset($request->default_status) ? $request->default_status : "",
             'to' => isset($request->to_emails) ? $request->to_emails : "",
@@ -144,32 +146,29 @@ class SupportticketController extends Controller
         ]);
 
         $supportticket->update(['support_ticket_id' => $supportTicketId]);
-        $notification = SupportTicketNotification::create([
-            'type' => isset($request->default_type) ? $request->default_type : "",
-            'comment' => "",
-            'support_ticket_id' => $supportTicketId,
-            'date' => gmdate('Y-m-d H:i:s'),
-        ]);
+        //$notification = SupportTicketNotification::create();
+        $comment = $apiUser->first_name." ".$apiUser->last_name." has created the ticket"; 
+        $this->createTicket($supportticket,"Ticket Created",$comment,$apiUser);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
-        $smtpHost = $emailConfig->smtp_host;
-        $smtpPort = $emailConfig->smtp_port;
-        $smtpUser = $emailConfig->smtp_user;
-        $smtpPassword = $emailConfig->smtp_password;
-        $sender_name = $emailConfig->sender_name;
-        $sender_email = $emailConfig->sender_email;
-
-        config([
-            'mail.mailers.smtp.host' => $smtpHost,
-            'mail.mailers.smtp.port' => $smtpPort,
-            'mail.mailers.smtp.username' => $smtpUser,
-            'mail.mailers.smtp.password' => $smtpPassword,
-            'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
-            'mail.from.address' =>  $sender_email,
-            'mail.from.name' => $sender_name,
-        ]);
+        // $smtpHost = $emailConfig->smtp_host;
+        // $smtpPort = $emailConfig->smtp_port;
+        // $smtpUser = $emailConfig->smtp_user;
+        // $smtpPassword = $emailConfig->smtp_password;
+        // $sender_name = $emailConfig->sender_name;
+        // $sender_email = $emailConfig->sender_email;
+       
+        // config([
+        //     'mail.mailers.smtp.host' => $smtpHost,
+        //     'mail.mailers.smtp.port' => $smtpPort,
+        //     'mail.mailers.smtp.username' => $smtpUser,
+        //     'mail.mailers.smtp.password' => $smtpPassword,
+        //     'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
+        //     'mail.from.address' =>  $sender_email,
+        //     'mail.from.name' => $sender_name,
+        // ]);
         // Attempt to send the email
         try {
-            Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
+         //   Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
         } catch (Exception $e) {
             // Log the error message if email fails to send
             Log::error('Failed to send email', [
@@ -240,12 +239,13 @@ class SupportticketController extends Controller
             $updateData['attachment'] = $attachment_urls;
         }
         $supportticket->update($updateData);
-        $notification = SupportTicketNotification::create([
-            'type' => isset($request->default_status) ? $request->default_status : "",
-            'comment' => "Edit Support Ticket",
-            'support_ticket_id' => $supportticket->id,
-            'date' => gmdate('Y-m-d H:i:s'),
-        ]);
+        // $notification = SupportTicketNotification::create([
+        //     'type' => isset($request->default_status) ? $request->default_status : "",
+        //     'comment' => "Edit Support Ticket",
+        //     'support_ticket_id' => $supportticket->id,
+        //     'date' => gmdate('Y-m-d H:i:s'),
+        // ]);
+        $this->createTicket($supportticket,isset($request->default_status) ? $request->default_status : "","Edit Support Ticket",$apiUser);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host;
         $smtpPort = $emailConfig->smtp_port;
@@ -254,18 +254,18 @@ class SupportticketController extends Controller
         $sender_name = $emailConfig->sender_name;
         $sender_email = $emailConfig->sender_email;
 
-        config([
-            'mail.mailers.smtp.host' => $smtpHost,
-            'mail.mailers.smtp.port' => $smtpPort,
-            'mail.mailers.smtp.username' => $smtpUser,
-            'mail.mailers.smtp.password' => $smtpPassword,
-            'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
-            'mail.from.address' =>  $sender_email,
-            'mail.from.name' => $sender_name,
-        ]);
+        // config([
+        //     'mail.mailers.smtp.host' => $smtpHost,
+        //     'mail.mailers.smtp.port' => $smtpPort,
+        //     'mail.mailers.smtp.username' => $smtpUser,
+        //     'mail.mailers.smtp.password' => $smtpPassword,
+        //     'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
+        //     'mail.from.address' =>  $sender_email,
+        //     'mail.from.name' => $sender_name,
+        // ]);
         // Attempt to send the email
         try {
-            Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
+            //Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
         } catch (Exception $e) {
             // Log the error message if email fails to send
             Log::error('Failed to send email', [
@@ -316,6 +316,7 @@ class SupportticketController extends Controller
             'date' => gmdate('Y-m-d H:i:s'),
         ]);
 
+        $this->createTicket($supportticket,$type,$comment,$apiUser); 
         return response()->json([
             'message' => 'Support Ticket Status Updated Successfully',
             'data' => new TenantsResource($supportticket)
@@ -328,5 +329,46 @@ class SupportticketController extends Controller
         return response()->json([
             'message' => 'Support Ticket Deleted Successfully',
         ]);
+    }
+
+    public function createTicket($supportticket,$type,$comment,$apiUser)
+    {
+        $notification = SupportTicketNotification::create([
+            'type' => $type,
+            'comment' => $comment,
+            'support_ticket_id' => $supportticket->id,
+            'date' => gmdate('Y-m-d H:i:s'),
+            'created_by'=> $apiUser->id ?? 0,
+            'icon' =>  $this->getIconforNotification($type),
+            'color'=> $this->getColorforNotification($type),
+        ]);
+    }
+
+    public function getColorforNotification($type)
+    {   
+        $color =   [
+                "Ticket Created" => "primary",
+                "Ticket Transfer" => "info",
+                "Ticket Merge" => "warning",
+                "Priority Change" => "secondary",
+                "Ticket Type Change"=>"danger",
+                "Ticket Close" => "success ",
+                ];
+
+        return $color[$type] ?? "";
+    }
+
+    public function getIconforNotification($type)
+    {
+        $icon =   [
+            "Ticket Created" => "cilUser",
+            "Ticket Transfer" => "cilTransfer",
+            "Ticket Merge" => "cilSync",
+            "Priority Change" => "cilChevronDoubleUp",
+            "Ticket Type Change"=>"cilFire",
+            "Ticket Close" => "cilCheck ",
+        ];
+
+        return $icon[$type] ?? "";
     }
 }
