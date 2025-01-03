@@ -75,6 +75,24 @@ const navItemList = [
     icon: <CIcon icon={icon.cilContact} customClassName="nav-icon" />,
   },
   {
+    component: CNavItem,
+    name: 'Departments',
+    to: '/department',
+    icon: <CIcon icon={icon.cilFolderOpen} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Categories',
+    to: '/category',
+    icon: <CIcon icon={icon.cilGrid} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Incident Type',
+    to: '/incdnt_type',
+    icon: <CIcon icon={icon.cilWarning} customClassName="nav-icon" />,
+  },
+  {
     component: CNavGroup,
     name: 'Campaign Mgmt',
     to: '/campaign',
@@ -424,7 +442,7 @@ const NAV_PERMISSIONS = {
   '/tenants/tenant_role': 'viewRoles',
   '/user/users': 'viewUsers',
   '/user/user_groups': 'viewUserGroups',
-  '/spprt_tckt': 'viewSupportTicket',
+  // '/spprt_tckt': 'viewSupportTicket',
   '/campaign/campaigns': 'viewCampaigns',
   '/campaign/pause_codes': 'viewPauseCodes',
   '/campaign/list_mix': 'viewListMix',

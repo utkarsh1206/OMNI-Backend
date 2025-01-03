@@ -72,6 +72,15 @@ const CreateCampaign = React.lazy(() => import('./views/campaign/CreateCampaign'
 const Ingroups = React.lazy(() => import('./views/inbound/Ingroups'))
 const CreateIngroups = React.lazy(() => import('./views/inbound/CreateIngroups'))
 
+const Departments = React.lazy(() => import('./views/department/Departments'))
+const CreateDepartments = React.lazy(() => import('./views/department/DepartmentsForm'))
+
+const Categories = React.lazy(() => import('./views/category/Categories'))
+const CreateCategories = React.lazy(() => import('./views/category/CategoriesForm'))
+
+const Incident = React.lazy(() => import('./views/incident/Incident'))
+const CreateIncident = React.lazy(() => import('./views/incident/IncidentForm'))
+
 // Tenant Management
 const Tenants = React.lazy(() => import('./views/tenant/Tenants'))
 const CreateTenants = React.lazy(() => import('./views/tenant/TenantsForm'))
@@ -118,6 +127,7 @@ const CreateEmailConfigSettings = React.lazy(() => import('./views/settings/emai
 const EmailTemplates = React.lazy(() => import('./views/settings/emailTemplate/EmailTemplates'))
 const CreateEmailTemplate = React.lazy(() => import('./views/settings/emailTemplate/EmailTemplatesForm'))
 
+const SLAConfigList = React.lazy(() => import('./views/settings/sla/SLAConfiguration'))
 const SLAConfiguration = React.lazy(() => import('./views/settings/sla/SLAConfigurationForm'))
 
 //Phones
@@ -188,6 +198,21 @@ const routes = [
   { path: '/inbound/ingrps', name: 'In-Groups', element: Ingroups },
   { path: '/inbound/create_ingrps', name: 'Create In-Groups', element: CreateIngroups },
 
+  { path: '/department', name: 'Department Management', element: Departments, exact: true},
+  { path: '/department/departments', name: 'Department', element: Departments},
+  { path: '/department/create_departments', name: 'Create Department', element: CreateDepartments},
+  { path: '/department/edit_departments/:id', name: 'Edit Department', element: CreateDepartments},
+
+  { path: '/category', name: 'Category Management', element: Categories, exact: true},
+  { path: '/category/categories', name: 'Category', element: Categories},
+  { path: '/category/create_categories', name: 'Create Category', element: CreateCategories},
+  { path: '/category/edit_categories/:id', name: 'Edit Category', element: CreateCategories},
+
+  { path: '/incdnt_type', name: 'Incident Type', element: Incident, exact: true},
+  // { path: '/incdnt_type/categories', name: 'Category', element: Categories},
+  { path: '/incdnt_type/create_incident', name: 'Create Incident', element: CreateIncident},
+  { path: '/incdnt_type/edit_incident/:id', name: 'Edit Incident', element: CreateIncident},
+
   { path: '/tenants', name: 'Tenant Management', element: Tenants },
   { path: '/tenants/tenants', name: 'Tenants', element: Tenants },
   { path: '/tenants/crt_tenant', name: 'Create Tenant', element: CreateTenants },
@@ -230,7 +255,9 @@ const routes = [
   { path: '/settings/email_templates', name: 'Email Templates', element: EmailTemplates },
   { path: '/settings/email_templates/crt_tmplt', name: 'Create Email Template', element: CreateEmailTemplate },
   { path: '/settings/email_templates/edit/:id', name: 'Edit Email Template', element: CreateEmailTemplate },
-  { path: '/settings/SLA_configuration', name: 'SLA Configuration', element: SLAConfiguration },
+  { path: '/settings/SLA_config_list', name: 'SLA Configuration', element: SLAConfigList },
+  { path: '/settings/SLA_configuration', name: 'Create SLA Configuration', element: SLAConfiguration },
+  { path: '/settings/SLA_configuration/edit/:id', name: 'Edit SLA Configuration', element: SLAConfiguration },
 
   { path: '/agent', name: 'Agent', element: Agent, exact: true },
 

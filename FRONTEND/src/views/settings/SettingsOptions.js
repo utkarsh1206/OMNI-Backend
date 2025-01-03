@@ -72,7 +72,7 @@ const SettingsOptions = () => {
                 className="d-flex justify-content-start align-items-center"
                 style={{ cursor: 'pointer', padding: '1rem' }}
                 // onClick={() => navigate(`/settings/email_config_settings`)}
-                onClick={() => navigate(`/settings/SLA_configuration`)}
+                onClick={() => navigate(`/settings/SLA_config_list`)}
               >
                 <span className="d-flex align-items-center">
                   <CIcon size="xxl" icon={cilEnvelopeOpen} className="me-3" />

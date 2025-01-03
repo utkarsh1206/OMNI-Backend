@@ -1,3 +1,12 @@
+2025-01-03 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3891, 3892, 3893, 3894
+	* Previous Commit ID : 03c47f9e
+	* Version : Dev
+	* ReactJS : Added components for Department, Categories, and Incident
+				Created pages for the SLA Hours CRUD, with complete functionality,
+				that include selection of priority, addition and removal of levels etc.
+
 2025-01-03 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :  
@@ -10,7 +19,7 @@
 	* Jira ID :  
 	* Previous Commit ID : 247a0ccf 
 	* Version : Dev
-	* Laravel : Addedd sla_id in incident_type. Change response for
+	* Laravel : Added sla_id in incident_type. Change response for
 	incident_type.
 	Added escalation_level in sla_target for all level sla hours.
 

@@ -1,3 +1,12 @@
+2025-01-03 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3891, 3892, 3893, 3894
+	* Previous Commit ID : 03c47f9e
+	* Version : Dev
+	* ReactJS : Added components for Department, Categories, and Incident
+				Created pages for the SLA Hours CRUD, with complete functionality,
+				that include selection of priority, addition and removal of levels etc.
+
 2024-12-23 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3831, 3832, 3833, 3834, 3837

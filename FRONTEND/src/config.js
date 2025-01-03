@@ -26,7 +26,7 @@ export const PRIORITY_TO_COLOR = {
   Normal: 'primary',
   Medium: 'success',
   High: 'warning',
-  Criticial: 'danger',
+  Critical: 'danger',
 }
 
 export const STATUS_TO_COLOR = {
