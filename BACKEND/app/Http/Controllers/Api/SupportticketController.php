@@ -358,7 +358,7 @@ class SupportticketController extends Controller
                 "Ticket Close" => "success ",
                 ];
 
-        return $color[$type] ?? "";
+        return $color[$type] ?? "secondary";
     }
 
     public function getIconforNotification($type)
@@ -372,6 +372,6 @@ class SupportticketController extends Controller
             "Ticket Close" => "cilCheck ",
         ];
 
-        return $icon[$type] ?? "";
+        return $icon[$type] ?? "cilAsteriskCircle";
     }
 }
