@@ -152,25 +152,25 @@ class SupportticketController extends Controller
         $comment = $apiUser->first_name." ".$apiUser->last_name." has created the ticket"; 
         $this->createTicket($supportticket,"Ticket Created",$comment,$apiUser);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
-        // $smtpHost = $emailConfig->smtp_host;
-        // $smtpPort = $emailConfig->smtp_port;
-        // $smtpUser = $emailConfig->smtp_user;
-        // $smtpPassword = $emailConfig->smtp_password;
-        // $sender_name = $emailConfig->sender_name;
-        // $sender_email = $emailConfig->sender_email;
+        $smtpHost = $emailConfig->smtp_host;
+        $smtpPort = $emailConfig->smtp_port;
+        $smtpUser = $emailConfig->smtp_user;
+        $smtpPassword = $emailConfig->smtp_password;
+        $sender_name = $emailConfig->sender_name;
+        $sender_email = $emailConfig->sender_email;
        
-        // config([
-        //     'mail.mailers.smtp.host' => $smtpHost,
-        //     'mail.mailers.smtp.port' => $smtpPort,
-        //     'mail.mailers.smtp.username' => $smtpUser,
-        //     'mail.mailers.smtp.password' => $smtpPassword,
-        //     'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
-        //     'mail.from.address' =>  $sender_email,
-        //     'mail.from.name' => $sender_name,
-        // ]);
+        config([
+            'mail.mailers.smtp.host' => $smtpHost,
+            'mail.mailers.smtp.port' => $smtpPort,
+            'mail.mailers.smtp.username' => $smtpUser,
+            'mail.mailers.smtp.password' => $smtpPassword,
+            'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
+            'mail.from.address' =>  $sender_email,
+            'mail.from.name' => $sender_name,
+        ]);
         // Attempt to send the email
         try {
-         //   Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
+            Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
         } catch (Exception $e) {
             // Log the error message if email fails to send
             Log::error('Failed to send email', [
@@ -257,15 +257,15 @@ class SupportticketController extends Controller
         $sender_name = $emailConfig->sender_name;
         $sender_email = $emailConfig->sender_email;
 
-        // config([
-        //     'mail.mailers.smtp.host' => $smtpHost,
-        //     'mail.mailers.smtp.port' => $smtpPort,
-        //     'mail.mailers.smtp.username' => $smtpUser,
-        //     'mail.mailers.smtp.password' => $smtpPassword,
-        //     'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
-        //     'mail.from.address' =>  $sender_email,
-        //     'mail.from.name' => $sender_name,
-        // ]);
+        config([
+            'mail.mailers.smtp.host' => $smtpHost,
+            'mail.mailers.smtp.port' => $smtpPort,
+            'mail.mailers.smtp.username' => $smtpUser,
+            'mail.mailers.smtp.password' => $smtpPassword,
+            'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
+            'mail.from.address' =>  $sender_email,
+            'mail.from.name' => $sender_name,
+        ]);
         // Attempt to send the email
         try {
             //Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
