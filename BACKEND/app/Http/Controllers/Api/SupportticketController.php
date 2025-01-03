@@ -9,7 +9,7 @@ use App\Models\Supportticket;
 use App\Models\MailDetail;
 use App\Models\EmailConfigure;
 use Illuminate\Support\Facades\Validator;
-use App\Models\SupportTicketnotification;
+use App\Models\Supportticketnotification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -127,6 +127,7 @@ class SupportticketController extends Controller
             'bcc' => isset($request->bcc) ? $request->bcc : "",
             'description' => isset($request->description) ? $request->description : "",
             'attachment' => json_encode($attachment_urls),
+            'incident_id' => isset($request->incident_id) ? $request->incident_id : 0,
         ]);
 
         $datePrefix = now()->format('dmy'); // Get the current date in ddmmyy format
@@ -143,6 +144,7 @@ class SupportticketController extends Controller
             'attachment' => json_encode($attachment_urls),
             'supportticket_id' => $supportTicketId,
             'date' => gmdate('Y-m-d H:i:s')
+            // 'user_id' => isset($request->assign_to_id) ? $request->assign_to_id : 0,
         ]);
 
         $supportticket->update(['support_ticket_id' => $supportTicketId]);
@@ -234,6 +236,7 @@ class SupportticketController extends Controller
             'cc' => isset($request->cc) ? $request->cc : "",
             'bcc' => isset($request->bcc) ? $request->bcc : "",
             'description' => isset($request->description) ? $request->description : "",
+            'incident_id' => isset($request->incident_id) ? $request->incident_id : 0,
         ];
         if (!empty($attachment_urls)) {
             $updateData['attachment'] = $attachment_urls;
@@ -309,7 +312,7 @@ class SupportticketController extends Controller
             ];
         }
         $supportticket->update($updateData);
-        $notification = SupportTicketNotification::create([
+        $notification = Supportticketnotification::create([
             'type' => $type,
             'comment' =>  $comment,
             'support_ticket_id' => $supportticket->id,

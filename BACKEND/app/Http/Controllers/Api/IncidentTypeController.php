@@ -17,8 +17,14 @@ class IncidentTypeController extends Controller
             $priority = $request->input('priority', '');
             $perPage = $request->input('per_page', 10);
             $page = $request->input('page', 1);
+            $category_id = $request->input('category_id');
 
             $query = IncidentType::query();
+
+            if ($category_id)
+            {
+                $query->where('category_id', $category_id);
+            }
 
             if (!empty($searchTerm)) {
                 $query->where('name', 'like', "%$searchTerm%");
@@ -29,12 +35,12 @@ class IncidentTypeController extends Controller
             }
 
             if ($page === 'all') {
-                $incidentType = $query->with('category')->get();
+                $incidentType = $query->with('category.department', 'sla_settings')->get();
                 return response()->json([
                     'data' => $incidentType,
                 ]);
             } else {
-                $incidentType = $query->with('category')->paginate($perPage);
+                $incidentType = $query->with('category.department', 'sla_settings')->paginate($perPage);
                 return response()->json([
                     'meta' => [
                         'current_page' => $incidentType->currentPage(),
@@ -60,6 +66,7 @@ class IncidentTypeController extends Controller
                 'description' => 'nullable|string',
                 'category_id' => 'required|exists:categories,id',
                 'priority' => 'required|in:normal,low,medium,high,critical',
+                'sla_id' => 'nullable|exists:sla_settings,id',
             ]);
 
             if ($validator->fails()) {
@@ -74,6 +81,7 @@ class IncidentTypeController extends Controller
                 'description' => $request->description,
                 'category_id' => $request->category_id,
                 'priority' => $request->priority,
+                'sla_id' => $request->sla_id,
             ]);
 
             return response()->json([
@@ -90,7 +98,7 @@ class IncidentTypeController extends Controller
     public function show($id)
     {
         try {
-            $incidentType = IncidentType::with('category')->find($id);
+            $incidentType = IncidentType::with('category.department', 'sla_settings')->find($id);
 
             if (!$incidentType) {
                 return response()->json([
@@ -124,6 +132,7 @@ class IncidentTypeController extends Controller
                 'description' => 'nullable|string',
                 'category_id' => 'required|exists:categories,id',
                 'priority' => 'required|in:normal,low,medium,high,critical',
+                'sla_id' => 'nullable|exists:sla_settings,id',
             ]);
 
             if ($validator->fails()) {
@@ -138,6 +147,7 @@ class IncidentTypeController extends Controller
                 'description' => $request->description,
                 'category_id' => $request->category_id,
                 'priority' => $request->priority,
+                'sla_id' => $request->sla_id,
             ]);
 
             return response()->json([

@@ -16,8 +16,14 @@ class CategoryController extends Controller
             $searchTerm = $request->input('search', '');
             $perPage = $request->input('per_page', 10);
             $page = $request->input('page', 1);
+            $department_id = $request->input('department_id');
 
             $query = Category::query();
+
+            if ($department_id)
+            {
+                $query->where('department_id', $department_id);
+            }
 
             if (!empty($searchTerm)) {
                 $query->where('name', 'like', "%$searchTerm%");

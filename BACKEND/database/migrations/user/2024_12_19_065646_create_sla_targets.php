@@ -14,15 +14,16 @@ return new class extends Migration
         Schema::create('sla_targets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sla_id')->constrained('sla_settings')->onDelete('cascade');
-            $table->enum('priority_type', ['Critical', 'High', 'Medium', 'Low']);
+            $table->string('escalation_level');
+            $table->enum('priority_type', ['Critical', 'High', 'Medium', 'Low', 'Normal']);
             $table->integer('response_time_value');
-            $table->enum('response_time_unit', ['Minute', 'Hour']);
+            // $table->enum('response_time_unit', ['Minute', 'Hour']);
             $table->integer('alert_before_response_value');
-            $table->enum('alert_before_response_unit', ['Minute', 'Hour']);
+            // $table->enum('alert_before_response_unit', ['Minute', 'Hour']);
             $table->integer('resolve_time_value');
-            $table->enum('resolve_time_unit', ['Minute', 'Hour']);
+            // $table->enum('resolve_time_unit', ['Minute', 'Hour']);
             $table->integer('alert_before_resolve_value');
-            $table->enum('alert_before_resolve_unit', ['Minute', 'Hour']);
+            // $table->enum('alert_before_resolve_unit', ['Minute', 'Hour']);
             $table->timestamps();
         });
     }
