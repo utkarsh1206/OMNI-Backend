@@ -9,6 +9,8 @@ class SlaSetting extends Model
 {
     use HasFactory;
 
+    protected $table = 'sla_settings';
+
     protected $fillable = [
         'name',
         'description',

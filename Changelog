@@ -1,3 +1,10 @@
+2025-01-03 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : 795fa3f7 
+	* Version : Dev
+	* Laravel : Removed unit fields from sla_target table. 
+
 2024-12-31 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :  
