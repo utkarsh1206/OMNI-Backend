@@ -346,8 +346,8 @@ class SupportticketController extends Controller
             'support_ticket_id' => $supportticket->id,
             'date' => gmdate('Y-m-d H:i:s'),
             'created_by'=> $apiUser->id ?? 0,
-            'icon' =>  $statusChange ? $this->getIconforNotification("Ticket Status Change") : $this->getIconforNotification($type),
-            'color'=>  $statusChange ? $this->getColorforNotification("Ticket Status Change") : $this->getColorforNotification($type),
+            'icon' =>  $statusChange ? $this->getIconforNotification($statusChange) : $this->getIconforNotification($type),
+            'color'=>  $statusChange ? $this->getColorforNotification($statusChange) : $this->getColorforNotification($type),
         ]);
     }
 
