@@ -294,12 +294,14 @@ class SupportticketController extends Controller
         $apiUser = auth()->user();
         $type = "";
         $comment = "";
+        $statusInfo = "";
         if (isset($request->default_status)) {
             $type = $request->default_status;
             $comment = "Change ticket status to: " . $request->default_status;
             $updateData = [
                 'default_status' => isset($request->default_status) ? $request->default_status : "",
             ];
+            $statusInfo = "Status Changed";
         }
         if (isset($request->default_priority)) {
             $type = $request->default_priority;
@@ -307,6 +309,7 @@ class SupportticketController extends Controller
             $updateData = [
                 'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
             ];
+            $statusInfo = "Priority Changed";
         }
         if (isset($request->default_type)) {
             $type = $request->default_type;
@@ -314,9 +317,13 @@ class SupportticketController extends Controller
             $updateData = [
                 'default_type' => isset($request->default_type) ? $request->default_type : "",
             ];
+            $statusInfo = "Type Changed";
         }
+
+
+
         $supportticket->update($updateData);
-        $this->createTicket($supportticket,$type,$comment,$apiUser,"Status Changed"); 
+        $this->createTicket($supportticket,$type,$comment,$apiUser,$statusInfo); 
         return response()->json([
             'message' => 'Support Ticket Status Updated Successfully',
             'data' => new TenantsResource($supportticket)
@@ -350,10 +357,10 @@ class SupportticketController extends Controller
                 "Ticket Created" => "primary",
                 "Ticket Transfer" => "info",
                 "Ticket Merge" => "warning",
-                "Priority Change" => "secondary",
-                "Ticket Type Change"=>"danger",
+                "Priority Changed" => "secondary",
+                "Type Changed"=>"danger",
                 "Ticket Close" => "success",
-                "Ticket Status Change" => "info",
+                "Status Changed" => "info",
                 ];
 
         return $color[$type] ?? "secondary";
@@ -365,10 +372,10 @@ class SupportticketController extends Controller
             "Ticket Created" => "cilUser",
             "Ticket Transfer" => "cilTransfer",
             "Ticket Merge" => "cilSync",
-            "Priority Change" => "cilChevronDoubleUp",
-            "Ticket Type Change"=>"cilFire",
+            "Priority Changed" => "cilChevronDoubleUp",
+            "Type Changed"=>"cilFire",
             "Ticket Close" => "cilCheck",
-            "Ticket Status Change" => "cilBolt",
+            "Status Changed" => "cilBolt",
         ];
 
         return $icon[$type] ?? "cilAsteriskCircle";

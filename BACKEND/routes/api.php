@@ -73,7 +73,6 @@ Route::apiResource('tenants', TenantController::class);
 Route::apiResource('users', UsersController::class);
 Route::apiResource('usergroup', UsergroupController::class);
 Route::apiResource('tenantrole', TenantroleController::class);
-Route::post('updateticketstatus/{supportticket}', [SupportticketController::class, 'statusupdate']);
 Route::apiResource('email-configure', EmailConfigureController::class);
 Route::get('tenantrole-list', [TenantroleController::class, 'list']);
 Route::get('tenantrole-menu', [TenantroleController::class, 'menu']);
@@ -133,5 +132,6 @@ Route::middleware(['auth:api'])->group(function () {
 
 Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('supportticket', SupportticketController::class);
+    Route::post('updateticketstatus/{supportticket}', [SupportticketController::class, 'statusupdate']);
 });
 
