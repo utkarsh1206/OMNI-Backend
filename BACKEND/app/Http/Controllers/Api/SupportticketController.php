@@ -316,14 +316,7 @@ class SupportticketController extends Controller
             ];
         }
         $supportticket->update($updateData);
-        $notification = Supportticketnotification::create([
-            'type' => $type,
-            'comment' =>  $comment,
-            'support_ticket_id' => $supportticket->id,
-            'date' => gmdate('Y-m-d H:i:s'),
-        ]);
-
-        $this->createTicket($supportticket,$type,$comment,$apiUser); 
+        $this->createTicket($supportticket,$type,$comment,$apiUser,"Status Changed"); 
         return response()->json([
             'message' => 'Support Ticket Status Updated Successfully',
             'data' => new TenantsResource($supportticket)
@@ -338,16 +331,16 @@ class SupportticketController extends Controller
         ]);
     }
 
-    public function createTicket($supportticket,$type,$comment,$apiUser)
+    public function createTicket($supportticket,$type,$comment,$apiUser,$statusChange=NULL)
     {
         $notification = SupportTicketNotification::create([
-            'type' => $type,
+            'type' => $statusChange ?? $type,
             'comment' => $comment,
             'support_ticket_id' => $supportticket->id,
             'date' => gmdate('Y-m-d H:i:s'),
             'created_by'=> $apiUser->id ?? 0,
-            'icon' =>  $this->getIconforNotification($type),
-            'color'=> $this->getColorforNotification($type),
+            'icon' =>  $statusChange ? $this->getIconforNotification("Ticket Status Change") : $this->getIconforNotification($type),
+            'color'=>  $statusChange ? $this->getColorforNotification("Ticket Status Change") : $this->getColorforNotification($type),
         ]);
     }
 
