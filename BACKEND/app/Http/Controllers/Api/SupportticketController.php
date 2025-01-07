@@ -379,7 +379,8 @@ class SupportticketController extends Controller
                 "Ticket Merge" => "warning",
                 "Priority Change" => "secondary",
                 "Ticket Type Change"=>"danger",
-                "Ticket Close" => "success ",
+                "Ticket Close" => "success",
+                "Ticket Status Change" => "info",
                 ];
 
         return $color[$type] ?? "secondary";
@@ -393,7 +394,8 @@ class SupportticketController extends Controller
             "Ticket Merge" => "cilSync",
             "Priority Change" => "cilChevronDoubleUp",
             "Ticket Type Change"=>"cilFire",
-            "Ticket Close" => "cilCheck ",
+            "Ticket Close" => "cilCheck",
+            "Ticket Status Change" => "cilBolt",
         ];
 
         return $icon[$type] ?? "cilAsteriskCircle";
