@@ -15,9 +15,19 @@ use Illuminate\Support\Facades\Log;
 use Exception;
 use App\Mail\SendEmail;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Services\SlaService;
 
 class SupportticketController extends Controller
 {
+    protected $slaService;
+
+    // Constructor to inject the SlaService
+    public function __construct(SlaService $slaService)
+    {
+        $this->slaService = $slaService;
+    }
+
+
     public function index(Request $request)
     {
         // Get the search term from the request
@@ -130,6 +140,18 @@ class SupportticketController extends Controller
             'incident_id' => isset($request->incident_id) ? $request->incident_id : 0,
         ]);
 
+        // SLA calculation - called after ticket creation
+        $slaService = new SlaService();
+        $slaData = $slaService->calculateSla($supportticket);
+
+        // Now update the support ticket with SLA data
+        $supportticket->update([
+            'first_response_time' => $slaData['first_response_time'],
+            'alert_before_response_notification_time' => $slaData['alert_before_response_notification_time'],
+            'resolved_time' => $slaData['resolved_time'],
+            'alert_before_resolve_notification_time' => $slaData['alert_before_resolve_notification_time'],
+        ]);
+
         $datePrefix = now()->format('dmy'); // Get the current date in ddmmyy format
         $supportTicketId = $datePrefix . $supportticket->id; // Use the newly inserted ID
         $mail_details = MailDetail::create([
@@ -193,6 +215,7 @@ class SupportticketController extends Controller
     }
     public function update(Request $request, Supportticket $supportticket)
     {
+        $apiUser = auth()->user();
         $attachment_urls = [];
         $mail_attachment_urls = [];
         if ($request->hasFile('attachment')) {
@@ -288,6 +311,7 @@ class SupportticketController extends Controller
     }
     public function statusupdate(Request $request, Supportticket $supportticket)
     {
+        $apiUser = auth()->user();
         $type = "";
         $comment = "";
         if (isset($request->default_status)) {
