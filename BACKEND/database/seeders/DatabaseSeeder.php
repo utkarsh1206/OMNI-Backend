@@ -10,6 +10,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             MailTemplateSeeder::class,
+            CronExpressionsSeeder::class
         ]);
     }
 }

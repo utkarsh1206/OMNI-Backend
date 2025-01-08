@@ -15,7 +15,7 @@ class SendEmail extends Mailable
     public $attach;
 
     // Constructor to accept dynamic content
-    public function __construct($subject, $content,$attach)
+    public function __construct($subject, $content,$attach=[])
     {
         $this->subject = $subject;
         $this->content = $content;
@@ -31,14 +31,18 @@ class SendEmail extends Mailable
         ])
         ->subject($this->subject);
         // Add attachments
-        foreach ($this->attach as $attachment) {
-            if (file_exists($attachment['path'])) {
-                $email->attach($attachment['path'], [
-                    'as' => $attachment['name'], 
-                    'mime' => $attachment['mime']
-                ]);
+        if(count($this->attach) > 0)
+        {
+            foreach ($this->attach as $attachment) {
+                if (file_exists($attachment['path'])) {
+                    $email->attach($attachment['path'], [
+                        'as' => $attachment['name'], 
+                        'mime' => $attachment['mime']
+                    ]);
+                }
             }
         }
+       
 
         return $email;
     }

@@ -271,7 +271,7 @@ class SupportticketController extends Controller
         ]);
         // Attempt to send the email
         try {
-            //Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
+            Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
         } catch (Exception $e) {
             // Log the error message if email fails to send
             Log::error('Failed to send email', [
