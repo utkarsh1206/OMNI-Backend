@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Models\CronCommand;
 use File;
 use Log;
+use Carbon\Carbon;
 
 class CommandSignatureServiceProvider extends ServiceProvider
 {
@@ -43,8 +44,16 @@ class CommandSignatureServiceProvider extends ServiceProvider
             if (isset($matches[1])) {
                 $signature = $matches[1];
                 // Store the signature in the 'cron_commands' table
+                if (strpos($signature, 'cron') !== false) {
+                    $type = 'other';
+                } else {
+                    $type = 'cron';
+                }
                 CronCommand::create([
-                    'command_signature' => $signature
+                    'command_signature' => $signature,
+                    'type' => $type,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
                 ]);
                 Log::info("Command '$commandName' created with signature '$signature' and stored in the database.");
             } else {

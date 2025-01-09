@@ -8,5 +8,5 @@ class CronCommand extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['command_signature'];
+    protected $fillable = ['command_signature', 'type'];
 }
