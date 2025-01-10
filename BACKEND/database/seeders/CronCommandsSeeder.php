@@ -18,14 +18,17 @@ class CronCommandsSeeder extends Seeder
     {
         $cronCommands = [
             ['command_signature' => 'app:support-ticket-close', 'type' => 'cron'],
-        ];
+	];
         foreach ($cronCommands as $cronCommand) {
-            CronCommand::insert([
-                'command_signature' => $cronCommand['command_signature'],
-                'type' => $cronCommand['type'],
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ]);
+            CronCommand::updateOrCreate(
+                ['command_signature' =>  $cronCommand['command_signature'],],  // Search by command_signature
+                [
+                    'command_signature' =>  $cronCommand['command_signature'],
+                    'type' => $cronCommand['type'],
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]
+            );
         }
 
     }

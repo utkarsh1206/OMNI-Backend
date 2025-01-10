@@ -38,12 +38,10 @@ class CommandSignatureServiceProvider extends ServiceProvider
     {
         // Build the path of the generated command file
         $commandPath = app_path("Console" . DIRECTORY_SEPARATOR . "Commands" . DIRECTORY_SEPARATOR . "{$commandName}.php");
-
         // Ensure the file exists after command generation
         if (File::exists($commandPath)) {
             // Read the content of the command file
             $fileContents = File::get($commandPath);
-
             // Use regex to extract the signature
             preg_match('/protected \$signature = \'([^\']+)\'/', $fileContents, $matches);
             if (isset($matches[1])) {
@@ -59,13 +57,42 @@ class CommandSignatureServiceProvider extends ServiceProvider
                         'updated_at' => Carbon::now(),
                     ]
                 );
-
+                $this->updateSeederFile($signature,$type);
                 Log::info("Command '$commandName' created with signature '$signature' and stored in the database.");
             } else {
                 Log::error("Could not extract signature from the generated command: '$commandName'.");
             }
         } else {
             Log::error("The generated command file for '$commandName' was not found.");
+        }
+    }
+
+
+    public function updateSeederFile(string $signature,$type)
+    {
+        $seederFilePath = database_path('seeders/CronCommandsSeeder.php');
+        
+        if (File::exists($seederFilePath)) {
+            // Read the existing seeder file content
+            $fileContents = File::get($seederFilePath);
+
+            // Check if the signature is already in the seeder file to avoid duplicates
+            if (strpos($fileContents, $signature) === false) {
+                // Prepare the new line to add to the seeder
+                $newLine = "\n\t\t['command_signature' => '{$signature}', 'type' => '{$type}'],";
+                // Find the place where the cronCommands array is declared
+                $pattern = '/\$cronCommands = \[(.*?)\];/s';
+                $replacement = '$cronCommands = [${1}' . $newLine . "\n\t];";
+                $newContents = preg_replace($pattern, $replacement, $fileContents);
+                // Write the updated contents back to the seeder file
+                File::put($seederFilePath, $newContents);
+
+                Log::info("CronCommandsSeeder file has been updated with signature: '$signature'.");
+            } else {    
+                Log::info("Command signature '$signature' already exists in the seeder file.");
+            }
+        } else {
+            Log::error("Seeder file 'CronCommandsSeeder.php' does not exist.");
         }
     }
 }
