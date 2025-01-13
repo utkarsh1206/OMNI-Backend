@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Observers\SupportTicketObserver;
 use App\Models\Supportticket;
+use App\Observers\SupportTicketNotificationObserver;
+use App\Models\SupportticketNotification;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,5 +24,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Supportticket::observe(SupportTicketObserver::class);
+        SupportticketNotification::observe(SupportTicketNotificationObserver::class);
     }
 }
