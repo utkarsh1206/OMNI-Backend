@@ -1,14 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
   CCol,
   CContainer,
-  CForm,
   CFormInput,
-  CFormLabel,
   CRow,
   CTable,
   CTableBody,
@@ -34,12 +29,23 @@ const UserGroups = () => {
   const { authToken } = useContext(AuthContext)
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState({
-    email: '',
+    name: '',
+    campaign_id: '',
     status: '',
   })
 
   const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
   const [perPage, setPerPage] = useState(10) // Add state to track the current page
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
 
   const handlePageChange = (page) => {
     setCurrentPage(page) // Update the current page when pagination changes
@@ -77,32 +83,47 @@ const UserGroups = () => {
   // Define custom filter card for UserGroups
   const renderUserGroupFilters = (filters, setFilters) => (
     <>
-      <div>
-        <label>
-          Email:
-          <input
+      <CRow className="mb-3">
+        <CCol xs={12} md={4}>
+          <label htmlFor="name" className="form-label">
+            UserGroup Name:
+          </label>
+          <CFormInput
+            id="name"
             type="text"
-            name="email"
-            value={filters.email || ''}
-            onChange={(e) => setFilters((prev) => ({ ...prev, email: e.target.value }))}
-            placeholder="Enter email"
+            name="name"
+            value={filters.name || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
+            placeholder="Enter name"
           />
-        </label>
-      </div>
-      <div>
-        <label>
-          Status:
-          <select
+        </CCol>
+        <CCol xs={12} md={3}>
+          <label htmlFor="campaign_id" className="form-label">
+            Campaign_id:
+          </label>
+          <CFormInput
+            id="campaign_id"
+            type="text"
+            name="campaign_id"
+            value={filters.campaign_id || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, campaign_id: e.target.value }))}
+            placeholder="Enter campaign_id"
+          />
+        </CCol>
+        <CCol xs={12} md={3}>
+          <label htmlFor="end-time" className="form-label">
+            Status:
+          </label>
+          <CFormInput
+            id="status"
+            type="text"
             name="status"
             value={filters.status || ''}
             onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
-          >
-            <option value="">Select status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </label>
-      </div>
+            placeholder="Enter status"
+          />
+        </CCol>
+      </CRow>
     </>
   )
 
@@ -134,6 +155,8 @@ const UserGroups = () => {
               </CCol>
               <SearchAndFilter
                 onSearch={setSearchQuery} // Callback for live search
+                onApplyFilters={handleApplyFilters}
+                onResetFilters={handleResetFilters} // Callback for reset filters
                 filters={filters} // Current filters
                 setFilters={setFilters} // Update filters
                 renderFilters={renderUserGroupFilters} // Custom filter UI for users
@@ -197,7 +220,7 @@ const UserGroups = () => {
             apiEndpoint={`${BASE_URL}/api/usergroup`}
             authToken={authToken}
             onDataFetched={setUserGroups}
-            filters={filters}
+            filters={appliedFilters}
             search={searchQuery}
             onPageChange={handlePageChange}
             perPageValue={handlePerPageValue}

@@ -1,3 +1,32 @@
+2025-01-17 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3891, 3892, 3893, 3894, 3895
+	* Previous Commit ID : 5510b413
+	* Version : Dev
+	* ReactJS : Worked on the Search and Filter components/module. Created new frontend pages for SLA
+				configs and other settings. Created pages for CRON configs. Integrated Support Ticket
+				Notification/Activity. Changes with respect to SLA and Incident Types etc.
+
+2025-01-17 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : 5c02248b 
+	* Version : Dev
+	* Laravel : This code implements an SLA (Service Level Agreement) calculation system for support tickets within the application. It includes logic to compute key SLA times such as:
+
+	First Response Time: The time it takes to respond to a support ticket after it is opened.
+	Resolve Time: The total time to resolve a support ticket.
+	Alert Times: Notification times before the first response and before resolution, based on configured SLA targets.
+
+	The SlaService class interacts with several models (e.g., Supportticket, IncidentType, SlaTarget, SlaSetting) to gather necessary data and performs the following tasks:
+
+	Fetches ticket details and SLA targets based on ticket priority, incident type, and user level.
+	Handles business hours and ensures that the calculated SLA times account for off days and holidays.
+	Provides methods to calculate SLA times considering business start/end times, holidays, off days, and dynamic priority-based SLA configurations.
+	Logs detailed information for debugging and tracking SLA calculations.
+
+	This service ensures that the SLA metrics are correctly calculated and aligned with business rules defined in the application settings. 
+
 2025-01-03 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3891, 3892, 3893, 3894

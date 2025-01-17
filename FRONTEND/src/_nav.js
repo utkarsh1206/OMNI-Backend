@@ -422,7 +422,6 @@ const navItemList = [
   //   icon: <CIcon icon={icon.cilUserPlus} customClassName="nav-icon" />,
   // },
 
-
   // {
   //   component: CNavItem,
   //   name: 'Settings1',

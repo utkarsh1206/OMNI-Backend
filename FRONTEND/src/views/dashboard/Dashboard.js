@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   CCard,
   CCardBody,
@@ -12,10 +12,12 @@ import {
   CTableRow,
   CTableHeaderCell,
   CTableDataCell,
-  CBadge
-} from '@coreui/react';
+  CBadge,
+} from '@coreui/react'
+import { Link, useNavigate } from 'react-router-dom'
 
 const Dashboard = () => {
+  const navigate = useNavigate()
   return (
     <div className="dashboard">
       <CRow className="mb-4">
@@ -23,52 +25,30 @@ const Dashboard = () => {
           <h3>Dashboard</h3>
         </CCol>
         <CCol className="text-end">
-          <CButton color="warning">Add Ticket</CButton>
+          <Link to={'/spprt_tckt/crt_tckt'}>
+            <CButton color="warning">Add Ticket</CButton>
+          </Link>
         </CCol>
       </CRow>
 
       <CRow className="mb-4">
         <CCol xs="2">
-          <CWidgetStatsA
-            color="warning"
-            value={<h2>1</h2>}
-            title="Unassigned"
-          />
+          <CWidgetStatsA color="warning" value={<h2>1</h2>} title="Unassigned" />
         </CCol>
         <CCol xs="2">
-          <CWidgetStatsA
-            color="primary"
-            value={<h2>0</h2>}
-            title="Open"
-          />
+          <CWidgetStatsA color="primary" value={<h2>0</h2>} title="Open" />
         </CCol>
         <CCol xs="2">
-          <CWidgetStatsA
-            color="info"
-            value={<h2>0</h2>}
-            title="Waiting On Customer"
-          />
+          <CWidgetStatsA color="info" value={<h2>0</h2>} title="Waiting On Customer" />
         </CCol>
         <CCol xs="2">
-          <CWidgetStatsA
-            color="success"
-            value={<h2>0</h2>}
-            title="Waiting On Third Party"
-          />
+          <CWidgetStatsA color="success" value={<h2>0</h2>} title="Waiting On Third Party" />
         </CCol>
         <CCol xs="2">
-          <CWidgetStatsA
-            color="secondary"
-            value={<h2>0</h2>}
-            title="Resolved"
-          />
+          <CWidgetStatsA color="secondary" value={<h2>0</h2>} title="Resolved" />
         </CCol>
         <CCol xs="2">
-          <CWidgetStatsA
-            color="dark"
-            value={<h2>0</h2>}
-            title="Closed"
-          />
+          <CWidgetStatsA color="dark" value={<h2>0</h2>} title="Closed" />
         </CCol>
       </CRow>
 
@@ -163,12 +143,16 @@ const Dashboard = () => {
                     { name: 'Laxman Sonwane', id: '7008', time: '10:15AM', status: 'Pause' },
                   ].map((agent, index) => (
                     <CTableRow key={index}>
-                      <CTableDataCell>{agent.name} {agent.id}</CTableDataCell>
+                      <CTableDataCell>
+                        {agent.name} {agent.id}
+                      </CTableDataCell>
                       <CTableDataCell>
                         <CBadge color="success">Login</CBadge> [{agent.time}]
                       </CTableDataCell>
                       <CTableDataCell>
-                        <CBadge color={agent.status == 'Pause' ? "danger" :"success"}>{agent.status}</CBadge>
+                        <CBadge color={agent.status == 'Pause' ? 'danger' : 'success'}>
+                          {agent.status}
+                        </CBadge>
                       </CTableDataCell>
                     </CTableRow>
                   ))}
@@ -179,7 +163,7 @@ const Dashboard = () => {
         </CCol>
       </CRow>
     </div>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard

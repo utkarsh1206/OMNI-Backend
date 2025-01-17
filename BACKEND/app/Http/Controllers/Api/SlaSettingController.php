@@ -34,13 +34,25 @@ class SlaSettingController extends Controller
 
             if ($page === 'all') {
                 $slas = $query->get();
+                // return response()->json([
+                //     'data' => $slas,
+                // ]);
+                $slasFormatted = $slas->map(function ($sla) {
+                    return $this->formatSlaResponse($sla);
+                });
+
                 return response()->json([
-                    'data' => $slas,
+                    'data' => $slasFormatted,
                 ]);
             } else {
                 // Paginate the results
                 $slas = $query->paginate($perPage);
+                $slasFormatted = $slas->items();  // Retrieve the collection of SLA settings
 
+                // Map the formatted response
+                $slasFormatted = collect($slasFormatted)->map(function ($sla) {
+                    return $this->formatSlaResponse($sla);
+                });
                 return response()->json([
                     'meta' => [
                         'current_page' => $slas->currentPage(),
@@ -48,7 +60,7 @@ class SlaSettingController extends Controller
                         'per_page' => $slas->perPage(),
                         'total' => $slas->total(),
                     ],
-                    'data' => $slas->items(),
+                    'data' => $slasFormatted,
                 ]);
             }
         } catch (\Exception $e) {
@@ -71,10 +83,15 @@ class SlaSettingController extends Controller
             $this->saveRelatedData($sla, $validated);
 
             DB::commit();
+            $response = $this->formatSlaResponse($sla->load(['offDays', 'holidays', 'targets']));
             return response()->json([
                 'message' => 'SLA created successfully',
-                'data' => new SlaSettingResource($sla->load(['offDays', 'holidays', 'targets']))
+                'data' => $response
             ], 201);
+            // return response()->json([
+            //     'message' => 'SLA created successfully',
+            //     'data' => new SlaSettingResource($sla->load(['offDays', 'holidays', 'targets']))
+            // ], 201);
         } catch (ValidationException $e) {
             DB::rollBack();
             Log::error("Validation failed while creating SLA: ", ['errors' => $e->errors()]);
@@ -99,7 +116,9 @@ class SlaSettingController extends Controller
     public function show(SlaSetting $slaSetting)
     {
         try {
-            return response()->json($slaSetting->load(['offDays', 'holidays', 'targets']), 200);
+            $response = $this->formatSlaResponse($slaSetting->load(['offDays', 'holidays', 'targets']));
+            return response()->json($response, 200);
+            // return response()->json($slaSetting->load(['offDays', 'holidays', 'targets']), 200);
         } catch (\Exception $e) {
             Log::error("Error fetching SLA setting: " . $e->getMessage());
             return response()->json([
@@ -140,12 +159,20 @@ class SlaSettingController extends Controller
             $this->saveRelatedData($slaSetting, $validated);
 
             DB::commit();
-            Log::info("Transaction committed, SLA data after update: ", $slaSetting->load(['offDays', 'holidays', 'targets'])->toArray());
+
+            $response = $this->formatSlaResponse($slaSetting->load(['offDays', 'holidays', 'targets']));
 
             return response()->json([
                 'message' => 'SLA updated successfully',
-                'data' => new SlaSettingResource($slaSetting->load(['offDays', 'holidays', 'targets']))
+                'data' => $response
             ], 200);
+
+            Log::info("Transaction committed, SLA data after update: ", $slaSetting->load(['offDays', 'holidays', 'targets'])->toArray());
+
+            // return response()->json([
+            //     'message' => 'SLA updated successfully',
+            //     'data' => new SlaSettingResource($slaSetting->load(['offDays', 'holidays', 'targets']))
+            // ], 200);
         } catch (ValidationException $e) {
             DB::rollBack();
             Log::error("Validation failed during SLA update: ", [
@@ -258,5 +285,39 @@ class SlaSettingController extends Controller
                 }
             }
         }
+    }
+
+    private function formatSlaResponse(SlaSetting $slaSetting)
+    {
+        $offDays = $slaSetting->offDays->pluck('day')->toArray();
+        $holidays = $slaSetting->holidays->map(function ($holiday) {
+            return [
+                'holiday_date' => $holiday->holiday_date,
+                'description' => $holiday->description
+            ];
+        })->toArray();
+
+        $targets = [];
+        foreach ($slaSetting->targets as $target) {
+            $targets[$target->escalation_level][] = [
+                'priority_type' => $target->priority_type,
+                'response_time_value' => $target->response_time_value,
+                'alert_before_response_value' => $target->alert_before_response_value,
+                'resolve_time_value' => $target->resolve_time_value,
+                'alert_before_resolve_value' => $target->alert_before_resolve_value,
+            ];
+        }
+
+        return [
+            'id' => $slaSetting->id,
+            'name' => $slaSetting->name,
+            'is_24_hours' => $slaSetting->is_24_hours,
+            'start_time' => $slaSetting->start_time,
+            'end_time' => $slaSetting->end_time,
+           
+            'off_days' => $offDays,
+            'holidays' => $holidays,
+            'targets' => $targets,
+        ];
     }
 }

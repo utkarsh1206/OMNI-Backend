@@ -42,9 +42,13 @@ const SupportTicketsForm = () => {
   const navigate = useNavigate()
   const isEditMode = Boolean(id)
   // const editAccess = boolean(id)
-
-  const [users, setUsers] = useState([])
   const { authToken } = useContext(AuthContext)
+
+  const [userGroups, setUserGroups] = useState([])
+  const [users, setUsers] = useState([])
+  const [categories, setCategories] = useState([])
+
+  const [incidentType, setIncidentType] = useState([])
 
   const [accounts, setAccounts] = useState([])
   const [loadingAccounts, setLoadingAccounts] = useState(false)
@@ -71,6 +75,8 @@ const SupportTicketsForm = () => {
     description: '',
     attachment: '',
     status: 'Active',
+    incident_id: '',
+    category_id: '',
     // License Details
   })
 
@@ -85,8 +91,33 @@ const SupportTicketsForm = () => {
             Authorization: `Bearer ${authToken}`,
           },
         })
-        .then((response) => {
-          setFormData(response.data.data)
+        .then(async (response) => {
+          const ticketData = response.data.data
+          setFormData(ticketData)
+
+          // Fetch user details for assign_to_id
+          if (ticketData.assign_to_id) {
+            try {
+              const userResponse = await axios.get(
+                `${BASE_URL}/api/users/${ticketData.assign_to_id}`,
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`,
+                  },
+                },
+              )
+
+              const userGroupId = userResponse.data.data.usergroup_id // Assuming user data includes usergroup_id
+              setFormData((prev) => ({
+                ...prev,
+                usergroup_id: userGroupId,
+              }))
+              fetchUsers(userGroupId)
+            } catch (err) {
+              console.error('Error fetching user details:', err)
+            }
+          }
         })
         .catch((error) => {
           console.error('Error fetching Support Ticket data:', error)
@@ -95,27 +126,102 @@ const SupportTicketsForm = () => {
     }
   }, [id, isEditMode])
 
-  // Fetch Users on component mount
+  // Fetch Category on component mount
   useEffect(() => {
-    const fetchUsers = async () => {
+    if (formData.campaign_id) {
+      const fetchCategories = async () => {
+        try {
+          const response = await axios.get(
+            `${BASE_URL}/api/categories?department_id=${formData.campaign_id}`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                Authorization: `Bearer ${authToken}`,
+              },
+            },
+          )
+          setCategories(response.data.data)
+        } catch (err) {
+          setError('Error fetching Categories')
+        }
+      }
+      fetchCategories()
+    } else {
+      setCategories([])
+      setFormData((prevData) => ({
+        ...prevData,
+        category_id: '',
+        incident_id: '',
+      }))
+      setIncidentType([])
+    }
+  }, [formData.campaign_id])
+
+  // Fetch UserGroup on component mount
+  useEffect(() => {
+    const fetchUserGroups = async () => {
       // setLoadingOccupations(true)
       try {
-        const response = await axios.get(`${BASE_URL}/api/users?page=all`, {
+        const response = await axios.get(`${BASE_URL}/api/usergroup?page=all`, {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
             Authorization: `Bearer ${authToken}`,
           },
         })
-        setUsers(response.data.data)
-        // setLoadingOccupations(false)
+        setUserGroups(response.data.data)
       } catch (err) {
         setError('Error fetching Users')
-        // setLoadingOccupations(false)
       }
     }
-    fetchUsers()
+    fetchUserGroups()
   }, [])
+
+  const fetchUsers = async (usergroupId) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/users?usergroup=${usergroupId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+      })
+      setUsers(response.data.data)
+    } catch (err) {
+      console.error('Error fetching users:', err)
+      setError('Error fetching Users')
+    }
+  }
+
+  // Fetch Incident Types on component mount
+  useEffect(() => {
+    if (formData.campaign_id) {
+      const fetchIncidentType = async () => {
+        try {
+          const response = await axios.get(
+            `${BASE_URL}/api/incident-types?category_id=${formData.category_id}`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                Authorization: `Bearer ${authToken}`,
+              },
+            },
+          )
+          setIncidentType(response.data.data)
+        } catch (err) {
+          setError('Error fetching Incident Types')
+        }
+      }
+      fetchIncidentType()
+    } else {
+      setIncidentType([])
+      setFormData((prevData) => ({
+        ...prevData,
+        incident_id: '',
+      }))
+    }
+  }, [formData.category_id])
 
   // Fetch Accounts when product_id changes
   useEffect(() => {
@@ -148,7 +254,6 @@ const SupportTicketsForm = () => {
         account_id: '',
         contact_id: '',
       }))
-      // setCities([])
     }
   }, [formData.product_id])
 
@@ -182,16 +287,43 @@ const SupportTicketsForm = () => {
         ...prevData,
         contact_id: '',
       }))
-      // setCities([])
     }
   }, [formData.account_id])
 
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     [name]: value,
+  //   }))
+  // }
+
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }))
+
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value }
+
+      // If the incident type changes, update the default priority
+      if (name === 'incident_id') {
+        const selectedIncident = incidentType.find((incident) => incident.id.toString() === value)
+        // const selectedIncident = incidentType.find((incident) => incident.name === value);
+
+        if (selectedIncident) {
+          updatedFormData.default_priority = selectedIncident.priority || ''
+        }
+      }
+
+      return updatedFormData
+    })
+
+    if (name === 'usergroup_id') {
+      fetchUsers(value) // Fetch users for the selected user group
+      setFormData((prev) => ({
+        ...prev,
+        assign_to_id: '', // Reset assign_to_id when usergroup changes
+      }))
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -256,6 +388,7 @@ const SupportTicketsForm = () => {
       description: '',
       attachment: '',
       status: 'Active',
+      incident_id: '',
     })
     // if (isEditMode) {
     navigate('/spprt_tckt') // Redirect to tenants list if editing
@@ -272,18 +405,15 @@ const SupportTicketsForm = () => {
             <CCardBody>
               <CRow>
                 <DefaultProductsComponent formData={formData} handleChange={handleChange} />
-                {/* <FormGroup
-                  label="Account"
-                  name="account_id"
-                  type="text"
-                  value={formData.account_id}
-                  onChange={handleChange}
-                  required
-                /> */}
                 <CCol md="4" className="mb-3">
-                  <CFormLabel htmlFor="account_id">
-                    Account <span style={{ color: 'red' }}>*</span>
-                    {loadingAccounts && <small>Loading Accounts...</small>}
+                  <CFormLabel
+                    htmlFor="account_id"
+                    className="d-flex justify-content-between align-items-center"
+                  >
+                    <span>
+                      Account <span style={{ color: 'red' }}>*</span>
+                    </span>
+                    {loadingAccounts && <small className="ms-auto">Loading Accounts...</small>}
                   </CFormLabel>
                   <CFormSelect
                     id="account_id"
@@ -302,21 +432,14 @@ const SupportTicketsForm = () => {
                     ))}
                   </CFormSelect>
                 </CCol>
-                <DefaultCampaignComponent formData={formData} handleChange={handleChange} />
-
-                {/* to be removed inbound group */}
-                {/* <FormGroup
-                  label="Inbound Group"
-                  name="inbound_group_id"
-                  type="text"
-                  value={formData.inbound_group_id}
-                  onChange={handleChange}
-                  required
-                /> */}
-
                 <CCol md="4" className="mb-3">
-                  <CFormLabel htmlFor="contact_id">
-                    Contact <span style={{ color: 'red' }}>*</span>
+                  <CFormLabel
+                    htmlFor="contact_id"
+                    className="d-flex justify-content-between align-items-center"
+                  >
+                    <span>
+                      Contact <span style={{ color: 'red' }}>*</span>
+                    </span>
                     {loadingContacts && <small>Loading Contacts...</small>}
                   </CFormLabel>
                   <CFormSelect
@@ -336,6 +459,71 @@ const SupportTicketsForm = () => {
                     ))}
                   </CFormSelect>
                 </CCol>
+                <DefaultCampaignComponent formData={formData} handleChange={handleChange} />
+                <CCol md="4" className="mb-3">
+                  <CFormLabel
+                    htmlFor="category_id"
+                    className="d-flex justify-content-between align-items-center"
+                  >
+                    <span>
+                      Category <span style={{ color: 'red' }}>*</span>
+                    </span>
+                    {/* {loadingContacts && <small>Loading Contacts...</small>} */}
+                  </CFormLabel>
+                  <CFormSelect
+                    id="category_id"
+                    name="category_id"
+                    value={formData.category_id}
+                    onChange={handleChange}
+                  >
+                    <option value="" disabled>
+                      Select Category
+                    </option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                </CCol>
+                <CCol md="4" className="mb-3">
+                  <CFormLabel htmlFor="incident_id">
+                    Incident Type <span style={{ color: 'red' }}>*</span>
+                  </CFormLabel>
+                  <CFormSelect
+                    id="incident_id"
+                    name="incident_id"
+                    value={formData.incident_id}
+                    onChange={handleChange}
+                  >
+                    <option value="" disabled>
+                      Select Incident Type
+                    </option>
+                    {incidentType.map((incidentType) => (
+                      <option key={incidentType.id} value={incidentType.id}>
+                        {incidentType.id} - {incidentType.name}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                </CCol>
+                <CCol md="4" className="mb-3">
+                  <CFormLabel htmlFor="usergroup_id">
+                    User Group {/* <span style={{ color: 'red' }}>*</span> */}
+                  </CFormLabel>
+                  <CFormSelect
+                    id="usergroup_id"
+                    name="usergroup_id"
+                    value={formData.usergroup_id}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select UserGroup</option>
+                    {userGroups.map((userGroup) => (
+                      <option key={userGroup.id} value={userGroup.id}>
+                        {userGroup.name}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                </CCol>
                 <CCol md="4" className="mb-3">
                   <CFormLabel htmlFor="assign_to_id">
                     Assign To {/* <span style={{ color: 'red' }}>*</span> */}
@@ -345,7 +533,6 @@ const SupportTicketsForm = () => {
                     name="assign_to_id"
                     value={formData.assign_to_id}
                     onChange={handleChange}
-                    // disabled={loadingCountries}
                   >
                     <option value="">Assign to User</option>
                     {users.map((user) => (
@@ -357,7 +544,7 @@ const SupportTicketsForm = () => {
                 </CCol>
                 <CCol md="4" className="mb-3">
                   <CFormLabel htmlFor="default_type">
-                    Default Type <span style={{ color: 'red' }}>*</span>
+                    Type <span style={{ color: 'red' }}>*</span>
                   </CFormLabel>
                   <CFormSelect
                     id="default_type"
@@ -376,6 +563,7 @@ const SupportTicketsForm = () => {
                     ))}
                   </CFormSelect>
                 </CCol>
+
                 <CCol md="4" className="mb-3">
                   <CFormLabel htmlFor="default_priority">
                     Default Priority <span style={{ color: 'red' }}>*</span>
@@ -387,12 +575,12 @@ const SupportTicketsForm = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option key="" value="" disabled>
+                    <option value="" disabled>
                       Select Priority
                     </option>
-                    {Object.keys(PRIORITY_TO_COLOR).map((key) => (
-                      <option key={key} value={key}>
-                        {key}
+                    {Object.keys(PRIORITY_TO_COLOR).map((priority) => (
+                      <option key={priority} value={priority}>
+                        {priority}
                       </option>
                     ))}
                   </CFormSelect>
@@ -411,37 +599,13 @@ const SupportTicketsForm = () => {
                     <option key="" value="" disabled>
                       Select Status
                     </option>
-                    {Object.keys(STATUS_TO_COLOR).map((key) => (
-                      <option key={key} value={key}>
-                        {key}
-                      </option>
-                    ))}
-                  </CFormSelect>
-                </CCol>
-                <CCol md="4" className="mb-3">
-                  <CFormLabel htmlFor="default_status">
-                    Incident Type <span style={{ color: 'red' }}>*</span> <small>should be changed on camp select</small>
-                  </CFormLabel>
-                  <CFormSelect
-                    id="default_status"
-                    name="default_status"
-                    // value={formData.default_status}
-                    // onChange={handleChange}
-                    // required
-                  >
-                    <option key="" value="" disabled>
-                      Select Incident Type
-                    </option>
-                    {/* {Object.keys(STATUS_TO_COLOR).map((key) => (
-                      <option key={key} value={key}>
-                        {key}
-                      </option>
-                    ))} */}
-                    <option>Type 1</option>
-                    <option>Type 2</option>
-                    <option>Type 3</option>
-                    <option>Type 4</option>
-                    <option>Type 5</option>
+                    {Object.keys(STATUS_TO_COLOR)
+                      .filter((key) => isEditMode || (key !== 'Resolved' && key !== 'Closed'))
+                      .map((key) => (
+                        <option key={key} value={key}>
+                          {key}
+                        </option>
+                      ))}
                   </CFormSelect>
                 </CCol>
               </CRow>
@@ -470,6 +634,7 @@ const SupportTicketsForm = () => {
                   type="text"
                   value={formData.to_emails}
                   onChange={handleChange}
+                  required
                 />
                 <FormGroup
                   label="CC"
@@ -490,7 +655,6 @@ const SupportTicketsForm = () => {
                     Description <span style={{ color: 'red' }}>*</span>
                   </CFormLabel>
                   <CFormTextarea
-                    // type="textarea"
                     id="description"
                     name="description"
                     rows={5}
@@ -503,7 +667,6 @@ const SupportTicketsForm = () => {
                   label="Attachments"
                   name="attachment"
                   type="file"
-                  // value={formData.attachment}
                   onChange={handleChange}
                   required={false}
                 />

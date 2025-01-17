@@ -12,7 +12,7 @@ import {
   CTableRow,
   CTooltip,
   CFormLabel,
-  CFormSelect
+  CFormSelect,
 } from '@coreui/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { BASE_URL, CAMPAIGNS, PRODUCTS } from '../../config'
@@ -29,19 +29,35 @@ const Accounts = () => {
   const [accounts, setAccounts] = useState([])
   const [owners, setOwners] = useState([])
   const { authToken } = useContext(AuthContext)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({})
-  const [currentPage, setCurrentPage] = useState(1)
-  const [perPage, setPerPage] = useState(10)
   const [selectedProduct, setSelectedProduct] = useState('')
   const [selectedCampaign, setSelectedCampaign] = useState('')
   const [selectedOwner, setSelectedOwner] = useState('')
 
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filters, setFilters] = useState({
+    product_id: '',
+    campaign_id: '',
+    owner_id: '',
+  })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [perPage, setPerPage] = useState(10)
+
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
+
   const handlePageChange = (page) => {
-    setCurrentPage(page)  // Update the current page when pagination changes
+    setCurrentPage(page) // Update the current page when pagination changes
   }
   const handlePerPageValue = (perPage) => {
-    setPerPage(perPage)  // Update the current page when pagination changes
+    setPerPage(perPage) // Update the current page when pagination changes
   }
 
   useEffect(() => {
@@ -64,7 +80,7 @@ const Accounts = () => {
 
   const getOwnerName = (owner_id) => {
     const owner = owners.find((owner) => String(owner.id) === String(owner_id))
-    return owner ? `${owner.first_name} ${owner.last_name}` : '';
+    return owner ? `${owner.first_name} ${owner.last_name}` : ''
   }
 
   const handleDeleteAccount = async (id, name) => {
@@ -87,62 +103,60 @@ const Accounts = () => {
   }
 
   const getCampaignName = (campaign_id) => {
-    const campaign = CAMPAIGNS.find(campaign => String(campaign.id) === String(campaign_id));
-    return campaign ? campaign.name : '';
+    const campaign = CAMPAIGNS.find((campaign) => String(campaign.id) === String(campaign_id))
+    return campaign ? campaign.name : ''
   }
 
   const getProductName = (product_id) => {
-    const product = PRODUCTS.find(product => String(product.id) === String(product_id));
-    return product ? product.name : '';
+    const product = PRODUCTS.find((product) => String(product.id) === String(product_id))
+    return product ? product.name : ''
   }
 
-  const handleProductChange = (e) => {
-    setSelectedProduct(e.target.value)
-  }
+  // const handleProductChange = (e) => {
+  //   setSelectedProduct(e.target.value)
+  // }
 
-  const handleCampaignChange = (e) => {
-    setSelectedCampaign(e.target.value)
-  }
+  // const handleCampaignChange = (e) => {
+  //   setSelectedCampaign(e.target.value)
+  // }
 
-  const handleOwnerChange = (e) => {
-    setSelectedOwner(e.target.value)
-  }
+  // const handleOwnerChange = (e) => {
+  //   setSelectedOwner(e.target.value)
+  // }
 
-  const handleSearch = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/api/accounts`, {
-        headers: { Authorization: `Bearer ${authToken}` },
-        params: {
-          search: searchQuery,
-          product_id: selectedProduct,
-          campaign_id: selectedCampaign,
-          owner_id: selectedOwner,
-          page: currentPage,
-          per_page: perPage
-        }
-      })
-      setAccounts(response.data.data)
-    } catch (err) {
-      console.error('Error fetching Accounts', err)
-    }
-  }
+  // const handleSearch = async () => {
+  //   try {
+  //     const response = await axios.get(`${BASE_URL}/api/accounts`, {
+  //       headers: { Authorization: `Bearer ${authToken}` },
+  //       params: {
+  //         search: searchQuery,
+  //         product_id: selectedProduct,
+  //         campaign_id: selectedCampaign,
+  //         owner_id: selectedOwner,
+  //         page: currentPage,
+  //         per_page: perPage
+  //       }
+  //     })
+  //     setAccounts(response.data.data)
+  //   } catch (err) {
+  //     console.error('Error fetching Accounts', err)
+  //   }
+  // }
 
   const renderAccountFilters = (filters, setFilters) => (
     <CRow style={{ display: 'block ruby', alignItems: 'center' }}>
       <CCol md="3" className="mb-3">
-        <CFormLabel htmlFor="product_id">
-          Product
-        </CFormLabel>
+        <CFormLabel htmlFor="product_id">Product</CFormLabel>
         <CFormSelect
           id="product_id"
           name="product_id"
-          value={selectedProduct}
-          onChange={handleProductChange}
+          // value={selectedProduct}
+          // onChange={handleProductChange}
+          value={filters.product_id}
+          onChange={(e) => setFilters((prev) => ({ ...prev, product_id: e.target.value }))}
         >
-          <option value="">
-            Select Product
-          </option>
-          {PRODUCTS.map(product => (
+          <option value="">Select Product</option>
+          {PRODUCTS.map((product) => (
             <option key={product.name} value={product.id}>
               {product.name}
             </option>
@@ -151,17 +165,17 @@ const Accounts = () => {
       </CCol>
 
       <CCol md="3" className="mb-3">
-        <CFormLabel htmlFor="campaign_id">
-          Campaign
-        </CFormLabel>
+        <CFormLabel htmlFor="campaign_id">Campaign</CFormLabel>
         <CFormSelect
           id="campaign_id"
           name="campaign_id"
-          value={selectedCampaign}
-          onChange={handleCampaignChange}
+          // value={selectedCampaign}
+          // onChange={handleCampaignChange}
+          value={filters.campaign_id}
+          onChange={(e) => setFilters((prev) => ({ ...prev, campaign_id: e.target.value }))}
         >
           <option value="">Select Campaign</option>
-          {CAMPAIGNS.map(campaign => (
+          {CAMPAIGNS.map((campaign) => (
             <option key={campaign.name} value={campaign.id}>
               {campaign.name}
             </option>
@@ -170,14 +184,14 @@ const Accounts = () => {
       </CCol>
 
       <CCol md="3" className="mb-3">
-        <CFormLabel htmlFor="owner_id">
-          Owner
-        </CFormLabel>
+        <CFormLabel htmlFor="owner_id">Owner</CFormLabel>
         <CFormSelect
           id="owner_id"
           name="owner_id"
-          value={selectedOwner}
-          onChange={handleOwnerChange}
+          // value={selectedOwner}
+          // onChange={handleOwnerChange}
+          value={filters.owner_id}
+          onChange={(e) => setFilters((prev) => ({ ...prev, owner_id: e.target.value }))}
         >
           <option value="">Select Owner</option>
           {owners.map((owner) => (
@@ -187,7 +201,7 @@ const Accounts = () => {
           ))}
         </CFormSelect>
       </CCol>
-      <CCol>
+      {/* <CCol>
         <CButton
           type="button"
           color="primary"
@@ -197,7 +211,7 @@ const Accounts = () => {
         >
           Search
         </CButton>
-      </CCol>
+      </CCol> */}
     </CRow>
   )
 
@@ -212,12 +226,14 @@ const Accounts = () => {
                   Create Account
                 </CButton>
               </Link>
-              <CButton color="primary" className="me-2" size="sm" >
+              <CButton color="primary" className="me-2" size="sm">
                 Delete Account
               </CButton>
             </CCol>
             <SearchAndFilter
               onSearch={setSearchQuery}
+              onApplyFilters={handleApplyFilters}
+              onResetFilters={handleResetFilters} // Callback for reset filters
               filters={filters}
               setFilters={setFilters}
               renderFilters={renderAccountFilters} // Custom filter UI for users
@@ -283,7 +299,7 @@ const Accounts = () => {
           apiEndpoint={`${BASE_URL}/api/accounts`}
           authToken={authToken}
           onDataFetched={setAccounts}
-          filters={filters}
+          filters={appliedFilters}
           search={searchQuery}
           onPageChange={handlePageChange}
           perPageValue={handlePerPageValue}

@@ -25,13 +25,18 @@ return new class extends Migration
             $table->string('default_status');
             $table->string('subject');
             $table->string('departments')->nullable();
-            $table->string('to_emails');            
+            $table->string('to_emails');
             $table->string('cc')->nullable();
             $table->string('bcc')->nullable();
             $table->longText('description');
             $table->integer('incident_id');
             $table->longText('attachment')->nullable();
             $table->enum('is_delete', ['Yes', 'No'])->default('No');
+            $table->string('first_response_time')->nullable();
+            $table->string('alert_before_response_notification_time')->nullable();
+            $table->string('resolved_time')->nullable();
+            $table->string('alert_before_resolve_notification_time')->nullable();
+            $table->enum('is_escalated', ['Yes', 'No'])->default('No');
             $table->timestamps();
         });
     }

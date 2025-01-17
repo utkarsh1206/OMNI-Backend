@@ -21,7 +21,7 @@ class MailDetailController extends Controller
     {
         // Validate the incoming request to ensure 'supportticket_id' is provided
         $request->validate([
-            'supportticket_id' => 'required|integer', // Assuming you have a support_tickets table
+            'supportticket_id' => 'required', // Assuming you have a support_tickets table
         ]);
     
         // Get the supportticket_id from the request body

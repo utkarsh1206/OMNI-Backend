@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Observers\SupportTicketObserver;
 use App\Models\Supportticket;
 use App\Observers\SupportTicketNotificationObserver;
-use App\Models\SupportticketNotification;
+use App\Models\Supportticketnotification;
 
 class AppServiceProvider extends ServiceProvider
 {

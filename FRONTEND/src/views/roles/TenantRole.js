@@ -6,6 +6,7 @@ import {
   CCardHeader,
   CCol,
   CContainer,
+  CFormInput,
   CRow,
   CTable,
   CTableBody,
@@ -23,12 +24,38 @@ import { AuthContext } from '../../context/AuthContext'
 import PaginationComponent from '../../components/PaginationComponent' // import the reusable pagination component
 import { formatDate } from '../../utils/DateUtils'
 import axios from 'axios'
+import SearchAndFilter from '../../components/SearchAndFilter'
 
 const Tenants = () => {
   const navigate = useNavigate()
   const [roles, setRoles] = useState([])
   const { authToken } = useContext(AuthContext)
-  const [filters, setFilters] = useState({})
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filters, setFilters] = useState({
+    name: '',
+    description: '',
+    // Add more filters here as needed
+  })
+
+  const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
+  const [perPage, setPerPage] = useState(10) // Add state to track the current page
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page) // Update the current page when pagination changes
+  }
+  const handlePerPageValue = (perPage) => {
+    setPerPage(perPage) // Update the current page when pagination changes
+  }
 
   const handleDeleteRole = async (id, name) => {
     if (window.confirm('Are you sure to delete ' + name + '?')) {
@@ -57,41 +84,63 @@ const Tenants = () => {
   //     return new Date(string).toLocaleDateString([], options)
   //   }
 
-  return (
+  const renderTenantFilters = (filters, setFilters) => (
     <>
       <CRow>
-        <CCol xs={12}>
-          <CCard className="mb-2">
-            <CCardHeader>
-              Search for <strong>Role</strong> <small>Filters will be added later</small>
-            </CCardHeader>
-            <CCardBody>
-              Placeholder for Role search fields
-              <CRow className="mt-3">
-                <CCol>
-                  <CButton color="primary" onClick={() => fetchTenants(1)}>
-                    Search
-                  </CButton>
-                </CCol>
-              </CRow>
-            </CCardBody>
-          </CCard>
+        <CCol xs={12} md={5} className="mb-2">
+          <label htmlFor="name" className="form-label">
+            Name:
+          </label>
+          <CFormInput
+            id="name"
+            type="text"
+            name="name"
+            value={filters.name || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
+            placeholder="Enter Tenant Name"
+          />
+        </CCol>
+        <CCol xs={12} md={7} className="mb-2">
+          <label htmlFor="description" className="form-label">
+            Description:
+          </label>
+          <CFormInput
+            id="description"
+            type="text"
+            name="description"
+            value={filters.description || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, description: e.target.value }))}
+            placeholder="Enter description"
+          />
         </CCol>
       </CRow>
-      <hr />
+    </>
+  )
+
+  return (
+    <>
       <CRow>
         <CCol>
           <CContainer>
             <CRow fluid responsive>
               <CCol md={8}>
                 <Link to="/tenants/tenant_role/crt_tenant_role">
-                  <CButton color="primary" className="mb-4 me-2" size="sm">
+                  <CButton color="primary" className="me-2" size="sm">
                     Create Role
                   </CButton>
                 </Link>
               </CCol>
+              <SearchAndFilter
+                onSearch={setSearchQuery} // Callback for live search
+                onApplyFilters={handleApplyFilters}
+                onResetFilters={handleResetFilters} // Callback for reset filters
+                filters={filters} // Current filters
+                setFilters={setFilters} // Update filters
+                renderFilters={renderTenantFilters} // Custom filter UI for users
+              />
             </CRow>
           </CContainer>
+          <hr />
           <CTable hover bordered responsive="md">
             <CTableHead color="light">
               <CTableRow>
@@ -104,9 +153,10 @@ const Tenants = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {roles.map((role) => (
+              {roles.map((role, index) => (
                 <CTableRow key={role.id}>
-                  <CTableDataCell>{role.id}</CTableDataCell>
+                  {/* <CTableDataCell>{role.id}</CTableDataCell> */}
+                  <CTableDataCell>{index + 1 + (currentPage - 1) * perPage}</CTableDataCell>
                   <CTableDataCell>{role.name}</CTableDataCell>
                   <CTableDataCell>{role.description}</CTableDataCell>
                   <CTableDataCell>{role.status}</CTableDataCell>
@@ -147,7 +197,10 @@ const Tenants = () => {
             apiEndpoint={`${BASE_URL}/api/tenantrole`}
             authToken={authToken}
             onDataFetched={setRoles}
-            filters={filters}
+            filters={appliedFilters} // Use applied filters
+            search={searchQuery} // Use live search
+            onPageChange={handlePageChange}
+            perPageValue={handlePerPageValue}
           />
         </CCol>
       </CRow>

@@ -30,6 +30,11 @@ class Supportticket extends Model
         //"status",
         "incident_id",
         "is_delete",
-        "support_ticket_id"
+        "support_ticket_id",
+        "first_response_time",
+        "alert_before_response_notification_time",
+        "resolved_time",
+        "alert_before_resolve_notification_time",
+        "is_escalated"
     ];
 }

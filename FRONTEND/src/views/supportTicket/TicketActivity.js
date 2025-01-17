@@ -36,36 +36,30 @@ const TicketActivity = ({ ticket }) => {
       })
   }, [ticket])
 
-  const typeMap = {
-    Open: { badgeColor: 'success', icon: 'cilUser' },
-    Merged: { badgeColor: 'info', icon: 'cilWindowRestore' },
-    Transfer: { badgeColor: 'primary', icon: 'cilTransfer' },
-}
-
   // console.log('activity' + JSON.stringify(activity, null, 4))
-  const timelineData = [
-    {
-      icon: 'cilUser',
-      badgeColor: 'primary',
-      title: 'Ticket Created',
-      description: 'Santi contacted for the first time',
-      date: 'Tue, 13 Dec 2023',
-    },
-    {
-      icon: 'cilFire',
-      badgeColor: 'danger',
-      title: 'Type Changed',
-      description: 'Changed Ticket Type to Incident',
-      date: 'Tue, 13 Dec 2023',
-    },
-    {
-      icon: 'cilPhone',
-      badgeColor: 'info',
-      title: 'Call Scheduled',
-      description: 'Going on Call with +1 678-908-456',
-      date: 'Tue, 13 Dec 2023',
-    },
-  ]
+  // const timelineData = [
+  //   {
+  //     icon: 'cilUser',
+  //     badgeColor: 'primary',
+  //     title: 'Ticket Created',
+  //     description: 'Santi contacted for the first time',
+  //     date: 'Tue, 13 Dec 2023',
+  //   },
+  //   {
+  //     icon: 'cilFire',
+  //     badgeColor: 'danger',
+  //     title: 'Type Changed',
+  //     description: 'Changed Ticket Type to Incident',
+  //     date: 'Tue, 13 Dec 2023',
+  //   },
+  //   {
+  //     icon: 'cilPhone',
+  //     badgeColor: 'info',
+  //     title: 'Call Scheduled',
+  //     description: 'Going on Call with +1 678-908-456',
+  //     date: 'Tue, 13 Dec 2023',
+  //   },
+  // ]
 
   return (
     <CCard>
@@ -74,13 +68,13 @@ const TicketActivity = ({ ticket }) => {
       </CCardHeader>
       <CCardBody>
         <div>
-          {timelineData.map((item, index) => (
+          {activity.map((item, index) => (
             <CRow className="mb-3" key={index}>
               <CCol xs="1" className="position-relative text-center align-content-center">
                 {/* Icon */}
-                <CIcon icon={icon[item.icon]} size="lg" className={`text-${item.badgeColor}`} />
+                <CIcon icon={icon[item.icon]} size="lg" className={`text-${item.color}`} />
                 {/* Dotted line */}
-                {index < timelineData.length - 1 && <div className="timeline-line"></div>}
+                {index < activity.length - 1 && <div className="timeline-line"></div>}
               </CCol>
               <CCol xs="11">
                 <CCard
@@ -88,10 +82,10 @@ const TicketActivity = ({ ticket }) => {
                   style={{ boxShadow: '0 0.3rem 0.35rem 2px rgba(8, 10, 12, 0.075)' }}
                 >
                   <CCardBody>
-                    <CBadge color={item.badgeColor} className="mb-2">
-                      {item.title}
+                    <CBadge color={item.color} className="mb-2">
+                      {item.type}
                     </CBadge>
-                    <CCardText>{item.description}</CCardText>
+                    <CCardText>{item.comment}</CCardText>
                     <small className="text-muted">{item.date}</small>
                   </CCardBody>
                 </CCard>

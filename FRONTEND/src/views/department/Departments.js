@@ -1,14 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
   CCol,
   CContainer,
-  CForm,
   CFormInput,
-  CFormLabel,
   CRow,
   CTable,
   CTableBody,
@@ -39,6 +34,16 @@ const Departments = () => {
 
   const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
   const [perPage, setPerPage] = useState(10) // Add state to track the current page
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
 
   const handlePageChange = (page) => {
     setCurrentPage(page) // Update the current page when pagination changes
@@ -75,20 +80,21 @@ const Departments = () => {
 
   // Define custom filter card for Departments
   const renderDepartmentFilters = (filters, setFilters) => (
-    <>
-      <div>
-        <label>
-          Name:
-          <input
-            type="text"
-            name="name"
-            value={filters.name || ''}
-            onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
-            placeholder="Enter name"
-          />
+    <CRow className="mb-3">
+      <CCol xs={12} md={4}>
+        <label htmlFor="name" className="form-label">
+          Department Name:
         </label>
-      </div>
-    </>
+        <CFormInput
+          id="name"
+          type="text"
+          name="name"
+          value={filters.name || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
+          placeholder="Enter name"
+        />
+      </CCol>
+    </CRow>
   )
 
   return (
@@ -108,6 +114,8 @@ const Departments = () => {
               </CCol>
               <SearchAndFilter
                 onSearch={setSearchQuery} // Callback for live search
+                onApplyFilters={handleApplyFilters}
+                onResetFilters={handleResetFilters} // Callback for reset filters
                 filters={filters} // Current filters
                 setFilters={setFilters} // Update filters
                 renderFilters={renderDepartmentFilters} // Custom filter UI for users
@@ -137,7 +145,9 @@ const Departments = () => {
                           <CButton
                             color="warning"
                             size="sm"
-                            onClick={() => navigate(`/department/edit_departments/${department.id}`)}
+                            onClick={() =>
+                              navigate(`/department/edit_departments/${department.id}`)
+                            }
                           >
                             <CIcon icon={cilPencil} />
                           </CButton>
@@ -165,7 +175,7 @@ const Departments = () => {
             apiEndpoint={`${BASE_URL}/api/departments`}
             authToken={authToken}
             onDataFetched={setDepartments}
-            filters={filters}
+            filters={appliedFilters}
             search={searchQuery}
             onPageChange={handlePageChange}
             perPageValue={handlePerPageValue}

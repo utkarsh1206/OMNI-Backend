@@ -12,7 +12,8 @@ import {
   CTableRow,
   CTooltip,
   CFormLabel,
-  CFormSelect
+  CFormSelect,
+  CFormInput,
 } from '@coreui/react'
 
 import { Link, useNavigate } from 'react-router-dom'
@@ -29,13 +30,28 @@ const Phones = () => {
   const navigate = useNavigate()
   const { authToken } = useContext(AuthContext)
   const [phones, setPhones] = useState([])
-  const [filters, setFilters] = useState({})
+
+  const [filters, setFilters] = useState({
+    extension: '',
+    login: '',
+  })
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
 
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
+
   const handlePageChange = (page) => {
-    setCurrentPage(page)  // Update the current page when pagination changes
+    setCurrentPage(page) // Update the current page when pagination changes
   }
   const handlePerPageValue = (perPage) => {
     setPerPage(perPage)
@@ -61,6 +77,34 @@ const Phones = () => {
     }
   }
 
+  const renderPhoneFilters = (filters, setFilters) => (
+    <CRow style={{ display: 'block ruby', alignItems: 'center' }}>
+      <CCol md="6" className="mb-3">
+        <CFormLabel htmlFor="extension">Extension</CFormLabel>
+        <CFormInput
+          id="extension"
+          type="text"
+          name="extension"
+          value={filters.extension || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, extension: e.target.value }))}
+          placeholder="Enter Extension"
+        />
+      </CCol>
+
+      <CCol md="6" className="mb-3">
+        <CFormLabel htmlFor="phone">Phone</CFormLabel>
+        <CFormInput
+          id="phone"
+          type="text"
+          name="phone"
+          value={filters.phone || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, phone: e.target.value }))}
+          placeholder="Enter Phone"
+        />
+      </CCol>
+    </CRow>
+  )
+
   return (
     <CRow>
       <CCol>
@@ -78,8 +122,11 @@ const Phones = () => {
             </CCol>
             <SearchAndFilter
               onSearch={setSearchQuery}
+              onApplyFilters={handleApplyFilters}
+              onResetFilters={handleResetFilters} // Callback for reset filters
               filters={filters}
               setFilters={setFilters}
+              renderFilters={renderPhoneFilters} // Custom filter UI for users
             />
           </CRow>
         </CContainer>
@@ -118,7 +165,7 @@ const Phones = () => {
                       <CButton
                         color="danger"
                         size="sm"
-                      onClick={() => handleDeletePhones(phone.extension)}
+                        onClick={() => handleDeletePhones(phone.extension)}
                       >
                         <CIcon icon={cilXCircle} />
                       </CButton>
@@ -134,7 +181,7 @@ const Phones = () => {
           apiEndpoint={`${BASE_URL}/api/phones`}
           authToken={authToken}
           onDataFetched={setPhones}
-          filters={filters}
+          filters={appliedFilters}
           search={searchQuery}
           onPageChange={handlePageChange}
           perPageValue={handlePerPageValue}
