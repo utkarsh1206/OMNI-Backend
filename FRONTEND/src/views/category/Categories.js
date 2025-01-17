@@ -1,14 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
   CCol,
   CContainer,
-  CForm,
   CFormInput,
-  CFormLabel,
   CRow,
   CTable,
   CTableBody,
@@ -40,6 +35,16 @@ const Categories = () => {
 
   const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
   const [perPage, setPerPage] = useState(10) // Add state to track the current page
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
 
   const handlePageChange = (page) => {
     setCurrentPage(page) // Update the current page when pagination changes
@@ -76,20 +81,34 @@ const Categories = () => {
 
   // Define custom filter card for Categorys
   const renderCategoryFilters = (filters, setFilters) => (
-    <>
-      <div>
-        <label>
-          Name:
-          <input
-            type="text"
-            name="name"
-            value={filters.name || ''}
-            onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
-            placeholder="Enter name"
-          />
+    <CRow className="mb-3">
+      <CCol xs={12} md={4}>
+        <label htmlFor="name" className="form-label">
+          Category Name:
         </label>
-      </div>
-    </>
+        <CFormInput
+          id="name"
+          type="text"
+          name="name"
+          value={filters.name || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
+          placeholder="Enter name"
+        />
+      </CCol>
+      <CCol xs={12} md={4}>
+        <label htmlFor="name" className="form-label">
+          Department Name:
+        </label>
+        <CFormInput
+          id="department_id"
+          type="text"
+          name="department_id"
+          value={filters.department_id || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, department_id: e.target.value }))}
+          placeholder="Enter department_id"
+        />
+      </CCol>
+    </CRow>
   )
 
   return (
@@ -109,6 +128,8 @@ const Categories = () => {
               </CCol>
               <SearchAndFilter
                 onSearch={setSearchQuery} // Callback for live search
+                onApplyFilters={handleApplyFilters}
+                onResetFilters={handleResetFilters} // Callback for reset filters
                 filters={filters} // Current filters
                 setFilters={setFilters} // Update filters
                 renderFilters={renderCategoryFilters} // Custom filter UI for users
@@ -168,7 +189,7 @@ const Categories = () => {
             apiEndpoint={`${BASE_URL}/api/categories`}
             authToken={authToken}
             onDataFetched={setCategories}
-            filters={filters}
+            filters={appliedFilters}
             search={searchQuery}
             onPageChange={handlePageChange}
             perPageValue={handlePerPageValue}

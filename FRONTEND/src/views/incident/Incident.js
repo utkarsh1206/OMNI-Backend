@@ -1,14 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
   CCol,
   CContainer,
-  CForm,
   CFormInput,
-  CFormLabel,
   CRow,
   CTable,
   CTableBody,
@@ -35,12 +30,24 @@ const Incident = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState({
     name: '',
-    description: '',
+    department_id: '',
+    category_id: '',
     priority: '',
+    sla_id: '',
   })
 
   const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
   const [perPage, setPerPage] = useState(10) // Add state to track the current page
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
 
   const handlePageChange = (page) => {
     setCurrentPage(page) // Update the current page when pagination changes
@@ -77,44 +84,73 @@ const Incident = () => {
 
   // Define custom filter card for Categorys
   const renderIncidentFilters = (filters, setFilters) => (
-    <>
-      <div>
-        <label>
-          Name:
-          <input
-            type="text"
-            name="name"
-            value={filters.name || ''}
-            onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
-            placeholder="Enter name"
-          />
+    <CRow className="mb-3">
+      <CCol xs={12} md={4}>
+        <label htmlFor="name" className="form-label">
+          Incident Name:
         </label>
-      </div>
-      <div>
-        <label>
-          Description:
-          <input
-            type="text"
-            name="description"
-            value={filters.description || ''}
-            onChange={(e) => setFilters((prev) => ({ ...prev, description: e.target.value }))}
-            placeholder="Enter description"
-          />
+        <CFormInput
+          id="name"
+          type="text"
+          name="name"
+          value={filters.name || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
+          placeholder="Enter name"
+        />
+      </CCol>
+      <CCol xs={12} md={4}>
+        <label htmlFor="department_id" className="form-label">
+          Department:
         </label>
-      </div>
-      <div>
-        <label>
+        <CFormInput
+          id="department_id"
+          type="text"
+          name="department_id"
+          value={filters.department_id || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, department_id: e.target.value }))}
+          placeholder="Enter department_id"
+        />
+      </CCol>
+      <CCol xs={12} md={4}>
+        <label htmlFor="category_id" className="form-label">
+          Category:
+        </label>
+        <CFormInput
+          id="category_id"
+          type="text"
+          name="category_id"
+          value={filters.category_id || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, category_id: e.target.value }))}
+          placeholder="Enter category_id"
+        />
+      </CCol>
+      <CCol xs={12} md={4}>
+        <label htmlFor="priority" className="form-label">
           Priority:
-          <input
-            type="text"
-            name="priority"
-            value={filters.priority || ''}
-            onChange={(e) => setFilters((prev) => ({ ...prev, priority: e.target.value }))}
-            placeholder="Enter priority"
-          />
         </label>
-      </div>
-    </>
+        <CFormInput
+          id="priority"
+          type="text"
+          name="priority"
+          value={filters.priority || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, priority: e.target.value }))}
+          placeholder="Enter priority"
+        />
+      </CCol>
+      <CCol xs={12} md={4}>
+        <label htmlFor="sla_id" className="form-label">
+          SLA:
+        </label>
+        <CFormInput
+          id="sla_id"
+          type="text"
+          name="sla_id"
+          value={filters.sla_id || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, sla_id: e.target.value }))}
+          placeholder="Enter sla_id"
+        />
+      </CCol>
+    </CRow>
   )
 
   return (
@@ -134,6 +170,8 @@ const Incident = () => {
               </CCol>
               <SearchAndFilter
                 onSearch={setSearchQuery} // Callback for live search
+                onApplyFilters={handleApplyFilters}
+                onResetFilters={handleResetFilters} // Callback for reset filters
                 filters={filters} // Current filters
                 setFilters={setFilters} // Update filters
                 renderFilters={renderIncidentFilters} // Custom filter UI for users
@@ -197,7 +235,7 @@ const Incident = () => {
             apiEndpoint={`${BASE_URL}/api/incident-types`}
             authToken={authToken}
             onDataFetched={setIncident}
-            filters={filters}
+            filters={appliedFilters}
             search={searchQuery}
             onPageChange={handlePageChange}
             perPageValue={handlePerPageValue}

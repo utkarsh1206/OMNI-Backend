@@ -59,16 +59,14 @@ const Login = () => {
     setErrorMsg('')
     try {
       await login(credentials)
-      if (credentials.flag == '2') 
-      {
+      if (credentials.flag == '2') {
         navigate('/agent')
       } else {
         navigate('/dashboard')
       }
-
     } catch (err) {
       if (err.response.data.error) {
-        setErrorMsg(err.response.data.error);
+        setErrorMsg(err.response.data.error)
       } else {
         setErrorMsg('Invalid email or password')
       }

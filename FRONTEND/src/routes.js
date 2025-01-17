@@ -130,6 +130,9 @@ const CreateEmailTemplate = React.lazy(() => import('./views/settings/emailTempl
 const SLAConfigList = React.lazy(() => import('./views/settings/sla/SLAConfiguration'))
 const SLAConfiguration = React.lazy(() => import('./views/settings/sla/SLAConfigurationForm'))
 
+const CRONConfigList = React.lazy(() => import('./views/settings/cron/cronConfigs'))
+const CRONConfiguration = React.lazy(() => import('./views/settings/cron/cronConfigsForm'))
+
 //Phones
 const Phone = React.lazy(() => import('./views/phone/Phones'))
 const CreatePhones = React.lazy(() => import('./views/phone/PhonesForm'))
@@ -255,9 +258,14 @@ const routes = [
   { path: '/settings/email_templates', name: 'Email Templates', element: EmailTemplates },
   { path: '/settings/email_templates/crt_tmplt', name: 'Create Email Template', element: CreateEmailTemplate },
   { path: '/settings/email_templates/edit/:id', name: 'Edit Email Template', element: CreateEmailTemplate },
+
   { path: '/settings/SLA_config_list', name: 'SLA Configuration', element: SLAConfigList },
   { path: '/settings/SLA_configuration', name: 'Create SLA Configuration', element: SLAConfiguration },
   { path: '/settings/SLA_configuration/edit/:id', name: 'Edit SLA Configuration', element: SLAConfiguration },
+ 
+  { path: '/settings/CRON_configs', name: 'CRON Configuration', element: CRONConfigList },
+  { path: '/settings/CRON_configs/crt_cron', name: 'Create CRON Configuration', element: CRONConfiguration },
+  { path: '/settings/CRON_configs/edit/:id', name: 'Edit CRON Configuration', element: CRONConfiguration },
 
   { path: '/agent', name: 'Agent', element: Agent, exact: true },
 

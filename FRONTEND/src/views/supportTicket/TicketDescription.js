@@ -120,7 +120,7 @@ const TicketDescription = ({ ticket }) => {
 
   useEffect(() => {
     axios
-      .get(`${BASE_URL}/api/mail-details?supportticket_id=${ticket.id}`, {
+      .get(`${BASE_URL}/api/mail-details?supportticket_id=${ticket.support_ticket_id}`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${authToken}`,
@@ -135,8 +135,8 @@ const TicketDescription = ({ ticket }) => {
         )
       })
       .catch((error) => {
-        console.error('Error fetching Notes:', error)
-        alert('Failed to fetch Notes')
+        console.error('Error fetching Ticket Description:', error)
+        alert('Failed to Ticket Description')
       })
   }, [ticket])
 
@@ -155,7 +155,7 @@ const TicketDescription = ({ ticket }) => {
   }
 
   return (
-    <CCard>
+    <CCard className="mb-3">
       <CCardHeader>
         <CCardTitle>Ticket Description</CCardTitle>
       </CCardHeader>

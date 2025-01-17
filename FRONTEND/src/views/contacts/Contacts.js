@@ -12,7 +12,7 @@ import {
   CTableRow,
   CTooltip,
   CFormLabel,
-  CFormSelect
+  CFormSelect,
 } from '@coreui/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { BASE_URL, PRODUCTS } from '../../config'
@@ -28,26 +28,44 @@ const Contacts = () => {
   const navigate = useNavigate()
   const [contacts, setContacts] = useState([])
   const { authToken } = useContext(AuthContext)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({})
   const [accounts, setAccounts] = useState([])
   const [owners, setOwner] = useState([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [perPage, setPerPage] = useState(10)
+
   const [selectedProduct, setSelectedProduct] = useState('')
   const [selectedAccount, setSelectedAccount] = useState('')
   const [selectedOwner, setSelectedOwner] = useState('')
 
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filters, setFilters] = useState({
+    product_id: '',
+    account_id: '',
+    owner_id: '',
+  })
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const [perPage, setPerPage] = useState(10)
+
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
+
   const handlePageChange = (page) => {
-    setCurrentPage(page)  // Update the current page when pagination changes
+    setCurrentPage(page) // Update the current page when pagination changes
   }
   const handlePerPageValue = (perPage) => {
-    setPerPage(perPage)  // Update the current page when pagination changes
+    setPerPage(perPage) // Update the current page when pagination changes
   }
 
   const getProductName = (product_id) => {
-    const product = PRODUCTS.find(product => String(product.id) === String(product_id));
-    return product ? product.name : '';
+    const product = PRODUCTS.find((product) => String(product.id) === String(product_id))
+    return product ? product.name : ''
   }
 
   const handleDeleteAccount = async (id) => {
@@ -113,7 +131,7 @@ const Contacts = () => {
 
   const getOwnerName = (owner_id) => {
     const owner = owners.find((owner) => String(owner.id) === String(owner_id))
-    return owner ? `${owner.first_name} ${owner.last_name}` : '';
+    return owner ? `${owner.first_name} ${owner.last_name}` : ''
   }
 
   const handleProductChange = (e) => {
@@ -128,58 +146,52 @@ const Contacts = () => {
     setSelectedOwner(e.target.value)
   }
 
-  const handleSearch = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/api/contacts`, {
-        headers: { Authorization: `Bearer ${authToken}` },
-        params: {
-          search: searchQuery,
-          product_id: selectedProduct,
-          account_id: selectedAccount,
-          owner_id: selectedOwner,
-          page: currentPage,
-          per_page: perPage
-        }
-      })
-      setContacts(response.data.data)
-    } catch (err) {
-      console.error('Error fetching contacts', err)
-    }
-  }
+  // const handleSearch = async () => {
+  //   try {
+  //     const response = await axios.get(`${BASE_URL}/api/contacts`, {
+  //       headers: { Authorization: `Bearer ${authToken}` },
+  //       params: {
+  //         search: searchQuery,
+  //         product_id: selectedProduct,
+  //         account_id: selectedAccount,
+  //         owner_id: selectedOwner,
+  //         page: currentPage,
+  //         per_page: perPage
+  //       }
+  //     })
+  //     setContacts(response.data.data)
+  //   } catch (err) {
+  //     console.error('Error fetching contacts', err)
+  //   }
+  // }
 
   // Define custom filter card for Users
   const renderContactFilters = (filters, setFilters) => (
     <CRow style={{ display: 'block ruby', alignItems: 'center' }}>
       <CCol md="3" className="mb-3">
-      <CFormLabel htmlFor="product_id">
-        Product
-      </CFormLabel>
-      <CFormSelect
-        id="product_id"
-        name="product_id"
-        value={selectedProduct}
-        onChange={handleProductChange}
-      >
-        <option value="">
-          Select Product
-        </option>
-        {PRODUCTS.map(product => (
-          <option key={product.name} value={product.id}>
-            {product.name}
-          </option>
-        ))}
-      </CFormSelect>
-    </CCol>
+        <CFormLabel htmlFor="product_id">Product</CFormLabel>
+        <CFormSelect
+          id="product_id"
+          name="product_id"
+          value={filters.product_id}
+          onChange={(e) => setFilters((prev) => ({ ...prev, product_id: e.target.value }))}
+        >
+          <option value="">Select Product</option>
+          {PRODUCTS.map((product) => (
+            <option key={product.name} value={product.id}>
+              {product.name}
+            </option>
+          ))}
+        </CFormSelect>
+      </CCol>
 
       <CCol md="3" className="mb-3">
-        <CFormLabel htmlFor="account_id">
-          Account
-        </CFormLabel>
+        <CFormLabel htmlFor="account_id">Account</CFormLabel>
         <CFormSelect
           id="account_id"
           name="account_id"
-          value={selectedAccount}
-          onChange={handleAccountChange}
+          value={filters.account_id}
+          onChange={(e) => setFilters((prev) => ({ ...prev, account_id: e.target.value }))}
         >
           <option value="">Select Account</option>
           {accounts.map((account) => (
@@ -191,14 +203,12 @@ const Contacts = () => {
       </CCol>
 
       <CCol md="3" className="mb-3">
-        <CFormLabel htmlFor="owner_id">
-          Owner
-        </CFormLabel>
+        <CFormLabel htmlFor="owner_id">Owner</CFormLabel>
         <CFormSelect
           id="owner_id"
           name="owner_id"
-          value={selectedOwner}
-          onChange={handleOwnerChange}
+          value={filters.owner_id}
+          onChange={(e) => setFilters((prev) => ({ ...prev, owner_id: e.target.value }))}
         >
           <option value="">Select Owner</option>
           {owners.map((owner) => (
@@ -208,7 +218,7 @@ const Contacts = () => {
           ))}
         </CFormSelect>
       </CCol>
-      <CCol>
+      {/* <CCol>
         <CButton
           type="button"
           color="primary"
@@ -218,7 +228,7 @@ const Contacts = () => {
         >
           Search
         </CButton>
-      </CCol>
+      </CCol> */}
     </CRow>
   )
 
@@ -233,13 +243,15 @@ const Contacts = () => {
                   Create Contact
                 </CButton>
               </Link>
-              <CButton color="primary" className="me-2" size="sm" >
+              <CButton color="primary" className="me-2" size="sm">
                 Delete Contact
               </CButton>
             </CCol>
 
             <SearchAndFilter
               onSearch={setSearchQuery}
+              onApplyFilters={handleApplyFilters}
+              onResetFilters={handleResetFilters} // Callback for reset filters
               filters={filters}
               setFilters={setFilters}
               renderFilters={renderContactFilters}
@@ -268,7 +280,9 @@ const Contacts = () => {
                 <CTableDataCell>{index + 1}</CTableDataCell>
                 <CTableDataCell>{getProductName(contact.product_id)}</CTableDataCell>
                 <CTableDataCell>{getAccountName(contact.account_id)}</CTableDataCell>
-                <CTableDataCell>{contact.name_prefix}  {contact.first_name} {contact.last_name}</CTableDataCell>
+                <CTableDataCell>
+                  {contact.name_prefix} {contact.first_name} {contact.last_name}
+                </CTableDataCell>
                 <CTableDataCell>{contact.email ? contact.email : ''}</CTableDataCell>
                 <CTableDataCell>{contact.mobile}</CTableDataCell>
                 <CTableDataCell>{getOwnerName(contact.owner_id)}</CTableDataCell>
@@ -304,7 +318,7 @@ const Contacts = () => {
           apiEndpoint={`${BASE_URL}/api/contacts`}
           authToken={authToken}
           onDataFetched={setContacts}
-          filters={filters}
+          filters={appliedFilters}
           search={searchQuery}
           onPageChange={handlePageChange}
           perPageValue={handlePerPageValue}

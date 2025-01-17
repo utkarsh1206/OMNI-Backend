@@ -3,6 +3,7 @@ import {
   CButton,
   CCol,
   CContainer,
+  CFormInput,
   CRow,
   CTable,
   CTableBody,
@@ -28,12 +29,25 @@ const Users = () => {
   const [users, setUsers] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState({
+    name: '',
     email: '',
     status: '',
+    mobile: '',
+    usergroup_id: '',
   })
 
   const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
   const [perPage, setPerPage] = useState(10) // Add state to track the current page
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
 
   const handlePageChange = (page) => {
     setCurrentPage(page) // Update the current page when pagination changes
@@ -67,32 +81,73 @@ const Users = () => {
   // Define custom filter card for Users
   const renderUserFilters = (filters, setFilters) => (
     <>
-      <div>
-        <label>
-          Email:
-          <input
+      <CRow>
+        <CCol xs={12} md={3} className="mb-2">
+          <label htmlFor="name" className="form-label">
+            User Name:
+          </label>
+          <CFormInput
+            id="name"
+            type="text"
+            name="name"
+            value={filters.name || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
+            placeholder="Enter name"
+          />
+        </CCol>
+        <CCol xs={12} md={3} className="mb-2">
+          <label htmlFor="email" className="form-label">
+            Email:
+          </label>
+          <CFormInput
+            id="email"
             type="text"
             name="email"
             value={filters.email || ''}
             onChange={(e) => setFilters((prev) => ({ ...prev, email: e.target.value }))}
             placeholder="Enter email"
           />
-        </label>
-      </div>
-      <div>
-        <label>
-          Status:
-          <select
+        </CCol>
+        <CCol xs={12} md={3} className="mb-2">
+          <label htmlFor="status" className="form-label">
+            Status:
+          </label>
+          <CFormInput
+            id="status"
+            type="text"
             name="status"
             value={filters.status || ''}
             onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
-          >
-            <option value="">Select status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </label>
-      </div>
+            placeholder="Enter status"
+          />
+        </CCol>
+        <CCol xs={12} md={3} className="mb-2">
+          <label htmlFor="mobile" className="form-label">
+            Mobile:
+          </label>
+          <CFormInput
+            id="mobile"
+            type="text"
+            name="mobile"
+            value={filters.mobile || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, mobile: e.target.value }))}
+            placeholder="Enter mobile"
+          />
+        </CCol>
+        <CCol xs={12} md={3} className="mb-2">
+          <label htmlFor="usergroup_id" className="form-label">
+            UserGroup:
+          </label>
+          <CFormInput
+            id="usergroup_id"
+            type="text"
+            name="usergroup_id"
+            value={filters.usergroup_id || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, usergroup_id: e.target.value }))}
+            placeholder="Enter usergroup_id"
+          />
+        </CCol>
+      </CRow>
     </>
   )
 
@@ -126,6 +181,8 @@ const Users = () => {
               </CCol>
               <SearchAndFilter
                 onSearch={setSearchQuery} // Callback for live search
+                onApplyFilters={handleApplyFilters}
+                onResetFilters={handleResetFilters} // Callback for reset filters
                 filters={filters} // Current filters
                 setFilters={setFilters} // Update filters
                 renderFilters={renderUserFilters} // Custom filter UI for users
@@ -195,8 +252,10 @@ const Users = () => {
             apiEndpoint={`${BASE_URL}/api/users`}
             authToken={authToken}
             onDataFetched={setUsers}
-            filters={filters}
-            search={searchQuery}
+            // filters={filters}
+            // search={searchQuery}
+            filters={appliedFilters} // Use applied filters
+            search={searchQuery} // Use live search
             onPageChange={handlePageChange}
             perPageValue={handlePerPageValue}
           />

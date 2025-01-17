@@ -3,14 +3,21 @@ import { CButton, CCard, CCardBody, CCardHeader, CCol, CFormInput, CRow } from '
 import CIcon from '@coreui/icons-react'
 import { cilFilter } from '@coreui/icons'
 
-const SearchAndFilter = ({ onSearch, filters, setFilters, renderFilters }) => {
+const SearchAndFilter = ({
+  onSearch,
+  onApplyFilters,
+  onResetFilters,
+  filters,
+  setFilters,
+  renderFilters,
+}) => {
   const [liveSearch, setLiveSearch] = useState('')
   const [isFilterVisible, setIsFilterVisible] = useState(false)
 
   // Debounce live search updates
   useEffect(() => {
     const timer = setTimeout(() => {
-      onSearch(liveSearch) // Pass the search query to the parent
+      onSearch(liveSearch) // Trigger the live search callback
     }, 500)
 
     return () => clearTimeout(timer)
@@ -20,10 +27,19 @@ const SearchAndFilter = ({ onSearch, filters, setFilters, renderFilters }) => {
     setIsFilterVisible((prev) => !prev)
   }
 
+  const handleApplyFilters = () => {
+    onApplyFilters(filters) // Trigger the apply filters callback
+  }
+
+  const handleResetFilters = () => {
+    setFilters({}) // Clear the filters in the UI
+    setLiveSearch('') // Clear the live search input
+    onResetFilters() // Trigger the reset filters callback
+  }
+
   return (
     <>
-      {/* <CRow className="d-flex justify-content-end mb-3 border border-3"> */}
-      <CCol xs="auto" className='ms-auto'>
+      <CCol xs="auto" className="ms-auto">
         <div className="d-flex align-items-center">
           <span className="me-2">Search:</span>
           <CFormInput
@@ -41,7 +57,6 @@ const SearchAndFilter = ({ onSearch, filters, setFilters, renderFilters }) => {
           <CIcon icon={cilFilter} />
         </CButton>
       </CCol>
-      {/* </CRow> */}
       {isFilterVisible && (
         <CCol xs={12} className="mt-3">
           <CCard className="mb-1">
@@ -51,8 +66,20 @@ const SearchAndFilter = ({ onSearch, filters, setFilters, renderFilters }) => {
               </div>
             </CCardHeader>
             <CCardBody>
-              {/* Render custom filters */}
               {renderFilters ? renderFilters(filters, setFilters) : null}
+              <CRow className="justify-content-end">
+                {/* <CCol xs="auto" className="mt-3"> */}
+                <CCol xs="auto" className="mt-1">
+                  <CButton color="primary" onClick={handleApplyFilters}>
+                    Apply Filters
+                  </CButton>
+                </CCol>
+                <CCol xs="auto" className="mt-1">
+                  <CButton color="secondary" onClick={handleResetFilters}>
+                    Reset
+                  </CButton>
+                </CCol>
+              </CRow>
             </CCardBody>
           </CCard>
         </CCol>

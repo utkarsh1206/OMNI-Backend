@@ -75,7 +75,7 @@ const ViewSupportTickets = () => {
   // }, [tickets.account_id])
 
   useEffect(() => {
-    if (tickets.account_id) {
+    if (tickets.contact_id) {
       axios
         .get(`${BASE_URL}/api/contacts/${tickets.contact_id}`, {
           headers: {
@@ -91,7 +91,7 @@ const ViewSupportTickets = () => {
           alert('Failed to fetch Account details')
         })
     }
-  }, [tickets.account_id])
+  }, [tickets.contact_id])
 
   useEffect(() => {
     const fetchAccountDetails = async () => {
@@ -127,6 +127,7 @@ const ViewSupportTickets = () => {
       <CRow>
         {/* Left Column */}
         <CCol md={8}>
+          {console.log('contact details' + contact)}
           <TicketDetailsCard ticket={tickets} account={account} contact={contact} />
           <TicketDescription ticket={tickets} />
         </CCol>
@@ -156,7 +157,7 @@ const ViewSupportTickets = () => {
           )}
 
           {/* Merge Tickets */}
-          {sideMenu === 6 && <MergeTickets ticket={tickets}/>}
+          {sideMenu === 6 && <MergeTickets ticket={tickets} />}
         </CCol>
       </CRow>
     </CContainer>

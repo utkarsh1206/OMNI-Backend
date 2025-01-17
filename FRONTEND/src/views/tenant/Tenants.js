@@ -1,11 +1,9 @@
 import React, { useContext, useState } from 'react'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
   CCol,
   CContainer,
+  CFormInput,
   CRow,
   CTable,
   CTableBody,
@@ -23,26 +21,51 @@ import { AuthContext } from '../../context/AuthContext'
 import PaginationComponent from '../../components/PaginationComponent' // import the reusable pagination component
 import { formatDate } from '../../utils/DateUtils'
 import axios from 'axios'
+import SearchAndFilter from '../../components/SearchAndFilter'
 
 const Tenants = () => {
   const navigate = useNavigate()
   const [tenants, setTenants] = useState([])
   const { authToken } = useContext(AuthContext)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const [filters, setFilters] = useState({
-    category: '',
-    status: '',
+    company_name: '',
+    email: '',
+    mobile: '',
+    domain_name: '',
+    company_code: '',
 
     // Add more filters here as needed
   })
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [name]: value, // Dynamically update the property based on input name
-    }))
+  const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
+  const [perPage, setPerPage] = useState(10) // Add state to track the current page
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
   }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page) // Update the current page when pagination changes
+  }
+  const handlePerPageValue = (perPage) => {
+    setPerPage(perPage) // Update the current page when pagination changes
+  }
+
+  // const handleFilterChange = (e) => {
+  //   const { name, value } = e.target
+  //   setFilters((prevFilters) => ({
+  //     ...prevFilters,
+  //     [name]: value, // Dynamically update the property based on input name
+  //   }))
+  // }
 
   const handleDeleteTenant = async (id, username) => {
     if (window.confirm('Are you sure to delete ' + username + '?')) {
@@ -65,44 +88,102 @@ const Tenants = () => {
     }
   }
 
-  return (
+  const renderTenantFilters = (filters, setFilters) => (
     <>
       <CRow>
-        <CCol xs={12}>
-          <CCard className="mb-2">
-            <CCardHeader>
-              Search for <strong>Tenants</strong> <small>Filters will be filled later</small>
-            </CCardHeader>
-            <CCardBody>
-              Placeholder for tenant search fields
-              <CRow className="mt-3">
-                <CCol>
-                  <input type="datetime-local" className="form-control" />
-                </CCol>
-                <CCol>
-                  <CButton color="primary" onClick={() => fetchTenants(1)}>
-                    Search
-                  </CButton>
-                </CCol>
-              </CRow>
-            </CCardBody>
-          </CCard>
+        <CCol xs={12} md={3} className="mb-2">
+          <label htmlFor="company_name" className="form-label">
+            Tenant Name:
+          </label>
+          <CFormInput
+            id="company_name"
+            type="text"
+            name="company_name"
+            value={filters.company_name || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, company_name: e.target.value }))}
+            placeholder="Enter Tenant Name"
+          />
+        </CCol>
+        <CCol xs={12} md={3} className="mb-2">
+          <label htmlFor="email" className="form-label">
+            Tenant Email:
+          </label>
+          <CFormInput
+            id="email"
+            type="text"
+            name="email"
+            value={filters.email || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, email: e.target.value }))}
+            placeholder="Enter email"
+          />
+        </CCol>
+        <CCol xs={12} md={3} className="mb-2">
+          <label htmlFor="mobile" className="form-label">
+            Mobile:
+          </label>
+          <CFormInput
+            id="mobile"
+            type="text"
+            name="mobile"
+            value={filters.mobile || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, mobile: e.target.value }))}
+            placeholder="Enter mobile"
+          />
+        </CCol>
+        <CCol xs={12} md={3} className="mb-2">
+          <label htmlFor="domain_name" className="form-label">
+            Domain:
+          </label>
+          <CFormInput
+            id="domain_name"
+            type="text"
+            name="domain_name"
+            value={filters.domain_name || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, domain_name: e.target.value }))}
+            placeholder="Enter domain_name"
+          />
+        </CCol>
+        <CCol xs={12} md={3} className="mb-2">
+          <label htmlFor="company_code" className="form-label">
+            Company Code:
+          </label>
+          <CFormInput
+            id="company_code"
+            type="text"
+            name="company_code"
+            value={filters.company_code || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, company_code: e.target.value }))}
+            placeholder="Enter company_code"
+          />
         </CCol>
       </CRow>
-      <hr />
+    </>
+  )
+
+  return (
+    <>
       <CRow>
         <CCol>
           <CContainer>
             <CRow fluid responsive>
               <CCol md={8}>
                 <Link to="/tenants/crt_tenant">
-                  <CButton color="primary" className="mb-4 me-2" size="sm">
+                  <CButton color="primary" className="me-2" size="sm">
                     Create Tenant
                   </CButton>
                 </Link>
               </CCol>
+              <SearchAndFilter
+                onSearch={setSearchQuery} // Callback for live search
+                onApplyFilters={handleApplyFilters}
+                onResetFilters={handleResetFilters} // Callback for reset filters
+                filters={filters} // Current filters
+                setFilters={setFilters} // Update filters
+                renderFilters={renderTenantFilters} // Custom filter UI for users
+              />
             </CRow>
           </CContainer>
+          <hr />
           <CTable hover bordered responsive="md">
             <CTableHead color="light">
               <CTableRow>
@@ -117,9 +198,10 @@ const Tenants = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {tenants.map((tenant) => (
+              {tenants.map((tenant, index) => (
                 <CTableRow key={tenant.id}>
-                  <CTableDataCell>{tenant.id}</CTableDataCell>
+                  <CTableDataCell>{index + 1 + (currentPage - 1) * perPage}</CTableDataCell>
+                  {/* <CTableDataCell>{tenant.id}</CTableDataCell> */}
                   <CTableDataCell>{tenant.company_name}</CTableDataCell>
                   <CTableDataCell>{tenant.email}</CTableDataCell>
                   <CTableDataCell>{tenant.mobile}</CTableDataCell>
@@ -173,7 +255,10 @@ const Tenants = () => {
             apiEndpoint={`${BASE_URL}/api/tenants`}
             authToken={authToken}
             onDataFetched={setTenants}
-            filters={filters}
+            filters={appliedFilters} // Use applied filters
+            search={searchQuery} // Use live search
+            onPageChange={handlePageChange}
+            perPageValue={handlePerPageValue}
           />
         </CCol>
       </CRow>

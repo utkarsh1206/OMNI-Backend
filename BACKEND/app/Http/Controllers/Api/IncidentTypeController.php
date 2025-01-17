@@ -65,7 +65,7 @@ class IncidentTypeController extends Controller
                 'name' => 'required|string|unique:incident_types,name',
                 'description' => 'nullable|string',
                 'category_id' => 'required|exists:categories,id',
-                'priority' => 'required|in:normal,low,medium,high,critical',
+                'priority' => 'required|in:Normal,Low,Medium,High,Critical',
                 'sla_id' => 'nullable|exists:sla_settings,id',
             ]);
 

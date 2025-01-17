@@ -17,6 +17,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 import { BASE_URL } from '../../../config'
 import { cilEnvelopeOpen, cilPencil, cilXCircle } from '@coreui/icons'
+import EyeOpenIcon from '../../../assets/images/icons/eye_open.svg'
 import CIcon from '@coreui/icons-react'
 import { AuthContext } from '../../../context/AuthContext'
 import PaginationComponent from '../../../components/PaginationComponent'
@@ -35,10 +36,19 @@ const SLAConfiguration = () => {
     end_time: '',
   })
 
+  const [appliedFilters, setAppliedFilters] = useState({})
+
   const isUser = user.role_id == 3
 
-  console.log('roles ', user.role_id)
-  console.log('isUser', isUser)
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
 
   const handleDeleteTicket = async (id, username) => {
     if (window.confirm('Are you sure to delete ' + username + '?')) {
@@ -61,41 +71,51 @@ const SLAConfiguration = () => {
     }
   }
 
+  // const handleFilterApply = (appliedFilters) => {
+  //   setFilters(appliedFilters) // Update the filters
+  //   setIsFilterApplied(true) // Mark that filters are applied
+  // }
+
   // Define custom filter card for UserGroups
   const renderTicketFilters = (filters, setFilters) => (
     <>
-      <div>
-        <label>
-          SLA Name:
-          <input
+      <CRow className="mb-3">
+        <CCol xs={12} md={4}>
+          <label htmlFor="sla-name" className="form-label">
+            SLA Name:
+          </label>
+          <CFormInput
+            id="sla-name"
             type="text"
             name="name"
             value={filters.name || ''}
             onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
             placeholder="Enter name"
           />
-        </label>
-      </div>
-      <div>
-        <label>
-          start_time:
+        </CCol>
+        <CCol xs={12} md={3}>
+          <label htmlFor="start-time" className="form-label">
+            Start Time:
+          </label>
           <CFormInput
+            id="start-time"
             type="time"
             value={filters.start_time || ''}
             onChange={(e) => setFilters((prev) => ({ ...prev, start_time: e.target.value }))}
           />
-        </label>
-      </div>
-      <div>
-        <label>
-          end_time:
+        </CCol>
+        <CCol xs={12} md={3}>
+          <label htmlFor="end-time" className="form-label">
+            End Time:
+          </label>
           <CFormInput
+            id="end-time"
             type="time"
             value={filters.end_time || ''}
             onChange={(e) => setFilters((prev) => ({ ...prev, end_time: e.target.value }))}
           />
-        </label>
-      </div>
+        </CCol>
+      </CRow>
     </>
   )
 
@@ -116,9 +136,11 @@ const SLAConfiguration = () => {
               </CCol>
               <SearchAndFilter
                 onSearch={setSearchQuery} // Callback for live search
-                filters={filters} // Current filters
-                setFilters={setFilters} // Update filters
-                renderFilters={renderTicketFilters} // Custom filter UI for users
+                onApplyFilters={handleApplyFilters} // Callback for apply filters
+                onResetFilters={handleResetFilters} // Callback for reset filters
+                filters={filters}
+                setFilters={setFilters}
+                renderFilters={renderTicketFilters}
               />
             </CRow>
           </CContainer>
@@ -136,18 +158,7 @@ const SLAConfiguration = () => {
             <CTableBody>
               {sla.map((sla) => (
                 <CTableRow key={sla.id}>
-                  {/* <CTableDataCell className="align-content-center">{sla.id}</CTableDataCell> */}
-                  <CTableDataCell
-                    className="align-content-center"
-                    // onClick={() => handleTicketModal(sla.id)}
-                  >
-                    {sla.id}
-
-                    {/* <CButton color="link" onClick={() => navigate(`/spprt_tckt_view`)}>
-                      {sla.id}
-                    </CButton> */}
-                  </CTableDataCell>
-                  {/* Ticket No will be generated later */}
+                  <CTableDataCell className="align-content-center">{sla.id}</CTableDataCell>
                   <CTableDataCell className="align-content-center">{sla.name}</CTableDataCell>
                   <CTableDataCell className="align-content-center">
                     {sla.description}
@@ -170,13 +181,10 @@ const SLAConfiguration = () => {
                         </CButton>
                       </CTooltip>
 
-                      <CTooltip content="Mail">
-                        <CButton
-                          color="secondary"
-                          size="sm"
-                          // onClick={() => handleMailTicket(sla.id)}
-                        >
-                          <CIcon icon={cilEnvelopeOpen} />
+                      <CTooltip content="View">
+                        <CButton color="secondary" size="sm">
+                          {/* <CIcon icon={cilEnvelopeOpen} /> */}
+                          <img src={EyeOpenIcon} height={18} width={18} />
                         </CButton>
                       </CTooltip>
                       {!isUser && (
@@ -197,15 +205,19 @@ const SLAConfiguration = () => {
             </CTableBody>
           </CTable>
 
-          {/* Reusable PaginationComponent */}
           <PaginationComponent
             apiEndpoint={`${BASE_URL}/api/sla-settings`}
             authToken={authToken}
             onDataFetched={setSla}
-            filters={filters}
-            search={searchQuery}
+            filters={appliedFilters} // Use applied filters
+            search={searchQuery} // Use live search
             // onPageChange={handlePageChange}
             // perPageValue={handlePerPageValue}
+
+            // filters={filters}
+            // search={searchQuery}
+            // filters={isFilterApplied ? filters : {}} // Use filters only if applied
+            // search={!isFilterApplied ? searchQuery : ''} // Use search only if filters are not applied
           />
         </CCol>
       </CRow>

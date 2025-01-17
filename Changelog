@@ -1,3 +1,12 @@
+2025-01-17 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3891, 3892, 3893, 3894, 3895
+	* Previous Commit ID : 5510b413
+	* Version : Dev
+	* ReactJS : Worked on the Search and Filter components/module. Created new frontend pages for SLA
+				configs and other settings. Created pages for CRON configs. Integrated Support Ticket
+				Notification/Activity. Changes with respect to SLA and Incident Types etc.
+
 2025-01-17 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :  

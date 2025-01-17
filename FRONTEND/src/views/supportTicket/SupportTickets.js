@@ -2,12 +2,9 @@ import React, { useContext, useState } from 'react'
 import {
   CBadge,
   CButton,
-  CButtonGroup,
-  CCard,
-  CCardBody,
-  CCardHeader,
   CCol,
   CContainer,
+  CFormInput,
   CRow,
   CTable,
   CTableBody,
@@ -27,6 +24,7 @@ import {
   TYPE_TO_COLOR,
 } from '../../config'
 import { cilEnvelopeOpen, cilPencil, cilXCircle } from '@coreui/icons'
+import EyeOpenIcon from '../../assets/images/icons/eye_open.svg'
 import CIcon from '@coreui/icons-react'
 import { AuthContext } from '../../context/AuthContext'
 import PaginationComponent from '../../components/PaginationComponent' // import the reusable pagination component
@@ -43,24 +41,42 @@ const SupportTickets = () => {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState({
-    email: '',
-    status: '',
+    ticket_id: '',
+    product_id: '',
+    campaign_id: '',
+    subject: '',
+    default_type: '',
+    default_status: '',
+    default_priority: '',
+    assign_to_id: '',
+    contact_id: '',
   })
 
   // const [isUser, setIsUser] = Boolean(flase);
-  const isUser = (user.role_id == 3)
+  const isUser = user.role_id == 3
 
-  console.log("roles ", user.role_id)
-  console.log("isUser", isUser)
-  // const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
-  // const [perPage, setPerPage] = useState(10) // Add state to track the current page
+  console.log('roles ', user.role_id)
+  console.log('isUser', isUser)
 
-  // const handlePageChange = (page) => {
-  //   setCurrentPage(page) // Update the current page when pagination changes
-  // }
-  // const handlePerPageValue = (perPage) => {
-  //   setPerPage(perPage) // Update the current page when pagination changes
-  // }
+  const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
+  const [perPage, setPerPage] = useState(10) // Add state to track the current page
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page) // Update the current page when pagination changes
+  }
+  const handlePerPageValue = (perPage) => {
+    setPerPage(perPage) // Update the current page when pagination changes
+  }
 
   const handleDeleteTicket = async (id, username) => {
     if (window.confirm('Are you sure to delete ' + username + '?')) {
@@ -91,34 +107,125 @@ const SupportTickets = () => {
 
   // Define custom filter card for UserGroups
   const renderTicketFilters = (filters, setFilters) => (
-    <>
-      <div>
-        <label>
-          Email:
-          <input
-            type="text"
-            name="email"
-            value={filters.email || ''}
-            onChange={(e) => setFilters((prev) => ({ ...prev, email: e.target.value }))}
-            placeholder="Enter email"
-          />
+    <CRow className="mb-3">
+      <CCol xs={12} md={4}>
+        <label htmlFor="ticket_id" className="form-label">
+          Ticket ID:
         </label>
-      </div>
-      <div>
-        <label>
+        <CFormInput
+          id="ticket_id"
+          type="text"
+          name="ticket_id"
+          value={filters.ticket_id || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, ticket_id: e.target.value }))}
+          placeholder="Enter ticket_id"
+        />
+      </CCol>
+      <CCol xs={12} md={3}>
+        <label htmlFor="product_id" className="form-label">
+          product_id:
+        </label>
+        <CFormInput
+          id="product_id"
+          type="text"
+          name="product_id"
+          value={filters.product_id || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, product_id: e.target.value }))}
+          placeholder="Enter product_id"
+        />
+      </CCol>
+      <CCol xs={12} md={3}>
+        <label htmlFor="campaign_id" className="form-label">
+          campaign_id:
+        </label>
+        <CFormInput
+          id="campaign_id"
+          type="text"
+          name="campaign_id"
+          value={filters.campaign_id || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, campaign_id: e.target.value }))}
+          placeholder="Enter campaign_id"
+        />
+      </CCol>
+      <CCol xs={12} md={3}>
+        <label htmlFor="subject" className="form-label">
+          Subject:
+        </label>
+        <CFormInput
+          id="subject"
+          type="text"
+          name="subject"
+          value={filters.subject || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, subject: e.target.value }))}
+          placeholder="Enter subject"
+        />
+      </CCol>
+      <CCol xs={12} md={3}>
+        <label htmlFor="default_type" className="form-label">
+          Type:
+        </label>
+        <CFormInput
+          id="default_type"
+          type="text"
+          name="default_type"
+          value={filters.default_type || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, default_type: e.target.value }))}
+          placeholder="Enter default_type"
+        />
+      </CCol>
+      <CCol xs={12} md={3}>
+        <label htmlFor="default_status" className="form-label">
           Status:
-          <select
-            name="status"
-            value={filters.status || ''}
-            onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
-          >
-            <option value="">Select status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
         </label>
-      </div>
-    </>
+        <CFormInput
+          id="default_status"
+          type="text"
+          name="default_status"
+          value={filters.default_status || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, default_status: e.target.value }))}
+          placeholder="Enter default_status"
+        />
+      </CCol>
+      <CCol xs={12} md={3}>
+        <label htmlFor="default_priority" className="form-label">
+          Priority:
+        </label>
+        <CFormInput
+          id="default_priority"
+          type="text"
+          name="default_priority"
+          value={filters.default_priority || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, default_priority: e.target.value }))}
+          placeholder="Enter default_priority"
+        />
+      </CCol>
+      <CCol xs={12} md={3}>
+        <label htmlFor="assign_to_id" className="form-label">
+          UserGroup:
+        </label>
+        <CFormInput
+          id="assign_to_id"
+          type="text"
+          name="assign_to_id"
+          value={filters.assign_to_id || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, assign_to_id: e.target.value }))}
+          placeholder="Enter assign_to_id"
+        />
+      </CCol>
+      <CCol xs={12} md={3}>
+        <label htmlFor="contact_id" className="form-label">
+          UserGroup:
+        </label>
+        <CFormInput
+          id="contact_id"
+          type="text"
+          name="contact_id"
+          value={filters.contact_id || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, contact_id: e.target.value }))}
+          placeholder="Enter contact_id"
+        />
+      </CCol>
+    </CRow>
   )
 
   return (
@@ -138,6 +245,8 @@ const SupportTickets = () => {
               </CCol>
               <SearchAndFilter
                 onSearch={setSearchQuery} // Callback for live search
+                onApplyFilters={handleApplyFilters}
+                onResetFilters={handleResetFilters} // Callback for reset filters
                 filters={filters} // Current filters
                 setFilters={setFilters} // Update filters
                 renderFilters={renderTicketFilters} // Custom filter UI for users
@@ -166,10 +275,7 @@ const SupportTickets = () => {
               {tickets.map((ticket) => (
                 <CTableRow key={ticket.id}>
                   {/* <CTableDataCell className="align-content-center">{ticket.id}</CTableDataCell> */}
-                  <CTableDataCell
-                    className="align-content-center"
-                    onClick={() => handleTicketModal(ticket.id)}
-                  >
+                  <CTableDataCell className="align-content-center">
                     {!isUser ? (
                       <Link to={`/spprt_tckt_view/${ticket.id}`}>{ticket.id}</Link>
                     ) : (
@@ -240,9 +346,19 @@ const SupportTickets = () => {
                         <CButton
                           color="secondary"
                           size="sm"
-                        // onClick={() => handleMailTicket(ticket.id)}
+                          // onClick={() => handleMailTicket(ticket.id)}
                         >
                           <CIcon icon={cilEnvelopeOpen} />
+                        </CButton>
+                      </CTooltip>
+                      <CTooltip content="View">
+                        <CButton
+                          color="info"
+                          size="sm"
+                          // onClick={() => handleMailTicket(ticket.id)}
+                          onClick={() => handleTicketModal(ticket.id)}
+                        >
+                          <img src={EyeOpenIcon} height={18} width={14} />
                         </CButton>
                       </CTooltip>
                       {!isUser && (
@@ -268,10 +384,10 @@ const SupportTickets = () => {
             apiEndpoint={`${BASE_URL}/api/supportticket`}
             authToken={authToken}
             onDataFetched={setTickets}
-            filters={filters}
+            filters={appliedFilters}
             search={searchQuery}
-          // onPageChange={handlePageChange}
-          // perPageValue={handlePerPageValue}
+            // onPageChange={handlePageChange}
+            // perPageValue={handlePerPageValue}
           />
         </CCol>
       </CRow>
