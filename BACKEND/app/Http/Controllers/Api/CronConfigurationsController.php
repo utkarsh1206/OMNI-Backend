@@ -15,6 +15,14 @@ class CronConfigurationsController extends Controller
     {
         // Get the search term from the request
         $searchTerm = $request->input('search', '');
+        // Paginate the results
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+
+        // Filter Conditions
+        $commandSignature = $request->input('command_signature');
+        $scheduleType = $request->input('schedule_type');
+        $status = $request->input('status');
 
         // Start the query for tenants
         $query = CronConfiguration::select("id", "command_signature", "schedule_type", "schedule_expression");
@@ -27,11 +35,19 @@ class CronConfigurationsController extends Controller
                     ->orwhere('schedule_expression', 'like', '%' . $searchTerm . '%');
             });
         }
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $cronConfiguration = $query->paginate($perPage);
-        $page = $request->input('page', 1);
 
+        if ($commandSignature) {
+            $query->where('command_signature', $commandSignature);
+        }
+
+        if ($scheduleType) {
+            $query->where('schedule_type', $scheduleType);
+        }
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+        
         if ($page === 'all') {
             // If 'page' is 'all', retrieve all records without pagination
             $cronConfiguration = $query->get();
