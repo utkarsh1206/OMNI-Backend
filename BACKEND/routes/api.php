@@ -136,8 +136,8 @@ Route::middleware(['auth:api'])->group(function () {
 Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('supportticket', SupportticketController::class);
     Route::post('updateticketstatus/{supportticket}', [SupportticketController::class, 'statusupdate']);
-    Route::apiResource('cron-configurations', CronConfigurationsController::class);
 });
 
+Route::apiResource('cron-configurations', CronConfigurationsController::class);
 Route::get('cron-commands', [CronCommandsController::class, 'index']);
 Route::get('cron-expressions', [CronExpressionsController::class, 'index']);
