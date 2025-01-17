@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('support_ticket_notification', function (Blueprint $table) {
             $table->id(); // Auto-incrementing primary key
             $table->string('type'); // String column for notification type
+            $table->string('status', 255)->nullable();
             $table->text('comment');
             $table->unsignedBigInteger('support_ticket_id'); // Foreign key to support_ticket table
             $table->dateTime('date'); // Date and time of the notification

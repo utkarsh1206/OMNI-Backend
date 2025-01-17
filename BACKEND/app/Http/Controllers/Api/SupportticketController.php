@@ -14,11 +14,18 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use App\Mail\SendEmail;
+use App\Services\SlaService;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class SupportticketController extends Controller
 {
-  
+    protected $slaService;
+
+    // Constructor to inject the SlaService
+    public function __construct(SlaService $slaService)
+    {
+        $this->slaService = $slaService;
+    }
 
     public function index(Request $request)
     {
@@ -342,6 +349,7 @@ class SupportticketController extends Controller
     {
         $notification = SupportTicketNotification::create([
             'type' => $statusChange ?? $type,
+            'status' => $supportticket->default_status,
             'comment' => $comment,
             'support_ticket_id' => $supportticket->id,
             'date' => gmdate('Y-m-d H:i:s'),

@@ -11,6 +11,7 @@ class Supportticketnotification extends Model
     protected $table = 'support_ticket_notification';
     protected $fillable = [
         'type',
+        'status',
         'comment',
         'date',
         'support_ticket_id',
