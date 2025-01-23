@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use App\Mail\SendEmail;
+use App\Models\EmailNotification;
 
 class SlaEmailNotification extends Command
 {
@@ -37,6 +38,7 @@ class SlaEmailNotification extends Command
      */
     public function handle()
     {
+     
         $allTenants = Tenants::where("is_delete", "No")
         ->orderBy('id')
         ->chunkById(100, function ($tenants) {
@@ -51,21 +53,27 @@ class SlaEmailNotification extends Command
                 if ($supportTickets->count()) {
                     foreach ($supportTickets as $ticket) {
                         $currentTime = Carbon::now();
-                        if ($currentTime->diffInSeconds($ticket->first_response_time) == 0) {
-                            $this->notifyViaEmail($newConnectionName,$ticket);
+                        if($ticket->default_status == "Open")
+                        {
+                            if ($currentTime->diffInSeconds($ticket->first_response_time) >= 0) {
+                                $this->notifyViaEmail($newConnectionName,$ticket,"first_response_email");
+                            }
+                            if ($currentTime->diffInSeconds($ticket->alert_before_response_notification_time) == 0) {
+                                $this->notifyViaEmail($newConnectionName,$ticket,"alert_before_response_email");
+                            }
+                            if ($currentTime->diffInSeconds($ticket->alert_before_resolve_notification_time) == 0) {
+                                $this->notifyViaEmail($newConnectionName,$ticket,"alert_before_resolve_email");
+                            }
+                            if ($currentTime->diffInSeconds($ticket->resolved_time) == 0) {
+                                $this->notifyViaEmail($newConnectionName,$ticket,"resolve_time_email");
+                                $adminUsers = User::on($newConnectionName)
+                                ->where("type","=",0)->first();
+                                $ticket->is_escalated = "Yes";
+                                $ticket->save();
+                                $this->notifyAdminViaEmail($newConnectionName,$ticket,$adminUsers,"resolve_time_email");
+                            }
                         }
-                        if ($currentTime->diffInSeconds($ticket->alert_before_response_notification_time) == 0) {
-                            $this->notifyViaEmail($newConnectionName,$ticket);
-                        }
-                        if ($currentTime->diffInSeconds($ticket->alert_before_resolve_notification_time) == 0) {
-                            $this->notifyViaEmail($newConnectionName,$ticket);
-                        }
-                        if ($currentTime->diffInSeconds($ticket->resolved_time) == 0) {
-                            $this->notifyViaEmail($newConnectionName,$ticket);
-                            $adminUsers = User::on($newConnectionName)
-                            ->where("type","=",0)->first();
-                            $this->notifyAdminViaEmail($newConnectionName,$ticket,$adminUsers);
-                        }
+                        
                      }
                     
                     $this->info("Tenant: {$tenant->domain_name} - Notified " . $supportTickets->count());
@@ -74,7 +82,7 @@ class SlaEmailNotification extends Command
         });
     }
 
-    public function notifyViaEmail($newConnectionName,$tickets)
+    public function notifyViaEmail($newConnectionName,$tickets,$type)
     {
         $emailConfig = EmailConfigure::on($newConnectionName)->where('type', 'custom')->first();
         $smtpHost = $emailConfig->smtp_host ?? '';
@@ -100,13 +108,22 @@ class SlaEmailNotification extends Command
                 $subject = str_replace("{ticket_number}",$tickets->support_ticket_id,$subject);
                 $body = str_replace("{ticket_number}",$tickets->support_ticket_id,$body);
                 Mail::to($toEmails)->send(new SendEmail($subject, $body));
+                $notification =  EmailNotification::on($newConnectionName);
+                $notification = new EmailNotification();
+                $notification->setConnection($newConnectionName); 
+                $notification->fill([
+                    "type"=>$type,
+                    "ticket_id"=>$tickets->id
+                ]);
+                $notification->save();
+
             } catch (Exception $e) {
                 echo  $e->getMessage();
                 exit;
             }
     }
 
-    public function notifyAdminViaEmail($newConnectionName,$tickets,$adminUser)
+    public function notifyAdminViaEmail($newConnectionName,$tickets,$adminUser,$type)
     {
         $emailConfig = EmailConfigure::on($newConnectionName)->where('type', 'custom')->first();
         $smtpHost = $emailConfig->smtp_host ?? '';
@@ -132,6 +149,14 @@ class SlaEmailNotification extends Command
                 $subject = str_replace("{ticket_number}",$tickets->support_ticket_id,$subject);
                 $body = str_replace("{ticket_number}",$tickets->support_ticket_id,$body);
                 Mail::to($toEmails)->send(new SendEmail($subject, $body));
+                $notification =  EmailNotification::on($newConnectionName);
+                $notification = new EmailNotification();
+                $notification->setConnection($newConnectionName); 
+                $notification->fill([
+                    "type"=>$type,
+                    "ticket_id"=>$tickets->id
+                ]);
+                $notification->save();
             } catch (Exception $e) {
                 echo  $e->getMessage();
                 exit;
