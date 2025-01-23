@@ -14,6 +14,9 @@ Artisan::command('inspire', function () {
 
 
 
+Artisan::command('app:sla-email-notification', function () {
+    $this->comment("Sla Email Notification");
+})->purpose('Sla Email Notification')->everyMinute();
 
 // $allTenants = Tenants::where("is_delete", "No")
 //         ->orderBy('id')  // Ensures consistent ordering by the ID column
