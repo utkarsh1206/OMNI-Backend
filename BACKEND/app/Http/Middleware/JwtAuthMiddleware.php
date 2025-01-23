@@ -6,7 +6,7 @@ use Closure;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Facades\JWTAuth;
-
+use Exception;
 class JwtAuthMiddleware
 {
     public function handle($request, Closure $next)

@@ -22,7 +22,7 @@ use App\Http\Controllers\Api\NotesController;
 use App\Http\Controllers\Api\SupportticketnotificationController;
 use App\Http\Controllers\Api\SupporttickettransferController;
 use App\Http\Controllers\Api\SupportticketmergeController;
-
+use App\Http\Controllers\Api\AuditController;
 use App\Models\EmailConfigure;
 use App\Models\Supportticket;
 use App\Models\Tenantrole;
@@ -136,8 +136,10 @@ Route::middleware(['auth:api'])->group(function () {
 Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('supportticket', SupportticketController::class);
     Route::post('updateticketstatus/{supportticket}', [SupportticketController::class, 'statusupdate']);
+    Route::apiResource('audit-logs', AuditController::class);
 });
 
 Route::apiResource('cron-configurations', CronConfigurationsController::class);
+
 Route::get('cron-commands', [CronCommandsController::class, 'index']);
 Route::get('cron-expressions', [CronExpressionsController::class, 'index']);

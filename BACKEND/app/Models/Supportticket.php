@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Supportticket extends Model
 {
@@ -37,4 +38,9 @@ class Supportticket extends Model
         "alert_before_resolve_notification_time",
         "is_escalated"
     ];
+
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'assign_to_id');
+    }
 }
