@@ -25,12 +25,11 @@ class Supportticketnotification extends Model
 
     public function getCreatedAtAttribute($value)
     {
-        return Carbon::parse($value)->format('d-m-Y H:i:s'); // Change the format as needed
+        return Carbon::parse($value)->format('Y-m-d H:i:s'); 
     }
 
-    // Optionally create an accessor to format 'updated_at'
     public function getUpdatedAtAttribute($value)
     {
-        return Carbon::parse($value)->format('d-m-Y H:i:s'); // Change the format as needed
+        return Carbon::parse($value)->format('Y-m-d H:i:s'); 
     }
 }
