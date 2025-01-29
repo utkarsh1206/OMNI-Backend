@@ -16,12 +16,15 @@ class CategoryController extends Controller
             $searchTerm = $request->input('search', '');
             $perPage = $request->input('per_page', 10);
             $page = $request->input('page', 1);
+            $name = $request->input('name');
             $department_id = $request->input('department_id');
 
             $query = Category::query();
 
-            if ($department_id)
-            {
+            if ($name) {
+                $query->where('name', $name);
+            }
+            if ($department_id) {
                 $query->where('department_id', $department_id);
             }
 

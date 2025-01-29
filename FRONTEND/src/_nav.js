@@ -103,7 +103,7 @@ const navItemList = [
     name: 'Chatbot',
     to: '/chatbot', // This defines the route path for the Product page
     icon: <CIcon icon={icon.cilSpeech} customClassName="nav-icon" />,
-  },  
+  },
   {
     component: CNavGroup,
     name: 'Campaign Mgmt',
@@ -324,6 +324,11 @@ const navItemList = [
         component: CNavItem,
         name: 'SLA Report',
         to: '/report/sla-report',
+      },
+      {
+        component: CNavItem,
+        name: 'Audit Report',
+        to: '/report/audit-report',
       },
       {
         component: CNavItem,

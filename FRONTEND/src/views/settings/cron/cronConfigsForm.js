@@ -87,7 +87,7 @@ const CRONConfigsForm = () => {
     if (isEditMode) {
       // Fetch Config data to prefill the form
       axios
-        .get(`${BASE_URL}/api/cron-commands/${id}`, {
+        .get(`${BASE_URL}/api/cron-configurations/${id}`, {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
@@ -148,16 +148,16 @@ const CRONConfigsForm = () => {
       let response
       if (isEditMode) {
         // Update existing Config
-        response = await axios.put(`${BASE_URL}/api/cron-commands/${id}`, formData, {
+        response = await axios.put(`${BASE_URL}/api/cron-configurations/${id}`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
             Authorization: `Bearer ${authToken}`,
           },
         })
       } else {
         // Create new Config
-        response = await axios.post(`${BASE_URL}/api/cron-commands`, formData, {
+        response = await axios.post(`${BASE_URL}/api/cron-configurations`, formData, {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
@@ -226,7 +226,7 @@ const CRONConfigsForm = () => {
                           Select Command
                         </option>
                         {commands.map((command) => (
-                          <option key={command.id} value={command.id}>
+                          <option key={command.id} value={command.command_signature}>
                             {command.command_signature}
                           </option>
                         ))}

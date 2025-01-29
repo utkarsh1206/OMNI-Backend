@@ -21,7 +21,7 @@ class LogActivity
                     'ipaddress' => $request->ip(),  
                     'request_params' => json_encode($request->all()),  
                     'request_method' => $request->method(),  
-                    'response_params' => json_encode($response->getContent()), 
+                    // 'response_params' => json_encode($response->getContent()), 
             ];   
         ActivityLog::create($logData);
         return $response;

@@ -1,11 +1,9 @@
 import React, { useContext, useState } from 'react'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
   CCol,
   CContainer,
+  CFormInput,
   CRow,
   CTable,
   CTableBody,
@@ -21,21 +19,40 @@ import { cilPencil, cilXCircle } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { AuthContext } from '../../../context/AuthContext'
 import PaginationComponent from '../../../components/PaginationComponent' // import the reusable pagination component
-import { formatDate } from '../../../utils/DateUtils'
 import axios from 'axios'
+import SearchAndFilter from '../../../components/SearchAndFilter'
 
 const CRONConfig = () => {
   const navigate = useNavigate()
-  const location = useLocation()
   const [cronConfigs, setCronConfigs] = useState([])
   const { authToken } = useContext(AuthContext)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const [filters, setFilters] = useState({
-    category: '',
+    command_signature: '',
+    schedule_type: '',
     status: '',
-
-    // Add more filters here as needed
   })
+
+  const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
+  const [perPage, setPerPage] = useState(10) // Add state to track the current page
+  const [appliedFilters, setAppliedFilters] = useState({})
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters) // Update applied filters only on button click
+  }
+  const handleResetFilters = () => {
+    setFilters({}) // Clear filter state
+    setAppliedFilters({}) // Clear applied filters
+    setSearchQuery('') // Clear live search
+  }
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page) // Update the current page when pagination changes
+  }
+  const handlePerPageValue = (perPage) => {
+    setPerPage(perPage) // Update the current page when pagination changes
+  }
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target
@@ -48,7 +65,7 @@ const CRONConfig = () => {
   const handleDeleteConfig = async (id, username) => {
     if (window.confirm('Are you sure to delete ' + username + '?')) {
       try {
-        let response = await axios.delete(`${BASE_URL}/api/cron-commands/${id}`, {
+        let response = await axios.delete(`${BASE_URL}/api/cron-configurations/${id}`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
@@ -66,45 +83,73 @@ const CRONConfig = () => {
     }
   }
 
+  const renderCronConfigFilters = (filters, setFilters) => (
+    <CRow className="mb-3">
+      <CCol xs={12} md={4}>
+        <label htmlFor="command_signature" className="form-label">
+          Command Signature:
+        </label>
+        <CFormInput
+          id="command_signature"
+          type="text"
+          name="command_signature"
+          value={filters.command_signature || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, command_signature: e.target.value }))}
+          placeholder="Enter Signature"
+        />
+      </CCol>
+      <CCol xs={12} md={4}>
+        <label htmlFor="schedule_type" className="form-label">
+          Schedule Type:
+        </label>
+        <CFormInput
+          id="schedule_type"
+          type="text"
+          name="schedule_type"
+          value={filters.schedule_type || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, schedule_type: e.target.value }))}
+          placeholder="Enter Schedule Type"
+        />
+      </CCol>
+      <CCol xs={12} md={4}>
+        <label htmlFor="status" className="form-label">
+          Status:
+        </label>
+        <CFormInput
+          id="status"
+          type="text"
+          name="status"
+          value={filters.status || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
+          placeholder="Enter status"
+        />
+      </CCol>
+    </CRow>
+  )
+
   return (
     <>
-      {/* <CRow>
-        <CCol xs={12}>
-          <CCard className="mb-2">
-            <CCardHeader>
-              Search for <strong>Email Configuration</strong> <small>Filters will be filled later</small>
-            </CCardHeader>
-            <CCardBody>
-              Placeholder for tenant search fields
-              <CRow className="mt-3">
-                <CCol>
-                  <input type="datetime-local" className="form-control" />
-                </CCol>
-                <CCol>
-                  <CButton color="primary" onClick={() => fetchTenants(1)}>
-                    Search
-                  </CButton>
-                </CCol>
-              </CRow>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow> 
-      <hr />
-      */}
-      {/* <h5>Email Configurations for: {emailType?.toUpperCase()}</h5> */}
       <CRow>
         <CCol>
           <CContainer>
             <CRow fluid responsive>
               <CCol md={8}>
                 <Link to={`/settings/CRON_configs/crt_cron`}>
-                  <CButton color="primary" className="mb-4 me-2" size="sm">
+                  <CButton color="primary" className="me-2" size="sm">
                     Configure
                   </CButton>
                 </Link>
               </CCol>
+              <SearchAndFilter
+                onSearch={setSearchQuery} // Callback for live search
+                onApplyFilters={handleApplyFilters}
+                onResetFilters={handleResetFilters} // Callback for reset filters
+                filters={filters} // Current filters
+                setFilters={setFilters} // Update filters
+                renderFilters={renderCronConfigFilters} // Custom filter UI for users
+              />
             </CRow>
+            <hr />
           </CContainer>
           <CTable hover bordered responsive="md">
             <CTableHead color="light">
@@ -113,7 +158,7 @@ const CRONConfig = () => {
                 <CTableHeaderCell scope="col">Command</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Schedule type</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Expression</CTableHeaderCell>
-                <CTableHeaderCell scope="col">Status</CTableHeaderCell>
+                {/* <CTableHeaderCell scope="col">Status</CTableHeaderCell> */}
                 <CTableHeaderCell scope="col">Controls</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
@@ -124,7 +169,7 @@ const CRONConfig = () => {
                   <CTableDataCell>{cronConfig.command_signature}</CTableDataCell>
                   <CTableDataCell>{cronConfig.schedule_type}</CTableDataCell>
                   <CTableDataCell>{cronConfig.schedule_expression}</CTableDataCell>
-                  <CTableDataCell>{cronConfig.status}</CTableDataCell>
+                  {/* <CTableDataCell>{cronConfig.status}</CTableDataCell> */}
                   <CTableDataCell>
                     <CRow className="justify-content-center mx-0">
                       <CCol className="mx-auto d-flex justify-content-center">
@@ -158,10 +203,13 @@ const CRONConfig = () => {
 
           {/* Reusable PaginationComponent */}
           <PaginationComponent
-            apiEndpoint={`${BASE_URL}/api/cron-commands`}
+            apiEndpoint={`${BASE_URL}/api/cron-configurations`}
             authToken={authToken}
             onDataFetched={setCronConfigs}
-            filters={filters}
+            filters={appliedFilters}
+            search={searchQuery}
+            onPageChange={handlePageChange}
+            perPageValue={handlePerPageValue}
           />
         </CCol>
       </CRow>

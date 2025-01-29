@@ -1,3 +1,11 @@
+2025-01-29 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3938
+	* Previous Commit ID : e03f4d24 
+	* Version : Dev
+	* ReactJs :  Created Dashboard Page for Tenant Admin, made pages for CRON configurations, Audit Reports etc.
+	* Laravel : Created Dashboard Controller, that will display the data on the Dashboard pages. Added search field for name in Category Controller. Also commented 'response_params' from the LogActivity middleware.
+
 2025-01-29 Nidhi Jajal<nidhi.jajal@stl.tech> 
 	* NEWS
 	* Jira ID :  

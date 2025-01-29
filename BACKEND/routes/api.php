@@ -50,6 +50,7 @@ use App\Http\Controllers\Api\IncidentTypeController;
 use App\Http\Controllers\Api\CronCommandsController;
 use App\Http\Controllers\Api\CronExpressionsController;
 use App\Http\Controllers\Api\CronConfigurationsController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\TicketReportController;
 use App\Http\Controllers\Api\SLAReportController;
 
@@ -85,13 +86,13 @@ Route::get('tenant-dashboard', [TenantController::class, 'dashboard']);
 Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);
 Route::get('my-profile', [UsersController::class, 'myprofile']);
 Route::post('send-email', [EmailController::class, 'sendEmail']);
-Route::get('mail-details', [MailDetailController::class, 'index']);  
-Route::post('mail-details', [MailDetailController::class, 'store']); 
-Route::get('note', [NotesController::class, 'index']);  
-Route::post('note', [NotesController::class, 'store']); 
-Route::get('notification', [SupportticketnotificationController::class, 'index']);  
-Route::post('transfer', [SupporttickettransferController::class, 'store']);  
-Route::post('merge', [SupportticketmergeController::class, 'store']);  
+Route::get('mail-details', [MailDetailController::class, 'index']);
+Route::post('mail-details', [MailDetailController::class, 'store']);
+Route::get('note', [NotesController::class, 'index']);
+Route::post('note', [NotesController::class, 'store']);
+Route::get('notification', [SupportticketnotificationController::class, 'index']);
+Route::post('transfer', [SupporttickettransferController::class, 'store']);
+Route::post('merge', [SupportticketmergeController::class, 'store']);
 
 Route::get('callCDR', [CallCDRListController::class, 'getCallCDRList']);
 Route::get('custome-field/header', [CustomFieldController::class, 'custumFieldHeader']);
@@ -156,3 +157,5 @@ Route::apiResource('cron-configurations', CronConfigurationsController::class);
 
 Route::get('cron-commands', [CronCommandsController::class, 'index']);
 Route::get('cron-expressions', [CronExpressionsController::class, 'index']);
+
+Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
