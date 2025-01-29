@@ -7,6 +7,7 @@ use Twilio\Rest\Client as TwilioClient;
 use App\Models\SmsProviderConfiguration;
 use GuzzleHttp\Client as GuzzleClient;
 use Exception;
+use App\Models\SmsProviderLog;
 
 class SmsService
 {
@@ -32,7 +33,6 @@ class SmsService
             case 'twilio':
                 $configArr = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value","config_key");
                 return $this->sendWithTwilio($message, $toPhone, $configArr);
-
                 case 'custom':
                     $configArr = [];
                   
@@ -41,7 +41,7 @@ class SmsService
                     {
                         $configArr =  $configurations->toArray();
                     }
-                    return $this->sendWithCustomProvider($message, $toPhone, $configArr);
+                    return $this->sendWithCustomProvider($message, $toPhone, $configArr,$providerId);
             default:
                 throw new Exception('Unsupported SMS provider selected.');
         }
@@ -67,7 +67,7 @@ class SmsService
         // );
     }
 
-    private function sendWithCustomProvider(string $message, string $toPhone, array $configArr)
+    private function sendWithCustomProvider(string $message, string $toPhone, array $configArr,$providerId)
     {
        
         $client = new GuzzleClient();
@@ -75,7 +75,7 @@ class SmsService
         $queryParams = $configArr['query_params'] ?? '';
         $phoneNumber = $configArr['phone_number'] ?? '';
         $apiUrl = $configArr['api_url'] ?? '';
-        $method = $configArr['method'] ?? 'POST';  // Default to POST if not set
+        $method = $configArr['method'] ?? 'POST'; 
         try {
             $queryParams = str_replace("[PHONE_NUMBER]",$toPhone, $queryParams);
             $urlWithParams = $apiUrl.$apiName.$queryParams;
@@ -83,9 +83,24 @@ class SmsService
             $responseBody = json_decode($response->getBody(), true);
             if (in_array($responseBody,["1702","1703","1704","1705","1706","1707","1708","1709","1710","1025","1715","1032","1028","1051","1052"])) {
                 return 'Failed to send message: ' . ($responseBody['error'] ?? 'Unknown error');
+                $smsLogs = new SmsProviderLog;
+                $smsLogs->fill([
+                    "provider_id"=>$providerId ,
+                    "message_id"=> 0,
+                    "status"=>"failed",
+                    "error_message"=>"Failed to send message",
+                ]);
+                $smsLogs->save();
             }
             else
             {
+                $smsLogs = new SmsProviderLog;
+                $smsLogs->fill([
+                    "provider_id"=>$providerId ,
+                    "message_id"=> 0,
+                    "status"=>"sent",
+                ]);
+                $smsLogs->save();
                 return 'Message sent successfully';
             }
           

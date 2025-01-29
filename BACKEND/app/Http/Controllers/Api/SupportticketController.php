@@ -16,6 +16,9 @@ use Exception;
 use App\Mail\SendEmail;
 use App\Services\SlaService;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\SmsTemplate;
+use App\Services\SmsService;
+
 
 class SupportticketController extends Controller
 {
@@ -160,6 +163,7 @@ class SupportticketController extends Controller
         //$notification = SupportTicketNotification::create();
         $comment = $apiUser->first_name." ".$apiUser->last_name." has created the ticket"; 
         $this->createTicket($supportticket,"Ticket Created",$comment,$apiUser);
+        $this->sendSms($apiUser,"Ticket Created",$apiUser->mobile,$supportticket);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host;
         $smtpPort = $emailConfig->smtp_port;
@@ -259,6 +263,7 @@ class SupportticketController extends Controller
         //     'date' => gmdate('Y-m-d H:i:s'),
         // ]);
         $this->createTicket($supportticket,isset($request->default_status) ? $request->default_status : "","Edit Support Ticket",$apiUser);
+        $this->sendSms($apiUser,"Ticket Created",$apiUser->mobile,$supportticket);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host;
         $smtpPort = $emailConfig->smtp_port;
@@ -331,6 +336,11 @@ class SupportticketController extends Controller
 
         $supportticket->update($updateData);
         $this->createTicket($supportticket,$type,$comment,$apiUser,$statusInfo); 
+        if($request->default_status == "Resolved")
+        {
+            $this->sendSms($apiUser,"Ticket Resolved",$apiUser->mobile,$supportticket);
+        }
+      
         return response()->json([
             'message' => 'Support Ticket Status Updated Successfully',
             'data' => new TenantsResource($supportticket)
@@ -387,5 +397,14 @@ class SupportticketController extends Controller
         ];
 
         return $icon[$type] ?? "cilAsteriskCircle";
+    }
+
+    public function sendSms($apiUser,$type,$phone,$supportticket)
+    {
+       $smsInfo = new SmsService;
+       $templateInfo = SmsTemplate::where("name",$type)->first();
+       $template = $templateInfo->content ?? '';
+       $template = str_replace("[TICKET_NO]",$supportticket->support_ticket_id,$template);
+       $smsInfo->sendSMS($apiUser->id,$template,$phone);
     }
 }
