@@ -34,9 +34,6 @@ class SlaSettingController extends Controller
 
             if ($page === 'all') {
                 $slas = $query->get();
-                // return response()->json([
-                //     'data' => $slas,
-                // ]);
                 $slasFormatted = $slas->map(function ($sla) {
                     return $this->formatSlaResponse($sla);
                 });
@@ -45,11 +42,9 @@ class SlaSettingController extends Controller
                     'data' => $slasFormatted,
                 ]);
             } else {
-                // Paginate the results
                 $slas = $query->paginate($perPage);
-                $slasFormatted = $slas->items();  // Retrieve the collection of SLA settings
+                $slasFormatted = $slas->items();
 
-                // Map the formatted response
                 $slasFormatted = collect($slasFormatted)->map(function ($sla) {
                     return $this->formatSlaResponse($sla);
                 });
@@ -88,10 +83,6 @@ class SlaSettingController extends Controller
                 'message' => 'SLA created successfully',
                 'data' => $response
             ], 201);
-            // return response()->json([
-            //     'message' => 'SLA created successfully',
-            //     'data' => new SlaSettingResource($sla->load(['offDays', 'holidays', 'targets']))
-            // ], 201);
         } catch (ValidationException $e) {
             DB::rollBack();
             Log::error("Validation failed while creating SLA: ", ['errors' => $e->errors()]);
@@ -102,7 +93,7 @@ class SlaSettingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Error occurred while creating SLA: " . $e->getMessage());
-            // Handle specific database error like duplicate entry
+
             if ($e->getCode() === '23000' && strpos($e->getMessage(), '1062') !== false) {
                 return response()->json(['message' => 'Error: SLA name must be unique.'], 400);
             }
@@ -118,7 +109,6 @@ class SlaSettingController extends Controller
         try {
             $response = $this->formatSlaResponse($slaSetting->load(['offDays', 'holidays', 'targets']));
             return response()->json($response, 200);
-            // return response()->json($slaSetting->load(['offDays', 'holidays', 'targets']), 200);
         } catch (\Exception $e) {
             Log::error("Error fetching SLA setting: " . $e->getMessage());
             return response()->json([

@@ -1,3 +1,28 @@
+2025-01-17 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : 5c02248b 
+	* Version : Dev
+	* Laravel & ReactJs :  Created API for Ticket report and SLA report
+	with graphs, Pagination, Filters and listing view and CSV export.
+	Key functionalities of the SLAReport component include:
+
+	Date Range Filters: Users can select a start and end date for querying SLA data.
+	User and Priority Filters: Allows filtering by user and priority level (Critical, High, Medium, Low, Normal).
+	SLA Compliance Filter: Enables filtering tickets based on SLA compliance (Yes/No).
+	Dynamic Data Fetching: Data is fetched dynamically using Axios based on the selected filters.
+	Graph View: Provides a graphical view (pie and bar charts) summarizing SLA compliance, ticket counts by priority, category, and incident.
+	Table View: Displays detailed ticket data in a table with pagination support.
+	CSV Export: Users can download the report in CSV format for further analysis.
+	Pagination: Supports pagination with configurable items per page.
+	User Dropdown: Fetches and displays a list of users to filter by user.
+	SLA Compliance Calculation: Tracks the number of compliant vs non-compliant tickets.
+
+	The user should be able to toggle between graph and table views.
+	The user should be able to download the report in CSV format.
+	The pagination controls should function properly, allowing users to navigate through large datasets.
+	The user should be able to filter data and immediately view the updated report.
+
 2025-01-17 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3891, 3892, 3893, 3894, 3895

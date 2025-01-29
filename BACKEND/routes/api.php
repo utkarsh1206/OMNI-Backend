@@ -50,6 +50,8 @@ use App\Http\Controllers\Api\IncidentTypeController;
 use App\Http\Controllers\Api\CronCommandsController;
 use App\Http\Controllers\Api\CronExpressionsController;
 use App\Http\Controllers\Api\CronConfigurationsController;
+use App\Http\Controllers\Api\TicketReportController;
+use App\Http\Controllers\Api\SLAReportController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -124,6 +126,17 @@ Route::apiResource('departments', DepartmentController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('incident-types', IncidentTypeController::class);
 
+Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
+Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);
+Route::get('/ticket/summary/category', [TicketReportController::class, 'categorySummary']);
+Route::get('/ticket/summary/priority', [TicketReportController::class, 'prioritySummary']);
+Route::get('/ticket/summary/status', [TicketReportController::class, 'statusSummary']);
+Route::get('/ticket/summary/weekday', [TicketReportController::class, 'weekdaySummary']);
+Route::get('slareport', [SLAReportController::class, 'generateReport']);
+Route::get('slareport/csv', [SLAReportController::class, 'exportCsv']);
+Route::get('sla-priority', [SLAReportController::class, 'prioritySLA']);
+Route::get('sla-category', [SLAReportController::class, 'categorySLA']);
+Route::get('sla-incident', [SLAReportController::class, 'incidentSLA']);
 
 #Route::middleware('auth:api')->apiResource('users', UsersController::class);
 

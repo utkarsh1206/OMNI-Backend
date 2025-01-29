@@ -105,6 +105,8 @@ const LiveAgents = React.lazy(() => import('./views/neoxDashboard/LiveAgents'))
 // Report Management
 const CallCDRreport = React.lazy(() => import('./views/reports/CallCDRreport'))
 const AgentActivityReport = React.lazy(() => import('./views/reports/AgentActivityReport'))
+const TicketReport = React.lazy(() => import('./views/reports/TicketReport'))
+const SLAReport = React.lazy(() => import('./views/reports/SLAReport'))
 
 //Accounts
 const Accounts = React.lazy(() => import('./views/accounts/Accounts'))
@@ -233,6 +235,8 @@ const routes = [
 
   { path: '/report/callCDR', name: 'Report Management', element: CallCDRreport },
   { path: '/report/agent-activity', name: 'Report Management', element: AgentActivityReport },
+  { path: '/report/ticket-report', name: 'Report Management', element: TicketReport },
+  { path: '/report/sla-report', name: 'Report Management', element: SLAReport },
 
   { path: '/accounts', name: 'Accounts', element: Accounts, exact: true },
   { path: '/accounts/create_accounts', name: 'Create Accounts', element: CreateAccounts },
