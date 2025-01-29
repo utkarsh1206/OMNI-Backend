@@ -23,15 +23,15 @@ class Supportticketnotification extends Model
         'color'
     ];
 
-    public function getCreatedAtAttribute($value)
-    {
-        return Carbon::parse($value)->format('Y-m-d H:i:s'); 
-    }
+    // public function getCreatedAtAttribute($value)
+    // {
+    //     return Carbon::parse($value)->format('Y-m-d H:i:s'); 
+    // }
 
-    public function getUpdatedAtAttribute($value)
-    {
-        return Carbon::parse($value)->format('Y-m-d H:i:s'); 
-    }
+    // public function getUpdatedAtAttribute($value)
+    // {
+    //     return Carbon::parse($value)->format('Y-m-d H:i:s'); 
+    // }
 
     public function ticket()
     {
