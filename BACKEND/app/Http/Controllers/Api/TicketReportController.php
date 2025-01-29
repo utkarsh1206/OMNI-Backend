@@ -84,6 +84,7 @@ class TicketReportController extends Controller
     public function ticketReport(Request $request)
     {
         $perPage = $request->input('perPage', 10);
+        $page = $request->input('page', 1);
 
         $query = SupportTicket::with(['notifications', 'assignedAgent']);
 
@@ -91,20 +92,27 @@ class TicketReportController extends Controller
 
         $query = $this->applyFilters($query, $request, $payload);
 
-        // Paginate the results
-        $tickets = $query->paginate($perPage);
+        if ($page === 'all') {
+            $tickets = $query->get();
+            $mappedTickets = $this->formatTickets($tickets->items());
+            return response()->json([
+                'data' => $mappedTickets,
+            ]);
+        } else {
+            $tickets = $query->paginate($perPage);
 
-        $mappedTickets = $this->formatTickets($tickets->items());
+            $mappedTickets = $this->formatTickets($tickets->items());
 
-        return response()->json([
-            'data' => $mappedTickets,
-            'meta' => [
-                'current_page' => $tickets->currentPage(),
-                'last_page' => $tickets->lastPage(),
-                'per_page' => $tickets->perPage(),
-                'total' => $tickets->total(),
-            ],
-        ]);
+            return response()->json([
+                'data' => $mappedTickets,
+                'meta' => [
+                    'current_page' => $tickets->currentPage(),
+                    'last_page' => $tickets->lastPage(),
+                    'per_page' => $tickets->perPage(),
+                    'total' => $tickets->total(),
+                ],
+            ]);
+        }
     }
 
     public function categorySummary(Request $request)
