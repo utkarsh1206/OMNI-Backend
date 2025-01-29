@@ -29,7 +29,7 @@ class SupportTicketNotificationObserver
         $updateData['resolved_time'] = $openTicketData['resolved_time'];
         $updateData['alert_before_resolve_notification_time'] = $openTicketData['alert_before_resolve_notification_time'];
 
-        if ($supportticket->first_response_time != null && $supportticket->alert_before_response_notification_time != null && $supportticket->default_status != 'Open') {
+        if ($supportticket->first_response_time != null && $supportticket->alert_before_response_notification_time != null && $supportticket->default_status != 'Open' && $supportticket->default_status != 'Resolved' && $supportticket->default_status != 'Closed') {
             $updateData['first_response_time'] =  $supportticket->first_response_time;
             $updateData['alert_before_response_notification_time'] = $supportticket->alert_before_response_notification_time;
             $updateData['resolved_time'] = null;

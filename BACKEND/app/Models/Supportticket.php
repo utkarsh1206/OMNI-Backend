@@ -43,4 +43,26 @@ class Supportticket extends Model
     {
         return $this->belongsTo(User::class, 'assign_to_id');
     }
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'resolved_time' => 'datetime',
+        'first_response_time' => 'datetime',
+    ];
+
+    public function notifications()
+    {
+        return $this->hasMany(SupportTicketNotification::class, 'support_ticket_id', 'id');
+    }
+
+    public function assignedAgent()
+    {
+        return $this->belongsTo(Users::class, 'assign_to_id');
+    }
+
+    public function incidentType()
+    {
+        return $this->belongsTo(IncidentType::class, 'incident_id', 'id');
+    }
 }

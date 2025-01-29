@@ -32,4 +32,19 @@ class Supportticketnotification extends Model
     {
         return Carbon::parse($value)->format('Y-m-d H:i:s'); 
     }
+
+    public function ticket()
+    {
+        return $this->belongsTo(SupportTicket::class, 'support_ticket_id', 'id');
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

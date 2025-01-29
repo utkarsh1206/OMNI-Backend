@@ -67,9 +67,9 @@ const License = () => {
   const fetchLicenseInfo = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/decode-license`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
+        // headers: {
+        //   Authorization: `Bearer ${authToken}`,
+        // },
       });
 
       console.log(response.data);

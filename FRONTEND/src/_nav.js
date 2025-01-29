@@ -305,6 +305,16 @@ const navItemList = [
       },
       {
         component: CNavItem,
+        name: 'Ticket Report',
+        to: '/report/ticket-report',
+      },
+      {
+        component: CNavItem,
+        name: 'SLA Report',
+        to: '/report/sla-report',
+      },
+      {
+        component: CNavItem,
         name: 'Agent Report',
         to: '/report/agent',
       },
