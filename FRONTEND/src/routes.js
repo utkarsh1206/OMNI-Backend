@@ -81,6 +81,15 @@ const CreateCategories = React.lazy(() => import('./views/category/CategoriesFor
 const Incident = React.lazy(() => import('./views/incident/Incident'))
 const CreateIncident = React.lazy(() => import('./views/incident/IncidentForm'))
 
+// New Product Page components
+//import Productpage from "./views/product/Productpage"
+const ProductPage = React.lazy(() => import('./views/product/Productpage'));
+const ProductForm = React.lazy(() => import('./views/product/ProductForm'));
+
+const Chatbot = React.lazy(() => import('./views/chatbot/Chatbot')); // Chatbot list view
+const ChatbotForm = React.lazy(() => import('./views/chatbot/ChatbotForm')); // Create/Edit Chatbot
+
+
 // Tenant Management
 const Tenants = React.lazy(() => import('./views/tenant/Tenants'))
 const CreateTenants = React.lazy(() => import('./views/tenant/TenantsForm'))
@@ -217,6 +226,15 @@ const routes = [
   // { path: '/incdnt_type/categories', name: 'Category', element: Categories},
   { path: '/incdnt_type/create_incident', name: 'Create Incident', element: CreateIncident},
   { path: '/incdnt_type/edit_incident/:id', name: 'Edit Incident', element: CreateIncident},
+
+  // Product routes (new routes added)
+  { path: '/product', name: 'Product List', element: ProductPage }, // Product list page
+  { path: '/product/create', name: 'Create Product', element: ProductForm }, // Create Product
+  { path: '/product/edit/:id', name: 'Edit Product', element: ProductForm }, // Edit Product by ID
+
+  { path: '/chatbot', name: 'Chatbot List', element: Chatbot }, // Chatbot list route
+  { path: '/chatbot/create', name: 'Create Chatbot', element: ChatbotForm }, // Create Chatbot route
+  { path: '/chatbot/edit/:id', name: 'Edit Chatbot', element: ChatbotForm }, // Edit Chatbot route
 
   { path: '/tenants', name: 'Tenant Management', element: Tenants },
   { path: '/tenants/tenants', name: 'Tenants', element: Tenants },

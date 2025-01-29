@@ -1,4 +1,12 @@
-2025-01-17 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+2025-01-29 Nidhi Jajal<nidhi.jajal@stl.tech> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : 7f1a7f39 
+	* Version : Dev
+	* ReactJs :  Created Product and Chatbot page
+	with Pagination, Filters and listing view.
+
+2025-01-29 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :  
 	* Previous Commit ID : 5c02248b 
