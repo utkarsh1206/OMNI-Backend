@@ -58,13 +58,13 @@ const AppSidebar = () => {
       {(() => {
         let pathname = window.location.pathname
         if (pathname.startsWith('/super_admin')) {
-          return <AppSidebarNavSuperAdmin items={navigation} />
+          return <AppSidebarNavSuperAdmin items={navigation()} />
         } else if (pathname.startsWith('/agent')) {
           return <AppSidebarNavAgent items={navigationAgent} />
         } else if (pathname.startsWith('/neox_dash')) {
           return <AppSidebarNavNeoxDash items={navigationDash} />
         } else {
-          return <AppSidebarNav items={navigation} />
+          return <AppSidebarNav items={navigation()} />
         }
       })()}
       <CSidebarFooter className="border-top d-none d-lg-flex">

@@ -537,7 +537,8 @@ const getUserPermissions = () => {
 }
 
 // Get user permissions and filtered navigation items
-const userPermissions = getUserPermissions()
-const _nav = filterNavItems(navItemList, userPermissions)
+const _nav = () => {
+  return filterNavItems(navItemList, getUserPermissions());
+}
 
 export default _nav
