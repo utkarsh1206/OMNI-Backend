@@ -1,3 +1,11 @@
+2025-01-30 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : d88e3836 
+	* Version : Dev
+	* Laravel : Calculate Actual Resolved time for particular ticket and
+	store in supportticket table.
+
 2025-01-30 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :

@@ -21,7 +21,7 @@ class SlaService
     {
         Log::info("SLA Calculation started for Ticket ID: {$support_ticket_id}");
 
-        $ticket = Supportticket::where('default_status', 'Open')
+        $ticket = Supportticket::whereIn('default_status', ['Open', 'Resolved', 'Closed'])
             ->where('id', $support_ticket_id)
             ->where('is_delete', 'No')
             ->first();
@@ -65,6 +65,18 @@ class SlaService
                 }
             }
 
+            $hours = floor($totalSeconds / 3600);
+            $minutes = floor(($totalSeconds % 3600) / 60);
+            $seconds = $totalSeconds % 60;
+            $formattedTime = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+            Log::info("Calculated formatted Total Time: {$formattedTime}");
+
+            if ($ticket->default_status === 'Resolved' || $ticket->default_status === 'Closed') {
+                return [
+                    'actual_resolved_time' => $formattedTime,
+                ];
+            }
+
             if (!empty($slaTarget->resolve_time_value)) {
                 $resolveTimeInSeconds = $slaTarget->resolve_time_value * 60;
                 Log::info("resolveTimeInSeconds : {$resolveTimeInSeconds}, {$slaTarget->resolve_time_value}");
@@ -77,12 +89,6 @@ class SlaService
                     Log::info("Total Seconds set to SLA resolve time value: {$resolveTimeData}");
                 }
             }
-
-            $hours = floor($totalSeconds / 3600);
-            $minutes = floor(($totalSeconds % 3600) / 60);
-            $seconds = $totalSeconds % 60;
-            $formattedTime = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-            Log::info("Calculated formatted Total Time: {$formattedTime}");
 
             // Adjust start time based on off days and holidays
             $startTime = $this->adjustStartTime($openDate, $incident->sla_id, $offDays, $holidays, $slaSetting);

@@ -21,13 +21,20 @@ class SupportTicketNotificationObserver
         $sla_service = new SlaService();
         $openTicketData = $sla_service->calculateSla($support_ticket_id);
 
-        Log::info("openTicketData ". json_encode($openTicketData));
+        Log::info("openTicketData " . json_encode($openTicketData));
 
         $updateData = [];
-        $updateData['first_response_time'] = $openTicketData['first_response_time'];
-        $updateData['alert_before_response_notification_time'] = $openTicketData['alert_before_response_notification_time'];
-        $updateData['resolved_time'] = $openTicketData['resolved_time'];
-        $updateData['alert_before_resolve_notification_time'] = $openTicketData['alert_before_resolve_notification_time'];
+
+        if (isset($openTicketData['actual_resolved_time'])) {
+            if ($supportticket->actual_resolved_time === null) {
+                $updateData['actual_resolved_time'] = $openTicketData['actual_resolved_time'];
+            }
+        } else {
+            $updateData['first_response_time'] = $openTicketData['first_response_time'];
+            $updateData['alert_before_response_notification_time'] = $openTicketData['alert_before_response_notification_time'];
+            $updateData['resolved_time'] = $openTicketData['resolved_time'];
+            $updateData['alert_before_resolve_notification_time'] = $openTicketData['alert_before_resolve_notification_time'];
+        }
 
         if ($supportticket->first_response_time != null && $supportticket->alert_before_response_notification_time != null && $supportticket->default_status != 'Open' && $supportticket->default_status != 'Resolved' && $supportticket->default_status != 'Closed') {
             $updateData['first_response_time'] =  $supportticket->first_response_time;
@@ -39,14 +46,17 @@ class SupportTicketNotificationObserver
             $updateData['alert_before_response_notification_time'] = $supportticket->alert_before_response_notification_time;
             $updateData['resolved_time'] = $openTicketData['resolved_time'];
             $updateData['alert_before_resolve_notification_time'] = $openTicketData['alert_before_resolve_notification_time'];
-        }
+        } 
+        // else if ($supportticket->default_status == 'Resolved' || $supportticket->default_status == 'Closed') {
+        //     // $updateData['actual_resolved_time'] =  $openTicketData['actual_resolved_time'];
+        // }
 
         // Update the support ticket with the available data
         if (!empty($updateData)) {
             //$supportticket->update($updateData);
 
             $ticketUpdated = Supportticket::where('id', $support_ticket_id)
-            ->update($updateData);
+                ->update($updateData);
         }
     }
 
