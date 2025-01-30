@@ -54,7 +54,7 @@ class LicenseController extends Controller
         if ($token != "") {
             $payload = JWTAuth::setToken($token)->getPayload();
 
-            if ($payload['role_id'] > 0)
+            if ($payload['role_id'] > 1)
             {
                 $isTenant = false;
             }

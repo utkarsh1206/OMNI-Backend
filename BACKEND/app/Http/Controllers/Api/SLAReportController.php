@@ -32,7 +32,7 @@ class SLAReportController extends Controller
             $query->where('supportticket.is_escalated', $request->input('slaCompliance'));
         }
 
-        if ($payload['role_id'] !== 0) { // If not admin, filter tickets assigned to the user
+        if ($payload['role_id'] == 3) {
             $query->where('assign_to_id', $payload['id']);
         }
 

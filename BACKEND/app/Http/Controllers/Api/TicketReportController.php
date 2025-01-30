@@ -37,7 +37,7 @@ class TicketReportController extends Controller
             $query->where('default_type', $request->input('category'));
         }
 
-        if ($payload && $payload['role_id'] !== 0) {
+        if ($payload && $payload['role_id'] == 3) {
             $query->whereHas('assignedAgent', function ($q) use ($payload) {
                 $q->where('id', $payload['id']);
             });

@@ -14,7 +14,7 @@ const Dashboard = () => {
           return <SuperAdmin />
         } else if (user.role_id == 1) {
           return <TenantAdmin user={user} />
-        } else if (user.role_id == 2) {
+        } else if (user.role_id == 3) {
           return <Agent user={user} />
         }
       })()}

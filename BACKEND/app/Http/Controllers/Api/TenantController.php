@@ -172,7 +172,7 @@ class TenantController extends Controller
             'domain'     => $request->domain_url,
             'mobile'     => $request->mobile,
             'status' => 'Active',
-            'role_id' => 0
+            'role_id' => 1
         ]);
 
         Artisan::call('db:seed', [
