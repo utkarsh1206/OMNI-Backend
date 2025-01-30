@@ -83,12 +83,11 @@ const CreateIncident = React.lazy(() => import('./views/incident/IncidentForm'))
 
 // New Product Page components
 //import Productpage from "./views/product/Productpage"
-const ProductPage = React.lazy(() => import('./views/product/Productpage'));
+const ProductPage = React.lazy(() => import('./views/product/ProductPage'));
 const ProductForm = React.lazy(() => import('./views/product/ProductForm'));
 
 const Chatbot = React.lazy(() => import('./views/chatbot/Chatbot')); // Chatbot list view
 const ChatbotForm = React.lazy(() => import('./views/chatbot/ChatbotForm')); // Create/Edit Chatbot
-
 
 // Tenant Management
 const Tenants = React.lazy(() => import('./views/tenant/Tenants'))
