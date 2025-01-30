@@ -1,3 +1,11 @@
+2025-01-30 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : fa35fde9 -> 06053a83
+	* Version : Dev
+	* ReactJs :  Added SuperAdmin, and Agent dashboard files, to resolve the error.
+	And Added Seeder for RoleID in master table.
+
 2025-01-29 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3938

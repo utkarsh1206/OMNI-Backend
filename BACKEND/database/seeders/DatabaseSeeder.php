@@ -9,9 +9,10 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            MailTemplateSeeder::class,
+            Role_ID::class,
             CronExpressionsSeeder::class,
-            CronCommandsSeeder::class
+            CronCommandsSeeder::class,
+            MailTemplateSeeder::class,
         ]);
     }
 }
