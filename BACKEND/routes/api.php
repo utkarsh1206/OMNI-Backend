@@ -53,6 +53,7 @@ use App\Http\Controllers\Api\CronConfigurationsController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\TicketReportController;
 use App\Http\Controllers\Api\SLAReportController;
+use App\Http\Controllers\Api\EmailLogController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -159,3 +160,5 @@ Route::get('cron-commands', [CronCommandsController::class, 'index']);
 Route::get('cron-expressions', [CronExpressionsController::class, 'index']);
 
 Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
+
+Route::apiResource('email-logs', EmailLogController::class);
