@@ -115,7 +115,17 @@ class SlaEmailNotification extends Command
                     "type"=>$type,
                     "ticket_id"=>$tickets->id
                 ]);
+
                 $notification->save();
+
+                logEmail([
+                    "user_id"=>$tickets->assignedUser->id,
+                    "email_template_id"=> $mailTemplate->id, 
+                    "from_email"=> $sender_email,
+                    "module_name"=> "Support Ticket",
+                    "entity_id"=> $tickets->id,
+                    "status" =>"sent",
+                ],$newConnectionName);
 
             } catch (Exception $e) {
                 echo  $e->getMessage();
@@ -157,6 +167,14 @@ class SlaEmailNotification extends Command
                     "ticket_id"=>$tickets->id
                 ]);
                 $notification->save();
+                logEmail([
+                    "user_id"=>$adminUser->id,
+                    "email_template_id"=> $mailTemplate->id, 
+                    "from_email"=> $sender_email,
+                    "module_name"=> "Support Ticket",
+                    "entity_id"=> $tickets->id,
+                    "status" =>"sent",
+                ],$newConnectionName);
             } catch (Exception $e) {
                 echo  $e->getMessage();
                 exit;

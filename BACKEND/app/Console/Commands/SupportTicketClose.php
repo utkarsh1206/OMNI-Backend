@@ -91,6 +91,15 @@ class SupportTicketClose extends Command
                 $subject = str_replace("{ticket_number}",$tickets->support_ticket_id,$subject);
                 $body = str_replace("{ticket_number}",$tickets->support_ticket_id,$body);
                 Mail::to($toEmails)->send(new SendEmail($subject, $body));
+
+                logEmail([
+                    "user_id"=>$tickets->assign_to_id,
+                    "email_template_id"=> $mailTemplate->id, 
+                    "from_email"=> $sender_email,
+                    "module_name"=> "Support Ticket",
+                    "entity_id"=> $tickets->id,
+                    "status" =>"sent",
+                ],$newConnectionName);
             } catch (Exception $e) {
                 echo  $e->getMessage();
                 exit;

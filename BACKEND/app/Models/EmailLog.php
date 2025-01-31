@@ -9,7 +9,7 @@ class EmailLog extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['type', 'ticket_id'];
+    protected $fillable = ['user_id', 'email_template_id','from_email','module_name','entity_id','status'];
 
     public function user()
     {

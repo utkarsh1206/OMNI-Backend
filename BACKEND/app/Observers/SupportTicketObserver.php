@@ -13,24 +13,24 @@ class SupportTicketObserver
      */
     public function created(Supportticket $supportticket): void
     {
-        if ($supportticket->default_status === 'Open') {
-            $slaService = new SlaService();
-            $slaData = $slaService->calculateSla($supportticket);
-            $supportticket->update([
-                'first_response_time' => $slaData['first_response_time'],
-                'alert_before_response_notification_time' => $slaData['alert_before_response_notification_time'],
-                'resolved_time' => $slaData['resolved_time'],
-                'alert_before_resolve_notification_time' => $slaData['alert_before_resolve_notification_time'],
-            ]);
-        }
-        else {
-            $supportticket->update([
-                'first_response_time' => null,
-                'alert_before_response_notification_time' => null,
-                'resolved_time' => null,
-                'alert_before_resolve_notification_time' => null,
-            ]);
-        }
+        // if ($supportticket->default_status === 'Open') {
+        //     $slaService = new SlaService();
+        //     $slaData = $slaService->calculateSla($supportticket);
+        //     $supportticket->update([
+        //         'first_response_time' => $slaData['first_response_time'],
+        //         'alert_before_response_notification_time' => $slaData['alert_before_response_notification_time'],
+        //         'resolved_time' => $slaData['resolved_time'],
+        //         'alert_before_resolve_notification_time' => $slaData['alert_before_resolve_notification_time'],
+        //     ]);
+        // }
+        // else {
+        //     $supportticket->update([
+        //         'first_response_time' => null,
+        //         'alert_before_response_notification_time' => null,
+        //         'resolved_time' => null,
+        //         'alert_before_resolve_notification_time' => null,
+        //     ]);
+        // }
     }
 
     /**

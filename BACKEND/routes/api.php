@@ -140,7 +140,7 @@ Route::get('sla-priority', [SLAReportController::class, 'prioritySLA']);
 Route::get('sla-category', [SLAReportController::class, 'categorySLA']);
 Route::get('sla-incident', [SLAReportController::class, 'incidentSLA']);
 
-#Route::middleware('auth:api')->apiResource('users', UsersController::class);
+#Route::middleware('auth:api')->api Resource('users', UsersController::class);
 
 Route::middleware(['auth:api'])->group(function () {
     Route::post('refresh', [AuthController::class, 'refresh']);

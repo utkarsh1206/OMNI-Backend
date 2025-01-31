@@ -19,113 +19,113 @@ class SlaService
 {
     public function calculateSla($support_ticket_id)
     {
-        Log::info("SLA Calculation started for Ticket ID: {$support_ticket_id}");
+        // Log::info("SLA Calculation started for Ticket ID: {$support_ticket_id}");
 
-        $ticket = Supportticket::whereIn('default_status', ['Open', 'Resolved', 'Closed'])
-            ->where('id', $support_ticket_id)
-            ->where('is_delete', 'No')
-            ->first();
+        // $ticket = Supportticket::whereIn('default_status', ['Open', 'Resolved', 'Closed'])
+        //     ->where('id', $support_ticket_id)
+        //     ->where('is_delete', 'No')
+        //     ->first();
 
-        if ($ticket) {
-            $incident = IncidentType::find($ticket->incident_id);
-            $user = User::find($ticket->assign_to_id);
-            $userLevel = $user->level;
+        // if ($ticket) {
+        //     $incident = IncidentType::find($ticket->incident_id);
+        //     $user = User::find($ticket->assign_to_id);
+        //     $userLevel = $user->level;
 
-            // Fetch SLA target
-            $slaTarget = SlaTarget::where('sla_id', $incident->sla_id)
-                ->where('priority_type', $ticket->default_priority)
-                ->where('escalation_level', $userLevel)
-                ->first();
+        //     // Fetch SLA target
+        //     $slaTarget = SlaTarget::where('sla_id', $incident->sla_id)
+        //         ->where('priority_type', $ticket->default_priority)
+        //         ->where('escalation_level', $userLevel)
+        //         ->first();
 
-            $offDays = SlaOffDay::where('sla_id', $incident->sla_id)->pluck('day')->toArray();
-            $holidays = SlaHoliday::where('sla_id', $incident->sla_id)->pluck('holiday_date')->toArray();
-            $slaSetting = SlaSetting::where('id', $incident->sla_id)->first();
+        //     $offDays = SlaOffDay::where('sla_id', $incident->sla_id)->pluck('day')->toArray();
+        //     $holidays = SlaHoliday::where('sla_id', $incident->sla_id)->pluck('holiday_date')->toArray();
+        //     $slaSetting = SlaSetting::where('id', $incident->sla_id)->first();
 
-            $openTicketData = $this->getOpenStatusData($ticket->id);
-            Log::info("check count " . count($openTicketData));
+        //     $openTicketData = $this->getOpenStatusData($ticket->id);
+        //     Log::info("check count " . count($openTicketData));
 
-            $openDate = $ticket->created_at;
+        //     $openDate = $ticket->created_at;
 
-            $totalSeconds = 0;
-            foreach ($openTicketData as $openTicketItem) {
-                if ($openTicketItem->last_subsequent_status_created_at) {
-                    Log::info("Processing Ticket ID: " . $openTicketItem->support_ticket_id);
+        //     $totalSeconds = 0;
+        //     foreach ($openTicketData as $openTicketItem) {
+        //         if ($openTicketItem->last_subsequent_status_created_at) {
+        //             Log::info("Processing Ticket ID: " . $openTicketItem->support_ticket_id);
 
-                    $startDate = $openTicketItem->open_status_created_at;
-                    $endDate = $openTicketItem->last_subsequent_status_created_at;
+        //             $startDate = $openTicketItem->open_status_created_at;
+        //             $endDate = $openTicketItem->last_subsequent_status_created_at;
 
-                    $time = $this->calculateSlaTime($startDate, $endDate, $slaSetting, $offDays, $holidays);
+        //             $time = $this->calculateSlaTime($startDate, $endDate, $slaSetting, $offDays, $holidays);
 
-                    list($hours, $minutes, $seconds) = explode(":", $time);
-                    $totalSeconds += ($hours * 3600) + ($minutes * 60) + $seconds;
-                    Log::info("SLA Calculation response: " . $totalSeconds);
-                } else {
-                    $openDate = $openTicketItem->open_status_created_at;
-                    Log::info("Last open date $openDate ");
-                }
-            }
+        //             list($hours, $minutes, $seconds) = explode(":", $time);
+        //             $totalSeconds += ($hours * 3600) + ($minutes * 60) + $seconds;
+        //             Log::info("SLA Calculation response: " . $totalSeconds);
+        //         } else {
+        //             $openDate = $openTicketItem->open_status_created_at;
+        //             Log::info("Last open date $openDate ");
+        //         }
+        //     }
 
-            $hours = floor($totalSeconds / 3600);
-            $minutes = floor(($totalSeconds % 3600) / 60);
-            $seconds = $totalSeconds % 60;
-            $formattedTime = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-            Log::info("Calculated formatted Total Time: {$formattedTime}");
+        //     $hours = floor($totalSeconds / 3600);
+        //     $minutes = floor(($totalSeconds % 3600) / 60);
+        //     $seconds = $totalSeconds % 60;
+        //     $formattedTime = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+        //     Log::info("Calculated formatted Total Time: {$formattedTime}");
 
-            if ($ticket->default_status === 'Resolved' || $ticket->default_status === 'Closed') {
-                return [
-                    'actual_resolved_time' => $formattedTime,
-                ];
-            }
+        //     if ($ticket->default_status === 'Resolved' || $ticket->default_status === 'Closed') {
+        //         return [
+        //             'actual_resolved_time' => $formattedTime,
+        //         ];
+        //     }
 
-            if (!empty($slaTarget->resolve_time_value)) {
-                $resolveTimeInSeconds = $slaTarget->resolve_time_value * 60;
-                Log::info("resolveTimeInSeconds : {$resolveTimeInSeconds}, {$slaTarget->resolve_time_value}");
+        //     if (!empty($slaTarget->resolve_time_value)) {
+        //         $resolveTimeInSeconds = $slaTarget->resolve_time_value * 60;
+        //         Log::info("resolveTimeInSeconds : {$resolveTimeInSeconds}, {$slaTarget->resolve_time_value}");
 
-                if ($totalSeconds !== null) {
-                    $resolveTimeData = $resolveTimeInSeconds - $totalSeconds;
-                    Log::info("Adjusted Total Seconds after subtracting SLA resolve time: {$resolveTimeData}");
-                } else {
-                    $resolveTimeData = $resolveTimeInSeconds;
-                    Log::info("Total Seconds set to SLA resolve time value: {$resolveTimeData}");
-                }
-            }
+        //         if ($totalSeconds !== null) {
+        //             $resolveTimeData = $resolveTimeInSeconds - $totalSeconds;
+        //             Log::info("Adjusted Total Seconds after subtracting SLA resolve time: {$resolveTimeData}");
+        //         } else {
+        //             $resolveTimeData = $resolveTimeInSeconds;
+        //             Log::info("Total Seconds set to SLA resolve time value: {$resolveTimeData}");
+        //         }
+        //     }
 
-            // Adjust start time based on off days and holidays
-            $startTime = $this->adjustStartTime($openDate, $incident->sla_id, $offDays, $holidays, $slaSetting);
-            Log::info("Calculated SLA start time: {$startTime}");
+        //     // Adjust start time based on off days and holidays
+        //     $startTime = $this->adjustStartTime($openDate, $incident->sla_id, $offDays, $holidays, $slaSetting);
+        //     Log::info("Calculated SLA start time: {$startTime}");
 
-            $firstResponseTime = null;
-            $alertBeforeResponseNotificationTime = null;
-            if (count($openTicketData) == 1) {
-                // Calculate response times
-                $firstResponseTime = $this->calculateFirstResponseTime($startTime, $slaTarget->response_time_value, $slaSetting, $ticket->created_at, $offDays, $holidays);
-                Log::info("Calculated first response time: {$firstResponseTime}");
+        //     $firstResponseTime = null;
+        //     $alertBeforeResponseNotificationTime = null;
+        //     if (count($openTicketData) == 1) {
+        //         // Calculate response times
+        //         $firstResponseTime = $this->calculateFirstResponseTime($startTime, $slaTarget->response_time_value, $slaSetting, $ticket->created_at, $offDays, $holidays);
+        //         Log::info("Calculated first response time: {$firstResponseTime}");
 
-                $alertBeforeResponseNotificationTime = $firstResponseTime->copy()->subMinutes($slaTarget->alert_before_response_value);
-                Log::info("Calculated alert before response notification time: {$alertBeforeResponseNotificationTime}");
-            }
+        //         $alertBeforeResponseNotificationTime = $firstResponseTime->copy()->subMinutes($slaTarget->alert_before_response_value);
+        //         Log::info("Calculated alert before response notification time: {$alertBeforeResponseNotificationTime}");
+        //     }
 
-            // $resolvedTime = $this->calculateResolvedTime($startTime, $firstResponseTime, $slaTarget->resolve_time_value, $slaSetting, $ticket->created_at, $offDays, $holidays);
-            $resolvedTime = $this->calculateResolvedTime($startTime, $firstResponseTime, $resolveTimeData, $slaSetting, $openDate, $offDays, $holidays);
-            Log::info("Calculated resolved time: {$resolvedTime}");
+        //     // $resolvedTime = $this->calculateResolvedTime($startTime, $firstResponseTime, $slaTarget->resolve_time_value, $slaSetting, $ticket->created_at, $offDays, $holidays);
+        //     $resolvedTime = $this->calculateResolvedTime($startTime, $firstResponseTime, $resolveTimeData, $slaSetting, $openDate, $offDays, $holidays);
+        //     Log::info("Calculated resolved time: {$resolvedTime}");
 
-            $alertBeforeResolveNotificationTime = $resolvedTime->copy()->subMinutes($slaTarget->alert_before_resolve_value);
-            Log::info("Calculated alert before resolve notification time: {$alertBeforeResolveNotificationTime}");
+        //     $alertBeforeResolveNotificationTime = $resolvedTime->copy()->subMinutes($slaTarget->alert_before_resolve_value);
+        //     Log::info("Calculated alert before resolve notification time: {$alertBeforeResolveNotificationTime}");
 
-            return [
-                'first_response_time' => isset($firstResponseTime) ? $firstResponseTime->format('Y-m-d H:i:s') : null,
-                'alert_before_response_notification_time' => isset($alertBeforeResponseNotificationTime) ? $alertBeforeResponseNotificationTime->format('Y-m-d H:i:s') : null,
-                'resolved_time' => $resolvedTime ? $resolvedTime->format('Y-m-d H:i:s') : null,
-                'alert_before_resolve_notification_time' => $alertBeforeResolveNotificationTime ? $alertBeforeResolveNotificationTime->format('Y-m-d H:i:s') : null,
-            ];
-        } else {
-            return [
-                'first_response_time' => null,
-                'alert_before_response_notification_time' => null,
-                'resolved_time' => null,
-                'alert_before_resolve_notification_time' => null,
-            ];
-        }
+        //     return [
+        //         'first_response_time' => isset($firstResponseTime) ? $firstResponseTime->format('Y-m-d H:i:s') : null,
+        //         'alert_before_response_notification_time' => isset($alertBeforeResponseNotificationTime) ? $alertBeforeResponseNotificationTime->format('Y-m-d H:i:s') : null,
+        //         'resolved_time' => $resolvedTime ? $resolvedTime->format('Y-m-d H:i:s') : null,
+        //         'alert_before_resolve_notification_time' => $alertBeforeResolveNotificationTime ? $alertBeforeResolveNotificationTime->format('Y-m-d H:i:s') : null,
+        //     ];
+        // } else {
+        //     return [
+        //         'first_response_time' => null,
+        //         'alert_before_response_notification_time' => null,
+        //         'resolved_time' => null,
+        //         'alert_before_resolve_notification_time' => null,
+        //     ];
+        // }
     }
 
     private function adjustStartTime($createdAt, $slaId, $offDays, $holidays, $slaSetting)
