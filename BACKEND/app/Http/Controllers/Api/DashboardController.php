@@ -12,22 +12,42 @@ use App\Models\Department;
 use App\Models\IncidentType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    private function extractPayload(Request $request)
     {
-        // Total Users
+        $token = $request->bearerToken();
+        return $token ? JWTAuth::setToken($token)->getPayload() : null;
+    }
+
+    public function index(Request $request)
+    {
+        // Extract payload from the token
+        $payload = $this->extractPayload($request);
+        $applyAgentFilter = $payload && $payload['role_id'] == 3;
+        $userId = $payload ? $payload['id'] : null;
+
+        // Helper function to apply filter conditionally
+        $conditionalFilter = function ($query) use ($applyAgentFilter, $userId) {
+            if ($applyAgentFilter) {
+                $query->where('assign_to_id', $userId);
+            }
+        };
+
         $totalUsers = User::where('type', '!=', 0)->count();
 
         //Total Accounts
         $totalAccounts = Account::where('is_delete', 'No')->count();
 
+        // // Total Ticket Count
+        // $totalTicketCount = SupportTicket::count();
         // Total Ticket Count
-        $totalTicketCount = SupportTicket::count();
+        $totalTicketCount = SupportTicket::where($conditionalFilter)->count();
 
         // Total Pending Tickets
-        $totalPendingTickets = SupportTicket::whereNotIn('default_status', ['Resolved', 'Closed'])->count();
+        $totalPendingTickets = SupportTicket::where($conditionalFilter)->whereNotIn('default_status', ['Resolved', 'Closed'])->count();
 
         // Total Departments
         $totalDepartments = Department::count();
@@ -36,19 +56,19 @@ class DashboardController extends Controller
         $totalContacts = Contact::count();
 
         // Tickets by status
-        $ticketsByStatus = SupportTicket::select(DB::raw('default_status, COUNT(*) as count'))
+        $ticketsByStatus = SupportTicket::where($conditionalFilter)->select(DB::raw('default_status, COUNT(*) as count'))
             ->groupBy('default_status')
             ->get()
             ->keyBy('default_status');
 
         // Tickets by priority
-        $ticketsByPriority = SupportTicket::select(DB::raw('default_priority, COUNT(*) as count'))
+        $ticketsByPriority = SupportTicket::where($conditionalFilter)->select(DB::raw('default_priority, COUNT(*) as count'))
             ->groupBy('default_priority')
             ->get()
             ->keyBy('default_priority');
 
         // Tickets by department
-        $ticketsByDepartment = SupportTicket::select(DB::raw('departments, COUNT(*) as count'))
+        $ticketsByDepartment = SupportTicket::where($conditionalFilter)->select(DB::raw('departments, COUNT(*) as count'))
             ->groupBy('departments')
             ->get()
             ->keyBy('departments');
@@ -63,7 +83,7 @@ class DashboardController extends Controller
         // $agents = User::whereIn('id', $pendingTicketsByAgent->pluck('assign_to_id'))->get()->keyBy('id');
 
         // Pending tickets by agent (assign_to_id represents agent)
-        $pendingTicketsByAgent = SupportTicket::whereNotIn('default_status', ['Resolved', 'Closed'])
+        $pendingTicketsByAgent = SupportTicket::where($conditionalFilter)->whereNotIn('default_status', ['Resolved', 'Closed'])
             ->select('assign_to_id', DB::raw('COUNT(*) as count'))
             ->groupBy('assign_to_id')
             ->orderByDesc(DB::raw('COUNT(*)'))  // Order by count descending
@@ -76,7 +96,7 @@ class DashboardController extends Controller
             ->keyBy('id');
 
         // Tickets by incident type (incident_id is a reference to incident_types table)
-        $ticketsByIncidentType = SupportTicket::select('incident_id', DB::raw('COUNT(*) as count'))
+        $ticketsByIncidentType = SupportTicket::where($conditionalFilter)->select('incident_id', DB::raw('COUNT(*) as count'))
             ->groupBy('incident_id')
             ->get();
 
@@ -84,7 +104,7 @@ class DashboardController extends Controller
         $incidentTypes = IncidentType::whereIn('id', $ticketsByIncidentType->pluck('incident_id'))->get()->keyBy('id');
 
         // Tickets by product type (product_id is a reference to product_types table)
-        $ticketsByProductType = SupportTicket::select('product_id', DB::raw('COUNT(*) as count'))
+        $ticketsByProductType = SupportTicket::where($conditionalFilter)->select('product_id', DB::raw('COUNT(*) as count'))
             ->groupBy('product_id')
             ->get();
 
@@ -92,16 +112,16 @@ class DashboardController extends Controller
         // $productTypes = Product::whereIn('id', $ticketsByProductType->pluck('product_id'))->get()->keyBy('id');
 
         // Tickets by type
-        $ticketsByType = SupportTicket::select('default_type', DB::raw('COUNT(*) as count'))
+        $ticketsByType = SupportTicket::where($conditionalFilter)->select('default_type', DB::raw('COUNT(*) as count'))
             ->groupBy('default_type')
             ->get()
             ->keyBy('default_type');
 
         // Activity summary (Tickets created today, last 7 days, last 30 days, and updated vs. created)
         $activitySummary = [
-            'today' => SupportTicket::whereDate('created_at', now()->toDateString())->count(),
-            'last_7_days' => SupportTicket::where('created_at', '>=', now()->subDays(7))->count(),
-            'last_30_days' => SupportTicket::where('created_at', '>=', now()->subDays(30))->count(),
+            'today' => SupportTicket::where($conditionalFilter)->whereDate('created_at', now()->toDateString())->count(),
+            'last_7_days' => SupportTicket::where($conditionalFilter)->where('created_at', '>=', now()->subDays(7))->count(),
+            'last_30_days' => SupportTicket::where($conditionalFilter)->where('created_at', '>=', now()->subDays(30))->count(),
         ];
 
         // Deleted ticket count

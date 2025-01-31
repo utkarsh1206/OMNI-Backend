@@ -56,13 +56,32 @@ const AppHeader = () => {
         </CHeaderToggler>
         <CHeaderNav className="d-none d-md-flex">
           <CNavItem>
-            <CNavLink to="/dashboard" as={NavLink}>
-              {/* <CNavLink to="/neox_dash" as={NavLink}> */}
+            {(() => {
+              let pathname = window.location.pathname
+              if (pathname.startsWith('/agent')) {
+                return (
+                  <CNavLink to="/agent/dashboard" as={NavLink}>
+                    {/* <CNavLink to="/neox_dash" as={NavLink}> */}
+                    Dashboard
+                  </CNavLink>
+                )
+              } else {
+                return (
+                  <CNavLink to="/dashboard" as={NavLink}>
+                    {/* <CNavLink to="/neox_dash" as={NavLink}> */}
+                    Dashboard
+                  </CNavLink>
+                )
+              }
+            })()}
+            {/* <CNavLink to="/dashboard" as={NavLink}>
               Dashboard
-            </CNavLink>
+            </CNavLink> */}
           </CNavItem>
           <CNavItem>
-            <CNavLink to="/user/users" as={NavLink}>Users</CNavLink>
+            <CNavLink to="/user/users" as={NavLink}>
+              Users
+            </CNavLink>
           </CNavItem>
           <CNavItem>
             <CNavLink href="#">Settings</CNavLink>
@@ -81,22 +100,14 @@ const AppHeader = () => {
           </CNavItem>
           <CNavItem>
             <CNavLink to="/neox_dash" as={NavLink}>
-              <CTooltip
-                content="Dashboard"
-                placement="bottom"
-                style={{ opacity: 0.2 }}
-              >
+              <CTooltip content="Dashboard" placement="bottom" style={{ opacity: 0.2 }}>
                 <CIcon icon={cilBrowser} size="lg" />
               </CTooltip>
             </CNavLink>
           </CNavItem>
           <CNavItem>
             <CNavLink to="/license" as={NavLink}>
-              <CTooltip
-                content="License"
-                placement="bottom"
-                style={{ opacity: 0.2 }}
-              >
+              <CTooltip content="License" placement="bottom" style={{ opacity: 0.2 }}>
                 <CIcon icon={cilLockLocked} size="lg" />
               </CTooltip>
             </CNavLink>
