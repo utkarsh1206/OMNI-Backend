@@ -1,6 +1,13 @@
 2025-01-31 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : Neox-3937
+	* Previous Commit ID : 05022632
+	* Version : Dev
+	* Laravel & ReactJS : In the Audit report showing User Name instead of user_id, modified the controller to show data in desc order.
+
+2025-01-31 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : Neox-3937
 	* Previous Commit ID : d80da7d0
 	* Version : Dev
 	* Laravel & ReactJS : Added Agent Dashboard page, and didi changes in the dashboard controller accordingly

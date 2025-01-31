@@ -161,7 +161,7 @@ const AuditReport = () => {
               {incident.map((incident, index) => (
                 <CTableRow key={incident.id}>
                   <CTableDataCell>{index + 1 + (currentPage - 1) * perPage}</CTableDataCell>
-                  <CTableDataCell>{incident.user_id}</CTableDataCell>
+                  <CTableDataCell>{incident.user_name}</CTableDataCell>
                   <CTableDataCell>{incident.ipaddress}</CTableDataCell>
                   <CTableDataCell>{formatDateWithTime(incident.created_at)}</CTableDataCell>
                   <CTableDataCell>{incident.action.replace(/^[A-Z]+\sapi\//, '')}</CTableDataCell>
