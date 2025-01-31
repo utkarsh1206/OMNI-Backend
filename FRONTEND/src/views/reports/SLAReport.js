@@ -45,6 +45,11 @@ const SLAReport = () => {
   const [users, setUsers] = useState([]);
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [slaComplianceFilter, setSlaComplianceFilter] = useState("all");
+  const [chartData, setChartData] = useState({
+    users: [],
+    avgActualTimes: [],
+    avgExpectedTimes: [],
+  });
 
   const fetchUsers = async () => {
     try {
@@ -84,14 +89,30 @@ const SLAReport = () => {
       setLastPage(response.data.meta.last_page)
       setTotal(response.data.meta.total)
       setPerPage(response.data.meta.perPage)
-      calculateSlaCompliance(response.data.data);
 
+      // Call the calculation method with the full dataset
+      const allDataResponse = await axios.get(`${BASE_URL}/api/slareport`, {
+        params: {
+          startDate: startDateStr,
+          endDate: endDateStr,
+          user: userFilterStr === 'all' ? undefined : userFilterStr,
+          priority: priorityFilter === 'all' ? undefined : priorityFilter,
+          slaCompliance: slaComplianceFilter === 'all' ? undefined : slaComplianceFilter,
+        },
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+      console.log("all data ", allDataResponse.data.data)
+      calculateSlaCompliance(allDataResponse.data.data);
+      calculateResolutionTimes(allDataResponse.data.data);
 
       fetchGraphData(startDateStr, endDateStr, userFilterStr, priorityFilter, slaComplianceFilter);
     } catch (error) {
       console.error('Error fetching tickets:', error);
     }
   }
+
 
   const handleCSVDownload = async (pageNumber = currentPage, perPageValue = perPage) => {
     try {
@@ -137,6 +158,40 @@ const SLAReport = () => {
     const no = data.filter(ticket => ticket.sla_compliance === 'No').length;
     setSlaComplianceCount({ yes, no });
   };
+
+  const calculateResolutionTimes = (data) => {
+    try {
+      const userMap = {};
+
+      data.forEach(ticket => {
+        const user = ticket.user_name;
+        const actualResolvedTime = ticket.actual_resolved_time ? moment.duration(ticket.actual_resolved_time).asMinutes() : 0;
+        const expectedResolveTime = ticket.resolve_time_value ? moment.duration(ticket.resolve_time_value).asMinutes() : 0;
+
+
+        console.log("actualResolvedTime", ticket.actual_resolved_time);
+        if (!userMap[user]) {
+          userMap[user] = { totalActual: 0, totalExpected: 0, count: 0 };
+        }
+        userMap[user].totalActual += actualResolvedTime;
+        userMap[user].totalExpected += expectedResolveTime;
+        userMap[user].count++;
+      });
+
+      const users = Object.keys(userMap);
+      const avgActualTimes = users.map(user => (userMap[user].totalActual / userMap[user].count).toFixed(2));
+      const avgExpectedTimes = users.map(user => (userMap[user].totalExpected / userMap[user].count).toFixed(2));
+
+      setChartData({
+        users,
+        avgActualTimes,
+        avgExpectedTimes,
+      });
+
+    } catch (error) {
+      console.error('Error fetching graph data:', error);
+    }
+  }
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
@@ -493,6 +548,60 @@ const SLAReport = () => {
                     </div>
                   )}
                 </CRow>
+                <CRow className="mb-4" style={{ margin: '10px' }}>
+                  <h5>User-wise Resolution Time</h5>
+                  {chartData.users.length > 0 && (
+                    <div style={{ width: "900px" }}>
+                      <CChart
+                        type="bar"
+                        data={{
+                          labels: chartData.users,
+                          datasets: [
+                            {
+                              label: "Actual Resolution Time",
+                              data: chartData.avgActualTimes,
+                              backgroundColor: "#000080",
+                              // borderColor: "rgba(54, 162, 235, 1)",
+                              borderWidth: 1,
+                            },
+                            {
+                              label: "Expected Resolution Time",
+                              data: chartData.avgExpectedTimes,
+                              backgroundColor: "#368197",
+                              // borderColor: "rgba(255, 99, 132, 1)",
+                              borderWidth: 1,
+                            },
+                          ],
+                        }}
+                        options={{
+                          responsive: true,
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              title: {
+                                display: true,
+                                text: "Resolution Time (Minutes)",
+                              },
+                            },
+                            x: {
+                              title: {
+                                display: true,
+                                text: "Users",
+                              },
+                            },
+                          },
+                          plugins: {
+                            legend: {
+                              display: true,
+                              position: "top",
+                            },
+                          },
+                        }}
+                        style={{ height: '300px' }}
+                      />
+                    </div>
+                  )}
+                </CRow>
               </CContainer>
             </CCard>
           </CCol>
@@ -509,6 +618,8 @@ const SLAReport = () => {
                 <CTableHeaderCell scope="col">Priority</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Opened Date</CTableHeaderCell>
                 <CTableHeaderCell scope="col">Resolved Date</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Resolution Target Time</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Resolution Actual Time</CTableHeaderCell>
                 <CTableHeaderCell scope="col">SLA Compliance</CTableHeaderCell>
               </CTableRow >
             </CTableHead >
@@ -523,6 +634,8 @@ const SLAReport = () => {
                     <CTableDataCell>{sla.priority}</CTableDataCell>
                     <CTableDataCell>{sla.opened_date}</CTableDataCell>
                     <CTableDataCell>{sla.notifications[0]?.resolved_date || ''}</CTableDataCell>
+                    <CTableDataCell>{sla.resolve_time_value}</CTableDataCell>
+                    <CTableDataCell>{sla.actual_resolved_time}</CTableDataCell>
                     <CTableDataCell>{sla.sla_compliance}</CTableDataCell>
                   </CTableRow>
                 ))
@@ -560,6 +673,13 @@ const SLAReport = () => {
                 <option value="50">50</option>
                 <option value="100">100</option>
               </CFormSelect>
+            </CCol>
+          </CRow>
+
+          <CRow className="mb-2">
+            <CCol className="text-center">
+              Showing {(currentPage - 1) * perPage + 1} to {Math.min(currentPage * perPage, total)} of{' '}
+              {total}
             </CCol>
           </CRow>
         </>

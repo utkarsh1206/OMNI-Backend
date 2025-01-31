@@ -213,7 +213,7 @@ const TicketReport = () => {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       setTicketJourneyData(response.data.data);
-      setIsModalOpen(true); 
+      setIsModalOpen(true);
     } catch (error) {
       console.error('Error fetching ticket journey data:', error);
     }
@@ -642,7 +642,7 @@ const TicketReport = () => {
             <CModalHeader>
               <CModalTitle>Ticket Journey</CModalTitle>
             </CModalHeader>
-            <CModalBody  style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            <CModalBody style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {ticketJourneyData ? (
                 <div className="max-w-2xl mx-auto mt-8 p-4">
                   <h4>Support Ticket Status Progress</h4>
@@ -702,6 +702,13 @@ const TicketReport = () => {
                 <option value="50">50</option>
                 <option value="100">100</option>
               </CFormSelect>
+            </CCol>
+          </CRow>
+
+          <CRow className="mb-2">
+            <CCol className="text-center">
+              Showing {(currentPage - 1) * perPage + 1} to {Math.min(currentPage * perPage, total)} of{' '}
+              {total}
             </CCol>
           </CRow>
         </>
