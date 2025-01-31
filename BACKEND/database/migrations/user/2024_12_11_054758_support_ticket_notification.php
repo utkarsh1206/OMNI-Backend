@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('status', 255)->nullable();
             $table->text('comment');
             $table->unsignedBigInteger('support_ticket_id'); // Foreign key to support_ticket table
+            $table->integer('created_by')->nullable();
+            $table->string('icon')->nullable();
+            $table->string('color')->nullable();
             $table->dateTime('date'); // Date and time of the notification
             $table->timestamps(); // Includes created_at and updated_at timestamps
         });

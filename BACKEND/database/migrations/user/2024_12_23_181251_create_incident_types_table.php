@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->enum('priority', ['normal','low', 'medium', 'high', 'critical'])->default('medium');
             // $table->integer('sla_id');
-            $table->foreignId('sla_id')->constrained()->onDelete('cascade');
+            $table->foreignId('sla_id')->constrained('sla_settings')->onDelete('cascade');
             $table->timestamps();
         });
     }
