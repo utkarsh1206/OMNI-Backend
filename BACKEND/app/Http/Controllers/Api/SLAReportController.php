@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\IncidentType;
+use App\Models\SlaTarget;
 use App\Models\Supportticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +16,8 @@ class SLAReportController extends Controller
 {
     private function applyFilters($query, Request $request, $payload = null)
     {
+        $query->where('supportticket.is_delete', 'No');
+
         if ($request->has('startDate') && $request->has('endDate')) {
             $startDate = Carbon::parse($request->input('startDate'));
             $endDate = Carbon::parse($request->input('endDate'));
@@ -51,7 +55,7 @@ class SLAReportController extends Controller
 
     public function generateReport(Request $request)
     {
-        $perPage = $request->input('perPage', 10);
+        $perPage = $request->input('perPage');
         $page = $request->input('page', 1);
 
         $ticketsquery = Supportticket::with([
@@ -68,7 +72,9 @@ class SLAReportController extends Controller
                 'supportticket.default_type as category',
                 'supportticket.default_priority as priority',
                 'supportticket.created_at as opened_date',
-                'supportticket.is_escalated as sla_compliance'
+                'supportticket.is_escalated as sla_compliance',
+                'supportticket.actual_resolved_time',
+                'supportticket.incident_id'
             )
             ->join('users', 'supportticket.assign_to_id', '=', 'users.id')
             ->addSelect('users.username as user_name');
@@ -77,23 +83,53 @@ class SLAReportController extends Controller
 
         $ticketsquery = $this->applyFilters($ticketsquery, $request, $payload);
 
-        if ($page === 'all') {
-            $tickets = $ticketsquery->get();
-            return response()->json([
-                'data' => $tickets,
-            ]);
+        if ($page !== 'all') {
+            $ticketsquery = $ticketsquery->paginate($perPage);
         } else {
-            $tickets = $ticketsquery->paginate($perPage);
-            return response()->json([
-                'data' => $tickets->items(),
-                'meta' => [
-                    'current_page' => $tickets->currentPage(),
-                    'last_page' => $tickets->lastPage(),
-                    'perPage' => $tickets->perPage(),
-                    'total' => $tickets->total(),
-                ],
-            ]);
+            $ticketsquery = $ticketsquery->get();
         }
+
+        // Step 2: Get SLA IDs for incidents
+        $incidentIds = $ticketsquery->pluck('incident_id')->unique();
+        $incidentSLA = IncidentType::whereIn('id', $incidentIds)
+            ->pluck('sla_id', 'id'); // ['incident_id' => sla_id]
+
+        // Step 3: Get Resolve Time from SLA Targets
+        $slaIds = $incidentSLA->values()->unique();
+        $slaTargets = SlaTarget::whereIn('sla_id', $slaIds)
+            ->get()
+            ->groupBy(function ($item) {
+                return $item->sla_id . '_' . $item->priority_type;
+            }); // Create a mapping ['slaId_priority' => resolve_time]
+
+        // Step 4: Merge Data in PHP
+        $ticketsquery->transform(function ($ticket) use ($incidentSLA, $slaTargets) {
+            $slaId = $incidentSLA[$ticket->incident_id] ?? null;
+            $resolveTime = $slaId ? ($slaTargets[$slaId . '_' . $ticket->priority] ?? null) : null;
+            $resolveTimeMinutes = $resolveTime ? $resolveTime->first()->resolve_time_value : null;
+
+            // Convert minutes to HH:MM:SS
+            if ($resolveTimeMinutes !== null) {
+                $hours = floor($resolveTimeMinutes / 60);
+                $minutes = $resolveTimeMinutes % 60;
+                $seconds = 0; // Defaulting to 0 seconds
+                $ticket->resolve_time_value = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+            } else {
+                $ticket->resolve_time_value = null;
+            }
+
+            return $ticket;
+        });
+
+        return response()->json([
+            'data' => $page !== 'all' ? $ticketsquery->items() : $ticketsquery,
+            'meta' => $page !== 'all' ? [
+                'current_page' => $ticketsquery->currentPage(),
+                'last_page' => $ticketsquery->lastPage(),
+                'perPage' => $ticketsquery->perPage(),
+                'total' => $ticketsquery->total(),
+            ] : null,
+        ]);
     }
 
     public function prioritySLA(Request $request)

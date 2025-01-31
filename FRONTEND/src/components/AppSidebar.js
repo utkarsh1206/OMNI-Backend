@@ -32,6 +32,9 @@ const AppSidebar = () => {
     '--cui-sidebar-bg': "url('../../src/assets/brand/new_bg.png'), #fff",
   }
 
+  const pathname = window.location.pathname;
+  const link = pathname.startsWith('/agent') ? '/agent/dashboard' : '/';
+
   return (
     <CSidebar
       style={sidebarColor}
@@ -43,7 +46,8 @@ const AppSidebar = () => {
       onVisibleChange={(visible) => dispatch({ type: 'set', sidebarShow: visible })}
     >
       <CSidebarHeader className="border-bottom">
-        <CSidebarBrand to="/" as={NavLink}>
+        {/* <CSidebarBrand to="/" as={NavLink}> */}
+        <CSidebarBrand to={link} as={NavLink}>
           <CImage
             src={brandingInfo?.tenant_logo || '../src/assets/brand/new_menu_logo.png'}
             height={unfoldable ? 16 : 32}
@@ -58,13 +62,13 @@ const AppSidebar = () => {
       {(() => {
         let pathname = window.location.pathname
         if (pathname.startsWith('/super_admin')) {
-          return <AppSidebarNavSuperAdmin items={navigation} />
+          return <AppSidebarNavSuperAdmin items={navigation()} />
         } else if (pathname.startsWith('/agent')) {
           return <AppSidebarNavAgent items={navigationAgent} />
         } else if (pathname.startsWith('/neox_dash')) {
           return <AppSidebarNavNeoxDash items={navigationDash} />
         } else {
-          return <AppSidebarNav items={navigation} />
+          return <AppSidebarNav items={navigation()} />
         }
       })()}
       <CSidebarFooter className="border-top d-none d-lg-flex">

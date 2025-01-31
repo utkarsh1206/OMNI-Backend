@@ -1,3 +1,25 @@
+2025-01-31 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : Neox-3937
+	* Previous Commit ID : d80da7d0
+	* Version : Dev
+	* Laravel & ReactJS : Added Agent Dashboard page, and didi changes in the dashboard controller accordingly
+
+2025-01-31 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 7dc01a5c
+	* Version : Dev
+	* Laravel & ReactJS : Added Resoulution time in SLA reports for table
+	format and create graph based on it.
+
+2025-01-30 Nihar Patel<nihar.patel@stltech.in> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : f2ed4728 
+	* Version : Dev
+	* ReactJs : Set navbar as per user's permissions.
+
 2025-01-30 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :  
@@ -33,7 +55,7 @@
 	* ReactJs :  Created Dashboard Page for Tenant Admin, made pages for CRON configurations, Audit Reports etc.
 	* Laravel : Created Dashboard Controller, that will display the data on the Dashboard pages. Added search field for name in Category Controller. Also commented 'response_params' from the LogActivity middleware.
 
-2025-01-29 Nidhi Jajal<nidhi.jajal@stl.tech> 
+2025-01-29 Nidhi Jajal<nidhi.jajal@stltech.in> 
 	* NEWS
 	* Jira ID :  
 	* Previous Commit ID : 7f1a7f39 

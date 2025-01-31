@@ -15,6 +15,8 @@ class TicketReportController extends Controller
 {
     private function applyFilters($query, Request $request, $payload = null)
     {
+        $query->where('supportticket.is_delete', 'No');
+
         if ($request->has('startDate') && $request->has('endDate')) {
             $startDate = Carbon::parse($request->input('startDate'));
             $endDate = Carbon::parse($request->input('endDate'));

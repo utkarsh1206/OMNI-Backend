@@ -291,6 +291,7 @@ const routes = [
   { path: '/settings/CRON_configs/edit/:id', name: 'Edit CRON Configuration', element: CRONConfiguration },
 
   { path: '/agent', name: 'Agent', element: Agent, exact: true },
+  { path: '/agent/dashboard', name: 'Agent Dashboard', element: Dashboard, exact: true },
 
   { path: '/agent/spprt_tckt', name: 'Support Ticket', element: SupportTickets, exact: true },
   { path: '/agent/spprt_tckt/crt_tckt', name: 'Create Support Ticket', element: CreateSupportTickets },

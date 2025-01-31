@@ -92,6 +92,10 @@ const TenantAdmin = ({ user }) => {
   const departmentNames = Object.keys(tickets_by_department)
   const departmentCounts = departmentNames.map((key) => tickets_by_department[key].count)
 
+  // Parse the tickets_by_department data
+  // const productNames = Object.keys(tickets_by_department)
+  // const productCount = departmentNames.map((key) => tickets_by_department[key].count)
+
   const cards = [
     { label: 'Total Accounts', value: total_accounts, icon: '🏢', color: '#1E90FF' },
     { label: 'Total Users', value: total_users, icon: '👥', color: '#FFD700' },
@@ -349,7 +353,7 @@ const TenantAdmin = ({ user }) => {
                         '#FFCE56',
                         '#4BC0C0',
                         '#9966FF',
-                        'green',
+                        '#4CAF50',
                       ],
                     },
                   ],
@@ -539,6 +543,57 @@ const TenantAdmin = ({ user }) => {
               </CCol>
             ))}
           </CRow>
+        </CCol> */}
+
+        {/* <CCol xs="12" md="6">
+          <CCard>
+            <CCardHeader>
+              <h4>Tickets by Products</h4>
+            </CCardHeader>
+            <CCardBody>
+              <CChartBar
+                data={{
+                  labels: productNames, // Product names as labels
+                  datasets: [
+                    {
+                      label: 'Number of Tickets',
+                      backgroundColor: '#339af0', // Customize bar color
+                      borderColor: '#1c7ed6',
+                      borderWidth: 2,
+                      borderRadius: 5,
+                      hoverBackgroundColor: '#1c7ed6',
+                      hoverBorderColor: '#1864ab',
+                      data: productCount, // Ticket counts as data
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: false,
+                      position: 'bottom',
+                    },
+                  },
+                  scales: {
+                    x: {
+                      grid: {
+                        display: false,
+                      },
+                    },
+                    y: {
+                      beginAtZero: true,
+                      ticks: {
+                        stepSize: 1,
+                      },
+                    },
+                  },
+                }}
+                style={{ height: '170px', width: '100%' }}
+              />
+            </CCardBody>
+          </CCard>
         </CCol> */}
       </CRow>
     </>
