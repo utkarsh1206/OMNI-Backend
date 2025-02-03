@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 
-class CheckMailConfiguration
+class CheckSmtpConfiguration
 {
     /**
      * Handle an incoming request.
