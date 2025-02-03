@@ -37,6 +37,7 @@ const AppHeader = () => {
 
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.sidebarShow)
+  dispatch({ type: 'set', theme: colorMode })
 
   useEffect(() => {
     document.addEventListener('scroll', () => {
@@ -133,7 +134,10 @@ const AppHeader = () => {
                 className="d-flex align-items-center"
                 as="button"
                 type="button"
-                onClick={() => setColorMode('light')}
+                onClick={() => {
+                  dispatch({ type: 'set', theme: 'light' })
+                  setColorMode('light')
+                }}
               >
                 <CIcon className="me-2" icon={cilSun} size="lg" /> Light
               </CDropdownItem>
@@ -142,7 +146,10 @@ const AppHeader = () => {
                 className="d-flex align-items-center"
                 as="button"
                 type="button"
-                onClick={() => setColorMode('dark')}
+                onClick={() => {
+                  dispatch({ type: 'set', theme: 'dark' })
+                  setColorMode('dark')
+                }}
               >
                 <CIcon className="me-2" icon={cilMoon} size="lg" /> Dark
               </CDropdownItem>
@@ -151,7 +158,10 @@ const AppHeader = () => {
                 className="d-flex align-items-center"
                 as="button"
                 type="button"
-                onClick={() => setColorMode('auto')}
+                onClick={() => {
+                  dispatch({ type: 'set', theme: 'auto' })
+                  setColorMode('auto')
+                }}
               >
                 <CIcon className="me-2" icon={cilContrast} size="lg" /> Auto
               </CDropdownItem>

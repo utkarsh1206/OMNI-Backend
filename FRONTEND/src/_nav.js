@@ -1,8 +1,8 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
 import * as icon from '@coreui/icons'
-import { CNavGroup, CNavGroupItems, CNavItem, CNavTitle } from '@coreui/react'
-import { jwtDecode } from 'jwt-decode'
+import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import getUserPermissions from './utils/userPermissionsUtils'
 
 const navItemList = [
   // {
@@ -528,12 +528,6 @@ const filterNavItems = (navItems, userPermissions) => {
       .filter((item) => !item.items || item.items.length > 0)
   }
   return navItems
-}
-
-const getUserPermissions = () => {
-  const token = localStorage.getItem('token')
-  const decoded = jwtDecode(token)
-  return decoded.permission || []
 }
 
 // Get user permissions and filtered navigation items

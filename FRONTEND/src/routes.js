@@ -1,58 +1,7 @@
-import { element } from 'prop-types'
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
-const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
-
-// Base
-const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
-const Breadcrumbs = React.lazy(() => import('./views/base/breadcrumbs/Breadcrumbs'))
-const Cards = React.lazy(() => import('./views/base/cards/Cards'))
-const Carousels = React.lazy(() => import('./views/base/carousels/Carousels'))
-const Collapses = React.lazy(() => import('./views/base/collapses/Collapses'))
-const ListGroups = React.lazy(() => import('./views/base/list-groups/ListGroups'))
-const Navs = React.lazy(() => import('./views/base/navs/Navs'))
-const Paginations = React.lazy(() => import('./views/base/paginations/Paginations'))
-const Placeholders = React.lazy(() => import('./views/base/placeholders/Placeholders'))
-const Popovers = React.lazy(() => import('./views/base/popovers/Popovers'))
-const Progress = React.lazy(() => import('./views/base/progress/Progress'))
-const Spinners = React.lazy(() => import('./views/base/spinners/Spinners'))
-const Tables = React.lazy(() => import('./views/base/tables/Tables'))
-const Tooltips = React.lazy(() => import('./views/base/tooltips/Tooltips'))
-
-// Buttons
-const Buttons = React.lazy(() => import('./views/buttons/buttons/Buttons'))
-const ButtonGroups = React.lazy(() => import('./views/buttons/button-groups/ButtonGroups'))
-const Dropdowns = React.lazy(() => import('./views/buttons/dropdowns/Dropdowns'))
-
-//Forms
-const ChecksRadios = React.lazy(() => import('./views/forms/checks-radios/ChecksRadios'))
-const FloatingLabels = React.lazy(() => import('./views/forms/floating-labels/FloatingLabels'))
-const FormControl = React.lazy(() => import('./views/forms/form-control/FormControl'))
-const InputGroup = React.lazy(() => import('./views/forms/input-group/InputGroup'))
-const Layout = React.lazy(() => import('./views/forms/layout/Layout'))
-const Range = React.lazy(() => import('./views/forms/range/Range'))
-const Select = React.lazy(() => import('./views/forms/select/Select'))
-const Validation = React.lazy(() => import('./views/forms/validation/Validation'))
-
-const Charts = React.lazy(() => import('./views/charts/Charts'))
-
-// Icons
-const CoreUIIcons = React.lazy(() => import('./views/icons/coreui-icons/CoreUIIcons'))
-const Flags = React.lazy(() => import('./views/icons/flags/Flags'))
-const Brands = React.lazy(() => import('./views/icons/brands/Brands'))
-
-// Notifications
-const Alerts = React.lazy(() => import('./views/notifications/alerts/Alerts'))
-const Badges = React.lazy(() => import('./views/notifications/badges/Badges'))
-const Modals = React.lazy(() => import('./views/notifications/modals/Modals'))
-const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
-
-const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
-
 const TestReport = React.lazy(() => import('./views/reports/TestReport'))
-
 const Profile = React.lazy(() => import('./views/profile/Profile'))
 
 // Password Reset
@@ -68,7 +17,6 @@ const CreateUserGroups = React.lazy(() => import('./views/user/UserGroupForm'))
 const Campaigns = React.lazy(() => import('./views/campaign/Campaigns'))
 const CreateCampaign = React.lazy(() => import('./views/campaign/CreateCampaign'))
 
-// Campaign Management
 const Ingroups = React.lazy(() => import('./views/inbound/Ingroups'))
 const CreateIngroups = React.lazy(() => import('./views/inbound/CreateIngroups'))
 
@@ -81,13 +29,11 @@ const CreateCategories = React.lazy(() => import('./views/category/CategoriesFor
 const Incident = React.lazy(() => import('./views/incident/Incident'))
 const CreateIncident = React.lazy(() => import('./views/incident/IncidentForm'))
 
-// New Product Page components
-//import Productpage from "./views/product/Productpage"
 const ProductPage = React.lazy(() => import('./views/product/ProductPage'));
 const ProductForm = React.lazy(() => import('./views/product/ProductForm'));
 
-const Chatbot = React.lazy(() => import('./views/chatbot/Chatbot')); // Chatbot list view
-const ChatbotForm = React.lazy(() => import('./views/chatbot/ChatbotForm')); // Create/Edit Chatbot
+const Chatbot = React.lazy(() => import('./views/chatbot/Chatbot'));
+const ChatbotForm = React.lazy(() => import('./views/chatbot/ChatbotForm'));
 
 // Tenant Management
 const Tenants = React.lazy(() => import('./views/tenant/Tenants'))
@@ -149,165 +95,117 @@ const Phone = React.lazy(() => import('./views/phone/Phones'))
 const CreatePhones = React.lazy(() => import('./views/phone/PhonesForm'))
 
 const routes = [
-  { path: '/', exact: true, name: 'Home' },
-  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  { path: '/theme', name: 'Theme', element: Colors, exact: true },
-  { path: '/theme/colors', name: 'Colors', element: Colors },
-  { path: '/theme/typography', name: 'Typography', element: Typography },
-  { path: '/base', name: 'Base', element: Cards, exact: true },
-  { path: '/base/accordion', name: 'Accordion', element: Accordion },
-  { path: '/base/breadcrumbs', name: 'Breadcrumbs', element: Breadcrumbs },
-  { path: '/base/cards', name: 'Cards', element: Cards },
-  { path: '/base/carousels', name: 'Carousel', element: Carousels },
-  { path: '/base/collapses', name: 'Collapse', element: Collapses },
-  { path: '/base/list-groups', name: 'List Groups', element: ListGroups },
-  { path: '/base/navs', name: 'Navs', element: Navs },
-  { path: '/base/paginations', name: 'Paginations', element: Paginations },
-  { path: '/base/placeholders', name: 'Placeholders', element: Placeholders },
-  { path: '/base/popovers', name: 'Popovers', element: Popovers },
-  { path: '/base/progress', name: 'Progress', element: Progress },
-  { path: '/base/spinners', name: 'Spinners', element: Spinners },
-  { path: '/base/tables', name: 'Tables', element: Tables },
-  { path: '/base/tooltips', name: 'Tooltips', element: Tooltips },
-  { path: '/buttons', name: 'Buttons', element: Buttons, exact: true },
-  { path: '/buttons/buttons', name: 'Buttons', element: Buttons },
-  { path: '/buttons/dropdowns', name: 'Dropdowns', element: Dropdowns },
-  { path: '/buttons/button-groups', name: 'Button Groups', element: ButtonGroups },
-  { path: '/charts', name: 'Charts', element: Charts },
-  { path: '/forms', name: 'Forms', element: FormControl, exact: true },
-  { path: '/forms/form-control', name: 'Form Control', element: FormControl },
-  { path: '/forms/select', name: 'Select', element: Select },
-  { path: '/forms/checks-radios', name: 'Checks & Radios', element: ChecksRadios },
-  { path: '/forms/range', name: 'Range', element: Range },
-  { path: '/forms/input-group', name: 'Input Group', element: InputGroup },
-  { path: '/forms/floating-labels', name: 'Floating Labels', element: FloatingLabels },
-  { path: '/forms/layout', name: 'Layout', element: Layout },
-  { path: '/forms/validation', name: 'Validation', element: Validation },
-  { path: '/icons', exact: true, name: 'Icons', element: CoreUIIcons },
-  { path: '/icons/coreui-icons', name: 'CoreUI Icons', element: CoreUIIcons },
-  { path: '/icons/flags', name: 'Flags', element: Flags },
-  { path: '/icons/brands', name: 'Brands', element: Brands },
-  { path: '/notifications', name: 'Notifications', element: Alerts, exact: true },
-  { path: '/notifications/alerts', name: 'Alerts', element: Alerts },
-  { path: '/notifications/badges', name: 'Badges', element: Badges },
-  { path: '/notifications/modals', name: 'Modals', element: Modals },
-  { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
-  { path: '/widgets', name: 'Widgets', element: Widgets },
+  { path: '/', exact: true, name: 'Home', permissionTag: true },
+  { path: '/dashboard', name: 'Dashboard', element: Dashboard, permissionTag: true },
+  { path: '/my_profile', name: 'Profile', element: Profile, permissionTag: true },
+  { path: '/test_report', name: 'Test Report', element: TestReport, permissionTag: true },
+  { path: '/user', name: 'User Management', element: Users, exact: true, permissionTag: true },
+  { path: '/user/users', name: 'Users', element: Users, permissionTag: true },
+  { path: '/user/crt_usr', name: 'Create Users', element: CreateUser, permissionTag: true },
+  { path: '/user/edit/:id', name: 'Edit Tenant', element: CreateUser, permissionTag: true },
+  { path: '/user/user_groups', name: 'Users Groups', element: UserGroups, permissionTag: true },
+  { path: '/user/crt_usr_grp', name: 'Create User Groups', element: CreateUserGroups, permissionTag: true },
+  { path: '/user/edit_usergroup/:id', name: 'Edit UserGroup', element: CreateUserGroups, permissionTag: true },
 
-  { path: '/my_profile', name: 'Profile', element: Profile },
-  { path: '/test_report', name: 'Test Report', element: TestReport },
-  { path: '/user', name: 'User Management', element: Users, exact: true },
-  { path: '/user/users', name: 'Users', element: Users },
-  { path: '/user/crt_usr', name: 'Create Users', element: CreateUser },
-  { path: '/user/edit/:id', name: 'Edit Tenant', element: CreateUser },
-  { path: '/user/user_groups', name: 'Users Groups', element: UserGroups },
-  { path: '/user/crt_usr_grp', name: 'Create User Groups', element: CreateUserGroups },
-  { path: '/user/edit_usergroup/:id', name: 'Edit UserGroup', element: CreateUserGroups },
+  { path: '/campaign', name: 'Campaign Management', element: Campaigns, exact: true, permissionTag: true },
+  { path: '/campaign/campaigns', name: 'Campaigns', element: Campaigns, permissionTag: true },
+  { path: '/campaign/create_campaign', name: 'Create Campaign', element: CreateCampaign, permissionTag: true },
 
-  { path: '/campaign', name: 'Campaign Management', element: Campaigns, exact: true },
-  { path: '/campaign/campaigns', name: 'Campaigns', element: Campaigns },
-  { path: '/campaign/create_campaign', name: 'Create Campaign', element: CreateCampaign },
+  { path: '/inbound', name: 'Inbound Management', element: Ingroups, exact: true, permissionTag: true },
+  { path: '/inbound/ingrps', name: 'In-Groups', element: Ingroups, permissionTag: true },
+  { path: '/inbound/create_ingrps', name: 'Create In-Groups', element: CreateIngroups, permissionTag: true },
 
-  { path: '/inbound', name: 'Inbound Management', element: Ingroups, exact: true },
-  { path: '/inbound/ingrps', name: 'In-Groups', element: Ingroups },
-  { path: '/inbound/create_ingrps', name: 'Create In-Groups', element: CreateIngroups },
+  { path: '/department', name: 'Department Management', element: Departments, exact: true, permissionTag: true },
+  { path: '/department/departments', name: 'Department', element: Departments, permissionTag: true },
+  { path: '/department/create_departments', name: 'Create Department', element: CreateDepartments, permissionTag: true },
+  { path: '/department/edit_departments/:id', name: 'Edit Department', element: CreateDepartments, permissionTag: true },
 
-  { path: '/department', name: 'Department Management', element: Departments, exact: true},
-  { path: '/department/departments', name: 'Department', element: Departments},
-  { path: '/department/create_departments', name: 'Create Department', element: CreateDepartments},
-  { path: '/department/edit_departments/:id', name: 'Edit Department', element: CreateDepartments},
+  { path: '/category', name: 'Category Management', element: Categories, exact: true, permissionTag: true },
+  { path: '/category/categories', name: 'Category', element: Categories, permissionTag: true },
+  { path: '/category/create_categories', name: 'Create Category', element: CreateCategories, permissionTag: true },
+  { path: '/category/edit_categories/:id', name: 'Edit Category', element: CreateCategories, permissionTag: true },
 
-  { path: '/category', name: 'Category Management', element: Categories, exact: true},
-  { path: '/category/categories', name: 'Category', element: Categories},
-  { path: '/category/create_categories', name: 'Create Category', element: CreateCategories},
-  { path: '/category/edit_categories/:id', name: 'Edit Category', element: CreateCategories},
+  { path: '/incdnt_type', name: 'Incident Type', element: Incident, exact: true, permissionTag: true },
+  // { path: '/incdnt_type/categories', name: 'Category', element: Categories, permissionTag: true},
+  { path: '/incdnt_type/create_incident', name: 'Create Incident', element: CreateIncident, permissionTag: true },
+  { path: '/incdnt_type/edit_incident/:id', name: 'Edit Incident', element: CreateIncident, permissionTag: true },
 
-  { path: '/incdnt_type', name: 'Incident Type', element: Incident, exact: true},
-  // { path: '/incdnt_type/categories', name: 'Category', element: Categories},
-  { path: '/incdnt_type/create_incident', name: 'Create Incident', element: CreateIncident},
-  { path: '/incdnt_type/edit_incident/:id', name: 'Edit Incident', element: CreateIncident},
+  { path: '/product', name: 'Product List', element: ProductPage, permissionTag: true },
+  { path: '/product/create', name: 'Create Product', element: ProductForm, permissionTag: true },
+  { path: '/product/edit/:id', name: 'Edit Product', element: ProductForm, permissionTag: true },
 
-  // Product routes (new routes added)
-  { path: '/product', name: 'Product List', element: ProductPage }, // Product list page
-  { path: '/product/create', name: 'Create Product', element: ProductForm }, // Create Product
-  { path: '/product/edit/:id', name: 'Edit Product', element: ProductForm }, // Edit Product by ID
+  { path: '/chatbot', name: 'Chatbot List', element: Chatbot, permissionTag: true },
+  { path: '/chatbot/create', name: 'Create Chatbot', element: ChatbotForm, permissionTag: true },
+  { path: '/chatbot/edit/:id', name: 'Edit Chatbot', element: ChatbotForm, permissionTag: true },
 
-  { path: '/chatbot', name: 'Chatbot List', element: Chatbot }, // Chatbot list route
-  { path: '/chatbot/create', name: 'Create Chatbot', element: ChatbotForm }, // Create Chatbot route
-  { path: '/chatbot/edit/:id', name: 'Edit Chatbot', element: ChatbotForm }, // Edit Chatbot route
+  { path: '/tenants', name: 'Tenant Management', element: Tenants, permissionTag: true },
+  { path: '/tenants/tenants', name: 'Tenants', element: Tenants, permissionTag: true },
+  { path: '/tenants/crt_tenant', name: 'Create Tenant', element: CreateTenants, permissionTag: true },
+  { path: '/tenants/edit/:id', name: 'Edit Tenant', element: CreateTenants, permissionTag: true },
 
-  { path: '/tenants', name: 'Tenant Management', element: Tenants },
-  { path: '/tenants/tenants', name: 'Tenants', element: Tenants },
-  { path: '/tenants/crt_tenant', name: 'Create Tenant', element: CreateTenants },
-  { path: '/tenants/edit/:id', name: 'Edit Tenant', element: CreateTenants },
+  { path: '/tenants/tenant_role/', name: 'Create Tenant', element: TenantRoles, permissionTag: true },
+  { path: '/tenants/tenant_role/crt_tenant_role', name: 'Create Tenant Role', element: CreateTenantRoles, permissionTag: true },
+  { path: '/tenants/tenant_role/edit/:id', name: 'Edit Tenant Role', element: CreateTenantRoles, permissionTag: true },
 
-  { path: '/tenants/tenant_role/', name: 'Create Tenant', element: TenantRoles },
-  {
-    path: '/tenants/tenant_role/crt_tenant_role',
-    name: 'Create Tenant Role',
-    element: CreateTenantRoles,
-  },
-  { path: '/tenants/tenant_role/edit/:id', name: 'Edit Tenant Role', element: CreateTenantRoles },
+  { path: '/password_reset', name: 'Tenant Password Reset', element: TenantPasswordReset, permissionTag: true },
 
-  { path: '/password_reset', name: 'Tenant Password Reset', element: TenantPasswordReset },
+  { path: '/report/callCDR', name: 'Report Management', element: CallCDRreport, permissionTag: true },
+  { path: '/report/agent-activity', name: 'Report Management', element: AgentActivityReport, permissionTag: true },
+  { path: '/report/ticket-report', name: 'Report Management', element: TicketReport, permissionTag: true },
+  { path: '/report/sla-report', name: 'Report Management', element: SLAReport, permissionTag: true },
+  { path: '/report/audit-report', name: 'Audit Report', element: AuditReport, permissionTag: true },
 
-  { path: '/report/callCDR', name: 'Report Management', element: CallCDRreport },
-  { path: '/report/agent-activity', name: 'Report Management', element: AgentActivityReport },
-  { path: '/report/ticket-report', name: 'Report Management', element: TicketReport },
-  { path: '/report/sla-report', name: 'Report Management', element: SLAReport },
-  { path: '/report/audit-report', name: 'Audit Report', element: AuditReport },
+  { path: '/accounts', name: 'Accounts', element: Accounts, exact: true, permissionTag: true },
+  { path: '/accounts/create_accounts', name: 'Create Accounts', element: CreateAccounts, permissionTag: true },
+  { path: '/accounts/edit/:id', name: 'Edit Accounts', element: CreateAccounts, permissionTag: true },
 
-  { path: '/accounts', name: 'Accounts', element: Accounts, exact: true },
-  { path: '/accounts/create_accounts', name: 'Create Accounts', element: CreateAccounts },
-  { path: '/accounts/edit/:id', name: 'Edit Accounts', element: CreateAccounts },
+  { path: '/contacts', name: 'Contacts', element: Contacts, exact: true, permissionTag: true },
+  { path: '/contacts/create_contacts', name: 'Create Contacts', element: CreateContacts, permissionTag: true },
+  { path: '/contacts/edit/:id', name: 'Edit Contacts', element: CreateContacts, permissionTag: true },
 
-  { path: '/contacts', name: 'Contacts', element: Contacts, exact: true },
-  { path: '/contacts/create_contacts', name: 'Create Contacts', element: CreateContacts },
-  { path: '/contacts/edit/:id', name: 'Edit Contacts', element: CreateContacts },
+  { path: '/spprt_tckt', name: 'Support Ticket', element: SupportTickets, exact: true, permissionTag: true },
+  { path: '/spprt_tckt/crt_tckt', name: 'Create Support Ticket', element: CreateSupportTickets, permissionTag: true },
+  { path: '/spprt_tckt/edit/:id', name: 'Edit Support Ticket', element: CreateSupportTickets, permissionTag: true },
 
-  { path: '/spprt_tckt', name: 'Support Ticket', element: SupportTickets, exact: true },
-  { path: '/spprt_tckt/crt_tckt', name: 'Create Support Ticket', element: CreateSupportTickets },
-  { path: '/spprt_tckt/edit/:id', name: 'Edit Support Ticket', element: CreateSupportTickets },
+  { path: '/spprt_tckt_view/:id', name: 'Support Ticket', element: ViewSupportTickets, permissionTag: true },
 
-  { path: '/spprt_tckt_view/:id', name: 'Support Ticket', element: ViewSupportTickets },
+  { path: '/settings', name: 'Settings', element: SettingsOptions, permissionTag: true },
 
-  { path: '/settings', name: 'Settings', element: SettingsOptions },
- 
-  { path: '/settings/email_options', name: 'Email Options', element: EmailSettingsOptions },
-  { path: '/settings/email_config_settings', name: 'Email Configuration Settings', element: EmailConfigSettings },
-  { path: '/settings/email_config_settings/crt_config', name: 'Create Email Configuration Settings', element: CreateEmailConfigSettings },
-  { path: '/settings/email_config_settings/edit/:id', name: 'Edit Email Configuration Settings', element: CreateEmailConfigSettings },
+  { path: '/settings/email_options', name: 'Email Options', element: EmailSettingsOptions, permissionTag: true },
+  { path: '/settings/email_config_settings', name: 'Email Configuration Settings', element: EmailConfigSettings, permissionTag: true },
+  { path: '/settings/email_config_settings/crt_config', name: 'Create Email Configuration Settings', element: CreateEmailConfigSettings, permissionTag: true },
+  { path: '/settings/email_config_settings/edit/:id', name: 'Edit Email Configuration Settings', element: CreateEmailConfigSettings, permissionTag: true },
 
-  { path: '/settings/email_templates', name: 'Email Templates', element: EmailTemplates },
-  { path: '/settings/email_templates/crt_tmplt', name: 'Create Email Template', element: CreateEmailTemplate },
-  { path: '/settings/email_templates/edit/:id', name: 'Edit Email Template', element: CreateEmailTemplate },
+  { path: '/settings/email_templates', name: 'Email Templates', element: EmailTemplates, permissionTag: true },
+  { path: '/settings/email_templates/crt_tmplt', name: 'Create Email Template', element: CreateEmailTemplate, permissionTag: true },
+  { path: '/settings/email_templates/edit/:id', name: 'Edit Email Template', element: CreateEmailTemplate, permissionTag: true },
 
-  { path: '/settings/SLA_config_list', name: 'SLA Configuration', element: SLAConfigList },
-  { path: '/settings/SLA_configuration', name: 'Create SLA Configuration', element: SLAConfiguration },
-  { path: '/settings/SLA_configuration/edit/:id', name: 'Edit SLA Configuration', element: SLAConfiguration },
- 
-  { path: '/settings/CRON_configs', name: 'CRON Configuration', element: CRONConfigList },
-  { path: '/settings/CRON_configs/crt_cron', name: 'Create CRON Configuration', element: CRONConfiguration },
-  { path: '/settings/CRON_configs/edit/:id', name: 'Edit CRON Configuration', element: CRONConfiguration },
+  { path: '/settings/SLA_config_list', name: 'SLA Configuration', element: SLAConfigList, permissionTag: true },
+  { path: '/settings/SLA_configuration', name: 'Create SLA Configuration', element: SLAConfiguration, permissionTag: true },
+  { path: '/settings/SLA_configuration/edit/:id', name: 'Edit SLA Configuration', element: SLAConfiguration, permissionTag: true },
 
-  { path: '/agent', name: 'Agent', element: Agent, exact: true },
-  { path: '/agent/dashboard', name: 'Agent Dashboard', element: Dashboard, exact: true },
+  { path: '/settings/CRON_configs', name: 'CRON Configuration', element: CRONConfigList, permissionTag: true },
+  { path: '/settings/CRON_configs/crt_cron', name: 'Create CRON Configuration', element: CRONConfiguration, permissionTag: true },
+  { path: '/settings/CRON_configs/edit/:id', name: 'Edit CRON Configuration', element: CRONConfiguration, permissionTag: true },
 
-  { path: '/agent/spprt_tckt', name: 'Support Ticket', element: SupportTickets, exact: true },
-  { path: '/agent/spprt_tckt/crt_tckt', name: 'Create Support Ticket', element: CreateSupportTickets },
-  { path: '/agent/spprt_tckt/edit/:id', name: 'Edit Support Ticket', element: CreateSupportTickets },
-  { path: '/agent/spprt_tckt_view/:id', name: 'Support Ticket', element: ViewSupportTickets },
+  { path: '/agent', name: 'Agent', element: Agent, exact: true, permissionTag: true },
+  { path: '/agent/dashboard', name: 'Agent Dashboard', element: Dashboard, exact: true, permissionTag: true },
 
-  { path: '/neox_dash', name: 'Dashboard', element: NeoxDashboard, exact: true },
-  { path: '/neox_dash/live_calls', name: 'Live Calls', element: LiveCalls },
-  { path: '/neox_dash/live_agents', name: 'Live Agents', element: LiveAgents },
+  { path: '/agent/spprt_tckt', name: 'Support Ticket', element: SupportTickets, exact: true, permissionTag: true },
+  { path: '/agent/spprt_tckt/crt_tckt', name: 'Create Support Ticket', element: CreateSupportTickets, permissionTag: true },
+  { path: '/agent/spprt_tckt/edit/:id', name: 'Edit Support Ticket', element: CreateSupportTickets, permissionTag: true },
+  { path: '/agent/spprt_tckt_view/:id', name: 'Support Ticket', element: ViewSupportTickets, permissionTag: true },
 
-  { path: '/license', name: 'License', element: License, exact: true },
-  { path: '/tenant_license/:id', name: 'Edit Tenant', element: CreateTenantsLicense },
+  { path: '/neox_dash', name: 'Dashboard', element: NeoxDashboard, exact: true, permissionTag: true },
+  { path: '/neox_dash/live_calls', name: 'Live Calls', element: LiveCalls, permissionTag: true },
+  { path: '/neox_dash/live_agents', name: 'Live Agents', element: LiveAgents, permissionTag: true },
 
-  { path: '/phones', name: 'Phones', element: Phone, exact: true },
-  { path: '/phones/create_phone', name: 'Create Phone', element: CreatePhones },
-  { path: '/phones/edit/:id', name: 'Edit Phone', element: CreatePhones },
+  { path: '/license', name: 'License', element: License, exact: true, permissionTag: true },
+  { path: '/tenant_license/:id', name: 'Edit Tenant', element: CreateTenantsLicense, permissionTag: true },
+
+  { path: '/phones', name: 'Phones', element: Phone, exact: true, permissionTag: true },
+  { path: '/phones/create_phone', name: 'Create Phone', element: CreatePhones, permissionTag: true },
+  { path: '/phones/edit/:id', name: 'Edit Phone', element: CreatePhones, permissionTag: true },
 ]
 
 export default routes

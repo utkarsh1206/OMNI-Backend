@@ -27,9 +27,11 @@ const AppSidebar = () => {
   const sidebarShow = useSelector((state) => state.sidebarShow)
 
   const { user, brandingInfo } = useContext(AuthContext)
-
+  const storedTheme = useSelector((state) => state.theme)
+  const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches;
+  const sidebarBgColor = storedTheme === 'light' || (storedTheme === 'auto' && isLightMode) ? ', #fff' : '';
   const sidebarColor = {
-    '--cui-sidebar-bg': "url('../../src/assets/brand/new_bg.png'), #fff",
+    '--cui-sidebar-bg': `url('../../src/assets/brand/new_bg.png')${sidebarBgColor}`,
   }
 
   const pathname = window.location.pathname;
@@ -39,7 +41,6 @@ const AppSidebar = () => {
     <CSidebar
       style={sidebarColor}
       className="border-end"
-      colorScheme="light"
       position="fixed"
       unfoldable={unfoldable}
       visible={sidebarShow}
