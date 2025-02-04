@@ -116,8 +116,6 @@ class LicenseController extends Controller
                 $decodedData['is_tanant'] = $isTenant;
             }
 
-            
-
             return response()->json($decodedData);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Decryption failed: ' . $e->getMessage()], 500);

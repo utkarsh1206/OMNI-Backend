@@ -184,28 +184,34 @@ class AES
 	}
 
 	public function encrypt()
-	{
-		if ($this->validateParams()) {
-			/*TODO here deprecated function are changed with openssl functions, NEOX-2687*/
-			/*return trim(base64_encode(mcrypt_encrypt($this->cipher, $this->key, $this->data, $this->mode, $this->getIV())));*/
+    {
+        if ($this->validateParams()) {
+            // Encrypt the data using OpenSSL and the generated IV
+            $iv = $this->getIV();  // Generate IV
+            $encryptedData = openssl_encrypt($this->data, $this->cipher, $this->key, 0, $iv);
+            if ($encryptedData === false) {
+                throw new Exception('Encryption failed');
+            }
+            // Return the IV and encrypted data together (base64 encoded)
+            return base64_encode($encryptedData . '::' . $iv);
+        } else {
+            throw new Exception('Invalid parameters for encryption');
+        }
+    }
 
-			return trim(base64_encode(openssl_encrypt($this->data, $this->cipher, $this->key, 0, $this->IV)));
-			/*END NEOX-2687*/
-		} else {
-			throw new Exception('Invlid params!');
-		}
-	}
-
-	public function decrypt()
-	{
-		if ($this->validateParams()) {
-			/*TODO here deprecated function are changed with openssl functions, NEOX-2687*/
-			/*return trim(mcrypt_decrypt($this->cipher, $this->key, base64_decode($this->data), $this->mode, $this->getIV()));*/
-
-			return trim(openssl_decrypt(base64_decode($this->data), $this->cipher, $this->key, 0, $this->IV));
-			/*END NEOX-2687*/
-		} else {
-			throw new Exception('Invlid params!');
-		}
-	}
+    public function decrypt()
+    {
+        if ($this->validateParams()) {
+            // Extract the IV and encrypted data
+            list($encryptedData, $iv) = explode('::', base64_decode($this->data), 2);
+            // Decrypt the data using OpenSSL and the provided IV
+            $decryptedData = openssl_decrypt($encryptedData, $this->cipher, $this->key, 0, $iv);
+            if ($decryptedData === false) {
+                throw new Exception('Decryption failed');
+            }
+            return trim($decryptedData);  // Return the decrypted data
+        } else {
+            throw new Exception('Invalid parameters for decryption');
+        }
+    }
 }
