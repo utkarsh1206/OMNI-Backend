@@ -31,6 +31,7 @@ class Users extends Authenticatable implements JWTSubject
         "status",
         "is_delete",
         "role_id",
+        "usergroup_id",
         "name_prefix",
         "level",
         "date_of_birth",

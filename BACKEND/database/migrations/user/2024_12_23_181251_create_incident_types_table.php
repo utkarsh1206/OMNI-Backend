@@ -16,8 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
-            $table->enum('priority', ['normal','low', 'medium', 'high', 'critical'])->default('medium');
-            // $table->integer('sla_id');
+            $table->enum('priority', ['Critical', 'High', 'Medium', 'Low', 'Normal'])->default('Medium');
             $table->foreignId('sla_id')->constrained('sla_settings')->onDelete('cascade');
             $table->timestamps();
         });

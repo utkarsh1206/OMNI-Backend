@@ -25,7 +25,7 @@ import PaginationForReport from '../../components/PaginationForReport';
 import { CChart } from '@coreui/react-chartjs'
 
 const SLAReport = () => {
-  const { authToken } = useContext(AuthContext)
+  const { authToken, user } = useContext(AuthContext)
   const [startDate, setStartDate] = useState(moment().startOf('day')) // Default to today 00:00:00
   const [endDate, setEndDate] = useState(moment().endOf('day')) // Default to today 23:59:59
   const [showGraph, setShowGraph] = useState(true);
@@ -50,6 +50,8 @@ const SLAReport = () => {
     avgActualTimes: [],
     avgExpectedTimes: [],
   });
+
+  const isUser = user.role_id == 3
 
   const fetchUsers = async () => {
     try {
@@ -91,7 +93,7 @@ const SLAReport = () => {
       setPerPage(response.data.meta.perPage)
 
       // Call the calculation method with the full dataset
-      const allDataResponse = await axios.get(`${BASE_URL}/api/slareport`, {
+      const allDataResponse = await axios.get(`${BASE_URL}/api/slareport?page=all`, {
         params: {
           startDate: startDateStr,
           endDate: endDateStr,
@@ -154,6 +156,7 @@ const SLAReport = () => {
   };
 
   const calculateSlaCompliance = (data) => {
+    console.log("data". data);
     const yes = data.filter(ticket => ticket.sla_compliance === 'Yes').length;
     const no = data.filter(ticket => ticket.sla_compliance === 'No').length;
     setSlaComplianceCount({ yes, no });
@@ -282,18 +285,20 @@ const SLAReport = () => {
                     timeFormat="HH:mm:ss"
                   />
                 </CCol>
-                <CCol xs={2}>
-                  <label>User</label>
-                  <CFormSelect
-                    value={userFilter}
-                    onChange={(e) => setUserFilter(e.target.value)}
-                  >
-                    <option value="all">Select User</option>
-                    {users.map((user) => (
-                      <option key={user.id} value={user.id}>{user.username}</option>
-                    ))}
-                  </CFormSelect>
-                </CCol>
+                {!isUser && (
+                  <CCol xs={2}>
+                    <label>User</label>
+                    <CFormSelect
+                      value={userFilter}
+                      onChange={(e) => setUserFilter(e.target.value)}
+                    >
+                      <option value="all">Select User</option>
+                      {users.map((user) => (
+                        <option key={user.id} value={user.id}>{user.username}</option>
+                      ))}
+                    </CFormSelect>
+                  </CCol>
+                )}
                 <CCol xs={2}>
                   <label>Priority</label>
                   <CFormSelect

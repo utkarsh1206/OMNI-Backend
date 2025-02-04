@@ -89,9 +89,9 @@ class LoginController extends Controller
                 }
 
                 // Check if the license is expired for this user
-                // if ($this->isLicenseExpired($request)) {
-                //     return response()->json(['error' => 'License expired'], 403);
-                // }
+                if ($this->isLicenseExpired($request)) {
+                    return response()->json(['error' => 'License expired'], 403);
+                }
 
                 if (!$token = auth('api_users')->attempt($credentials)) {
                     return response()->json(['error' => 'Unauthorized'], 401);
@@ -149,10 +149,10 @@ class LoginController extends Controller
                     return response()->json(['error' => 'Domain is required'], 400);
                 }
 
-                //Check if the license is expired for this user
-                // if ($this->isLicenseExpired($request)) {
-                //     return response()->json(['error' => 'License expired'], 403);
-                // }
+                // Check if the license is expired for this user
+                if ($this->isLicenseExpired($request)) {
+                    return response()->json(['error' => 'License expired'], 403);
+                }
             } catch (\Illuminate\Database\QueryException $ex) {
                 Log::error('Database error: ' . $ex->getMessage());
                 return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
