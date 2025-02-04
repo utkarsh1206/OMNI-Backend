@@ -49,26 +49,32 @@ class LicenseController extends Controller
 
     public function decodeLicense(Request $request)
     {
-        $isTenant = $request->has('is_tanant') ? $request->input('is_tanant') : true;
+        $isTenant = $request->has('is_tanant') ? $request->input('is_tanant') : false;
+
         $token = $request->bearerToken();
         if ($token != "") {
             $payload = JWTAuth::setToken($token)->getPayload();
 
-            if ($payload['role_id'] > 1)
+            if ($payload['role_id'] > 0)
             {
-                $isTenant = false;
+                $isTenant = true;
             }
         }
 
-        if ($isTenant) {
+        if (!$isTenant) {
             $licenseKey = DB::table('admins')->value('license_key');
+            $adminFlag = 1;
         } else {
             $licenseKey = DB::table('licenses')->value('license_key');
+            $adminFlag=0;
         }
 
         if (!$licenseKey) {
-            return response()->json(['error' => 'License key not found'], 404);
+            return response()->json(['error' => 'License key not found', 'adminFlag'=> $adminFlag], 404);
         }
+        // if (!$licenseKey) {
+        //     return response()->json(['error' => 'License key not found'], 404);
+        // }
 
         $inputKey = exec('/usr/bin/hostid');
         $blockSize = 256;
@@ -79,7 +85,7 @@ class LicenseController extends Controller
             return response()->json(['error' => 'Invalid license format'], 400);
         }
 
-        if ($isTenant) {
+        if (!$isTenant) {
             $EvalidityDate = $param[0];
             $EnumberOfEnterprise = $param[1];
             $EnumberOfAgents = $param[2];
@@ -102,13 +108,15 @@ class LicenseController extends Controller
                 'number_of_acl_users' => $EnumberOfAclUsers ? $this->aesService->decryptData($EnumberOfAclUsers, $inputKey) : 0,
             ];
 
-            if ($isTenant && $EnumberOfEnterprise) {
+            if (!$isTenant && $EnumberOfEnterprise) {
                 $decodedData['number_of_enterprise'] = $this->aesService->decryptData($EnumberOfEnterprise, $inputKey);
             }
 
             if ($token != "") {
                 $decodedData['is_tanant'] = $isTenant;
             }
+
+            
 
             return response()->json($decodedData);
         } catch (\Exception $e) {

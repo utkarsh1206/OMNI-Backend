@@ -1,6 +1,13 @@
 2025-02-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
+	* Previous Commit ID : 4a938df5 
+	* Version : Dev
+	* Laravel & ReactJS : License issue resolved for super admin user. 
+
+2025-02-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
 	* Previous Commit ID : d25c586e 
 	* Version : Dev
 	* Laravel & ReactJS : Resolved changes which is found on testing.

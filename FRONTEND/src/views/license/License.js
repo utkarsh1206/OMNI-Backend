@@ -67,9 +67,9 @@ const License = () => {
   const fetchLicenseInfo = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/decode-license`, {
-        // headers: {
-        //   Authorization: `Bearer ${authToken}`,
-        // },
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
       console.log(response.data);
@@ -81,6 +81,12 @@ const License = () => {
         setError("Tenant information not available in the response.");
       }
     } catch (err) {
+      if (err.response.data.adminFlag == 1) {
+        setIsTenant(false);
+      } else {
+        setIsTenant(true)
+      }
+      // setIsTenant(false);
       setError(err.response?.data?.message || 'Failed to fetch license info');
       console.error('Error fetching license info:', err);
     }
@@ -114,11 +120,11 @@ const License = () => {
                     onChange={handleInputChange}
                     required
                     rows={5}
-                    disabled={!isTenant}
+                    disabled={isTenant}
                   />
                 </CCol>
               </CRow>
-              {isTenant && (
+              {!isTenant && (
               <CRow className="mt-2 mb-4">
                 <CCol xs="12" md="12">
                   <CButton type="submit" color="primary" className="me-2">
@@ -133,7 +139,7 @@ const License = () => {
             </CForm>
 
             {/* License Info Table */}
-            {licenseInfo && isTenant &&(
+            {licenseInfo && !isTenant &&(
               <CTable bordered className="mt-2" style={{ width: '70%' }}>
                 <CTableHead>
                   <CTableRow>
