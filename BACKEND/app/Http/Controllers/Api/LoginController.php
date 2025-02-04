@@ -174,7 +174,7 @@ class LoginController extends Controller
 
     private function isLicenseExpired(Request $request)
     {
-        $is_tanant = false;
+        $is_tanant = true;
         $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant' => $is_tanant]));
         $licenseInfo = $licenseResponse->getData(true);
 
@@ -186,8 +186,6 @@ class LoginController extends Controller
         } else {
             return response()->json(['error' => 'License data invalid'], 400);
         }
-
-
 
         return false;
     }
