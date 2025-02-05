@@ -13,6 +13,9 @@ class ModuleSeeder extends Seeder
      */
     public function run(): void
     {
+        // Truncate the table before seeding
+        Module::truncate();
+
         $module = [
             ['name' => "Profile"],
             ['name' => "Support Tickets"],

@@ -13,6 +13,9 @@ class MailTemplateSeeder extends Seeder
      */
     public function run(): void
     {
+        // Truncate the table to remove any existing data
+        DB::table('mail_template')->truncate();
+
         DB::table('mail_template')->insert([
             [
                 'title' => 'Email Address Confirmation',

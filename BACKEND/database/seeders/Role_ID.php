@@ -13,6 +13,8 @@ class Role_ID extends Seeder
      */
     public function run(): void
     {
+        DB::table('role_ids')->truncate();
+
         DB::table('role_ids')->insert([
             [
                 'role_name' => 'superAdmin',

@@ -15,6 +15,9 @@ class CronExpressionsSeeder extends Seeder
      */
     public function run()
     {
+        // Truncate the table before seeding
+        CronExpression::truncate();
+
         $cronExpressions = [
             ['schedule_type' => 'every minute', 'schedule_expression' => '* * * * *'],
             ['schedule_type' => 'every 1 minute', 'schedule_expression' => '* * * * *'],

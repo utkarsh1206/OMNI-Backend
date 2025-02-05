@@ -13,6 +13,9 @@ class SmsProviderSeeder extends Seeder
      */
     public function run(): void
     {
+        // Truncate the table before seeding
+        SmsProvider::truncate();
+
         SmsProvider::create([
             'name' => 'twillio',
             'status' => "active",

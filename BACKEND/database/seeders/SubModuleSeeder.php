@@ -14,6 +14,9 @@ class SubModuleSeeder extends Seeder
      */
     public function run(): void
     {
+        // Truncate the table before seeding
+        SubModule::truncate();
+
         $subModule = [
             ['module_id' => $this->getModuleBySubmodule("Profile"), 'name' => 'GET api/my_profile'],
             ['module_id' =>  $this->getModuleBySubmodule("Support Tickets"), 'name' => 'GET api/supportticket'],

@@ -13,6 +13,9 @@ class SmsTemplateSeeder extends Seeder
      */
     public function run(): void
     {
+        // Truncate the table before seeding
+        SmsTemplate::truncate();
+
         SmsTemplate::create([
             'name' => 'Ticket Create',
             'content' => "Hi {#customer name#}, thanks for reaching out. The ticket is generated and ticket ID is {#ticket ##}.Sterlite Technologies Ltd.",
