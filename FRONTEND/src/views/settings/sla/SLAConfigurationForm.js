@@ -111,7 +111,8 @@ const SLAConfigurationForm = () => {
             is24Hours: data.is_24_hours,
             startTime: data.start_time || '',
             endTime: data.end_time || '',
-            weekOffDays: data.off_days.map((offDay) => offDay.day),
+            // weekOffDays: data.off_days.map((offDay) => offDay.day),
+            weekOffDays: data.off_days || [],
           })
           setHolidays(data.holidays || [])
 

@@ -304,7 +304,7 @@ class SlaSettingController extends Controller
             'is_24_hours' => $slaSetting->is_24_hours,
             'start_time' => $slaSetting->start_time,
             'end_time' => $slaSetting->end_time,
-           
+            'description' => $slaSetting->description,
             'off_days' => $offDays,
             'holidays' => $holidays,
             'targets' => $targets,

@@ -91,7 +91,7 @@ class TenantController extends Controller
             'domain_name' => 'required|unique:tenants',
             'domain_url' => 'required|unique:tenants',
             'email' => 'required|unique:tenants',
-            'tenant_logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'tenant_logo' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             // other validation rules...
         ]);
         $tenant_logo_url = "";
