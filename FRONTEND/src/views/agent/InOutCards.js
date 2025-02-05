@@ -7,18 +7,19 @@ import {
   CRow,
 } from '@coreui/react';
 import '@coreui/coreui/dist/css/coreui.min.css';
+import heart from '../../assets/brand/heart.png';
 
 const InOutCards = () => {
 
   const vars = {
-    'backgroundImage': "url('../../src/assets/brand/heart.png'), linear-gradient(to left, #1F222A, #1B47C5)",
+    'backgroundImage': `url(${heart}), linear-gradient(to left, #1F222A, #1B47C5)`,
     'backgroundPosition': 'right',
     'backgroundRepeat': 'no-repeat',
     'backgroundSize': 'contain'
   }
   const vars2 = {
     // 'backgroundImage': "url('../../src/assets/brand/heart.png'), linear-gradient(270deg, #1F222A 0%, #c32323 100%)",
-    'backgroundImage': "url('../../src/assets/brand/heart.png'), linear-gradient(270deg, #1B47C5 0%, #1F222A 100%)",
+    'backgroundImage': `url(${heart}), linear-gradient(270deg, #1B47C5 0%, #1F222A 100%)`,
     'backgroundPosition': 'right',
     'backgroundRepeat': 'no-repeat',
     'backgroundSize': 'contain'

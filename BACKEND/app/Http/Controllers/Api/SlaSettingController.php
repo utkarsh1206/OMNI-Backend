@@ -221,7 +221,7 @@ class SlaSettingController extends Controller
 
                 'targets' => 'required|array',
                 'targets.*' => 'required|array',  // Ensure each target group is an array
-                'targets.*.*.priority_type' => 'required|string|in:Critical,High,Medium,Low',
+                'targets.*.*.priority_type' => 'required|string|in:Critical,High,Medium,Low,Normal',
                 'targets.*.*.response_time_value' => 'required|integer|min:1',
                 'targets.*.*.alert_before_response_value' => 'required|integer|min:1',
                 'targets.*.*.resolve_time_value' => 'required|integer|min:1',

@@ -8,6 +8,7 @@ import {
     CContainer
 } from '@coreui/react';
 import { TEXT_GREEN, TEXT_RED } from '../../config';
+import heart from '../../assets/brand/heart.png'
 
 const LiveCallsDashboard = () => {
 
@@ -18,7 +19,7 @@ const LiveCallsDashboard = () => {
         'marginBottom': '20px',
 
         // 'backgroundImage': "url('../../src/assets/brand/heart.png'), linear-gradient(to left, rgb(31, 34, 42), rgb(27, 71, 197))",
-        'backgroundImage': "url('../../src/assets/brand/heart.png'), linear-gradient(to left, #1F222A, #1B47C5)",
+        'backgroundImage': `url(${heart}), linear-gradient(to left, #1F222A, #1B47C5)`,
         'backgroundPosition': 'right',
         'backgroundRepeat': 'no-repeat',
         'backgroundSize': 'contain'
