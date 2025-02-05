@@ -8,6 +8,7 @@ use App\Http\Resources\CronsResource;
 use App\Models\CronConfiguration;
 use Exception;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class CronConfigurationsController extends Controller
 {

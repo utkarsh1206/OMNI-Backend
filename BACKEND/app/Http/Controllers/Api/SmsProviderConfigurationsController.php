@@ -8,6 +8,7 @@ use App\Http\Resources\SmsProviderConfigurationResource;
 use App\Models\SmsProviderConfiguration;
 use Exception;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class SmsProviderConfigurationsController extends Controller
 {

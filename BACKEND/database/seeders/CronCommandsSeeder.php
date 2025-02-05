@@ -18,9 +18,8 @@ class CronCommandsSeeder extends Seeder
     {
         $cronCommands = [
             ['command_signature' => 'app:support-ticket-close', 'type' => 'cron'],
-	    
-		['command_signature' => 'app:sla-email-notification', 'type' => 'other'],
-	];
+	        ['command_signature' => 'app:sla-email-notification', 'type' => 'other'],
+	    ];
         foreach ($cronCommands as $cronCommand) {
             CronCommand::updateOrCreate(
                 ['command_signature' =>  $cronCommand['command_signature'],],  // Search by command_signature
