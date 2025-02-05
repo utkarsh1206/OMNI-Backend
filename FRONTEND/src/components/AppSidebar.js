@@ -16,6 +16,9 @@ import { AppSidebarNavSuperAdmin } from './superAdmin/AppSidebarNavSuperAdmin'
 import { AppSidebarNavAgent } from './agent/AppSidebarNavAgent'
 import { AppSidebarNavNeoxDash } from './AppSidebarNavNeoxDash'
 
+import newMenuLogo from '../assets/brand/new_menu_logo.png'
+import newBg from '../assets/brand/new_bg.png';
+
 import navigation from '../_nav'
 import navigationDash from '../_navDash'
 import { AuthContext } from '../context/AuthContext'
@@ -31,7 +34,7 @@ const AppSidebar = () => {
   const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches;
   const sidebarBgColor = storedTheme === 'light' || (storedTheme === 'auto' && isLightMode) ? ', #fff' : '';
   const sidebarColor = {
-    '--cui-sidebar-bg': `url('../../src/assets/brand/new_bg.png')${sidebarBgColor}`,
+    '--cui-sidebar-bg': `url(${newBg})${sidebarBgColor}`,
   }
 
   const pathname = window.location.pathname;
@@ -50,7 +53,7 @@ const AppSidebar = () => {
         {/* <CSidebarBrand to="/" as={NavLink}> */}
         <CSidebarBrand to={link} as={NavLink}>
           <CImage
-            src={brandingInfo?.tenant_logo || '../src/assets/brand/new_menu_logo.png'}
+            src={brandingInfo?.tenant_logo || newMenuLogo}
             height={unfoldable ? 16 : 32}
           />
         </CSidebarBrand>

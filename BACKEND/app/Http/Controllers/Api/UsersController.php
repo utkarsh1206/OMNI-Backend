@@ -85,7 +85,7 @@ class UsersController extends Controller
     }
     public function store(Request $request)
     {
-        $is_tanant = false;
+        $is_tanant = true;
         $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant'=> $is_tanant]));
         $licenseInfo = $licenseResponse->getData(true);
 

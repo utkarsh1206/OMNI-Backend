@@ -18,6 +18,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import EyeOpenIcon from '../../../assets/images/icons/eye_open.svg'
 import EyeClosedIcon from '../../../assets/images/icons/eye_closed.svg'
+import new_logo from '../../../assets/brand/new_logo.png'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import { Navigate, redirect, useNavigate } from 'react-router-dom'
 import { BASE_URL } from '../../../config'
@@ -189,7 +190,7 @@ const Login = () => {
               <CCard className="text-white bg-transparent py-5 border-0">
                 <CCardBody className="text-center">
                   <div>
-                    <CImage src="src\assets\brand\new_logo.png" height={60} />
+                    <CImage src={new_logo} height={60} />
                     <p className="login-message">Calls and Messaging made easy</p>
                   </div>
                 </CCardBody>
