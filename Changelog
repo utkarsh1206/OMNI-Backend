@@ -1,9 +1,23 @@
+2025-02-05 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : ad0ecb7b 
+	* Version : Dev
+	* Laravel And React.JS : For SLA Controller, added the description field, For Tenant Controller, removed the Logo Validation, and in the SLA Form FrontEnd, modified, the WeekOff Display
+
 2025-02-05 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
 	* Previous Commit ID :  
 	* Version : Dev
 	* Laravel : Commentout SLA code so SLA can be up and running.
+
+2025-02-05 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : 46018f65 
+	* Version : Dev
+	* Laravel And React.JS : Changes in SLA Creation, and changes in images importing.
 
 2025-02-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
@@ -72,13 +86,6 @@
 	    Admin = 1,
 	    Manager = 2,
 	    User/Agent = 3
-	
-2025-02-05 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
-	* NEWS
-	* Jira ID :  
-	* Previous Commit ID : 46018f65 
-	* Version : Dev
-	* Laravel And React.JS : Changes in SLA Creation, and changes in images importing.
 
 2025-01-30 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
