@@ -29,10 +29,15 @@ class TenantController extends Controller
     {
         // Get the search term from the request
         $searchTerm = $request->input('search', '');
+        $companyName = $request->input('company_name', '');
+        $email = $request->input('email', '');
+        $mobile = $request->input('mobile', '');
+        $domainName = $request->input('domain_name', '');
+        $companyCode = $request->input('company_code', '');
 
         // Start the query for tenants
         $query = Tenants::query()->where('is_delete', 'No');
-    
+
         // If there's a search term, apply it to the query
         if (!empty($searchTerm)) {
             $query->where(function ($q) use ($searchTerm) {
@@ -47,9 +52,25 @@ class TenantController extends Controller
                     ->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
                     ->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
                     ->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_url', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('status', 'like', '%' . $searchTerm . '%'); // Add any additional fields as needed
+                    ->orWhere('domain_url', 'like', '%' . $searchTerm . '%');
+                // ->orWhere('status', 'like', '%' . $searchTerm . '%'); // Add any additional fields as needed
             });
+        }
+
+        if (!empty($companyName)) {
+            $query->where('company_name', $companyName);
+        }
+        if (!empty($email)) {
+            $query->where('email', $email);
+        }
+        if (!empty($mobile)) {
+            $query->where('mobile', $mobile);
+        }
+        if (!empty($domainName)) {
+            $query->where('domain_name', $domainName);
+        }
+        if (!empty($companyCode)) {
+            $query->where('company_code', $companyCode);
         }
 
         // Paginate the results
@@ -76,7 +97,7 @@ class TenantController extends Controller
         if (isset($licenseData['number_of_enterprise'])) {
             $currentTenantsCount = Tenants::query()->where('is_delete', 'No')->count();
             $maxTenantsAllowed = $licenseData['number_of_enterprise'];
-    
+
             if ($currentTenantsCount >= $maxTenantsAllowed) {
                 return response()->json([
                     'error' => 'Tenant creation limit exceeded. Max number of tenants allowed is ' . $maxTenantsAllowed
@@ -132,7 +153,7 @@ class TenantController extends Controller
         $lastInsertedId = $tenants->id;
 
         $databaseName = str_replace(".", "_", $request->domain_name);
-       
+
         DB::statement("CREATE DATABASE $databaseName");
         $details_array = [
             'db' => str_replace(".", "_", $request->domain_name),

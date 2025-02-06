@@ -17,6 +17,9 @@ class UsergroupController extends Controller
     {
         // Get the search term from the request
         $searchTerm = $request->input('search', '');
+        $name = $request->input('name', '');
+        $campaign_id = $request->input('campaign_id', '');
+        $status = $request->input('status', '');
 
         // Start the query for tenants
         $query = usergroup::query()->where('is_delete', 'No');
@@ -25,8 +28,18 @@ class UsergroupController extends Controller
         if (!empty($searchTerm)) {
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', '%' . $searchTerm . '%')
-                  ->orwhere('description', 'like', '%' . $searchTerm . '%');
+                    ->orwhere('description', 'like', '%' . $searchTerm . '%');
             });
+        }
+
+        if (!empty($name)) {
+            $query->where('name', $name);
+        }
+        if (!empty($campaign_id)) {
+            $query->where('campaign_id', $campaign_id);
+        }
+        if (!empty($status)) {
+            $query->where('status', $status);
         }
         // Paginate the results
         $perPage = $request->input('per_page', 10);
@@ -67,9 +80,9 @@ class UsergroupController extends Controller
         $usergroup = usergroup::create([
             'name' => $request->name,
             "campaign_id" => $request->campaign_id,
-            "description" =>$request->description,
+            "description" => $request->description,
             //"tenant_id"=>1,//Make it dynamic
-            "status" => $request->status      
+            "status" => $request->status
         ]);
         return response()->json([
             'message' => 'User Group Created Successfully',
@@ -85,15 +98,15 @@ class UsergroupController extends Controller
         $usergroup->update([
             'name' => $request->name,
             "campaign_id" => $request->campaign_id,
-            "description" =>$request->description,
+            "description" => $request->description,
             //"tenant_id"=>1,//Make it dynamic
-            "status" => $request->status   
+            "status" => $request->status
         ]);
         return response()->json([
             'message' => 'User Group Updated Successfully',
             'data' => new TenantsResource($usergroup)
         ]);
-    }    
+    }
     public function destroy(Usergroup $usergroup)
     {
         $usergroup->is_delete = 'Yes';
@@ -102,5 +115,4 @@ class UsergroupController extends Controller
             'message' => 'User Group Deleted Successfully',
         ]);
     }
-
 }

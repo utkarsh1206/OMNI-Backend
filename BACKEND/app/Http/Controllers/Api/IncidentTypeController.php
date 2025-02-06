@@ -14,24 +14,35 @@ class IncidentTypeController extends Controller
     {
         try {
             $searchTerm = $request->input('search', '');
+            $name = $request->input('name', '');
             $priority = $request->input('priority', '');
+            $department_id = $request->input('department_id');
+            $category_id = $request->input('category_id');
+            $sla_id = $request->input('sla_id');
             $perPage = $request->input('per_page', 10);
             $page = $request->input('page', 1);
-            $category_id = $request->input('category_id');
 
             $query = IncidentType::query();
 
-            if ($category_id)
-            {
+            if ($name) {
+                $query->where('name', $name);
+            }
+            if ($category_id) {
                 $query->where('category_id', $category_id);
             }
 
             if (!empty($searchTerm)) {
                 $query->where('name', 'like', "%$searchTerm%");
             }
-            
+
             if (!empty($priority)) {
                 $query->where('priority', $priority);  // Filter by priority
+            }
+            if (!empty($department_id)) {
+                $query->where('$department_id', $department_id);  // Filter by priority
+            }
+            if (!empty($sla_id)) {
+                $query->where('sla_id', $sla_id);  // Filter by priority
             }
 
             if ($page === 'all') {

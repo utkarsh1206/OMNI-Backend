@@ -12,6 +12,8 @@ class PhoneController extends Controller
     public function index(Request $request)
     {
         $searchTerm = $request->input('search', '');
+        $extension = $request->input('extension', '');
+        $login = $request->input('login', '');
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
 
@@ -25,6 +27,12 @@ class PhoneController extends Controller
             });
         }
 
+        if (!empty($extension)) {
+            $query->where('extension', $extension);
+        }
+        if (!empty($login)) {
+            $query->where('login', $login);
+        }
         if ($page === 'all') {
             $phones = $query->get();
             return response()->json([
@@ -81,8 +89,8 @@ class PhoneController extends Controller
         }
 
         $validatedData = $request->validate([
-            'extension' => 'required|unique:phones,extension',
-            'login' => 'required|unique:phones,login|alpha_num|between:2,320',
+            'extension' => 'required|unique:phones,extension,' . $extension . ',extension', // Key change
+            'login' => 'required|unique:phones,login,' . $extension . ',extension|alpha_num|between:2,320', // Key change
             'pass' => 'required|alpha_num|between:2,320',
             'status' => 'required',
             'local_gmt' => 'nullable|numeric',

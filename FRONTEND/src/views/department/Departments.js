@@ -28,9 +28,10 @@ const Departments = () => {
   const [departments, setDepartments] = useState([])
   const { authToken } = useContext(AuthContext)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({
+  const initialFilters = {
     name: '',
-  })
+  }
+  const [filters, setFilters] = useState(initialFilters)
 
   const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
   const [perPage, setPerPage] = useState(10) // Add state to track the current page
@@ -40,7 +41,7 @@ const Departments = () => {
     setAppliedFilters(newFilters) // Update applied filters only on button click
   }
   const handleResetFilters = () => {
-    setFilters({}) // Clear filter state
+    setFilters(initialFilters) // Clear filter state
     setAppliedFilters({}) // Clear applied filters
     setSearchQuery('') // Clear live search
   }
@@ -119,6 +120,7 @@ const Departments = () => {
                 filters={filters} // Current filters
                 setFilters={setFilters} // Update filters
                 renderFilters={renderDepartmentFilters} // Custom filter UI for users
+                initialFilters={initialFilters}
               />
             </CRow>
             <hr />

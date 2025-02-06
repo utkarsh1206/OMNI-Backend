@@ -30,11 +30,11 @@ const Phones = () => {
   const navigate = useNavigate()
   const { authToken } = useContext(AuthContext)
   const [phones, setPhones] = useState([])
-
-  const [filters, setFilters] = useState({
+  const initialFilters = {
     extension: '',
     login: '',
-  })
+  }
+  const [filters, setFilters] = useState(initialFilters)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
@@ -45,7 +45,7 @@ const Phones = () => {
     setAppliedFilters(newFilters) // Update applied filters only on button click
   }
   const handleResetFilters = () => {
-    setFilters({}) // Clear filter state
+    setFilters(initialFilters) // Clear filter state
     setAppliedFilters({}) // Clear applied filters
     setSearchQuery('') // Clear live search
   }
@@ -92,13 +92,13 @@ const Phones = () => {
       </CCol>
 
       <CCol md="6" className="mb-3">
-        <CFormLabel htmlFor="phone">Phone</CFormLabel>
+        <CFormLabel htmlFor="login">Phone</CFormLabel>
         <CFormInput
-          id="phone"
+          id="login"
           type="text"
-          name="phone"
-          value={filters.phone || ''}
-          onChange={(e) => setFilters((prev) => ({ ...prev, phone: e.target.value }))}
+          name="login"
+          value={filters.login || ''}
+          onChange={(e) => setFilters((prev) => ({ ...prev, login: e.target.value }))}
           placeholder="Enter Phone"
         />
       </CCol>
@@ -127,6 +127,7 @@ const Phones = () => {
               filters={filters}
               setFilters={setFilters}
               renderFilters={renderPhoneFilters} // Custom filter UI for users
+              initialFilters={initialFilters}
             />
           </CRow>
         </CContainer>

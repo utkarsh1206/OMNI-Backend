@@ -4,6 +4,8 @@ import {
   CCol,
   CContainer,
   CFormInput,
+  CFormLabel,
+  CFormSelect,
   CRow,
   CTable,
   CTableBody,
@@ -28,10 +30,13 @@ const Categories = () => {
   const [categories, setCategories] = useState([])
   const { authToken } = useContext(AuthContext)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({
+
+  const [department, setDepartment] = useState([])
+  const initialFilters = {
     name: '',
     department_id: '',
-  })
+  }
+  const [filters, setFilters] = useState(initialFilters)
 
   const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
   const [perPage, setPerPage] = useState(10) // Add state to track the current page
@@ -41,7 +46,7 @@ const Categories = () => {
     setAppliedFilters(newFilters) // Update applied filters only on button click
   }
   const handleResetFilters = () => {
-    setFilters({}) // Clear filter state
+    setFilters(initialFilters) // Clear filter state
     setAppliedFilters({}) // Clear applied filters
     setSearchQuery('') // Clear live search
   }
@@ -52,6 +57,28 @@ const Categories = () => {
   const handlePerPageValue = (perPage) => {
     setPerPage(perPage) // Update the current page when pagination changes
   }
+
+  // Fetch departments on component mount
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      // setLoadingOccupations(true)
+      try {
+        const response = await axios.get(`${BASE_URL}/api/departments?page=all`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            Authorization: `Bearer ${authToken}`,
+          },
+        })
+        setDepartment(response.data.data)
+        // setLoadingOccupations(false)
+      } catch (err) {
+        // setError('Error fetching UserGroups')
+        // setLoadingOccupations(false)
+      }
+    }
+    fetchDepartments()
+  }, [])
 
   const handleDeleteCategory = async (id, name) => {
     if (window.confirm('Are you sure to delete ' + name + '?')) {
@@ -95,18 +122,24 @@ const Categories = () => {
           placeholder="Enter name"
         />
       </CCol>
-      <CCol xs={12} md={4}>
-        <label htmlFor="name" className="form-label">
-          Department Name:
-        </label>
-        <CFormInput
+
+      <CCol md="3" className="mb-3">
+        <CFormLabel htmlFor="department_id">Department</CFormLabel>
+        <CFormSelect
           id="department_id"
-          type="text"
           name="department_id"
-          value={filters.department_id || ''}
+          // value={selectedCampaign}
+          // onChange={handleCampaignChange}
+          value={filters.department_id}
           onChange={(e) => setFilters((prev) => ({ ...prev, department_id: e.target.value }))}
-          placeholder="Enter department_id"
-        />
+        >
+          <option value="">Select Department</option>
+          {department.map((department) => (
+            <option key={department.id} value={department.id}>
+              {department.name}
+            </option>
+          ))}
+        </CFormSelect>
       </CCol>
     </CRow>
   )
@@ -133,6 +166,7 @@ const Categories = () => {
                 filters={filters} // Current filters
                 setFilters={setFilters} // Update filters
                 renderFilters={renderCategoryFilters} // Custom filter UI for users
+                initialFilters={initialFilters}
               />
             </CRow>
             <hr />
