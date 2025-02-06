@@ -1,3 +1,10 @@
+2025-02-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : b9f349ab 
+	* Version : Dev
+	* React.JS : changed the path of base for vite used during the NPM BUILD command.
+
 2025-01-17 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3891, 3892, 3893, 3894, 3895
