@@ -28,11 +28,12 @@ const UserGroups = () => {
   const [userGroups, setUserGroups] = useState([])
   const { authToken } = useContext(AuthContext)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({
+  const initialFilters = {
     name: '',
     campaign_id: '',
     status: '',
-  })
+  }
+  const [filters, setFilters] = useState(initialFilters)
 
   const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
   const [perPage, setPerPage] = useState(10) // Add state to track the current page
@@ -42,7 +43,7 @@ const UserGroups = () => {
     setAppliedFilters(newFilters) // Update applied filters only on button click
   }
   const handleResetFilters = () => {
-    setFilters({}) // Clear filter state
+    setFilters(initialFilters) // Clear filter state
     setAppliedFilters({}) // Clear applied filters
     setSearchQuery('') // Clear live search
   }
@@ -160,6 +161,7 @@ const UserGroups = () => {
                 filters={filters} // Current filters
                 setFilters={setFilters} // Update filters
                 renderFilters={renderUserGroupFilters} // Custom filter UI for users
+                initialFilters={initialFilters}
               />
             </CRow>
             <hr />

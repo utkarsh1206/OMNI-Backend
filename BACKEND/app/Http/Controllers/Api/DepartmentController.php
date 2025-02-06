@@ -14,6 +14,7 @@ class DepartmentController extends Controller
     {
         try {
             $searchTerm = $request->input('search', '');
+            $name = $request->input('name', '');
             $perPage = $request->input('per_page', 10);
             $page = $request->input('page', 1);
 
@@ -21,6 +22,10 @@ class DepartmentController extends Controller
 
             if (!empty($searchTerm)) {
                 $query->where('name', 'like', "%$searchTerm%");
+            }
+
+            if (!empty($name)) {
+                $query->where('name', $name);
             }
 
             if ($page === 'all') {

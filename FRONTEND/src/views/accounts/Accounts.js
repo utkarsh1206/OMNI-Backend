@@ -13,6 +13,7 @@ import {
   CTooltip,
   CFormLabel,
   CFormSelect,
+  CFormInput,
 } from '@coreui/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { BASE_URL, CAMPAIGNS, PRODUCTS } from '../../config'
@@ -34,11 +35,16 @@ const Accounts = () => {
   const [selectedOwner, setSelectedOwner] = useState('')
 
   const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({
+
+  const initialFilters = {
     product_id: '',
     campaign_id: '',
     owner_id: '',
-  })
+    // email: '', // Include all your filter fields
+  }
+
+  const [filters, setFilters] = useState(initialFilters)
+
   const [currentPage, setCurrentPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
 
@@ -48,7 +54,7 @@ const Accounts = () => {
     setAppliedFilters(newFilters) // Update applied filters only on button click
   }
   const handleResetFilters = () => {
-    setFilters({}) // Clear filter state
+    setFilters(initialFilters) // Clear filter state
     setAppliedFilters({}) // Clear applied filters
     setSearchQuery('') // Clear live search
   }
@@ -163,7 +169,6 @@ const Accounts = () => {
           ))}
         </CFormSelect>
       </CCol>
-
       <CCol md="3" className="mb-3">
         <CFormLabel htmlFor="campaign_id">Campaign</CFormLabel>
         <CFormSelect
@@ -237,6 +242,7 @@ const Accounts = () => {
               filters={filters}
               setFilters={setFilters}
               renderFilters={renderAccountFilters} // Custom filter UI for users
+              initialFilters={initialFilters}
             />
           </CRow>
         </CContainer>

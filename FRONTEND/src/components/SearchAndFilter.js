@@ -10,6 +10,7 @@ const SearchAndFilter = ({
   filters,
   setFilters,
   renderFilters,
+  initialFilters,
 }) => {
   const [liveSearch, setLiveSearch] = useState('')
   const [isFilterVisible, setIsFilterVisible] = useState(false)
@@ -32,7 +33,7 @@ const SearchAndFilter = ({
   }
 
   const handleResetFilters = () => {
-    setFilters({}) // Clear the filters in the UI
+    setFilters(initialFilters) // Clear the filters in the UI
     setLiveSearch('') // Clear the live search input
     onResetFilters() // Trigger the reset filters callback
   }

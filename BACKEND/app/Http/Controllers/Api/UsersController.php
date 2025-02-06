@@ -28,6 +28,12 @@ class UsersController extends Controller
     {
         // Get the search term from the request
         $searchTerm = $request->input('search', '');
+        $name = $request->input('name', '');
+        $email = $request->input('email', '');
+        $status = $request->input('status', '');
+        $mobile = $request->input('mobile', '');
+        $usergroup_id = $request->input('usergroup_id', '');
+
         $token = $request->bearerToken();
         $payload = JWTAuth::setToken($token)->getPayload();
         // Start the query for tenants
@@ -39,25 +45,41 @@ class UsersController extends Controller
         if ($is_all_users !== 'Y') {
             $query->where('type', '3');
 
-        // If there's a search term, apply it to the query
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('username', 'like', '%' . $searchTerm . '%')
-                    ->orwhere('first_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('email', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
-                    //->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
-                    //->orWhere('company_code', 'like', '%' . $searchTerm . '%')
-                    //->orWhere('company_name', 'like', '%' . $searchTerm . '%')
-                    //->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
-                    //->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
-                    //->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
-                    //->orWhere('domain_url', 'like', '%' . $searchTerm . '%')
-                    //->orWhere('status', 'like', '%' . $searchTerm . '%')
+            // If there's a search term, apply it to the query
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('username', 'like', '%' . $searchTerm . '%')
+                        ->orwhere('first_name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('email', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
+                        //->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
+                        //->orWhere('company_code', 'like', '%' . $searchTerm . '%')
+                        //->orWhere('company_name', 'like', '%' . $searchTerm . '%')
+                        //->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
+                        //->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
+                        //->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
+                        //->orWhere('domain_url', 'like', '%' . $searchTerm . '%')
+                        //->orWhere('status', 'like', '%' . $searchTerm . '%')
                     ; // Add any additional fields as needed
-            });
-        }
+                });
+            }
+
+            if (!empty($name)) {
+                $query->where('name', $name);
+            }
+            if (!empty($email)) {
+                $query->where('email', $email);
+            }
+            if (!empty($status)) {
+                $query->where('status', $status);
+            }
+            if (!empty($mobile)) {
+                $query->where('mobile', $mobile);
+            }
+            if (!empty($usergroup_id)) {
+                $query->where('usergroup_id', $usergroup_id);
+            }
 
             // Paginate the results
             $perPage = $request->input('per_page', 10);
@@ -86,7 +108,7 @@ class UsersController extends Controller
     public function store(Request $request)
     {
         $is_tanant = true;
-        $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant'=> $is_tanant]));
+        $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant' => $is_tanant]));
         $licenseInfo = $licenseResponse->getData(true);
 
         $maxAgents = $licenseInfo['number_of_agents'];

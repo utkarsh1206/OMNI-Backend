@@ -9,6 +9,7 @@ import {
   CFormInput,
   CRow,
   CCol,
+  CFormSelect,
 } from '@coreui/react'
 import axios from 'axios'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -40,6 +41,8 @@ const TenantsForm = () => {
   // const editAccess = boolean(id)
   const { authToken } = useContext(AuthContext)
 
+  const [roleId, setRoleId] = useState([])
+
   const [formData, setFormData] = useState({
     // Basic Details
     username: '',
@@ -62,6 +65,28 @@ const TenantsForm = () => {
     footer_url: '',
     tenant_logo: null,
   })
+
+  // Fetch UserGroups on component mount
+  useEffect(() => {
+    const fetchRoles = async () => {
+      // setLoadingOccupations(true)
+      try {
+        const response = await axios.get(`${BASE_URL}/api/tenantrole?page=all`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            // Authorization: `Bearer ${authToken}`,
+          },
+        })
+        setRoleId(response.data.data)
+        // setLoadingOccupations(false)
+      } catch (err) {
+        setError('Error fetching UserGroups')
+        // setLoadingOccupations(false)
+      }
+    }
+    fetchRoles()
+  }, [])
 
   useEffect(() => {
     if (isEditMode) {
@@ -138,7 +163,7 @@ const TenantsForm = () => {
         })
       }
 
-      console.log(response.data.data);
+      console.log(response.data.data)
 
       // if (response.status === 200 || response.status === 201) {
       if (response.status === 200) {
@@ -269,6 +294,24 @@ const TenantsForm = () => {
                   onChange={handleChange}
                   required
                 />
+                <CCol md="4" className="mb-3">
+                  <CFormLabel htmlFor="tenant_role_id">
+                    Role <span style={{ color: 'red' }}>*</span>
+                  </CFormLabel>
+                  <CFormSelect
+                    id="tenant_role_id"
+                    name="tenant_role_id"
+                    value={formData.tenant_role_id}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Role</option>
+                    {roleId.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.name}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                </CCol>
               </CRow>
             </CCardBody>
           </CCard>

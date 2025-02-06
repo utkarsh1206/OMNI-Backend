@@ -29,15 +29,14 @@ const Tenants = () => {
   const { authToken } = useContext(AuthContext)
   const [searchQuery, setSearchQuery] = useState('')
 
-  const [filters, setFilters] = useState({
+  const initialFilters = {
     company_name: '',
     email: '',
     mobile: '',
     domain_name: '',
     company_code: '',
-
-    // Add more filters here as needed
-  })
+  }
+  const [filters, setFilters] = useState(initialFilters)
 
   const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
   const [perPage, setPerPage] = useState(10) // Add state to track the current page
@@ -47,7 +46,7 @@ const Tenants = () => {
     setAppliedFilters(newFilters) // Update applied filters only on button click
   }
   const handleResetFilters = () => {
-    setFilters({}) // Clear filter state
+    setFilters(initialFilters) // Clear filter state
     setAppliedFilters({}) // Clear applied filters
     setSearchQuery('') // Clear live search
   }
@@ -180,6 +179,7 @@ const Tenants = () => {
                 filters={filters} // Current filters
                 setFilters={setFilters} // Update filters
                 renderFilters={renderTenantFilters} // Custom filter UI for users
+                initialFilters={initialFilters}
               />
             </CRow>
           </CContainer>
