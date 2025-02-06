@@ -13,6 +13,44 @@ use Illuminate\Support\Facades\Log;
 class SmsProviderConfigurationsController extends Controller
 {
    
+
+    public function index(Request $request)
+    {
+        $searchTerm = $request->input('search', '');
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+        // Start the query for tenants
+        $smsConfigurations = SmsProviderConfiguration::query();
+
+        if (!empty($searchTerm)) {
+            $smsConfigurations->where(function ($q) use ($searchTerm) {
+                $q->where('config_key', 'like', '%' . $searchTerm . '%')
+                    ->orwhere('config_value', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+
+        
+        if ($page === 'all') {
+            $smsConfigurations = $smsConfigurations->get();
+            return response()->json([
+                'data' => $smsConfigurations,
+            ]);
+        } else {
+            $cronConfiguration = $smsConfigurations->paginate($perPage);
+            // Return the response with pagination meta
+            return response()->json([
+                'data' => $cronConfiguration->items(),
+                'meta' => [
+                    'current_page' => $cronConfiguration->currentPage(),
+                    'last_page' => $cronConfiguration->lastPage(),
+                    'per_page' => $cronConfiguration->perPage(),
+                    'total' => $cronConfiguration->total(),
+                ],
+            ]);
+        }
+    }
+
     public function store(Request $request)
     {
         try {
@@ -24,18 +62,18 @@ class SmsProviderConfigurationsController extends Controller
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 422);
             }
-        
-
-            if(count($request->configuration) > 0)
+    
+            if(count($request->configurations) > 0)
             {
-                foreach($request->configuration as $key=>$value)
-                {
-                    $smsConfigurations = SmsProviderConfiguration::create([
-                        'provider_id' => $request->provider_id,
-                        'config_key' => $key,
-                    ]);
+                foreach ($request->configurations as $config) {
+                    foreach ($config as $key => $value) {
+                       $smsConfigurations= SmsProviderConfiguration::create([
+                            'provider_id' => $request->provider_id,
+                            'config_key' => $key, 
+                            'config_value' => $value, 
+                        ]);
+                    }
                 }
-                
             }
 
             return response()->json([
@@ -52,9 +90,10 @@ class SmsProviderConfigurationsController extends Controller
         }
     }
 
-    public function show(SmsProviderConfiguration $cronConfiguration)
+    public function show($id)
     {
-        return new SmsProviderConfigurationResource($cronConfiguration);
+        $smsConfigurations = SmsProviderConfiguration::find($id);
+        return new SmsProviderConfigurationResource($smsConfigurations);
     }
 
     public function update(Request $request, $id)
@@ -78,16 +117,17 @@ class SmsProviderConfigurationsController extends Controller
             }
             
 
-            if(count($request->configuration) > 0)
+            if(count($request->configurations) > 0)
             {
-                foreach($request->configuration as $key=>$value)
-                {
-                    $smsConfigurations->update([
-                        'provider_id' => $request->provider_id,
-                        'config_key' => $key,
-                    ]);
+                foreach ($request->configurations as $config) {
+                    foreach ($config as $key => $value) {
+                        $smsConfigurations->update([
+                            'provider_id' => $request->provider_id,
+                            'config_key' => $key, 
+                            'config_value' => $value, 
+                        ]);
+                    }
                 }
-                
             }
 
             return response()->json([
@@ -113,7 +153,7 @@ class SmsProviderConfigurationsController extends Controller
                     'message' => 'Sms Provider Configuration not found.',
                 ], 404);
             }
-            
+
             $configuration->delete();
 
             return response()->json([
