@@ -55,6 +55,7 @@ use App\Http\Controllers\Api\TicketReportController;
 use App\Http\Controllers\Api\SLAReportController;
 use App\Http\Controllers\Api\EmailLogController;
 use App\Http\Controllers\Api\SmsProviderConfigurationsController;
+use App\Http\Controllers\Api\SmsProviderController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -153,6 +154,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('supportticket', SupportticketController::class);
     Route::post('updateticketstatus/{supportticket}', [SupportticketController::class, 'statusupdate']);
     Route::apiResource('audit-logs', AuditController::class);
+    Route::post('save-user-provider', [SmsProviderController::class, 'saveUserProvider']);
 });
 
 Route::apiResource('cron-configurations', CronConfigurationsController::class);
@@ -164,3 +166,4 @@ Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
 
 Route::apiResource('email-logs', EmailLogController::class);
 Route::apiResource('sms-configurations', SmsProviderConfigurationsController::class);
+Route::apiResource('sms-providers', SmsProviderController::class);

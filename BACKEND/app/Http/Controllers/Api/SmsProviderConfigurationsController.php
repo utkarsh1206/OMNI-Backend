@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Resources\SmsProviderConfigurationResource;
 use App\Models\SmsProviderConfiguration;
+use App\Models\SmsProvider;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -19,17 +20,13 @@ class SmsProviderConfigurationsController extends Controller
         $searchTerm = $request->input('search', '');
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
-        // Start the query for tenants
         $smsConfigurations = SmsProviderConfiguration::query();
-
         if (!empty($searchTerm)) {
             $smsConfigurations->where(function ($q) use ($searchTerm) {
                 $q->where('config_key', 'like', '%' . $searchTerm . '%')
                     ->orwhere('config_value', 'like', '%' . $searchTerm . '%');
             });
         }
-
-
         
         if ($page === 'all') {
             $smsConfigurations = $smsConfigurations->get();
@@ -55,20 +52,24 @@ class SmsProviderConfigurationsController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'provider_id' => 'required',
+                'provider_name' => 'required',
                 'configurations' => 'required|array',
             ]);
 
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 422);
             }
-    
+            
+            $smsProviers = SmsProvider::Create([
+                "name"=>$request->provider_name,
+            ]);
+
             if(count($request->configurations) > 0)
             {
                 foreach ($request->configurations as $config) {
                     foreach ($config as $key => $value) {
                        $smsConfigurations= SmsProviderConfiguration::create([
-                            'provider_id' => $request->provider_id,
+                            'provider_id' => $smsProviers->id ?? '',
                             'config_key' => $key, 
                             'config_value' => $value, 
                         ]);
@@ -100,7 +101,6 @@ class SmsProviderConfigurationsController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'provider_id' => 'required',
                 'configurations' => 'required|array',
             ]);
     
@@ -122,7 +122,7 @@ class SmsProviderConfigurationsController extends Controller
                 foreach ($request->configurations as $config) {
                     foreach ($config as $key => $value) {
                         $smsConfigurations->update([
-                            'provider_id' => $request->provider_id,
+                            //'provider_id' => $request->provider_id,
                             'config_key' => $key, 
                             'config_value' => $value, 
                         ]);
@@ -169,3 +169,4 @@ class SmsProviderConfigurationsController extends Controller
         }
     }
 }
+    

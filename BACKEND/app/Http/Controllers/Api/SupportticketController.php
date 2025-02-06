@@ -419,9 +419,11 @@ class SupportticketController extends Controller
     public function sendSms($apiUser,$type,$phone,$supportticket)
     {
        $smsInfo = new SmsService;
+      
        $templateInfo = SmsTemplate::where("name",$type)->first();
        $template = $templateInfo->content ?? '';
-       $template = str_replace("[TICKET_NO]",$supportticket->support_ticket_id,$template);
+       $template = str_replace("{#ticket ##}",$supportticket->support_ticket_id,$template);
+       $template = str_replace("{#customer name#}",$apiUser->first_name.' '.$apiUser->last_name,$template);
        $smsInfo->sendSMS($apiUser->id,$template,$phone);
     }
 }
