@@ -207,7 +207,8 @@ class SlaSettingController extends Controller
             $validated = $request->validate([
                 'sla.name' => 'required|string|max:100',
                 'sla.description' => 'nullable|string|max:255',
-                'sla.is_24_hours' => "required|in:([1,0,true,'false',false])",
+                // 'sla.is_24_hours' => "required|in:([1,0,true,'false',false])",
+                'sla.is_24_hours' => "required|boolean",
                 'sla.start_time' => 'nullable|date_format:H:i:s',
                 'sla.end_time' => 'nullable|date_format:H:i:s',
 
