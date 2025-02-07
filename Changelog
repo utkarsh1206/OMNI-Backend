@@ -1,6 +1,13 @@
 2025-02-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : NEOX-3940 
+	* Previous Commit ID : ffcbd608 
+	* Version : Dev
+	* React.JS and Laravel : Made some changes in the Telescope, so that it doesn't store the OPTIONS requests. Removed the extra download, and delete buttons from various pages. Also modified the error messages that will be displayed.
+
+2025-02-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3940 
 	* Previous Commit ID : 67d28468 
 	* Version : Dev
 	* React.JS and Laravel : Modified the SLA Setting for the 24-hr issue, also is 24hr is true, then default value is set to 00:00:00 and 23:59:59

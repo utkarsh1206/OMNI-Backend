@@ -71,7 +71,7 @@ const Product = () => {
         }
       } catch (error) {
         console.error('Error deleting product:', error)
-        alert('An error occurred while processing your request.')
+        alert(error.response.data.message)
       }
     }
   }

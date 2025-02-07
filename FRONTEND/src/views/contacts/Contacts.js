@@ -36,11 +36,12 @@ const Contacts = () => {
   const [selectedOwner, setSelectedOwner] = useState('')
 
   const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({
+  const initialFilters = {
     product_id: '',
     account_id: '',
     owner_id: '',
-  })
+  }
+  const [filters, setFilters] = useState(initialFilters)
 
   const [currentPage, setCurrentPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
@@ -51,7 +52,7 @@ const Contacts = () => {
     setAppliedFilters(newFilters) // Update applied filters only on button click
   }
   const handleResetFilters = () => {
-    setFilters({}) // Clear filter state
+    setFilters(initialFilters) // Clear filter state
     setAppliedFilters({}) // Clear applied filters
     setSearchQuery('') // Clear live search
   }
@@ -83,7 +84,7 @@ const Contacts = () => {
         }
       } catch (error) {
         console.error('Operation failed:', error)
-        alert('An error occurred while processing your request.')
+        alert(error.response.data.message)
       }
     }
   }
@@ -243,9 +244,9 @@ const Contacts = () => {
                   Create Contact
                 </CButton>
               </Link>
-              <CButton color="primary" className="me-2" size="sm">
+              {/* <CButton color="primary" className="me-2" size="sm">
                 Delete Contact
-              </CButton>
+              </CButton> */}
             </CCol>
 
             <SearchAndFilter
@@ -255,6 +256,7 @@ const Contacts = () => {
               filters={filters}
               setFilters={setFilters}
               renderFilters={renderContactFilters}
+              initialFilters={initialFilters}
             />
           </CRow>
         </CContainer>

@@ -236,7 +236,7 @@ const UserForm = ({ visible, setVisible, type }) => {
         })
         .catch((error) => {
           console.error('Error fetching Users data:', error)
-          alert('Failed to fetch tenant data.')
+          alert('Failed to fetch tenant data.\n' + error.response.data.message)
         })
     }
   }, [id, isEditMode])

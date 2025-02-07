@@ -138,7 +138,7 @@ const CategoriesForm = () => {
       handleCancel()
     } catch (error) {
       console.error('Operation failed:', error)
-      alert('An error occurred while processing your request.')
+      alert(error.response.data.message)
     }
   }
 

@@ -103,7 +103,7 @@ const Accounts = () => {
           setAccounts((prev) => prev.filter((account) => account.id !== id))
         }
       } catch (error) {
-        alert('An error occurred while processing your request.')
+        alert(error.response.data.message)
       }
     }
   }
@@ -231,9 +231,9 @@ const Accounts = () => {
                   Create Account
                 </CButton>
               </Link>
-              <CButton color="primary" className="me-2" size="sm">
+              {/* <CButton color="primary" className="me-2" size="sm">
                 Delete Account
-              </CButton>
+              </CButton> */}
             </CCol>
             <SearchAndFilter
               onSearch={setSearchQuery}

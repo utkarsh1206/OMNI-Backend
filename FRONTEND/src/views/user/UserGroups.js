@@ -74,10 +74,10 @@ const UserGroups = () => {
         }
       } catch (error) {
         console.error('Operation failed:', error)
-        alert('An error occurred while processing your request.')
+        alert(error.response.data.message)
       }
     } else {
-      console.log('pressed cancel')
+      console.log('Pressed Cancel')
     }
   }
 
@@ -142,7 +142,7 @@ const UserGroups = () => {
                     Create User Group
                   </CButton>
                 </Link>
-                <CButton
+                {/* <CButton
                   color="primary"
                   className=" me-2"
                   size="sm"
@@ -152,7 +152,7 @@ const UserGroups = () => {
                 </CButton>
                 <CButton color="primary" className=" me-2" size="sm">
                   Download CSV
-                </CButton>
+                </CButton> */}
               </CCol>
               <SearchAndFilter
                 onSearch={setSearchQuery} // Callback for live search
@@ -179,42 +179,50 @@ const UserGroups = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {userGroups.map((group, index) => (
-                <CTableRow key={group.id}>
-                  <CTableDataCell>{index + 1 + (currentPage - 1) * perPage}</CTableDataCell>
-                  <CTableDataCell>{group.name}</CTableDataCell>
-                  <CTableDataCell>{group.campaign_id}</CTableDataCell>
-                  <CTableDataCell>{group.description}</CTableDataCell>
-                  <CTableDataCell>{group.status}</CTableDataCell>
-                  <CTableDataCell>{formatDate(group.created_at)}</CTableDataCell>
-                  <CTableDataCell>
-                    <CRow className="justify-content-center mx-0">
-                      <CCol className="mx-auto d-flex justify-content-center">
-                        <CTooltip content="Edit">
-                          <CButton
-                            color="warning"
-                            size="sm"
-                            onClick={() => navigate(`/user/edit_usergroup/${group.id}`)}
-                          >
-                            <CIcon icon={cilPencil} />
-                          </CButton>
-                        </CTooltip>
-                      </CCol>
-                      <CCol className="mx-auto d-flex justify-content-center">
-                        <CTooltip content="Delete">
-                          <CButton
-                            color="danger"
-                            size="sm"
-                            onClick={() => handleDeleteUserGroup(group.id, group.name)}
-                          >
-                            <CIcon icon={cilXCircle} />
-                          </CButton>
-                        </CTooltip>
-                      </CCol>
-                    </CRow>
+              {userGroups.length > 0 ? (
+                userGroups.map((group, index) => (
+                  <CTableRow key={group.id}>
+                    <CTableDataCell>{index + 1 + (currentPage - 1) * perPage}</CTableDataCell>
+                    <CTableDataCell>{group.name}</CTableDataCell>
+                    <CTableDataCell>{group.campaign_id}</CTableDataCell>
+                    <CTableDataCell>{group.description}</CTableDataCell>
+                    <CTableDataCell>{group.status}</CTableDataCell>
+                    <CTableDataCell>{formatDate(group.created_at)}</CTableDataCell>
+                    <CTableDataCell>
+                      <CRow className="justify-content-center mx-0">
+                        <CCol className="mx-auto d-flex justify-content-center">
+                          <CTooltip content="Edit">
+                            <CButton
+                              color="warning"
+                              size="sm"
+                              onClick={() => navigate(`/user/edit_usergroup/${group.id}`)}
+                            >
+                              <CIcon icon={cilPencil} />
+                            </CButton>
+                          </CTooltip>
+                        </CCol>
+                        <CCol className="mx-auto d-flex justify-content-center">
+                          <CTooltip content="Delete">
+                            <CButton
+                              color="danger"
+                              size="sm"
+                              onClick={() => handleDeleteUserGroup(group.id, group.name)}
+                            >
+                              <CIcon icon={cilXCircle} />
+                            </CButton>
+                          </CTooltip>
+                        </CCol>
+                      </CRow>
+                    </CTableDataCell>
+                  </CTableRow>
+                ))
+              ) : (
+                <CTableRow>
+                  <CTableDataCell colSpan="7" className="text-center">
+                    No data found
                   </CTableDataCell>
                 </CTableRow>
-              ))}
+              )}
             </CTableBody>
           </CTable>
           {/* Reusable PaginationComponent */}

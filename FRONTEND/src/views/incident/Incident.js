@@ -75,10 +75,10 @@ const Incident = () => {
         }
       } catch (error) {
         console.error('Operation failed:', error)
-        alert('An error occurred while processing your request.')
+        alert(error.response.data.message)
       }
     } else {
-      console.log('pressed cancel')
+      console.log('Pressed Cancel')
     }
   }
 

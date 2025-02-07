@@ -4,6 +4,7 @@ import {
   CCol,
   CContainer,
   CFormInput,
+  CFormSelect,
   CRow,
   CTable,
   CTableBody,
@@ -28,13 +29,14 @@ const Users = () => {
   const { authToken } = useContext(AuthContext)
   const [users, setUsers] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({
+  const initialFilters = {
     name: '',
     email: '',
     status: '',
     mobile: '',
     usergroup_id: '',
-  })
+  }
+  const [filters, setFilters] = useState(initialFilters)
 
   const [currentPage, setCurrentPage] = useState(1) // Add state to track the current page
   const [perPage, setPerPage] = useState(10) // Add state to track the current page
@@ -44,7 +46,7 @@ const Users = () => {
     setAppliedFilters(newFilters) // Update applied filters only on button click
   }
   const handleResetFilters = () => {
-    setFilters({}) // Clear filter state
+    setFilters(initialFilters) // Clear filter state
     setAppliedFilters({}) // Clear applied filters
     setSearchQuery('') // Clear live search
   }
@@ -72,8 +74,8 @@ const Users = () => {
           setUsers((prev) => prev.filter((user) => user.id !== id)) // Immediately update the UI
         }
       } catch (error) {
-        console.error('Operation failed:', error)
-        alert('An error occurred while processing your request.')
+        console.error('Operation failed:', error.response.data.message)
+        alert(error.response.data.message)
       }
     }
   }
@@ -112,14 +114,27 @@ const Users = () => {
           <label htmlFor="status" className="form-label">
             Status:
           </label>
-          <CFormInput
+          {/* <CFormInput
             id="status"
             type="text"
             name="status"
             value={filters.status || ''}
             onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
             placeholder="Enter status"
-          />
+          /> */}
+          <CFormSelect
+            id="status"
+            name="status"
+            value={filters.status || ''}
+            onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
+          >
+            <option key="Active" value="Active">
+              Active
+            </option>
+            <option key="Inactive" value="Inactive">
+              Inactive
+            </option>
+          </CFormSelect>
         </CCol>
         <CCol xs={12} md={3} className="mb-2">
           <label htmlFor="mobile" className="form-label">
@@ -163,22 +178,19 @@ const Users = () => {
                     Create User
                   </CButton>
                 </Link>
-                <CButton color="primary" className="me-2" size="sm" onClick={handleDeleteUser}>
+                {/* <CButton color="primary" className="me-2" size="sm" onClick={handleDeleteUser}>
                   Delete User
                 </CButton>
                 <CButton color="primary" className="me-2" size="sm">
                   Download CSV
-                </CButton>
+                </CButton> */}
               </CCol>
               {/* Right Section: Bulk User Creation, Search, PerPage */}
-              <CCol xs="auto" className="ms-auto pe-0">
-                {/* <div className="d-flex justify-content-end align-items-center"> */}
-                {/* Bulk User Creation */}
+              {/* <CCol xs="auto" className="ms-auto pe-0">
                 <CButton color="primary" size="sm">
                   Bulk User Creation
                 </CButton>
-                {/* </div> */}
-              </CCol>
+              </CCol> */}
               <SearchAndFilter
                 onSearch={setSearchQuery} // Callback for live search
                 onApplyFilters={handleApplyFilters}
@@ -186,6 +198,7 @@ const Users = () => {
                 filters={filters} // Current filters
                 setFilters={setFilters} // Update filters
                 renderFilters={renderUserFilters} // Custom filter UI for users
+                initialFilters={initialFilters}
               />
             </CRow>
           </CContainer>
@@ -204,7 +217,8 @@ const Users = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {users.map((user, index) => (
+              {users.length > 0 ? (
+                users.map((user, index) => (
                 <CTableRow key={user.id}>
                   {/* <CTableDataCell>{user.id}</CTableDataCell> */}
                   {/* <CTableDataCell>{index+1}</CTableDataCell> */}
@@ -244,7 +258,14 @@ const Users = () => {
                     </CRow>
                   </CTableDataCell>
                 </CTableRow>
-              ))}
+              ))
+            ):(
+              <CTableRow>
+                  <CTableDataCell colSpan="8" className="text-center">
+                    No data found
+                  </CTableDataCell>
+                </CTableRow>
+            )}
             </CTableBody>
           </CTable>
           {/* Reusable PaginationComponent */}

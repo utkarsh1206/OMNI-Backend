@@ -14,5 +14,5 @@ class DatabaseSeeder extends Seeder
             //CronCommandsSeeder::class,
             MailTemplateSeeder::class,
         ]);
-    }n
+    }
 }

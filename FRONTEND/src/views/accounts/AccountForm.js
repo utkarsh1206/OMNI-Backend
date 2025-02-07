@@ -171,7 +171,7 @@ const AccountForm = () => {
         })
         .catch((error) => {
           console.error('Error fetching Account data:', error)
-          alert('Failed to fetch Account data.')
+          alert('Failed to fetch Account data.\n' + error.response.data.message)
         })
     }
   }, [id, isEditMode])
@@ -343,7 +343,7 @@ const AccountForm = () => {
 
         } else {
           console.error('Operation failed:', error)
-          alert('An error occurred while processing your request.')
+          alert(error.response.data.message)
         }
 
         handleCancel()

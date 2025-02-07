@@ -66,7 +66,7 @@ const UserGroupForm = () => {
         })
         .catch((error) => {
           console.error('Error fetching UserGroup data:', error)
-          alert('Failed to fetch UserGroup data.')
+          alert('Failed to fetch UserGroup data.\n' + error.response.data.message)
         })
     }
   }, [id, isEditMode])
@@ -116,7 +116,7 @@ const UserGroupForm = () => {
       handleCancel()
     } catch (error) {
       console.error('Operation failed:', error)
-      alert('An error occurred while processing your request.')
+      alert(error.response.data.message)
     }
   }
 
