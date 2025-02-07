@@ -18,7 +18,9 @@ use App\Services\SlaService;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\SmsTemplate;
 use App\Services\SmsService;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
+use App\Models\MailTemplate;
 
 class SupportticketController extends Controller
 {
@@ -182,9 +184,11 @@ class SupportticketController extends Controller
             'mail.from.name' => $sender_name,
         ]);
         // Attempt to send the email
+       
         try {
-            Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
-            
+           
+                Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
+         
             logEmail([
                 "user_id"=>$request->assign_to_id,
                 "email_template_id"=> 0, 
@@ -272,6 +276,7 @@ class SupportticketController extends Controller
         //     'date' => gmdate('Y-m-d H:i:s'),
         // ]);
         $this->createTicket($supportticket,isset($request->default_status) ? $request->default_status : "","Edit Support Ticket",$apiUser);
+    // $apiUser->mobile = "+919725958612";
         $this->sendSms($apiUser,"Ticket Created",$apiUser->mobile,$supportticket);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host;
@@ -292,6 +297,7 @@ class SupportticketController extends Controller
         ]);
         // Attempt to send the email
         try {
+           
             Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
             logEmail([
                 "user_id"=>$request->assign_to_id,
@@ -355,7 +361,16 @@ class SupportticketController extends Controller
         $this->createTicket($supportticket,$type,$comment,$apiUser,$statusInfo); 
         if($request->default_status == "Resolved")
         {
-            $this->sendSms($apiUser,"Ticket Resolved",$apiUser->mobile,$supportticket);
+             $this->sendSms($apiUser,"Ticket Resolved",$apiUser->mobile,$supportticket);
+            $toEmails = $supportticket->assignedUser->email ?? '';
+            setEmailConfig();
+            $mailTemplate = MailTemplate::where("type","agent_solve_the_ticket")->first();
+            $subject =  $mailTemplate->subject ?? '';
+            $body =  $mailTemplate->body ?? '';
+            $body = str_replace("{ticket_number}",$supportticket->support_ticket_id,$body);
+            $body = str_replace("{{customer_name}}",$supportticket->assignedUser->first_name,$body);
+            $subject = str_replace("{ticket_number}",$supportticket->support_ticket_id,$subject);
+           $res =  Mail::to($toEmails)->send(new SendEmail($subject, $body));
         }
       
         return response()->json([
@@ -426,4 +441,6 @@ class SupportticketController extends Controller
        $template = str_replace("{#customer name#}",$apiUser->first_name.' '.$apiUser->last_name,$template);
        $smsInfo->sendSMS($apiUser->id,$template,$phone);
     }
+
+    
 }

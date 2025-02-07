@@ -7,9 +7,9 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SendEmail extends Mailable implements ShouldQueue
+class SendEmail extends Mailable 
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     public $subject;
     public $content;
@@ -26,7 +26,7 @@ class SendEmail extends Mailable implements ShouldQueue
     // Build the email
     public function build()
     {
-        $email = $this->view('emails.send') // This is the view that will be used to render the email
+        $email = $this->view('emails.send')
         ->with([
             'content' => $this->content,
         ])
