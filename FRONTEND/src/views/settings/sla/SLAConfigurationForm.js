@@ -109,8 +109,10 @@ const SLAConfigurationForm = () => {
             name: data.name,
             description: data.description,
             is24Hours: data.is_24_hours,
-            startTime: data.start_time || '',
-            endTime: data.end_time || '',
+            // startTime: data.start_time || '',
+            // endTime: data.end_time || '',
+            startTime: data.is_24_hours ? '00:00:00' : data.start_time || '',
+            endTime: data.is_24_hours ? '23:59:59' : data.end_time || '',
             // weekOffDays: data.off_days.map((offDay) => offDay.day),
             weekOffDays: data.off_days || [],
           })
@@ -206,7 +208,11 @@ const SLAConfigurationForm = () => {
       targets: formattedTargets, // Add the formatted targets structure here
     }
 
-    // console.log('formdata ' + JSON.stringify(formData, null, 4))
+    if (formData.sla.is_24_hours) {
+      formData.sla.start_time = "00:00:00";
+      formData.sla.end_time = "23:59:59";
+    }
+    console.log('formdata ' + JSON.stringify(formData, null, 4))
 
     const request = isEditMode
       ? axios.put(`${BASE_URL}/api/sla-settings/${id}`, formData, {
@@ -326,6 +332,7 @@ const SLAConfigurationForm = () => {
                       onChange={(e) =>
                         setBusinessHours({ ...businessHours, startTime: e.target.value })
                       }
+                      step={1}
                     />
                   </div>
                 </CCol>
@@ -340,6 +347,7 @@ const SLAConfigurationForm = () => {
                       onChange={(e) =>
                         setBusinessHours({ ...businessHours, endTime: e.target.value })
                       }
+                      step={1}
                     />
                   </div>
                 </CCol>

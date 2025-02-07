@@ -1,3 +1,17 @@
+2025-02-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : NEOX-3940 
+	* Previous Commit ID : 67d28468 
+	* Version : Dev
+	* React.JS and Laravel : Modified the SLA Setting for the 24-hr issue, also is 24hr is true, then default value is set to 00:00:00 and 23:59:59
+
+2025-02-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : 8421af9f 
+	* Version : Dev
+	* React.JS and Laravel : Worked on the Filter part of the Search and Filter Component.
+
 2025-02-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :  
