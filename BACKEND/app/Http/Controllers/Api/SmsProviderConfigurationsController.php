@@ -70,7 +70,7 @@ class SmsProviderConfigurationsController extends Controller
         return new SmsProviderConfigurationResource($this->formatListingData($configurations));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $providerId)
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -81,8 +81,8 @@ class SmsProviderConfigurationsController extends Controller
                 return response()->json($validator->errors(), 422);
             }
 
-            $smsConfigurations = SmsProviderConfiguration::find($id);
-
+            $smsConfigurations = SmsProviderConfiguration::where("provider_id",$providerId)->get();
+            
             if (!$smsConfigurations) {
                 return response()->json([
                     'message' => 'Sms Provider Configuration not found.',
@@ -94,14 +94,22 @@ class SmsProviderConfigurationsController extends Controller
             {
                 foreach ($request->configurations as $config) {
                     foreach ($config as $key => $value) {
-                        $smsConfigurations->update([
-                            'config_key' => $key, 
-                            'config_value' => $value, 
-                        ]);
+                        foreach ($smsConfigurations as $smsConfiguration) {
+                            if ($smsConfiguration->config_key == $key) {
+                                $smsConfiguration->config_value = $value;
+                                $smsConfiguration->save();
+                            }
+                            else
+                            {
+                                $smsConfiguration->config_key == $key;
+                                $smsConfiguration->config_value = $value;
+                                $smsConfiguration->save();
+                            }
+                        }
                     }
                 }
             }
-
+            
             return response()->json([
                 'message' => 'Sms Provider Configuration updated successfully!',
                 'data' => new SmsProviderConfigurationResource($smsConfigurations)
@@ -115,10 +123,10 @@ class SmsProviderConfigurationsController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($providerId)
     {
         try {
-            $configuration = SmsProviderConfiguration::find($id);
+            $configuration = SmsProviderConfiguration::where("provider_id",$providerId)->get();
 
             if (!$configuration) {
                 return response()->json([
@@ -126,8 +134,9 @@ class SmsProviderConfigurationsController extends Controller
                 ], 404);
             }
 
-            $configuration->delete();
-
+            foreach ($configuration as $smsConfiguration) {
+                  $smsConfiguration->delete();
+            }
             return response()->json([
                 'message' => ' Sms Provider Configuration deleted successfully!',
                 'data' => new SmsProviderConfigurationResource($configuration)
