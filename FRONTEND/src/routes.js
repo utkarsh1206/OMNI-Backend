@@ -62,6 +62,8 @@ const AgentActivityReport = React.lazy(() => import('./views/reports/AgentActivi
 const TicketReport = React.lazy(() => import('./views/reports/TicketReport'))
 const SLAReport = React.lazy(() => import('./views/reports/SLAReport'))
 const AuditReport = React.lazy(() => import('./views/reports/AuditReport'))
+const EmailLogs = React.lazy(() => import('./views/reports/EmailLogs'))
+
 
 //Accounts
 const Accounts = React.lazy(() => import('./views/accounts/Accounts'))
@@ -154,6 +156,7 @@ const routes = [
   { path: '/report/ticket-report', name: 'Report Management', element: TicketReport, permissionTag: true },
   { path: '/report/sla-report', name: 'Report Management', element: SLAReport, permissionTag: true },
   { path: '/report/audit-report', name: 'Audit Report', element: AuditReport, permissionTag: true },
+  { path: '/report/EmailLogs', name: 'EmailLogs', element: EmailLogs, exact: true, permissionTag: true },
 
   { path: '/accounts', name: 'Accounts', element: Accounts, exact: true, permissionTag: true },
   { path: '/accounts/create_accounts', name: 'Create Accounts', element: CreateAccounts, permissionTag: true },

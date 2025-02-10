@@ -345,6 +345,13 @@ const navItemList = [
         name: 'Outbound Report',
         to: '/report/outbound',
       },
+      //Email logs nav
+      {
+        component: CNavItem,
+        name: 'Email Logs',
+        to: '/report/emailLogs',
+        //icon: <CIcon icon={icon.cibGmail} customClassName="nav-icon" />
+      },
     ],
   },
   {
