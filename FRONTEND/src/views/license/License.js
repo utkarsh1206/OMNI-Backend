@@ -72,7 +72,7 @@ const License = () => {
         },
       });
 
-      console.log(response.data);
+      // console.log(response.data);
       setLicenseInfo(response.data);
       setLicenseKey(response.data.license_key);
       if (response.data.is_tanant !== undefined) {
