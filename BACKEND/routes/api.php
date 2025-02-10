@@ -167,3 +167,5 @@ Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
 Route::apiResource('email-logs', EmailLogController::class);
 Route::apiResource('sms-configurations', SmsProviderConfigurationsController::class);
 Route::apiResource('sms-providers', SmsProviderController::class);
+
+Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
