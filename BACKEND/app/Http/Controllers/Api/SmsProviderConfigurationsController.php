@@ -13,47 +13,13 @@ use Illuminate\Support\Facades\Log;
 
 class SmsProviderConfigurationsController extends Controller
 {
-   
-
     public function index(Request $request)
     {
-        $searchTerm = $request->input('search', '');
-        $perPage = $request->input('per_page', 10);
-        $page = $request->input('page', 1);
-        $smsConfigurations = SmsProviderConfiguration::query();
-        if (!empty($searchTerm)) {
-            $smsConfigurations->where(function ($q) use ($searchTerm) {
-                $q->where('config_key', 'like', '%' . $searchTerm . '%')
-                    ->orwhere('config_value', 'like', '%' . $searchTerm . '%');
-            });
-        }
-        
-        if ($page === 'all') {
-            $smsConfigurations = $smsConfigurations->get();
-           
-            return response()->json([
-                'data' => $smsConfigurations,
-            ]);
-        } else {
-            $cronConfiguration = $smsConfigurations->paginate($perPage);
-            $formattedData =  collect($cronConfiguration->items())->map(function ($item) {
-               $providerInfo = SmsProvider::find($item['provider_id']);
-                unset($item['provider_id']);
-                return [
-                    'provider_name' => $providerInfo->name ?? '',
-                    'configurations' => $item
-                ];
-            });
-            return response()->json([
-                'data' => $formattedData,
-                'meta' => [
-                    'current_page' => $cronConfiguration->currentPage(),
-                    'last_page' => $cronConfiguration->lastPage(),
-                    'per_page' => $cronConfiguration->perPage(),
-                    'total' => $cronConfiguration->total(),
-                ],
-            ]);
-        }
+        $smsConfigurations = SmsProviderConfiguration::pluck("provider_id");
+        $configurations  = SmsProvider::whereIn("id",$smsConfigurations)->get();
+        return response()->json([
+                'data' => $this->formatListingData($configurations),
+        ]);
     }
 
     public function store(Request $request)
@@ -63,11 +29,10 @@ class SmsProviderConfigurationsController extends Controller
                 'provider_name' => 'required',
                 'configurations' => 'required|array',
             ]);
-
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 422);
             }
-            
+
             $smsProviers = SmsProvider::Create([
                 "name"=>$request->provider_name,
             ]);
@@ -99,10 +64,10 @@ class SmsProviderConfigurationsController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($providerId)
     {
-        $smsConfigurations = SmsProviderConfiguration::find($id);
-        return new SmsProviderConfigurationResource($smsConfigurations);
+        $configurations = SmsProvider::where("id",$providerId)->get();
+        return new SmsProviderConfigurationResource($this->formatListingData($configurations));
     }
 
     public function update(Request $request, $id)
@@ -130,7 +95,6 @@ class SmsProviderConfigurationsController extends Controller
                 foreach ($request->configurations as $config) {
                     foreach ($config as $key => $value) {
                         $smsConfigurations->update([
-                            //'provider_id' => $request->provider_id,
                             'config_key' => $key, 
                             'config_value' => $value, 
                         ]);
@@ -175,6 +139,19 @@ class SmsProviderConfigurationsController extends Controller
             
             return response()->json(['message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
         }
+    }
+
+    private function formatListingData($configurations)
+    {
+        $formattedData =  collect($configurations)->map(function ($item) {
+            $providerInfo = SmsProviderConfiguration::select(["id","config_key","config_value"])->where("provider_id",$item['id'])->get();
+             return [
+                 'provider_name' => $item->name ?? '',
+                 'configurations' => $providerInfo
+             ];
+         });
+
+         return $formattedData;
     }
 }
     
