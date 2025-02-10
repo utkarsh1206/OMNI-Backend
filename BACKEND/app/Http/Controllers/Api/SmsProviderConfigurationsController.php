@@ -30,14 +30,22 @@ class SmsProviderConfigurationsController extends Controller
         
         if ($page === 'all') {
             $smsConfigurations = $smsConfigurations->get();
+           
             return response()->json([
                 'data' => $smsConfigurations,
             ]);
         } else {
             $cronConfiguration = $smsConfigurations->paginate($perPage);
-            // Return the response with pagination meta
+            $formattedData =  collect($cronConfiguration->items())->map(function ($item) {
+               $providerInfo = SmsProvider::find($item['provider_id']);
+                unset($item['provider_id']);
+                return [
+                    'provider_name' => $providerInfo->name ?? '',
+                    'configurations' => $item
+                ];
+            });
             return response()->json([
-                'data' => $cronConfiguration->items(),
+                'data' => $formattedData,
                 'meta' => [
                     'current_page' => $cronConfiguration->currentPage(),
                     'last_page' => $cronConfiguration->lastPage(),
