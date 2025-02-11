@@ -138,7 +138,7 @@ const EmailConfigSettings = () => {
                           <CButton
                             color="warning"
                             size="sm"
-                            onClick={() => navigate(`/email_config_settings/edit/${emailConfig.id}`)}
+                            onClick={() => navigate(`/settings/email_config_settings/edit/${emailConfig.id}`)}
                           >
                             <CIcon icon={cilPencil} />
                           </CButton>

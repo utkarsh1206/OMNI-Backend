@@ -26,6 +26,9 @@ import {
 } from '@coreui/react'
 import { AuthContext } from '../../../context/AuthContext'
 import { BASE_URL } from '../../../config'
+import Datetime from "react-datetime"
+import { extractTime } from '../../../utils/DateUtils'
+import 'react-datetime/css/react-datetime.css'
 
 const SLAConfigurationForm = () => {
   const { id } = useParams() // Get Config ID from URL if present
@@ -216,17 +219,17 @@ const SLAConfigurationForm = () => {
 
     const request = isEditMode
       ? axios.put(`${BASE_URL}/api/sla-settings/${id}`, formData, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
-          },
-        })
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+      })
       : axios.post(`${BASE_URL}/api/sla-settings`, formData, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
-          },
-        })
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+      })
 
     request
       .then(() => {
@@ -326,13 +329,13 @@ const SLAConfigurationForm = () => {
                     <CFormLabel className="me-2 mb-0">Start Time:</CFormLabel>
                   </div>
                   <div className="col-8">
-                    <CFormInput
-                      type="time"
+                    <Datetime
                       value={businessHours.startTime}
                       onChange={(e) =>
-                        setBusinessHours({ ...businessHours, startTime: e.target.value })
+                        setBusinessHours({ ...businessHours, startTime: extractTime(e?._d) })
                       }
-                      step={1}
+                      timeFormat="HH:mm:ss"
+                      dateFormat={false}
                     />
                   </div>
                 </CCol>
@@ -341,13 +344,13 @@ const SLAConfigurationForm = () => {
                     <CFormLabel className="me-2 mb-0">End Time:</CFormLabel>
                   </div>
                   <div className="col-8">
-                    <CFormInput
-                      type="time"
+                    <Datetime
                       value={businessHours.endTime}
                       onChange={(e) =>
-                        setBusinessHours({ ...businessHours, endTime: e.target.value })
+                        setBusinessHours({ ...businessHours, endTime: extractTime(e?._d) })
                       }
-                      step={1}
+                      timeFormat="HH:mm:ss"
+                      dateFormat={false}
                     />
                   </div>
                 </CCol>
@@ -470,7 +473,7 @@ const SLAConfigurationForm = () => {
           <CButton
             color="primary"
             onClick={handleAddTargetLevel}
-            // disabled={targetLevels.length >= 4}
+          // disabled={targetLevels.length >= 4}
           >
             Add Level
           </CButton>
