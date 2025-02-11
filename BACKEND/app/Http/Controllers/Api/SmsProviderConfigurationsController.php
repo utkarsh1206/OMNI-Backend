@@ -98,13 +98,7 @@ class SmsProviderConfigurationsController extends Controller
                             if ($smsConfiguration->config_key == $key) {
                                 $smsConfiguration->config_value = $value;
                                 $smsConfiguration->save();
-                            }
-                            else
-                            {
-                                $smsConfiguration->config_key == $key;
-                                $smsConfiguration->config_value = $value;
-                                $smsConfiguration->save();
-                            }
+                            } 
                         }
                     }
                 }
@@ -155,6 +149,7 @@ class SmsProviderConfigurationsController extends Controller
         $formattedData =  collect($configurations)->map(function ($item) {
             $providerInfo = SmsProviderConfiguration::select(["id","config_key","config_value"])->where("provider_id",$item['id'])->get();
              return [
+                 'provider_id' => $item->id ?? '',
                  'provider_name' => $item->name ?? '',
                  'configurations' => $providerInfo
              ];
