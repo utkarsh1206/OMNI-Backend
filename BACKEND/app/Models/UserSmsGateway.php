@@ -6,15 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserSmsGateway extends Model
 {
+    protected $fillable = [
+        'user_id',
+        'provider_id',
+    ];
 
-protected $fillable = [
-    'user_id',
-    'provider_id',
-];
-
-public function provider()
-{
-    return $this->belongsTo(SmsProvider::class, 'provider_id');
-}
-
+    public function provider()
+    {
+        return $this->belongsTo(SmsProvider::class, 'provider_id');
+    }
 }
