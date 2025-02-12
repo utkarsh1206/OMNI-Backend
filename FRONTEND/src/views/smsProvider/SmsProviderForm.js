@@ -104,7 +104,7 @@ const SmsProviderForm = () => {
                             "query_params": formData.query_params,
                             "max_length": formData.max_length || undefined,
                             "success_code": formData.success_code,
-                            "enabled": formData.enabled
+                            "enabled": formData.enabled ? "true" : "false"
                         }
                     ]
                 }
@@ -126,7 +126,7 @@ const SmsProviderForm = () => {
                             "query_params": formData.query_params,
                             "max_length": formData.max_length || undefined,
                             "success_code": formData.success_code,
-                            "enabled": formData.enabled
+                            "enabled": formData.enabled ? 'true' : 'false'
                         }
                     ]
                 }
