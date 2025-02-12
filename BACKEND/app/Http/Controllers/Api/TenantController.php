@@ -263,7 +263,8 @@ class TenantController extends Controller
         ]);
 
         Artisan::call('db:seed', [
-            '--database' => $newConnectionName, // Specify the new connection if needed
+            '--database' => $newConnectionName, 
+            '--class'=>'TenantSeeder',
             '--force' => true, // Run seeders in production if necessary
         ]);
         return response()->json([
