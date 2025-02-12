@@ -191,7 +191,9 @@ const Login = () => {
                 <CCardBody className="text-center">
                   <div>
                     <CImage src={new_logo} height={60} />
-                    <p className="login-message">Calls and Messaging made easy</p>
+                    <p className="mt-2">OMNICHANNEL</p>
+                    {/* <p className="login-message">Calls and Messaging made easy</p> */}
+                    <p className="login-message">Making Every Conversation Count</p>
                   </div>
                 </CCardBody>
               </CCard>

@@ -1,6 +1,13 @@
 2025-02-12 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :  
+	* Previous Commit ID : 8539dd12 
+	* Version : Dev
+	* React.JS and Laravel : Corrected the Base URL in config. Modified the login page to display Product Name and tagline.
+
+2025-02-12 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :  
 	* Previous Commit ID : 63f9fe4d 
 	* Version : Dev
 	* React.JS and Laravel : Improves tenant role and email config management. Adds validation to tenant role updates to prevent duplicate names. Enhances email configuration settings and template forms. Modifies username collation to be case-sensitive for admins and users. Updates email configure enum. Improves password reset functionality.
