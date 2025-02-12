@@ -64,6 +64,12 @@ const navItemList = [
   },
   {
     component: CNavItem,
+    name: 'SMS',
+    to: '/sms_provider',
+    icon: <CIcon icon={icon.cibMessenger} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
     name: 'Accounts',
     to: '/accounts',
     icon: <CIcon icon={icon.cilNewspaper} customClassName="nav-icon" />,
