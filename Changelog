@@ -1,3 +1,12 @@
+2025-02-12 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 2a4bcf58
+	* Version : Dev
+	* Laravel and ReactJs : Added license related changes. Display Decoded
+	license for tenant in tenant login and also added encoded license in
+	Master's tenant user.
+
 2025-02-12 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :  

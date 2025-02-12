@@ -172,9 +172,12 @@ class TenantLicenseController extends Controller
         $LICENSEnumber_of_acl_users = $decodedLicenseData['number_of_acl_users'];
 
         $tenant_data = DB::table('tenant_licenses')
-            ->select('tenant_id', 'start_date', 'expire_date', 'agent_ct', 'live_agent_ct', 'manager_ct', 'created_at')
-            ->where('tenant_id', $tenantId)
-            ->first();
+        ->join('tenants', 'tenant_licenses.tenant_id', '=', 'tenants.id')
+        ->select('tenant_licenses.tenant_id', 'tenant_licenses.start_date', 'tenant_licenses.expire_date', 
+                 'tenant_licenses.agent_ct', 'tenant_licenses.live_agent_ct', 'tenant_licenses.manager_ct', 
+                 'tenant_licenses.created_at', 'tenants.license_key') // Added license_key
+        ->where('tenant_licenses.tenant_id', $tenantId)
+        ->first();
 
         $tenantDetails = [];
         if ($tenant_data) {
@@ -186,6 +189,7 @@ class TenantLicenseController extends Controller
                 'live_agent_ct' => $tenant_data->live_agent_ct,
                 'manager_ct' => $tenant_data->manager_ct,
                 'created_at' => $tenant_data->created_at,
+                'license_key' => $tenant_data->license_key,
             ];
         }
 

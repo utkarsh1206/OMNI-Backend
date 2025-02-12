@@ -53,7 +53,7 @@ const License = () => {
       setMessage(response.data.message);
     } catch (err) {
       // Handle error
-      setError(err.response?.data?.message || 'An error occurred');
+      setError(err.response.data.message || 'An error occurred');
       console.error('Error:', err);
     } finally {
       setLoading(false);
@@ -87,7 +87,7 @@ const License = () => {
         setIsTenant(true)
       }
       // setIsTenant(false);
-      setError(err.response?.data?.message || 'Failed to fetch license info');
+      setError(err.response.data.message || 'Failed to fetch license info');
       console.error('Error fetching license info:', err);
     }
   };
@@ -125,21 +125,21 @@ const License = () => {
                 </CCol>
               </CRow>
               {!isTenant && (
-              <CRow className="mt-2 mb-4">
-                <CCol xs="12" md="12">
-                  <CButton type="submit" color="primary" className="me-2">
-                    {loading ? 'Updating...' : 'Update License'}
-                  </CButton>
-                  <CButton type="button" color="secondary" onClick={clearLicense}>
-                    Clear
-                  </CButton>
-                </CCol>
-              </CRow>
+                <CRow className="mt-2 mb-4">
+                  <CCol xs="12" md="12">
+                    <CButton type="submit" color="primary" className="me-2">
+                      {loading ? 'Updating...' : 'Update License'}
+                    </CButton>
+                    <CButton type="button" color="secondary" onClick={clearLicense}>
+                      Clear
+                    </CButton>
+                  </CCol>
+                </CRow>
               )}
             </CForm>
 
             {/* License Info Table */}
-            {licenseInfo && !isTenant &&(
+            {licenseInfo && (
               <CTable bordered className="mt-2" style={{ width: '70%' }}>
                 <CTableHead>
                   <CTableRow>
@@ -153,10 +153,12 @@ const License = () => {
                     <CTableDataCell>Validity Date</CTableDataCell>
                     <CTableDataCell>{licenseInfo.validity_date}</CTableDataCell>
                   </CTableRow>
-                  <CTableRow>
-                    <CTableDataCell>Number of Enterprise</CTableDataCell>
-                    <CTableDataCell>{licenseInfo.number_of_enterprise}</CTableDataCell>
-                  </CTableRow>
+                  {!isTenant && (
+                    <CTableRow>
+                      <CTableDataCell>Number of Enterprise</CTableDataCell>
+                      <CTableDataCell>{licenseInfo.number_of_enterprise}</CTableDataCell>
+                    </CTableRow>
+                  )}
                   <CTableRow>
                     <CTableDataCell>Number of Agents</CTableDataCell>
                     <CTableDataCell>{licenseInfo.number_of_agents}</CTableDataCell>
