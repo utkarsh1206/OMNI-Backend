@@ -1,5 +1,5 @@
-// export const BASE_URL = 'http://127.0.0.1:8000'
-export const BASE_URL = 'http://192.168.0.131/omni/BACKEND/public'
+// export const BASE_URL = 'http://127.0.0.1:8000'   // For Dev Environement
+export const BASE_URL = 'http://192.168.0.131:8000'    // For Server Deployment
 
 export const NEOX_MAIN_COLOR = '#3653A4'
 export const NEOX_MAIN_COLOR_GREY = '#D5D5EA'
