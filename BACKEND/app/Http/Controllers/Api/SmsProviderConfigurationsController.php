@@ -18,11 +18,19 @@ class SmsProviderConfigurationsController extends Controller
         $providerName = $request->input('provider_name', '');
         $method = $request->input('method', '');
         $enabled = $request->input('enabled', '');
-        $smsConfigurations = SmsProviderConfiguration::pluck("provider_id");
+
+        if ($method) {
+            $smsConfigurations = SmsProviderConfiguration::where('config_value', $method)->pluck("provider_id");
+        } else if ($enabled) {
+            $smsConfigurations = SmsProviderConfiguration::where('config_value', $enabled)->pluck("provider_id");
+        } else {
+            $smsConfigurations = SmsProviderConfiguration::pluck("provider_id");
+        }
+
         $configurations  = SmsProvider::whereIn("id", $smsConfigurations);
 
         if ($providerName) {
-            $configurations =  $configurations->where('name', 'like', '%' . $providerName . '%');
+            $configurations =  $configurations->where('name', '=', $providerName . '%');
         }
         $configurations = $configurations->get();
         return response()->json([
@@ -153,13 +161,6 @@ class SmsProviderConfigurationsController extends Controller
     {
         $formattedData =  collect($configurations)->map(function ($item) use ($method, $enabled) {
             $providerInfo = SmsProviderConfiguration::select(["id", "config_key", "config_value"])->where("provider_id", $item['id']);
-            if ($method) {
-                $providerInfo = $providerInfo->where('config_value', 'like', '%' . $method . '%');
-            }
-
-            if ($enabled) {
-                $providerInfo = $providerInfo->where('config_value', 'like', '%' . $enabled . '%');
-            }
             $providerInfo = $providerInfo->get();
 
             return [
