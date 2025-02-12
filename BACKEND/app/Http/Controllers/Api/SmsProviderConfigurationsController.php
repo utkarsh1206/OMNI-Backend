@@ -30,7 +30,7 @@ class SmsProviderConfigurationsController extends Controller
         $configurations  = SmsProvider::whereIn("id", $smsConfigurations);
 
         if ($providerName) {
-            $configurations =  $configurations->where('name', '=', $providerName . '%');
+            $configurations =  $configurations->where('name', '=', $providerName);
         }
         $configurations = $configurations->get();
         return response()->json([
