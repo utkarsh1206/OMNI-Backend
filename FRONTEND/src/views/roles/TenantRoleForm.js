@@ -15,6 +15,7 @@ import {
   CFormLabel,
   CFormSelect,
   CRow,
+  CSpinner,
 } from '@coreui/react'
 import { toCamelCase } from '../../utils/LetterCaseUtils'
 
@@ -142,7 +143,25 @@ const DynamicForm = () => {
       handleCancel()
     } catch (error) {
       console.error('Error submitting data:', error)
-      alert('An error occurred while processing your request.')
+      // alert('An error occurred while processing your request.')
+      if (error.response && error.response.data) {
+        const errorData = error.response.data
+        let errorMessage = ''
+        for (const key in errorData) {
+          if (Array.isArray(errorData[key])) {
+            errorData[key].forEach((msg) => {
+              errorMessage += `${msg}\n`
+            })
+          } else {
+            errorMessage += `${errorData[key]}\n`
+          }
+        }
+        alert(errorMessage)
+      } else if (error.request) {
+        alert('No response received from the server.')
+      } else {
+        alert('An error occurred while processing your request.')
+      }
     }
   }
 
@@ -151,7 +170,12 @@ const DynamicForm = () => {
   }
 
   if (loading) {
-    return <div>Loading...</div>
+    return (
+      <div className="text-center">
+        <CSpinner color="primary" />
+        <p>Loading...</p>
+      </div>
+    )
   }
 
   return (
@@ -185,6 +209,7 @@ const DynamicForm = () => {
                   name="Description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  required
                 />
               </CCol>
               <CCol md="4" className="mb-3">

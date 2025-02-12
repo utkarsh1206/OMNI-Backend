@@ -17,42 +17,16 @@ import {
 } from '@coreui/react'
 import axios from 'axios'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { BASE_URL, STATUS_TO_COLOR, TYPE_TO_COLOR } from '../../../config'
+import { BASE_URL } from '../../../config'
 import { AuthContext } from '../../../context/AuthContext'
-import CIcon from '@coreui/icons-react'
-import { cilPencil, cilUser } from '@coreui/icons'
-import DefaultCampaignComponent from '../../campaign/DefaultCampaignComponent'
-import DefaultProductsComponent from '../../product/DefaultProductsComponent'
-
-// Define FormGroup outside the main component
-// const FormGroup = ({ label, name, value, onChange, required, type, disabled }) => (
-//   <CCol md="4" className="mb-3">
-//     <CFormLabel htmlFor={name}>
-//       {label} {required && <span style={{ color: 'red' }}>*</span>}
-//     </CFormLabel>
-//     <CFormInput
-//       type={type}
-//       id={name}
-//       name={name}
-//       value={value}
-//       onChange={onChange}
-//       required={required}
-//       disabled={disabled}
-//     />
-//   </CCol>
-// )
 
 const EmailTemplatesForm = () => {
   const { id } = useParams() // Get Template ID from URL if present
   const navigate = useNavigate()
   const isEditMode = Boolean(id)
-  // const editAccess = boolean(id)
   const { authToken } = useContext(AuthContext)
 
   const location = useLocation()
-
-  // Extract type from query string
-  const searchParams = new URLSearchParams(location.search)
 
   const [formData, setFormData] = useState({
     title: '',
@@ -83,14 +57,6 @@ const EmailTemplatesForm = () => {
     }
   }, [id, isEditMode])
 
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     [name]: value,
-  //   }))
-  // }
-
   const handleChange = (e) => {
     const { name, value, files } = e.target
     if (files) {
@@ -109,10 +75,10 @@ const EmailTemplatesForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    const form = new FormData()
-    for (const [key, value] of Object.entries(formData)) {
-      form.append(key, value)
-    }
+    // const form = new FormData()
+    // for (const [key, value] of Object.entries(formData)) {
+    //   form.append(key, value)
+    // }
 
     try {
       let response
@@ -120,7 +86,8 @@ const EmailTemplatesForm = () => {
         // Update existing Template
         response = await axios.put(`${BASE_URL}/api/mail-templates/${id}`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            // 'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
             Authorization: `Bearer ${authToken}`,
           },
@@ -163,9 +130,7 @@ const EmailTemplatesForm = () => {
       mail_for: '',
       body: '',
     })
-    // if (isEditMode) {
-    navigate('/settings/email_templates') // Redirect to config list if editing
-    // }
+    navigate('/settings/email_templates')
   }
 
   return (
@@ -183,8 +148,6 @@ const EmailTemplatesForm = () => {
                 </CCardHeader>
                 <CCardBody>
                   <CRow>
-                    {/* <DefaultProductsComponent formData={formData} handleChange={handleChange} /> */}
-                    {/* <DefaultCampaignComponent formData={formData} handleChange={handleChange} /> */}
                     <CCol md="6" className="mb-3">
                       <CFormLabel htmlFor="title">
                         Template Name <span style={{ color: 'red' }}>*</span>
@@ -257,7 +220,6 @@ const EmailTemplatesForm = () => {
                         Content <span style={{ color: 'red' }}>*</span>
                       </CFormLabel>
                       <CFormTextarea
-                        // type="textarea"
                         id="body"
                         name="body"
                         rows={5}
@@ -287,51 +249,14 @@ const EmailTemplatesForm = () => {
         </CForm>
       </CCol>
       <CCol md={4} className="p-2">
-        <CCard
-          // style={{ width: 'auto', textAlign: 'center', borderRadius: '8px', overflow: 'hidden' }}
-          style={{ width: 'auto', borderRadius: '8px', overflow: 'hidden' }}
-        >
-          {/* <CCardBody
-            style={{
-              backgroundColor: '#0d6efd',
-              color: '#fff',
-              padding: '2rem',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '250px',
-            }}
-          >
-            <div
-              style={{
-                width: '100px',
-                height: '100px',
-                backgroundColor: '#e0e0e0',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '24px',
-                color: '#555',
-                marginBottom: '1rem',
-              }}
-            >
-              <CIcon icon={cilUser} size="xl" />
-            </div>
-          </CCardBody> */}
+        <CCard style={{ width: 'auto', borderRadius: '8px', overflow: 'hidden' }}>
           <CCardHeader>Template Preview</CCardHeader>
           <CCardBody>
-            {/* <CCardTitle>first last</CCardTitle>
-            <CCardText>mail</CCardText> */}
             <div dangerouslySetInnerHTML={{ __html: formData.body }} />
           </CCardBody>
-          <CCardFooter style={{ padding: '1rem', display: 'flex', justifyContent: 'center' }}>
-            {/* <CButton color="link" style={{ color: '#dc3545', textDecoration: 'none' }}>
-              <CIcon icon={cilPencil} className="me-2" />
-              Profile
-            </CButton> */}
-          </CCardFooter>
+          <CCardFooter
+            style={{ padding: '1rem', display: 'flex', justifyContent: 'center' }}
+          ></CCardFooter>
         </CCard>
       </CCol>
     </CRow>

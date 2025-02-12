@@ -97,7 +97,7 @@ class EmailConfigureController extends Controller
             'message' => 'Email Configure Created Successfully',
             'data' => new TenantsResource($users)
         ]);
-    }    
+    }
     public function show(EmailConfigure $email_configure)
     {
         return new TenantsResource($email_configure);
@@ -128,7 +128,7 @@ class EmailConfigureController extends Controller
             'message' => 'Email Configure Updated Successfully',
             'data' => new TenantsResource($email_configure)
         ]);
-    }    
+    }
     public function destroy(EmailConfigure $email_configure)
     {
         $email_configure->is_delete = 'Yes';
@@ -137,5 +137,4 @@ class EmailConfigureController extends Controller
             'message' => 'Email Configure Deleted Successfully',
         ]);
     }
-
 }
