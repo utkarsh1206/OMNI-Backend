@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Carbon\Carbon;
 
 class LicenseController extends Controller
 {
@@ -110,6 +111,11 @@ class LicenseController extends Controller
 
             if (!$isTenant && $EnumberOfEnterprise) {
                 $decodedData['number_of_enterprise'] = $this->aesService->decryptData($EnumberOfEnterprise, $inputKey);
+            }
+
+            if ($isTenant)
+            {
+                $decodedData['validity_date'] =  Carbon::createFromTimestamp($decodedData['validity_date'])->format('Y-m-d');
             }
 
             if ($token != "") {
