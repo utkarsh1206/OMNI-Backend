@@ -165,7 +165,7 @@ class SupportticketController extends Controller
         //$notification = SupportTicketNotification::create();
         $comment = $apiUser->first_name." ".$apiUser->last_name." has created the ticket"; 
         $this->createTicket($supportticket,"Ticket Created",$comment,$apiUser);
-        $this->sendSms($apiUser,"Ticket Created",$apiUser->mobile,$supportticket);
+      //  $this->sendSms($apiUser,"Ticket Created",$apiUser->mobile,$supportticket);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host;
         $smtpPort = $emailConfig->smtp_port;
