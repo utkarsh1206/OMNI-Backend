@@ -68,7 +68,6 @@ class SmsService
 
     private function sendWithCustomProvider(string $message, string $toPhone, array $configArr, $providerId)
     {
-
         $client = new GuzzleClient();
         $apiName = $configArr['api_name'] ?? '';
         $queryParams = $configArr['query_params'] ?? '';
@@ -77,6 +76,7 @@ class SmsService
         $method = $configArr['method'] ?? 'POST';
         try {
             $queryParams = str_replace("[PHONE_NUMBER]", $toPhone, $queryParams);
+            $queryParams .="&message=".rawurldecode($message);
             $urlWithParams = $apiUrl . $apiName . $queryParams;
             $response = $client->request($method, $urlWithParams);
             $responseBody = json_decode($response->getBody(), true);
