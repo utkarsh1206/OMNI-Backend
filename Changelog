@@ -1,3 +1,10 @@
+2025-02-13 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : e3d8c487
+	* Version : Dev
+	* Laravel : created the .env file and changed the config file accordingly, modified the remarks section in accountsForm. Added Mail Helper for template modification
+
 2025-02-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

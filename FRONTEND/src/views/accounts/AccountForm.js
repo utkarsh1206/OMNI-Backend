@@ -17,7 +17,7 @@ import {
   CAccordionHeader,
   CAccordionBody,
   CCardTitle,
-  CCardFooter
+  CCardFooter,
 } from '@coreui/react'
 import axios from 'axios'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -90,7 +90,6 @@ const FormGroup = ({ label, name, value, onChange, required, type, disabled, opt
         disabled={disabled}
       />
     </CCol>
-
   )
 }
 
@@ -98,7 +97,7 @@ const AccountForm = () => {
   const { authToken } = useContext(AuthContext)
   const navigate = useNavigate()
 
-  const { id } = useParams()  // If you are in edit mode
+  const { id } = useParams() // If you are in edit mode
   const isEditMode = Boolean(id)
 
   const [countries, setCountries] = useState([])
@@ -292,7 +291,6 @@ const AccountForm = () => {
     fetchOwner()
   }, [])
 
-
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prevData) => ({
@@ -302,7 +300,7 @@ const AccountForm = () => {
   }
 
   const validatePhoneNumber = (phone) => {
-    const phonePattern = /^(\+?[0-9]{1,4})?(\s?[-.\(\)]?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4})$/;
+    const phonePattern = /^(\+?[0-9]{1,4})?(\s?[-.\(\)]?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4})$/
     return phonePattern.test(phone)
   }
 
@@ -310,15 +308,15 @@ const AccountForm = () => {
     e.preventDefault()
 
     if (!authToken || !BASE_URL) {
-      console.error("Missing auth token or API base URL.");
-      setError("Missing auth token or API base URL.");
-      return;
+      console.error('Missing auth token or API base URL.')
+      setError('Missing auth token or API base URL.')
+      return
     }
 
     const form = e.target
     if (form.checkValidity()) {
       try {
-        let response;
+        let response
         if (isEditMode) {
           response = await axios.put(`${BASE_URL}/api/accounts/${id}`, formData, {
             headers: {
@@ -340,7 +338,6 @@ const AccountForm = () => {
         if (response.status === 200 || response.status === 201) {
           alert(response.data.message)
           navigate('/accounts')
-
         } else {
           console.error('Operation failed:', error)
           alert(error.response.data.message)
@@ -351,13 +348,14 @@ const AccountForm = () => {
         console.error('Operation failed:', err)
         if (err.response) {
           if (err.response.status === 422) {
-            const errorMessage = err.response.data.message || 'An error occurred while processing your request.';
-            alert(errorMessage);
+            const errorMessage =
+              err.response.data.message || 'An error occurred while processing your request.'
+            alert(errorMessage)
           } else {
-            alert('An error occurred while processing your request.');
+            alert('An error occurred while processing your request.')
           }
         } else {
-          alert('An error occurred while processing your request.');
+          alert('An error occurred while processing your request.')
         }
       }
     } else {
@@ -365,8 +363,14 @@ const AccountForm = () => {
     }
   }
 
-  const showIspDetails = formData.pstn_line === 'SIP' || formData.pstn_line === 'Both' || formData.pstn_line === 'Select PSTN Line';
-  const showPstnPortsQty = formData.pstn_line === 'PRI' || formData.pstn_line === 'Both' || formData.pstn_line === 'Select PSTN Line';
+  const showIspDetails =
+    formData.pstn_line === 'SIP' ||
+    formData.pstn_line === 'Both' ||
+    formData.pstn_line === 'Select PSTN Line'
+  const showPstnPortsQty =
+    formData.pstn_line === 'PRI' ||
+    formData.pstn_line === 'Both' ||
+    formData.pstn_line === 'Select PSTN Line'
 
   const handleCancel = () => {
     setFormData({
@@ -419,7 +423,7 @@ const AccountForm = () => {
         <CCardTitle>Account</CCardTitle>
       </CCardHeader>
       <CCardBody>
-        <CForm id='accountForm' onSubmit={handleSubmit}>
+        <CForm id="accountForm" onSubmit={handleSubmit}>
           <CAccordion flush activeItemKey={1}>
             <CAccordionItem itemKey={1}>
               <CAccordionHeader>Basic Detailing</CAccordionHeader>
@@ -453,9 +457,7 @@ const AccountForm = () => {
                         onChange={handleChange}
                       />
                       <CCol md="4" className="mb-3">
-                        <CFormLabel htmlFor="industry_id">
-                          Industry
-                        </CFormLabel>
+                        <CFormLabel htmlFor="industry_id">Industry</CFormLabel>
                         <CFormSelect
                           id="industry_id"
                           name="industry_id"
@@ -471,9 +473,7 @@ const AccountForm = () => {
                         </CFormSelect>
                       </CCol>
                       <CCol md="4" className="mb-3">
-                        <CFormLabel htmlFor="business_type_id">
-                          Business Type
-                        </CFormLabel>
+                        <CFormLabel htmlFor="business_type_id">Business Type</CFormLabel>
                         <CFormSelect
                           id="business_type_id"
                           name="business_type_id"
@@ -582,9 +582,7 @@ const AccountForm = () => {
                         onChange={handleChange}
                       />
                       <CCol md="4" className="mb-3">
-                        <CFormLabel htmlFor="owner_id">
-                          Owner
-                        </CFormLabel>
+                        <CFormLabel htmlFor="owner_id">Owner</CFormLabel>
                         <CFormSelect
                           id="owner_id"
                           name="owner_id"
@@ -594,7 +592,7 @@ const AccountForm = () => {
                           <option value="">Select Owner</option>
                           {owner.map((owners) => (
                             <option key={owners.id} value={owners.id}>
-                              {owners.first_name  } {owners.last_name}
+                              {owners.first_name} {owners.last_name}
                             </option>
                           ))}
                         </CFormSelect>
@@ -874,14 +872,25 @@ const AccountForm = () => {
                 <CRow className="mt-4">
                   <CCol xs="12" md="12">
                     <CRow>
-                      <FormGroup
+                      {/* <FormGroup
                         label="Remarks"
                         name="description"
                         type="textarea"
                         value={formData.description}
                         onChange={handleChange}
-                        style={{ width: '1100px', height: '150px' }}
-                      />
+                        style={{ width: '100%', height: '150px' }}
+                      /> */}
+                      <CCol md="12" className="mb-3">
+                        <CFormLabel htmlFor="body">Remarks</CFormLabel>
+                        <CFormTextarea
+                          id="description"
+                          name="description"
+                          rows={5}
+                          value={formData.description}
+                          onChange={handleChange}
+                          // required
+                        />
+                      </CCol>
                     </CRow>
                   </CCol>
                 </CRow>
@@ -891,12 +900,10 @@ const AccountForm = () => {
         </CForm>
       </CCardBody>
       <CCardFooter>
-        <CButton type="submit" color="primary" className="me-2" form='accountForm'>
+        <CButton type="submit" color="primary" className="me-2" form="accountForm">
           {isEditMode ? 'Update' : 'Submit'}
         </CButton>
-        <CButton type="button" color="secondary"
-          onClick={handleCancel}
-        >
+        <CButton type="button" color="secondary" onClick={handleCancel}>
           Cancel
         </CButton>
       </CCardFooter>
