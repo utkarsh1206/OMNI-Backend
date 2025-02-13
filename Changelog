@@ -1,3 +1,12 @@
+2025-02-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : b4d3510f
+	* Version : Dev
+	* Laravel : Created Seeder and Migrations files for some of the tables
+	admins, business_types, cities, countries, industry_types,
+	menu_permissions, name_prefixes,  occupations, states
+
 2025-02-12 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
