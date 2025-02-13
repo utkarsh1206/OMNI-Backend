@@ -224,8 +224,8 @@ class TenantController extends Controller
         $details_array = [
             'db' => str_replace(".", "_", $request->domain_name),
             'domain' => $request->domain_name,
-            'username' => env('DB_USERNAME'),
-            'password' => env('DB_PASSWORD')
+            'username'  => env('DB_USERNAME', 'root'),
+            'password'  => env('DB_PASSWORD', 'Sterlite@2025'),
         ];
         DB::table('details')->insert($details_array);
         $newConnectionName = str_replace(".", "_", $request->domain_name);
