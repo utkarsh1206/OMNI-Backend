@@ -15,12 +15,13 @@ class SmsService
      * Send SMS based on the selected provider for the given user.
      *
      * @param int $userId
+     * @param string $templateName
      * @param string $message
      * @param string $toPhone
      * @return mixed
      * @throws Exception
      */
-    public function sendSMS(int $userId, string $message, string $toPhone)
+    public function sendSMS(int $userId, string $templateName, string $message, string $toPhone)
     {
         $userGateway = UserSmsGateway::where('user_id', $userId)->first();
         if (!$userGateway) {
@@ -40,7 +41,7 @@ class SmsService
                 if ($configurations->count()) {
                     $configArr =  $configurations->toArray();
                 }
-                return $this->sendWithCustomProvider($message, $toPhone, $configArr, $providerId);
+                return $this->sendWithCustomProvider($templateName, $message, $toPhone, $configArr, $providerId);
             default:
                 throw new Exception('Unsupported SMS provider selected.');
         }
@@ -66,22 +67,32 @@ class SmsService
         // );
     }
 
-    private function sendWithCustomProvider(string $message, string $toPhone, array $configArr, $providerId)
+    private function sendWithCustomProvider(string $templateName, string $message, string $toPhone, array $configArr, $providerId)
     {
+       // dd($templateName);
         $client = new GuzzleClient();
         $apiName = $configArr['api_name'] ?? '';
         $queryParams = $configArr['query_params'] ?? '';
         $phoneNumber = $configArr['phone_number'] ?? '';
         $apiUrl = $configArr['api_url'] ?? '';
         $method = $configArr['method'] ?? 'POST';
+        
+        switch ($templateName) {
+            case 'Ticket Created':
+                $template_id = config('message.INCIDENT_CREATE');
+                break;
+            case 'Ticket Resolved':
+                $template_id = config('message.INCIDENT_RESOLUTION');
+                break;
+        }
         try {
-            $queryParams = str_replace("[PHONE_NUMBER]", $toPhone, $queryParams);
+            $queryParams = str_replace("[PHONE_NUMBER]", $phoneNumber, $queryParams);
+            $queryParams = str_replace("[TEMPLATE_ID]", $template_id, $queryParams);
             $queryParams .="&message=".rawurldecode($message);
             $urlWithParams = $apiUrl . $apiName . $queryParams;
             $response = $client->request($method, $urlWithParams);
             $responseBody = json_decode($response->getBody(), true);
             if (in_array($responseBody, ["1702", "1703", "1704", "1705", "1706", "1707", "1708", "1709", "1710", "1025", "1715", "1032", "1028", "1051", "1052"])) {
-                return 'Failed to send message: ' . ($responseBody['error'] ?? 'Unknown error');
                 $smsLogs = new SmsProviderLog;
                 $smsLogs->fill([
                     "provider_id" => $providerId,
@@ -90,6 +101,7 @@ class SmsService
                     "error_message" => "Failed to send message",
                 ]);
                 $smsLogs->save();
+                return 'Failed to send message: ' . ($responseBody['error'] ?? 'Unknown error');
             } else {
                 $smsLogs = new SmsProviderLog;
                 $smsLogs->fill([
