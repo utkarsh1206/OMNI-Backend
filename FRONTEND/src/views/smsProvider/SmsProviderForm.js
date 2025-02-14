@@ -49,7 +49,7 @@ const SmsProviderForm = () => {
         type: "json",
         url: "",
         query_params: "",
-        max_length: null,
+        max_length: "",
         success_code: "",
         enabled: true
     }
