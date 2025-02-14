@@ -56,6 +56,7 @@ use App\Http\Controllers\Api\SLAReportController;
 use App\Http\Controllers\Api\EmailLogController;
 use App\Http\Controllers\Api\SmsProviderConfigurationsController;
 use App\Http\Controllers\Api\SmsProviderController;
+use App\Http\Controllers\Api\ProductController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -129,6 +130,7 @@ Route::apiResource('sla-settings', SlaSettingController::class);
 Route::apiResource('departments', DepartmentController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('incident-types', IncidentTypeController::class);
+Route::apiResource('products', ProductController::class);
 
 Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
 Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);

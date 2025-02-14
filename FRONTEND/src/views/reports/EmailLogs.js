@@ -148,7 +148,7 @@ const EmailLogs = () => {
                     date: startDateStr, // Single date filter
                     page: 'all', // Fetch all records (no pagination)
                 },
-                nseType: 'blob', // Important for CSV file handling
+                responseType: 'blob', // Important for CSV file handling
             });
 
             // Create a Blob from the response data

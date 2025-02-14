@@ -6,6 +6,7 @@ import {
   CCardHeader,
   CForm,
   CFormLabel,
+  CFormTextarea,
   CFormInput,
   CRow,
   CCol,
@@ -16,20 +17,33 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { BASE_URL } from '../../config'
 import { AuthContext } from '../../context/AuthContext'
 
-const FormGroup = ({ label, name, value, onChange, required, type, disabled }) => (
-  <CCol md="4" className="mb-3">
+
+const FormGroup = ({ label, name, value, onChange, required, type, disabled, textarea }) => (
+  <CCol md="6" className="mb-3">
     <CFormLabel htmlFor={name}>
       {label} {required && <span style={{ color: 'red' }}>*</span>}
     </CFormLabel>
-    <CFormInput
-      type={type}
-      id={name}
-      name={name}
-      value={value}
-      onChange={onChange}
-      required={required}
-      disabled={disabled}
-    />
+    {textarea ? (
+      <CFormTextarea
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        rows="3"  // Adds a 3-line height for the textarea
+        required={required}
+        disabled={disabled}
+      />
+    ) : (
+      <CFormInput
+        type={type}
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        required={required}
+        disabled={disabled}
+      />
+    )}
   </CCol>
 )
 
@@ -42,7 +56,7 @@ const ProductForm = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    status: 'active',  // Set default status to 'active'
+    status: 'true',
   })
 
   useEffect(() => {
@@ -59,7 +73,7 @@ const ProductForm = () => {
           setFormData({
             name: productData.name,
             description: productData.description,
-            status: productData.status ? 'active' : 'inactive',  // Set status based on product data
+            status: productData.status ? 'true' : 'false',
           })
         })
         .catch((error) => {
@@ -73,24 +87,28 @@ const ProductForm = () => {
     const { name, value } = e.target
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: name === "status" ? value === "true" : value,
     }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
+      const submissionData = {
+        ...formData,
+        status: formData.status === 'true',
+      }
       let response
       if (isEditMode) {
         // Update existing product
-        response = await axios.put(`${BASE_URL}/api/products/${id}`, formData, {
+        response = await axios.put(`${BASE_URL}/api/products/${id}`, submissionData, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${authToken}`,
           },
         })
       } else {
-        response = await axios.post(`${BASE_URL}/api/products`, formData, {
+        response = await axios.post(`${BASE_URL}/api/products`, submissionData, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${authToken}`,
@@ -98,14 +116,21 @@ const ProductForm = () => {
         })
       }
 
-      if (response.status === 200) {
-        alert(response.data.message + (isEditMode ? `\nProduct updated successfully.` : `\nProduct created successfully.`))
-        navigate('/products') // Redirect to Product list page after success
+      if (response.status === 201 || response.status === 200) {
+        alert(
+          isEditMode ? `Product updated successfully.` : `Product created successfully.`
+        )
+        navigate('/product')
+
       }
-      handleCancel()
     } catch (error) {
       console.error('Operation failed:', error)
-      alert(error.response.data.message)
+      if (error.response && error.response.data && error.response.data.errors) {
+        const errorMessages = Object.values(error.response.data.errors).flat().join('\n')
+        alert(`Validation failed:\n${errorMessages}`)
+      } else {
+        alert(error.response?.data?.message || 'An error occurred')
+      }
     }
   }
 
@@ -113,9 +138,9 @@ const ProductForm = () => {
     setFormData({
       name: '',
       description: '',
-      status: 'active',  // Reset status to default 'active'
+      status: 'true',
     })
-    navigate('/Product') // Redirect to Product list page if cancelling
+    navigate('/product')
   }
 
   return (
@@ -136,15 +161,7 @@ const ProductForm = () => {
                   required={!isEditMode}
                   disabled={isEditMode}
                 />
-                <FormGroup
-                  label="Description"
-                  name="description"
-                  type="text"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                />
-                <CCol md="4" className="mb-3">
+                <CCol md="6" className="mb-3">
                   <CFormLabel htmlFor="status">
                     Status <span style={{ color: 'red' }}>*</span>
                   </CFormLabel>
@@ -155,10 +172,21 @@ const ProductForm = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                    <option value='true'>Active</option>
+                    <option value='false'>Inactive</option>
                   </CFormSelect>
                 </CCol>
+              </CRow>
+              <CRow>
+                <FormGroup
+                  label="Description"
+                  name="description"
+                  //type="text"
+                  value={formData.description}
+                  onChange={handleChange}
+                  textarea
+                  required
+                />
               </CRow>
             </CCardBody>
           </CCard>
