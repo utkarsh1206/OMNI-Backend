@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState, useRef, useCallback } from "react"
 import {
   CButton,
   CCol,
@@ -9,6 +9,7 @@ import {
   CTableBody,
   CTableDataCell,
   CTableHead,
+  CFormSelect,
   CTableHeaderCell,
   CTableRow,
   CTooltip,
@@ -20,7 +21,7 @@ import PaginationComponent from '../../components/PaginationComponent'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilXCircle } from '@coreui/icons'
 import { BASE_URL } from '../../config'
-import { formatDate } from '../../utils/DateUtils'
+
 import SearchAndFilter from '../../components/SearchAndFilter'
 
 const Product = () => {
@@ -32,7 +33,6 @@ const Product = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState({
     name: '',
-    category_id: '',
     status: '',
   })
   const [appliedFilters, setAppliedFilters] = useState({})
@@ -41,14 +41,16 @@ const Product = () => {
 
   // Handle applying filters
   const handleApplyFilters = (newFilters) => {
-    setAppliedFilters(newFilters)
+    setAppliedFilters(newFilters);
+    setCurrentPage(1);
   }
 
   // Handle resetting filters
   const handleResetFilters = () => {
-    setFilters({ name: '', category_id: '', status: '' })
+    setFilters({ name: '', status: '' })
     setAppliedFilters({})
     setSearchQuery('')
+    setCurrentPage(1);
   }
 
   // Handle pagination changes
@@ -76,12 +78,19 @@ const Product = () => {
     }
   }
 
-  // Fetch products based on filters and search query
-  const fetchProducts = async () => {
+  // Fetching products with filters
+  useEffect(() => {
+    if (searchQuery !== "") {
+      setCurrentPage(1)
+    }
+    fetchProducts()
+  }, [searchQuery, appliedFilters, currentPage, perPage])
+
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/products`, {
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${authToken}`,
         },
         params: {
@@ -93,18 +102,13 @@ const Product = () => {
       })
       setProducts(response.data.data)
     } catch (error) {
-      console.error('Error fetching products:', error)
+      console.error("Error fetching products:", error)
     }
-  }
+  }, [searchQuery, appliedFilters, currentPage, perPage, authToken])
 
-  useEffect(() => {
-    fetchProducts()
-  }, [searchQuery, appliedFilters, currentPage, perPage])
-
-  // Define custom filter UI for Products
   const renderProductFilters = (filters, setFilters) => (
     <CRow className="mb-3">
-      <CCol xs={12} md={4}>
+      <CCol xs={12} md={6}>
         <label htmlFor="name" className="form-label">Product Name:</label>
         <CFormInput
           id="name"
@@ -115,30 +119,57 @@ const Product = () => {
           placeholder="Enter product name"
         />
       </CCol>
-      <CCol xs={12} md={4}>
-        <label htmlFor="category_id" className="form-label">Category:</label>
-        <CFormInput
-          id="category_id"
-          type="text"
-          name="category_id"
-          value={filters.category_id || ''}
-          onChange={(e) => setFilters((prev) => ({ ...prev, category_id: e.target.value }))}
-          placeholder="Enter category"
-        />
-      </CCol>
-      <CCol xs={12} md={4}>
-        <label htmlFor="status" className="form-label">Status:</label>
-        <CFormInput
+      <CCol xs={12} md={6}>
+        <label htmlFor="status" className="form-label">
+          Status:
+        </label>
+        <CFormSelect
           id="status"
-          type="text"
           name="status"
-          value={filters.status || ''}
+          value={filters.status || ""}
           onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
-          placeholder="Enter status"
-        />
+        >
+          <option value="">All</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </CFormSelect>
       </CCol>
     </CRow>
   )
+
+  // Truncated Description Component with useLayoutEffect for optimization
+  const TruncatedDescription = ({ text, maxWidth }) => {
+    const [truncatedText, setTruncatedText] = useState(text)
+    const textRef = useRef(null)
+
+    useEffect(() => {
+      const checkOverflow = () => {
+        if (textRef.current) {
+          const element = textRef.current
+          if (element.offsetWidth > maxWidth) {
+            let truncated = text
+            while (element.offsetWidth > maxWidth && truncated.length > 0) {
+              truncated = truncated.slice(0, -1)
+              element.textContent = truncated + "..."
+            }
+            setTruncatedText(truncated + "...")
+          } else {
+            setTruncatedText(text)
+          }
+        }
+      }
+
+      checkOverflow()
+      window.addEventListener("resize", checkOverflow)
+      return () => window.removeEventListener("resize", checkOverflow)
+    }, [text, maxWidth])
+
+    return (
+      <span ref={textRef} title={text}>
+        {truncatedText}
+      </span>
+    )
+  }
 
   return (
     <>
@@ -177,11 +208,13 @@ const Product = () => {
               {products.length > 0 ? (
                 products.map((product, index) => (
                   <CTableRow key={product.id}>
-                    <CTableDataCell>{index + 1 + (currentPage - 1) * perPage}</CTableDataCell>
+                    <CTableDataCell width='60px'>{searchQuery !== "" ? index + 1 : index + 1 + (currentPage - 1) * perPage}</CTableDataCell>
                     <CTableDataCell>{product.name}</CTableDataCell>
-                    <CTableDataCell>{product.description}</CTableDataCell>
-                    <CTableDataCell>{product.status ? 'Active' : 'Inactive'}</CTableDataCell>
                     <CTableDataCell>
+                      <TruncatedDescription text={product.description} maxWidth={500} />
+                    </CTableDataCell>
+                    <CTableDataCell width='100px'>{product.status ? 'Active' : 'Inactive'}</CTableDataCell>
+                    <CTableDataCell width='120px'>
                       <CRow className="justify-content-center mx-0">
                         <CCol className="mx-auto d-flex justify-content-center">
                           <CTooltip content="Edit">
