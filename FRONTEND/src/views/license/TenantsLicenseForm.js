@@ -11,6 +11,7 @@ import {
   CCardHeader,
   CCardTitle,
   CForm,
+  CFormTextarea
 } from '@coreui/react';
 import axios from 'axios';
 import { BASE_URL } from '../../config'
@@ -67,7 +68,8 @@ const TenantsLicenseForm = () => {
           managerCount: licenseResponse.data.data.manager_ct,
           availableAgentCount: licenseResponse.data.data.available_agents,
           availableLiveAgentCount: licenseResponse.data.data.available_live_agents,
-          availableManagerCount: licenseResponse.data.data.available_acl_users
+          availableManagerCount: licenseResponse.data.data.available_acl_users,
+          licenseKey: licenseResponse.data.data.license_key,
         }));
         // } else {
         //   setLicenseNotFound(true);
@@ -129,19 +131,16 @@ const TenantsLicenseForm = () => {
   };
 
   return (
-    <CCard className='mb-4 shadow-sm'>
-      <CCardHeader>
-        <CCardTitle>Create Enterprise License</CCardTitle>
-      </CCardHeader>
-      <CCardBody>
-        <CForm onSubmit={handleSubmit}>
-          {/* Enterprise License Details Section */}
-          <CCard className="border-0">
-            {/* <CCardHeader className="bg-light">
-              <CCardTitle className="mb-0">Enterprise License Details</CCardTitle>
-            </CCardHeader> */}
-            <CCardBody>
-              <CRow className="mb-4">
+    <CRow>
+      <CCol md='6'>
+        <CCard className='mb-4 shadow-sm'>
+          <CCardHeader>
+            <CCardTitle>Create Enterprise License</CCardTitle>
+          </CCardHeader>
+          <CCardBody>
+            <CForm onSubmit={handleSubmit}>
+              {/* Enterprise License Details Section */}
+              <CRow className="mb-3">
                 {/* Enterprise ID Input */}
                 <CCol md="12">
                   <CInputGroup>
@@ -157,7 +156,7 @@ const TenantsLicenseForm = () => {
               </CRow>
 
               {/* Expiry Date Input */}
-              <CRow className="mb-4">
+              <CRow className="mb-3">
                 <CCol md="12">
                   <CInputGroup>
                     <CInputGroupText style={{ width: '40%' }}>Expire Date</CInputGroupText>
@@ -172,10 +171,10 @@ const TenantsLicenseForm = () => {
                 </CCol>
               </CRow>
 
-              <CRow className="mb-4">
+              <CRow className="mb-3">
                 <CCol md="6">
                   <CInputGroup>
-                    <CInputGroupText style={{ width: '40%' }}>Agent Count</CInputGroupText>
+                    <CInputGroupText style={{ width: '60%' }}>Agent Count</CInputGroupText>
                     <CFormInput
                       value={formData.agentCount}
                       onChange={handleChange}
@@ -186,7 +185,7 @@ const TenantsLicenseForm = () => {
                 </CCol>
                 <CCol md="6">
                   <CInputGroup>
-                    <CInputGroupText style={{ width: '40%' }}>Available Agent Count</CInputGroupText>
+                    <CInputGroupText style={{ width: '62%' }}>Available Agent Count</CInputGroupText>
                     <CFormInput
                       value={formData.availableAgentCount}
                       disabled={true}
@@ -197,10 +196,10 @@ const TenantsLicenseForm = () => {
               </CRow>
 
               {/* Live Agent Count and Available Live Agent Count Inline */}
-              <CRow className="mb-4">
+              <CRow className="mb-3">
                 <CCol md="6">
                   <CInputGroup>
-                    <CInputGroupText style={{ width: '40%' }}>Live Agent Count</CInputGroupText>
+                    <CInputGroupText style={{ width: '60%' }}>Live Agent Count</CInputGroupText>
                     <CFormInput
                       value={formData.liveAgentCount}
                       onChange={handleChange}
@@ -211,7 +210,7 @@ const TenantsLicenseForm = () => {
                 </CCol>
                 <CCol md="6">
                   <CInputGroup>
-                    <CInputGroupText style={{ width: '40%' }}>Available Live Agent Count</CInputGroupText>
+                    <CInputGroupText style={{ width: '62%' }}>Available Live Agent Count</CInputGroupText>
                     <CFormInput
                       value={`${formData.availableLiveAgentCount}`}
                       disabled={true}
@@ -222,10 +221,10 @@ const TenantsLicenseForm = () => {
               </CRow>
 
               {/* Manager Count and Available Manager Count Inline */}
-              <CRow className="mb-4">
+              <CRow className="mb-3">
                 <CCol md="6">
                   <CInputGroup>
-                    <CInputGroupText style={{ width: '40%' }}>Manager Count</CInputGroupText>
+                    <CInputGroupText style={{ width: '60%' }}>Manager Count</CInputGroupText>
                     <CFormInput
                       value={formData.managerCount}
                       onChange={handleChange}
@@ -236,7 +235,7 @@ const TenantsLicenseForm = () => {
                 </CCol>
                 <CCol md="6">
                   <CInputGroup>
-                    <CInputGroupText style={{ width: '40%' }}>Available Manager Count</CInputGroupText>
+                    <CInputGroupText style={{ width: '62%' }}>Available Manager Count</CInputGroupText>
                     <CFormInput
                       value={`${formData.availableManagerCount}`}
                       disabled={true}
@@ -261,11 +260,22 @@ const TenantsLicenseForm = () => {
                   </CButton>
                 </CCol>
               </CRow>
-            </CCardBody>
-          </CCard>
-        </CForm>
-      </CCardBody>
-    </CCard >
+            </CForm>
+          </CCardBody>
+        </CCard >
+      </CCol>
+      <CCol md='6'>
+        <CCard className='mb-4 shadow-sm'>
+          <CCardHeader>
+            <CCardTitle>License Key</CCardTitle>
+          </CCardHeader>
+          <CCardBody>
+            <CFormTextarea value={formData.licenseKey} readOnly disabled rows={5} />
+          </CCardBody>
+        </CCard>
+      </CCol>
+    </CRow>
+
   )
 }
 

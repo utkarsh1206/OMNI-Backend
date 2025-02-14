@@ -51,9 +51,9 @@ const EmailConfigSettingsForm = () => {
 
   const location = useLocation()
 
-   // Extract type from query string
-   const searchParams = new URLSearchParams(location.search);
-   const emailType = searchParams.get("type");
+  // Extract type from query string
+  const searchParams = new URLSearchParams(location.search)
+  const emailType = searchParams.get('type')
 
   const [formData, setFormData] = useState({
     type: emailType,
@@ -132,9 +132,11 @@ const EmailConfigSettingsForm = () => {
       let response
       if (isEditMode) {
         // Update existing Config
+        // console.log(JSON.stringify(formData, null, 2))
         response = await axios.put(`${BASE_URL}/api/email-configure/${id}`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            // 'Content-Type': 'multipart/form-data',
+            'Content-Type': 'appplication/json',
             'Access-Control-Allow-Origin': '*',
             Authorization: `Bearer ${authToken}`,
           },
@@ -153,11 +155,10 @@ const EmailConfigSettingsForm = () => {
       // if (response.status === 200 || response.status === 201) {
       if (response.status === 200) {
         alert(
-          response.data.message +
-            (isEditMode
-              ? // ? `\n Config updated successfully.`
-                ``
-              : `\nUsername: ${response.data.data.username}\nCompany Name: ${response.data.data.company_name}`),
+          isEditMode
+            ? // ? `\n Config updated successfully.`
+              `Update Successful.`
+            : `\nType: ${response.data.data.type}\nSMTP UserName: ${response.data.data.smtp_user}\nIMAP UserName: ${imap_user}`,
         )
         navigate('/settings/email_config_settings') // Redirect to Configs list after success
       }

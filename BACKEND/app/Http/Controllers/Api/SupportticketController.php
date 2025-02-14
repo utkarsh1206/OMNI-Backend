@@ -162,10 +162,9 @@ class SupportticketController extends Controller
         ]);
 
         $supportticket->update(['support_ticket_id' => $supportTicketId]);
-        //$notification = SupportTicketNotification::create();
         $comment = $apiUser->first_name." ".$apiUser->last_name." has created the ticket"; 
-        $this->createTicket($supportticket,"Ticket Created",$comment,$apiUser);
-        $this->sendSms($apiUser,"Ticket Created",$apiUser->mobile,$supportticket);
+        $this->createTicket($supportticket, "Ticket Created", $comment, $apiUser);
+        $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportticket);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host;
         $smtpPort = $emailConfig->smtp_port;
@@ -186,9 +185,7 @@ class SupportticketController extends Controller
         // Attempt to send the email
        
         try {
-           
-                Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
-         
+            Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
             logEmail([
                 "user_id"=>$request->assign_to_id,
                 "email_template_id"=> 0, 
@@ -269,15 +266,8 @@ class SupportticketController extends Controller
             $updateData['attachment'] = $attachment_urls;
         }
         $supportticket->update($updateData);
-        // $notification = SupportTicketNotification::create([
-        //     'type' => isset($request->default_status) ? $request->default_status : "",
-        //     'comment' => "Edit Support Ticket",
-        //     'support_ticket_id' => $supportticket->id,
-        //     'date' => gmdate('Y-m-d H:i:s'),
-        // ]);
         $this->createTicket($supportticket,isset($request->default_status) ? $request->default_status : "","Edit Support Ticket",$apiUser);
-    // $apiUser->mobile = "+919725958612";
-        $this->sendSms($apiUser,"Ticket Created",$apiUser->mobile,$supportticket);
+        $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportticket);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host;
         $smtpPort = $emailConfig->smtp_port;
@@ -361,7 +351,7 @@ class SupportticketController extends Controller
         $this->createTicket($supportticket,$type,$comment,$apiUser,$statusInfo); 
         if($request->default_status == "Resolved")
         {
-             $this->sendSms($apiUser,"Ticket Resolved",$apiUser->mobile,$supportticket);
+            $this->sendSms($apiUser, "Ticket Resolved", $apiUser->mobile, $supportticket);
             $toEmails = $supportticket->assignedUser->email ?? '';
             setEmailConfig();
             $mailTemplate = MailTemplate::where("type","agent_solve_the_ticket")->first();
@@ -387,7 +377,7 @@ class SupportticketController extends Controller
         ]);
     }
 
-    public function createTicket($supportticket,$type,$comment,$apiUser,$statusChange=NULL)
+    public function createTicket($supportticket, $type, $comment, $apiUser, $statusChange=NULL)
     {
         $notification = SupportTicketNotification::create([
             'type' => $statusChange ?? $type,
@@ -431,16 +421,15 @@ class SupportticketController extends Controller
         return $icon[$type] ?? "cilAsteriskCircle";
     }
 
-    public function sendSms($apiUser,$type,$phone,$supportticket)
+    public function sendSms($apiUser, $type, $phone, $supportticket)
     {
        $smsInfo = new SmsService;
       
        $templateInfo = SmsTemplate::where("name",$type)->first();
+       $templateName = $templateInfo->name ?? '';
        $template = $templateInfo->content ?? '';
-       $template = str_replace("{#ticket ##}",$supportticket->support_ticket_id,$template);
-       $template = str_replace("{#customer name#}",$apiUser->first_name.' '.$apiUser->last_name,$template);
-       $smsInfo->sendSMS($apiUser->id,$template,$phone);
+       $template = str_replace("{#ticket ##}",$supportticket->support_ticket_id, $template);
+       $template = str_replace("{#customer name#}",$apiUser->first_name.' '.$apiUser->last_name, $template);
+       $smsInfo->sendSMS($apiUser->id, $templateName, $template, $phone);
     }
-
-    
 }

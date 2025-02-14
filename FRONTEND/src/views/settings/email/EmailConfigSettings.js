@@ -38,8 +38,8 @@ const EmailConfigSettings = () => {
   })
 
   // Extract type from query string
-  const searchParams = new URLSearchParams(location.search);
-  const emailType = searchParams.get("type");
+  const searchParams = new URLSearchParams(location.search)
+  const emailType = searchParams.get('type')
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target
@@ -76,7 +76,8 @@ const EmailConfigSettings = () => {
         <CCol xs={12}>
           <CCard className="mb-2">
             <CCardHeader>
-              Search for <strong>Email Configuration</strong> <small>Filters will be filled later</small>
+              Search for <strong>Email Configuration</strong>{' '}
+              <small>Filters will be filled later</small>
             </CCardHeader>
             <CCardBody>
               Placeholder for tenant search fields
@@ -121,6 +122,7 @@ const EmailConfigSettings = () => {
                 <CTableHeaderCell scope="col">Controls</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
+            {/* {console.log("email: " + JSON.stringify(emailConfigs, null,2))} */}
             <CTableBody>
               {emailConfigs.map((emailConfig) => (
                 <CTableRow key={emailConfig.id}>
@@ -138,7 +140,9 @@ const EmailConfigSettings = () => {
                           <CButton
                             color="warning"
                             size="sm"
-                            onClick={() => navigate(`/settings/email_config_settings/edit/${emailConfig.id}`)}
+                            onClick={() =>
+                              navigate(`/settings/email_config_settings/edit/${emailConfig.id}`)
+                            }
                           >
                             <CIcon icon={cilPencil} />
                           </CButton>

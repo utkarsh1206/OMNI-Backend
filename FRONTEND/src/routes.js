@@ -48,6 +48,9 @@ const SupportTickets = React.lazy(() => import('./views/supportTicket/SupportTic
 const CreateSupportTickets = React.lazy(() => import('./views/supportTicket/SupportTicketsForm'))
 const ViewSupportTickets = React.lazy(() => import('./views/supportTicket/ViewSupportTickets'))
 
+const SmsProvider = React.lazy(() => import('./views/smsProvider/SmsProvider'))
+const CreateSmsProvider = React.lazy(() => import('./views/smsProvider/SmsProviderForm'))
+
 //Agent
 const Agent = React.lazy(() => import('./views/agent/Agent'))
 
@@ -131,6 +134,11 @@ const routes = [
   // { path: '/incdnt_type/categories', name: 'Category', element: Categories, permissionTag: true},
   { path: '/incdnt_type/create_incident', name: 'Create Incident', element: CreateIncident, permissionTag: true },
   { path: '/incdnt_type/edit_incident/:id', name: 'Edit Incident', element: CreateIncident, permissionTag: true },
+
+  { path: '/sms_provider', name: 'SMS Provider Management', element: SmsProvider, permissionTag: true },
+  { path: '/sms_provider/sms_provider', name: 'SMS Provider', element: SmsProvider, permissionTag: true },
+  { path: '/sms_provider/crt_sms_provider', name: 'Create SMS Provider', element: CreateSmsProvider, permissionTag: true },
+  { path: '/sms_provider/edit/:id', name: 'Edit SMS Provider', element: CreateSmsProvider, permissionTag: true },
 
   { path: '/product', name: 'Product List', element: ProductPage, permissionTag: true },
   { path: '/product/create', name: 'Create Product', element: ProductForm, permissionTag: true },

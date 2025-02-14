@@ -14,6 +14,15 @@ class DatabaseSeeder extends Seeder
             CronCommandsSeeder::class,
             ModuleSeeder::class,
             SubModuleSeeder::class,
+            BusinessTypesSeeder::class,
+            IndustryTypesSeeder::class,
+            MenuPermissionsSeeder::class,
+            NamePrefixesSeeder::class,
+            OccupationsSeeder::class,
+            AdminsSeeder::class,
+            CountriesSeeder::class,
+            StatesSeeder::class,
+            CitiesSeeder::class,
         ]);
     }
 }

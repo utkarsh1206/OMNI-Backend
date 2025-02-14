@@ -224,8 +224,8 @@ class TenantController extends Controller
         $details_array = [
             'db' => str_replace(".", "_", $request->domain_name),
             'domain' => $request->domain_name,
-            'username' => env('DB_USERNAME'),
-            'password' => env('DB_PASSWORD')
+            'username'  => env('DB_USERNAME', 'root'),
+            'password'  => env('DB_PASSWORD', 'Sterlite@2025'),
         ];
         DB::table('details')->insert($details_array);
         $newConnectionName = str_replace(".", "_", $request->domain_name);
@@ -235,8 +235,8 @@ class TenantController extends Controller
             'host'      => env('DB_HOST', '127.0.0.1'),
             'port'      => env('DB_PORT', '3306'),
             'database'  => $databaseName,
-            'username'  => env('DB_USERNAME'),
-            'password'  => env('DB_PASSWORD'),
+            'username'  => env('DB_USERNAME', 'root'),
+            'password'  => env('DB_PASSWORD', 'Sterlite@2025'),
             'charset'   => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix'    => '',

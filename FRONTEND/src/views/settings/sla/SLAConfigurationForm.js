@@ -24,9 +24,11 @@ import {
   CModalFooter,
   CTableDataCell,
 } from '@coreui/react'
+import Datetime from 'react-datetime'
+import 'react-datetime/css/react-datetime.css'
 import { AuthContext } from '../../../context/AuthContext'
 import { BASE_URL } from '../../../config'
-import Datetime from "react-datetime"
+// import Datetime from "react-datetime"
 import { extractTime } from '../../../utils/DateUtils'
 import 'react-datetime/css/react-datetime.css'
 
@@ -212,24 +214,24 @@ const SLAConfigurationForm = () => {
     }
 
     if (formData.sla.is_24_hours) {
-      formData.sla.start_time = "00:00:00";
-      formData.sla.end_time = "23:59:59";
+      formData.sla.start_time = '00:00:00'
+      formData.sla.end_time = '23:59:59'
     }
     console.log('formdata ' + JSON.stringify(formData, null, 4))
 
     const request = isEditMode
       ? axios.put(`${BASE_URL}/api/sla-settings/${id}`, formData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-      })
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`,
+          },
+        })
       : axios.post(`${BASE_URL}/api/sla-settings`, formData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-      })
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`,
+          },
+        })
 
     request
       .then(() => {
@@ -337,6 +339,14 @@ const SLAConfigurationForm = () => {
                       timeFormat="HH:mm:ss"
                       dateFormat={false}
                     />
+                    {/* <Datetime
+                      value={businessHours.startTime}
+                      onChange={(e) =>
+                        setBusinessHours({ ...businessHours, startTime: e.target.value })
+                      }
+                      timeFormat="HH:mm:ss"
+                      dateFormat={false}
+                    /> */}
                   </div>
                 </CCol>
                 <CCol xs="5" className="d-flex align-items-center">
@@ -473,7 +483,7 @@ const SLAConfigurationForm = () => {
           <CButton
             color="primary"
             onClick={handleAddTargetLevel}
-          // disabled={targetLevels.length >= 4}
+            // disabled={targetLevels.length >= 4}
           >
             Add Level
           </CButton>

@@ -1,3 +1,42 @@
+2025-02-13 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : e3d8c487
+	* Version : Dev
+	* Laravel : created the .env file and changed the config file accordingly, modified the remarks section in accountsForm. Added Mail Helper for template modification
+
+2025-02-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : b4d3510f
+	* Version : Dev
+	* Laravel : Created Seeder and Migrations files for some of the tables
+	admins, business_types, cities, countries, industry_types,
+	menu_permissions, name_prefixes,  occupations, states
+
+2025-02-12 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 2a4bcf58
+	* Version : Dev
+	* Laravel and ReactJs : Added license related changes. Display Decoded
+	license for tenant in tenant login and also added encoded license in
+	Master's tenant user.
+
+2025-02-12 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : 8539dd12 
+	* Version : Dev
+	* React.JS and Laravel : Corrected the Base URL in config. Modified the login page to display Product Name and tagline.
+
+2025-02-12 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :  
+	* Previous Commit ID : 63f9fe4d 
+	* Version : Dev
+	* React.JS and Laravel : Improves tenant role and email config management. Adds validation to tenant role updates to prevent duplicate names. Enhances email configuration settings and template forms. Modifies username collation to be case-sensitive for admins and users. Updates email configure enum. Improves password reset functionality.
+
 2025-02-10 Nidhi Jajal<nidhi.jajal@stltech.in> 
 	* NEWS
 	* Jira ID :  

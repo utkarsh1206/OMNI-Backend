@@ -18,20 +18,33 @@ class SmsProviderConfigurationsController extends Controller
         $providerName = $request->input('provider_name', '');
         $method = $request->input('method', '');
         $enabled = $request->input('enabled', '');
+        $search = $request->input('search', '');
 
         if ($method) {
-            $smsConfigurations = SmsProviderConfiguration::where('config_value', $method)->pluck("provider_id");
+            $smsConfigurations = SmsProviderConfiguration::where('config_value', $method);
         } else if ($enabled) {
-            $smsConfigurations = SmsProviderConfiguration::where('config_value', $enabled)->pluck("provider_id");
+            $smsConfigurations = SmsProviderConfiguration::where('config_value', $enabled);
         } else {
-            $smsConfigurations = SmsProviderConfiguration::pluck("provider_id");
+            $smsConfigurations = SmsProviderConfiguration::query();
         }
 
+        if($search)
+        {
+            $smsConfigurations = $smsConfigurations->orWhere('config_value', 'like', '%' . $search . '%');
+        }
+          
+        $smsConfigurations = $smsConfigurations->pluck("provider_id");
         $configurations  = SmsProvider::whereIn("id", $smsConfigurations);
 
         if ($providerName) {
-            $configurations =  $configurations->where('name', '=', $providerName . '%');
+            $configurations =  $configurations->where('name', '=', $providerName);
         }
+
+        if ($search) {
+            $configurations = $configurations->orWhere('name', 'like', '%' . $search . '%');
+        }
+
+        
         $configurations = $configurations->get();
         return response()->json([
             'data' => $this->formatListingData($configurations, $method, $enabled),
