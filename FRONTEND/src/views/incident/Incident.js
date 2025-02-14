@@ -160,7 +160,7 @@ const Incident = () => {
       <CRow>
         <CCol>
           <CContainer className="mb-3">
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <Link to="/incdnt_type/create_incident">
                   <CButton color="primary" className="me-2" size="sm">

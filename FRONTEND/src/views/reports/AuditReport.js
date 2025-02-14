@@ -130,7 +130,7 @@ const AuditReport = () => {
       <CRow>
         <CCol>
           <CContainer className="mb-3">
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <h5>Audit Report</h5>
               </CCol>

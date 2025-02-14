@@ -46,7 +46,7 @@ const Ingroups = () => {
 											</CFormLabel>
 											<CCol>
 												<CFormInput
-											type="text"
+													type="text"
 													id="ingrpName"
 												/>
 											</CCol>
@@ -79,7 +79,7 @@ const Ingroups = () => {
 			<h6>Inbound Groups Listing</h6>
 			<hr />
 			<CContainer>
-				<CRow fluid responsive>
+				<CRow>
 					<CCol md={8}>
 						<Link to="/inbound/create_ingrps">
 							<CButton color="primary" className="mb-4 me-2" size="sm">

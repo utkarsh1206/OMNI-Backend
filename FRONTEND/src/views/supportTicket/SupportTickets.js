@@ -233,7 +233,7 @@ const SupportTickets = () => {
       <CRow>
         <CCol>
           <CContainer className="mb-3">
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 {!isUser && (
                   <Link to="/spprt_tckt/crt_tckt">
@@ -346,7 +346,7 @@ const SupportTickets = () => {
                         <CButton
                           color="secondary"
                           size="sm"
-                          // onClick={() => handleMailTicket(ticket.id)}
+                        // onClick={() => handleMailTicket(ticket.id)}
                         >
                           <CIcon icon={cilEnvelopeOpen} />
                         </CButton>
@@ -386,8 +386,8 @@ const SupportTickets = () => {
             onDataFetched={setTickets}
             filters={appliedFilters}
             search={searchQuery}
-            // onPageChange={handlePageChange}
-            // perPageValue={handlePerPageValue}
+          // onPageChange={handlePageChange}
+          // perPageValue={handlePerPageValue}
           />
         </CCol>
       </CRow>

@@ -762,7 +762,7 @@ const AgentActivityReport = () => {
         />
 
       </div>
-     
+
     );
   };
 
@@ -849,7 +849,7 @@ const AgentActivityReport = () => {
       <CRow>
         <CCol>
           <CContainer>
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <CButton
                   className="mb-4 me-2"

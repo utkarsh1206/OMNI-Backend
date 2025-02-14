@@ -164,7 +164,7 @@ const Tenants = () => {
       <CRow>
         <CCol>
           <CContainer>
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <Link to="/tenants/crt_tenant">
                   <CButton color="primary" className="me-2" size="sm">

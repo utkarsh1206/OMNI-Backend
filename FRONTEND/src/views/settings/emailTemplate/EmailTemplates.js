@@ -190,7 +190,7 @@ const EmailTemplates = () => {
       <CRow>
         <CCol>
           <CContainer>
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <Link to={`/settings/email_templates/crt_tmplt`}>
                   <CButton color="primary" className="me-2" size="sm">

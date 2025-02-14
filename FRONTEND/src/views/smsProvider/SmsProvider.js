@@ -159,7 +159,7 @@ const SmsProvider = () => {
             <CRow>
                 <CCol>
                     <CContainer>
-                        <CRow fluid responsive>
+                        <CRow>
                             <CCol md={8}>
                                 <Link to="/sms_provider/crt_sms_provider">
                                     <CButton color="primary" className="me-2" size="sm">

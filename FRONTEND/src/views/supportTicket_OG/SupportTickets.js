@@ -97,7 +97,7 @@ const SupportTickets = () => {
       <CRow>
         <CCol>
           <CContainer>
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <Link to="/spprt_tckt/crt_tckt">
                   <CButton color="primary" className="mb-4 me-2" size="sm">
@@ -195,7 +195,7 @@ const SupportTickets = () => {
                         <CButton
                           color="secondary"
                           size="sm"
-                          // onClick={() => handleMailTicket(ticket.id)}
+                        // onClick={() => handleMailTicket(ticket.id)}
                         >
                           <CIcon icon={cilEnvelopeOpen} />
                         </CButton>

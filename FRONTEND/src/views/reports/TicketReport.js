@@ -362,7 +362,7 @@ const TicketReport = () => {
       <CRow>
         <CCol>
           <CContainer>
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <CButton
                   color="primary"

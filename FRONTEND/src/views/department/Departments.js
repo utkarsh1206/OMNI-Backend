@@ -105,7 +105,7 @@ const Departments = () => {
       <CRow>
         <CCol>
           <CContainer className="mb-3">
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <Link to="/department/create_departments">
                   <CButton color="primary" className=" me-2" size="sm">
