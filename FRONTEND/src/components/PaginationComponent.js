@@ -10,6 +10,7 @@ const PaginationComponent = ({
   search,
   onPageChange,
   perPageValue,
+  setLoading = () => { }
 }) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -29,6 +30,8 @@ const PaginationComponent = ({
     fetchData.cancelToken = source // Store the cancel token for future use
     // testing end
 
+    setLoading(true);
+
     axios
       .get(apiEndpoint, {
         headers: {
@@ -46,23 +49,23 @@ const PaginationComponent = ({
       .then((response) => {
         const data = response.data.data
         onDataFetched(data) // Pass data back to parent component
-        setCurrentPage(response.data.meta.current_page)
-        setLastPage(response.data.meta.last_page)
-        setTotal(response.data.meta.total)
-        setPerPage(response.data.meta.per_page)
-      })
-      // Original
-      // .catch((error) => {
-      //   console.error('There was an error fetching the data!', error)
-      // })
-      // Original
 
+        if (response.data.meta) {
+          setCurrentPage(response.data.meta.current_page)
+          setLastPage(response.data.meta.last_page)
+          setTotal(response.data.meta.total)
+          setPerPage(response.data.meta.per_page)
+        }
+      })
       .catch((error) => {
         if (axios.isCancel(error)) {
           console.log('Request canceled:', error.message)
         } else {
           console.error('There was an error fetching the data!', error)
         }
+      })
+      .finally(() => {
+        setLoading(false)
       })
   }
 

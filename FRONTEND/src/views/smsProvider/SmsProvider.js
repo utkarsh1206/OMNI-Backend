@@ -5,15 +5,11 @@ import {
     CContainer,
     CFormInput,
     CRow,
-    CTable,
-    CTableBody,
     CTableDataCell,
-    CTableHead,
-    CTableHeaderCell,
     CTableRow,
     CTooltip,
     CFormLabel,
-    CFormSelect,
+    CFormSelect
 } from '@coreui/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { BASE_URL } from '../../config'
@@ -24,12 +20,14 @@ import PaginationComponent from '../../components/PaginationComponent'
 import axios from 'axios'
 import SearchAndFilter from '../../components/SearchAndFilter'
 import { SMS_STATUS, SMS_URL_METHODS } from './smsConfig'
+import LoadingTable from '../../components/LoadingTable'
 
 const SmsProvider = () => {
     const navigate = useNavigate()
     const [providers, setProviders] = useState([])
     const { authToken } = useContext(AuthContext)
     const [searchQuery, setSearchQuery] = useState('')
+    const [loading, setLoading] = useState(false);
 
     const [filters, setFilters] = useState({
         provider_name: '',
@@ -78,24 +76,20 @@ const SmsProvider = () => {
     }
 
     const setSmsProviderListingData = (data) => {
-        if (data && data?.length) {
-            const formatedData = [];
-            for (const i of data) {
-                if (!i.configurations || !i?.configurations?.length) {
-                    continue;
-                }
-
-                const data = { provider_name: i.provider_name, id: i.provider_id };
-
-                for (const j of i.configurations) {
-                    data[j.config_key] = j.config_value
-                }
-                formatedData.push(data);
+        const formatedData = [];
+        for (const i of data) {
+            if (!i.configurations || !i?.configurations?.length) {
+                continue;
             }
-            if (formatedData.length) {
-                setProviders(formatedData);
+
+            const data = { provider_name: i.provider_name, id: i.provider_id };
+
+            for (const j of i.configurations) {
+                data[j.config_key] = j.config_value
             }
+            formatedData.push(data);
         }
+        setProviders(formatedData);
     }
 
     const renderProviderFilters = () => (
@@ -178,57 +172,57 @@ const SmsProvider = () => {
                         </CRow>
                     </CContainer>
                     <hr />
-                    <CTable hover bordered responsive="md">
-                        <CTableHead color="light">
-                            <CTableRow>
-                                <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                                <CTableHeaderCell scope="col">Provider Name</CTableHeaderCell>
-                                <CTableHeaderCell scope="col">URL Method</CTableHeaderCell>
-                                <CTableHeaderCell scope="col">Content Type</CTableHeaderCell>
-                                <CTableHeaderCell scope="col">API URL</CTableHeaderCell>
-                                <CTableHeaderCell scope="col">Message Max Length</CTableHeaderCell>
-                                <CTableHeaderCell scope="col">Controls</CTableHeaderCell>
+
+                    <LoadingTable
+                        loading={loading}
+                        dataLength={providers.length}
+                        tableHeaders={[
+                            "#",
+                            "Provider Name",
+                            "URL Method",
+                            "Content Type",
+                            "API URL",
+                            "Message Max Length",
+                            "Controls"
+                        ]}
+                    >
+                        {providers.map((provider, index) => (
+                            <CTableRow key={provider.id}>
+                                <CTableDataCell>{index + 1}</CTableDataCell>
+                                <CTableDataCell>{provider.provider_name}</CTableDataCell>
+                                <CTableDataCell>{provider.method}</CTableDataCell>
+                                <CTableDataCell>{provider.type}</CTableDataCell>
+                                <CTableDataCell>{provider.url}</CTableDataCell>
+                                <CTableDataCell>{provider.max_length}</CTableDataCell>
+                                <CTableDataCell>
+                                    <CRow className="justify-content-center mx-0">
+                                        <CCol className="mx-auto d-flex justify-content-center">
+                                            <CTooltip content="Edit">
+                                                <CButton
+                                                    color="warning"
+                                                    size="sm"
+                                                    onClick={() => navigate(`/sms_provider/edit/${provider.id}`)}
+                                                >
+                                                    <CIcon icon={cilPencil} />
+                                                </CButton>
+                                            </CTooltip>
+                                        </CCol>
+                                        <CCol className="mx-auto d-flex justify-content-center">
+                                            <CTooltip content="Delete">
+                                                <CButton
+                                                    color="danger"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteProvider(provider.id, provider.provider_name)}
+                                                >
+                                                    <CIcon icon={cilXCircle} />
+                                                </CButton>
+                                            </CTooltip>
+                                        </CCol>
+                                    </CRow>
+                                </CTableDataCell>
                             </CTableRow>
-                        </CTableHead>
-                        <CTableBody>
-                            {providers.map((provider, index) => (
-                                <CTableRow key={provider.id}>
-                                    <CTableDataCell>{index + 1 + (currentPage - 1) * perPage}</CTableDataCell>
-                                    <CTableDataCell>{provider.provider_name}</CTableDataCell>
-                                    <CTableDataCell>{provider.method}</CTableDataCell>
-                                    <CTableDataCell>{provider.type}</CTableDataCell>
-                                    <CTableDataCell>{provider.url}</CTableDataCell>
-                                    <CTableDataCell>{provider.max_length}</CTableDataCell>
-                                    <CTableDataCell>
-                                        <CRow className="justify-content-center mx-0">
-                                            <CCol className="mx-auto d-flex justify-content-center">
-                                                <CTooltip content="Edit">
-                                                    <CButton
-                                                        color="warning"
-                                                        size="sm"
-                                                        onClick={() => navigate(`/sms_provider/edit/${provider.id}`)}
-                                                    >
-                                                        <CIcon icon={cilPencil} />
-                                                    </CButton>
-                                                </CTooltip>
-                                            </CCol>
-                                            <CCol className="mx-auto d-flex justify-content-center">
-                                                <CTooltip content="Delete">
-                                                    <CButton
-                                                        color="danger"
-                                                        size="sm"
-                                                        onClick={() => handleDeleteProvider(provider.id, provider.provider_name)}
-                                                    >
-                                                        <CIcon icon={cilXCircle} />
-                                                    </CButton>
-                                                </CTooltip>
-                                            </CCol>
-                                        </CRow>
-                                    </CTableDataCell>
-                                </CTableRow>
-                            ))}
-                        </CTableBody>
-                    </CTable>
+                        ))}
+                    </LoadingTable>
 
                     {/* Reusable PaginationComponent */}
                     <PaginationComponent
@@ -239,6 +233,7 @@ const SmsProvider = () => {
                         search={searchQuery} // Use live search
                         onPageChange={handlePageChange}
                         perPageValue={handlePerPageValue}
+                        setLoading={setLoading}
                     />
                 </CCol>
             </CRow>
