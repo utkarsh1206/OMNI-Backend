@@ -18,6 +18,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { BASE_URL } from '../../config'
 import { AuthContext } from '../../context/AuthContext'
 import { SMS_URL_METHODS, SMS_CONTENT_TYPE } from './smsConfig'
+import { useToast } from '../../context/ToastContext'
 
 const FormGroup = ({ label, name, value, onChange, required, type, disabled, readOnly }) => (
     <CCol md="4" className="mb-3">
@@ -42,6 +43,7 @@ const SmsProviderForm = () => {
     const navigate = useNavigate()
     const isEditMode = Boolean(id)
     const { authToken } = useContext(AuthContext)
+    const showToast = useToast();
 
     const defaultFormData = {
         provider_name: "",
@@ -77,7 +79,7 @@ const SmsProviderForm = () => {
                     setFormData(editFormData)
                 })
                 .catch((error) => {
-                    alert('Failed to fetch SMS provider data.')
+                    showToast('Failed to fetch SMS provider configuration data.', 'danger');
                 })
         }
     }, [id, isEditMode])
@@ -140,18 +142,15 @@ const SmsProviderForm = () => {
             }
 
             if (response.status === 200) {
-                alert(
-                    response.data.message +
-                    (isEditMode ? '' : '\nSMS Configuration Created Succesfully'),
-                )
+                showToast(`SMS provider configuration ${isEditMode ? "updated" : "created"} successfully!`, 'success');
                 navigate('/sms_provider')
             }
             handleCancel()
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.message) {
-                alert(error.response.data.message)
+            if (error?.response?.data?.message) {
+                showToast(error.response.data.message, 'danger');
             } else {
-                alert('An error occurred while processing your request.')
+                showToast('An error occurred while processing your request.', 'danger');
             }
         }
     }

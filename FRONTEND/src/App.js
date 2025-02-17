@@ -20,6 +20,7 @@ const NeoxDashboard = React.lazy(() => import('./views/neoxDashboard/NeoxDashboa
 // Import PrivateRoute
 import PrivateRoute from './components/PrivateRoute'
 import { AuthProvider } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -41,35 +42,37 @@ const App = () => {
 
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Suspense
-          fallback={
-            <div className="pt-3 text-center">
-              <CSpinner color="primary" variant="grow" />
-            </div>
-          }
-        >
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/404" element={<Page404 />} />
-            <Route path="/500" element={<Page500 />} />
+      <ToastProvider>
+        <BrowserRouter>
+          <Suspense
+            fallback={
+              <div className="pt-3 text-center">
+                <CSpinner color="primary" variant="grow" />
+              </div>
+            }
+          >
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/404" element={<Page404 />} />
+              <Route path="/500" element={<Page500 />} />
 
-            {/* Protected Routes */}
-            <Route element={<PrivateRoute />}>
-              {/* Nested Routes inside PrivateRoute will inherit the authentication check */}
-              <Route path="*" element={<DefaultLayout />} />
-              <Route path="/agent" element={<Agent />} />
-              <Route path="/neox_dash" element={<NeoxDashboard />} />
-              {/* Add more protected routes as needed */}
-            </Route>
+              {/* Protected Routes */}
+              <Route element={<PrivateRoute />}>
+                {/* Nested Routes inside PrivateRoute will inherit the authentication check */}
+                <Route path="*" element={<DefaultLayout />} />
+                <Route path="/agent" element={<Agent />} />
+                <Route path="/neox_dash" element={<NeoxDashboard />} />
+                {/* Add more protected routes as needed */}
+              </Route>
 
-            {/* Fallback Route */}
-            <Route path="*" element={<Page404 />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
+              {/* Fallback Route */}
+              <Route path="*" element={<Page404 />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   )
 }
