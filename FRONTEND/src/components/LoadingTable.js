@@ -3,7 +3,7 @@ import { CTable, CSpinner, CTableHead, CTableRow, CTableHeaderCell, CTableDataCe
 
 const LoadingTable = ({ loading, children, tableHeaders, dataLength }) => {
     return (
-        <div className={loading ? 'table-wrapper-loading' : 'table-wrapper'}>
+        <div className='table-wrapper-loading'>
             {/* Display loading spinner */}
             {loading && (
                 <div className="table-loading-spinner">

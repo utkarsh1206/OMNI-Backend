@@ -24,14 +24,8 @@
     position: relative;
 }
 
-.table-wrapper {
-    position: relative;
-}
-
 /* Apply blur effect to the background of the table */
 .table-loading {
-    background-color: #e3f2fd;
-    /* Light blue background */
     filter: blur(1px);
     /* Apply blur effect only to the table content */
     pointer-events: none;
