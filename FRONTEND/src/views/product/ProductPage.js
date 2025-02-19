@@ -176,7 +176,7 @@ const Product = () => {
       <CRow>
         <CCol>
           <CContainer className="mb-3">
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <Link to="/product/create">
                   <CButton color="primary" className="me-2" size="sm">Create Product</CButton>

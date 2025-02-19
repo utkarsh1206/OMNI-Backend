@@ -895,7 +895,7 @@ const CallCDRreport = () => {
       <CRow>
         <CCol>
           <CContainer>
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <CButton
                   className="mb-4 me-2"
@@ -1153,37 +1153,37 @@ const CallCDRreport = () => {
       </CRow>
 
       {!showGraph ? (
-      <CRow className="mt-3">
-      <PaginationForReport 
-        currentPage={currentPage}
-        lastPage={lastPage}
-        onPageChange={handlePageChange}
-        total={total}
-        perPage={handlePerPageValue} // Make sure to define and pass itemsPerPage here
-        setPerPage={setPerPage} 
-        setCurrentPage={setCurrentPage}
-      />
+        <CRow className="mt-3">
+          <PaginationForReport
+            currentPage={currentPage}
+            lastPage={lastPage}
+            onPageChange={handlePageChange}
+            total={total}
+            perPage={handlePerPageValue} // Make sure to define and pass itemsPerPage here
+            setPerPage={setPerPage}
+            setCurrentPage={setCurrentPage}
+          />
 
-        <CCol className="d-flex justify-content-end align-items-baseline">
-          <span className="me-2">PerPage Display:</span>
-          <CFormSelect
-            id="perPage"
-            value={pagination.perPage}
-            onChange={handlePerPageChange}
-            className="me-2"
-            size="sm"
-            style={{ width: '80px' }}
-          >
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="15">15</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </CFormSelect>
-        </CCol>
-      </CRow>
-      
+          <CCol className="d-flex justify-content-end align-items-baseline">
+            <span className="me-2">PerPage Display:</span>
+            <CFormSelect
+              id="perPage"
+              value={pagination.perPage}
+              onChange={handlePerPageChange}
+              className="me-2"
+              size="sm"
+              style={{ width: '80px' }}
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </CFormSelect>
+          </CCol>
+        </CRow>
+
       ) : (
         null
       )}

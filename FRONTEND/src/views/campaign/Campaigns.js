@@ -85,7 +85,7 @@ const Campaigns = () => {
             <h6>User Groups Listing</h6>
             <hr />
             <CContainer>
-                <CRow fluid responsive>
+                <CRow>
                     <CCol md={8}>
                         <Link to="/campaign/create_campaign">
                             <CButton color="primary" className="mb-4 me-2" size="sm">

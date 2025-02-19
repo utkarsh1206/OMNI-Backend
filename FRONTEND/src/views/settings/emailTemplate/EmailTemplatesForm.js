@@ -10,23 +10,20 @@ import {
   CRow,
   CCol,
   CCardTitle,
-  CCardText,
   CCardFooter,
-  CFormTextarea,
-  CFormSelect,
+  CFormSelect
 } from '@coreui/react'
 import axios from 'axios'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { BASE_URL } from '../../../config'
 import { AuthContext } from '../../../context/AuthContext'
+import QuillTextEditor from '../../../components/QuillTextEditor'
 
 const EmailTemplatesForm = () => {
   const { id } = useParams() // Get Template ID from URL if present
   const navigate = useNavigate()
   const isEditMode = Boolean(id)
   const { authToken } = useContext(AuthContext)
-
-  const location = useLocation()
 
   const [formData, setFormData] = useState({
     title: '',
@@ -107,10 +104,10 @@ const EmailTemplatesForm = () => {
       if (response.status === 200) {
         alert(
           response.data.message +
-            (isEditMode
-              ? // ? `\n Template updated successfully.`
-                ``
-              : `\nUsername: ${response.data.data.username}\nCompany Name: ${response.data.data.company_name}`),
+          (isEditMode
+            ? // ? `\n Template updated successfully.`
+            ``
+            : `\nUsername: ${response.data.data.username}\nCompany Name: ${response.data.data.company_name}`),
         )
         navigate('/settings/email_templates') // Redirect to Configs list after success
       }
@@ -131,6 +128,10 @@ const EmailTemplatesForm = () => {
       body: '',
     })
     navigate('/settings/email_templates')
+  }
+
+  const handleEditorChange = (value) => {
+    setFormData((prevData) => ({ ...prevData, body: value, }));
   }
 
   return (
@@ -219,13 +220,9 @@ const EmailTemplatesForm = () => {
                       <CFormLabel htmlFor="body">
                         Content <span style={{ color: 'red' }}>*</span>
                       </CFormLabel>
-                      <CFormTextarea
-                        id="body"
-                        name="body"
-                        rows={5}
-                        value={formData.body}
-                        onChange={handleChange}
-                        required
+                      <QuillTextEditor
+                        handleEditorChange={handleEditorChange}
+                        editorValue={formData.body}
                       />
                     </CCol>
                   </CRow>

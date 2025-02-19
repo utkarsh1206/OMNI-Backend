@@ -122,7 +122,7 @@ const Tenants = () => {
       <CRow>
         <CCol>
           <CContainer>
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <Link to="/tenants/tenant_role/crt_tenant_role">
                   <CButton color="primary" className="me-2" size="sm">

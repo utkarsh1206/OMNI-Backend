@@ -100,7 +100,7 @@ const EmailConfigSettings = () => {
       <CRow>
         <CCol>
           <CContainer>
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <Link to={`/settings/email_config_settings/crt_config?type=${emailType}`}>
                   <CButton color="primary" className="mb-4 me-2" size="sm">

@@ -124,7 +124,7 @@ const SLAConfiguration = () => {
       <CRow>
         <CCol>
           <CContainer className="mb-3">
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 {!isUser && (
                   <Link to="/settings/SLA_configuration">
@@ -211,13 +211,13 @@ const SLAConfiguration = () => {
             onDataFetched={setSla}
             filters={appliedFilters} // Use applied filters
             search={searchQuery} // Use live search
-            // onPageChange={handlePageChange}
-            // perPageValue={handlePerPageValue}
+          // onPageChange={handlePageChange}
+          // perPageValue={handlePerPageValue}
 
-            // filters={filters}
-            // search={searchQuery}
-            // filters={isFilterApplied ? filters : {}} // Use filters only if applied
-            // search={!isFilterApplied ? searchQuery : ''} // Use search only if filters are not applied
+          // filters={filters}
+          // search={searchQuery}
+          // filters={isFilterApplied ? filters : {}} // Use filters only if applied
+          // search={!isFilterApplied ? searchQuery : ''} // Use search only if filters are not applied
           />
         </CCol>
       </CRow>

@@ -156,7 +156,6 @@ const SLAReport = () => {
   };
 
   const calculateSlaCompliance = (data) => {
-    console.log("data". data);
     const yes = data.filter(ticket => ticket.sla_compliance === 'Yes').length;
     const no = data.filter(ticket => ticket.sla_compliance === 'No').length;
     setSlaComplianceCount({ yes, no });
@@ -339,7 +338,7 @@ const SLAReport = () => {
       <CRow>
         <CCol>
           <CContainer>
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <CButton
                   color="primary"

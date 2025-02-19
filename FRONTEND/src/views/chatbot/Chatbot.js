@@ -112,7 +112,7 @@ const Chatbot = () => {
           type="text"
           name="question"
           value={filters.question || ''}
-          onChange={(e) => setFilters((prev) => ({ ...prev, question: e.target.value }))} 
+          onChange={(e) => setFilters((prev) => ({ ...prev, question: e.target.value }))}
           placeholder="Enter question"
         />
       </CCol>
@@ -135,7 +135,7 @@ const Chatbot = () => {
       <CRow>
         <CCol>
           <CContainer className="mb-3">
-            <CRow fluid responsive>
+            <CRow>
               <CCol md={8}>
                 <Link to="/chatbot/create">
                   <CButton color="primary" className="me-2" size="sm">Create Chatbot</CButton>
@@ -154,59 +154,59 @@ const Chatbot = () => {
           </CContainer>
 
           <CTable hover bordered responsive="md">
-          <CTableHead color="light">
-            <CTableRow>
+            <CTableHead color="light">
+              <CTableRow>
                 <CTableHeaderCell scope="col" style={{ width: '5%' }}>#</CTableHeaderCell>
                 <CTableHeaderCell scope="col" style={{ width: '35%' }}>Question</CTableHeaderCell>
                 <CTableHeaderCell scope="col" style={{ width: '35%' }}>Answer</CTableHeaderCell>
                 <CTableHeaderCell scope="col" style={{ width: '10%' }}>Status</CTableHeaderCell>
                 <CTableHeaderCell scope="col" style={{ width: '15%' }}>Controls</CTableHeaderCell>
-            </CTableRow>
+              </CTableRow>
             </CTableHead>
 
             <CTableBody>
-            {chatbots.length > 0 ? (
+              {chatbots.length > 0 ? (
                 chatbots.map((chatbot, index) => (
-                <CTableRow key={chatbot.id}>
+                  <CTableRow key={chatbot.id}>
                     <CTableDataCell style={{ width: '5%' }}>{index + 1 + (currentPage - 1) * perPage}</CTableDataCell>
                     <CTableDataCell style={{ width: '35%' }}>{chatbot.question}</CTableDataCell>
                     <CTableDataCell style={{ width: '35%' }}>{chatbot.answer}</CTableDataCell>
                     <CTableDataCell style={{ width: '10%' }}>{chatbot.status ? 'Active' : 'Inactive'}</CTableDataCell>
                     <CTableDataCell style={{ width: '15%' }}>
-                    <CRow className="justify-content-center mx-0">
+                      <CRow className="justify-content-center mx-0">
                         <CCol className="mx-auto d-flex justify-content-center">
-                        <CTooltip content="Edit">
+                          <CTooltip content="Edit">
                             <CButton
-                            color="warning"
-                            size="sm"
-                            onClick={() => navigate(`/chatbot/edit/${chatbot.id}`)}
+                              color="warning"
+                              size="sm"
+                              onClick={() => navigate(`/chatbot/edit/${chatbot.id}`)}
                             >
-                            <CIcon icon={cilPencil} />
+                              <CIcon icon={cilPencil} />
                             </CButton>
-                        </CTooltip>
+                          </CTooltip>
                         </CCol>
                         <CCol className="mx-auto d-flex justify-content-center">
-                        <CTooltip content="Delete">
+                          <CTooltip content="Delete">
                             <CButton
-                            color="danger"
-                            size="sm"
-                            onClick={() => handleDeleteChatbot(chatbot.id, chatbot.question)}
+                              color="danger"
+                              size="sm"
+                              onClick={() => handleDeleteChatbot(chatbot.id, chatbot.question)}
                             >
-                            <CIcon icon={cilXCircle} />
+                              <CIcon icon={cilXCircle} />
                             </CButton>
-                        </CTooltip>
+                          </CTooltip>
                         </CCol>
-                    </CRow>
+                      </CRow>
                     </CTableDataCell>
-                </CTableRow>
+                  </CTableRow>
                 ))
-            ) : (
+              ) : (
                 <CTableRow>
-                <CTableDataCell colSpan="5" className="text-center">
+                  <CTableDataCell colSpan="5" className="text-center">
                     No data found
-                </CTableDataCell>
+                  </CTableDataCell>
                 </CTableRow>
-            )}
+              )}
             </CTableBody>
 
           </CTable>
