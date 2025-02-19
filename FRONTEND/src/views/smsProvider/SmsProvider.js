@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { BASE_URL } from '../../config'
 import { AuthContext } from '../../context/AuthContext'
 import SmsProviderFilters from './SmsProviderFilters'
-import { LoadingTable, SearchAndFilter, PaginationComponent, FormControlIcons } from '../../components'
+import { LoadingTable, SearchAndFilter, PaginationComponent, FormControlIcons, DeleteConfirmationModal } from '../../components'
 import axiosInstance from '../../utils/axiosInstance'
 import { useToast } from '../../context/ToastContext'
 import { getErrorMessage } from '../../utils/errorHandlerUtils'
@@ -21,6 +21,8 @@ const SmsProvider = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [appliedFilters, setAppliedFilters] = useState({});
+    const [deleteRecordData, setDeleteRecordData] = useState({});
+    const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
     const handleResetFilters = () => {
         setFilters({})
@@ -37,15 +39,15 @@ const SmsProvider = () => {
         )
     }
 
-    const handleDeleteProvider = async (id, apiName) => {
-        if (window.confirm('Are you sure to delete ' + apiName + '?')) {
-            try {
-                await axiosInstance.delete(`/sms-configurations/${id}`);
-                showToast('SMS provider configuration deleted successfully!', 'success');
-                setProviders((prev) => prev.filter((provider) => provider.id !== id));
-            } catch (error) {
-                showToast(getErrorMessage(error), 'danger');
-            }
+    const handleDeleteProvider = async (id) => {
+        try {
+            await axiosInstance.delete(`/sms-configurations/${id}`);
+            showToast('SMS provider configuration deleted successfully!', 'success');
+            setProviders((prev) => prev.filter((provider) => provider.id !== id));
+        } catch (error) {
+            showToast(getErrorMessage(error), 'danger');
+        } finally {
+            setOpenDeleteModal(false);
         }
     }
 
@@ -111,7 +113,13 @@ const SmsProvider = () => {
                                 <CTableDataCell>
                                     <CRow className="justify-content-center mx-0">
                                         <FormControlIcons.EditIcon clickHandler={() => navigate(`/sms_provider/edit/${provider.id}`)} />
-                                        <FormControlIcons.DeleteIcon clickHandler={() => handleDeleteProvider(provider.id, provider.provider_name)} />
+                                        <FormControlIcons.DeleteIcon clickHandler={() => {
+                                            setDeleteRecordData({
+                                                id: provider.id,
+                                                name: provider.provider_name
+                                            });
+                                            setOpenDeleteModal(true);
+                                        }} />
                                     </CRow>
                                 </CTableDataCell>
                             </CTableRow>
@@ -130,6 +138,14 @@ const SmsProvider = () => {
                     />
                 </CCol>
             </CRow>
+
+            {/* Delete Modal */}
+            <DeleteConfirmationModal
+                visible={openDeleteModal}
+                setVisible={setOpenDeleteModal}
+                dataName={deleteRecordData.name}
+                handleDelete={() => handleDeleteProvider(deleteRecordData.id)}
+            />
         </>
     )
 }

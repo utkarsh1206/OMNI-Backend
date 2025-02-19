@@ -11,6 +11,7 @@ import FormControlIcons from './FormControlIcons'
 import FormInputGroup from './FormInputGroup'
 import LoadingFormWrapper from './LoadingFormWrapper'
 import FormSubmitAction from './FormSubmitAction'
+import DeleteConfirmationModal from './DeleteConfirmationModal'
 
 // CoreUi Components
 import DocsCallout from './DocsCallout'
@@ -30,6 +31,7 @@ export {
   FormInputGroup,
   LoadingFormWrapper,
   FormSubmitAction,
+  DeleteConfirmationModal,
   FormControlIcons,
   DocsCallout,
   DocsLink,
