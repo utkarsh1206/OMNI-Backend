@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useCallback, useMemo } from 'react'
 import { CButton, CCol, CContainer, CRow, CTableDataCell, CTableRow } from '@coreui/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { BASE_URL } from '../../config'
@@ -24,20 +24,21 @@ const SmsProvider = () => {
     const [deleteRecordData, setDeleteRecordData] = useState({});
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
-    const handleResetFilters = () => {
+    const handleResetFilters = useCallback(() => {
         setFilters({})
         setAppliedFilters({})
         setSearchQuery('')
-    }
+    }, []);
 
-    const handleApplyFilters = (newFilters) => setAppliedFilters(newFilters)
-    const handlePageChange = (page) => setCurrentPage(page)
-    const handlePerPageValue = (perPage) => setPerPage(perPage)
-    const renderProviderFilters = () => {
+    const handleApplyFilters = useCallback((newFilters) => setAppliedFilters(newFilters), []);
+    const handlePageChange = useCallback((page) => setCurrentPage(page), []);
+    const handlePerPageValue = useCallback((perPage) => setPerPage(perPage), []);
+
+    const renderProviderFilters = useMemo(() => {
         return (
             <SmsProviderFilters filters={filters} setFilters={setFilters} />
         )
-    }
+    }, [filters]);
 
     const handleDeleteProvider = async (id) => {
         try {
@@ -51,18 +52,18 @@ const SmsProvider = () => {
         }
     }
 
-    const setSmsProviderListingData = (data) => {
-        const formatedData = [];
-        for (const i of data) {
-            if (!i?.configurations?.length) continue;
-            const data = { provider_name: i.provider_name, id: i.provider_id };
-            for (const j of i.configurations) {
-                data[j.config_key] = j.config_value
-            }
-            formatedData.push(data);
-        }
+    const setSmsProviderListingData = useCallback((data) => {
+        const formatedData = data.reduce((acc, i) => {
+            if (!i?.configurations?.length) return acc;
+            const providerData = { provider_name: i.provider_name, id: i.provider_id };
+            i.configurations.forEach(j => {
+                providerData[j.config_key] = j.config_value;
+            });
+            acc.push(providerData);
+            return acc;
+        }, []);
         setProviders(formatedData);
-    }
+    }, []);
 
     return (
         <>
