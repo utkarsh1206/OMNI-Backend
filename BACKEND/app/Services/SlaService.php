@@ -23,7 +23,6 @@ class SlaService
 
         $ticket = Supportticket::whereIn('default_status', ['Open', 'Resolved', 'Closed'])
             ->where('id', $support_ticket_id)
-            ->where('is_delete', 'No')
             ->first();
 
         if ($ticket) {

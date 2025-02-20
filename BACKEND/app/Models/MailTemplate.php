@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MailTemplate extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'mail_template';
     protected $fillable = [
@@ -17,7 +18,6 @@ class MailTemplate extends Model
         'mail_for',
         'body',
         'status',
-        'is_delete',
         'is_allow',
         'created_at',
         'updated_at',

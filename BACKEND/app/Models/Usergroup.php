@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Usergroup extends Model
 {
- protected $table = 'usergroup';
+    use SoftDeletes;
+    protected $table = 'usergroup';
 
     protected $fillable = [
         //"tenant_id",

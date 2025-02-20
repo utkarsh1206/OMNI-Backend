@@ -19,7 +19,7 @@ class ContactController extends Controller
     $accountId = $request->input('account_id', '');
     $ownerId = $request->input('owner_id', '');
 
-    $query = Contact::query()->where('is_delete', 'No');
+    $query = Contact::query();
     $perPage = $request->input('per_page', 10);
     $page = $request->input('page', 1);
 
@@ -36,12 +36,12 @@ class ContactController extends Controller
 
       $account = Account::where('name', 'like', "%$searchTerm%")->first();
       if ($account) {
-        $query->orWhere('account_id', $account->id)->where('is_delete', 'No');
+        $query->orWhere('account_id', $account->id);
       }
 
       $owner = User::where('username', 'like', "%$searchTerm%")->first();
       if ($owner) {
-        $query->orWhere('owner_id', $owner->id)->where('is_delete', 'No');
+        $query->orWhere('owner_id', $owner->id);
       }
     }
 
@@ -174,8 +174,7 @@ class ContactController extends Controller
       return response()->json(['message' => 'Contact not found'], 404);
     }
 
-    $contact->is_delete = 'Yes';
-    $contact->save();
+    $contact->delete();
     return response()->json([
       'message' => 'Contact deleted successfully',
     ]);

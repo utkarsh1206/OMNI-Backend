@@ -22,7 +22,7 @@ class UsergroupController extends Controller
         $status = $request->input('status', '');
 
         // Start the query for tenants
-        $query = usergroup::query()->where('is_delete', 'No');
+        $query = usergroup::query();
 
         // If there's a search term, apply it to the query
         if (!empty($searchTerm)) {
@@ -109,8 +109,7 @@ class UsergroupController extends Controller
     }
     public function destroy(Usergroup $usergroup)
     {
-        $usergroup->is_delete = 'Yes';
-        $usergroup->save();
+        $usergroup->delete();
         return response()->json([
             'message' => 'User Group Deleted Successfully',
         ]);

@@ -40,7 +40,7 @@ class UsersController extends Controller
 
         $is_all_users = $request->has('all_user') ? $request->input('all_user') : null;
 
-        $query = Users::query()->where('is_delete', 'No');
+        $query = Users::query();
 
         if ($is_all_users !== 'Y') {
             $query->where('type', '3');
@@ -114,7 +114,6 @@ class UsersController extends Controller
         $maxAgents = $licenseInfo['number_of_agents'];
 
         $currentAgentCount = Users::where('type', '3')
-            ->where('is_delete', 'No')
             ->count();
 
         // Check if the limit is reached
@@ -146,7 +145,6 @@ class UsersController extends Controller
             // "domain" => $request->domain,
             "mobile" => $request->mobile,
             "status" => $request->status,
-            "is_delete" => 'No',
             "role_id" => $request->role_id,
             "usergroup_id" => $request->usergroup_id,
             "name_prefix" => $request->name_prefix,
@@ -183,7 +181,6 @@ class UsersController extends Controller
             //"domain" => $request->domain,
             "mobile" => $request->mobile,
             "status" => $request->status,
-            "is_delete" => $request->is_delete,
             "role_id" => $request->role_id,
             "usergroup_id" => $request->usergroup_id,
             "name_prefix" => $request->name_prefix,
@@ -204,8 +201,7 @@ class UsersController extends Controller
     }
     public function destroy(Users $user)
     {
-        $user->is_delete = 'Yes';
-        $user->save();
+        $user->delete();
         return response()->json([
             'message' => 'User Deleted Successfully',
         ]);

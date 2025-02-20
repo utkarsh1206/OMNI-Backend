@@ -102,7 +102,7 @@ class TenantController extends Controller
         $companyCode = $request->input('company_code', '');
 
         // Start the query for tenants
-        $query = Tenants::query()->where('is_delete', 'No');
+        $query = Tenants::query();
 
         // If there's a search term, apply it to the query
         if (!empty($searchTerm)) {
@@ -161,7 +161,7 @@ class TenantController extends Controller
         $licenseData = $licenseResponse->getData(true);
 
         if (isset($licenseData['number_of_enterprise'])) {
-            $currentTenantsCount = Tenants::query()->where('is_delete', 'No')->count();
+            $currentTenantsCount = Tenants::query()->count();
             $maxTenantsAllowed = $licenseData['number_of_enterprise'];
 
             if ($currentTenantsCount >= $maxTenantsAllowed) {
@@ -324,11 +324,8 @@ class TenantController extends Controller
     }
     public function destroy(Tenants $tenant)
     {
-        $tenant->is_delete = 'Yes';
-        $tenant->save();
-
+        $tenant->delete();
         // Cache::forget('tenants_index:*'); // Invalidate all tenants index caches (using wildcard)
-
         return response()->json([
             'message' => 'Tenant deleted Successfully',
         ]);
@@ -340,7 +337,7 @@ class TenantController extends Controller
         $agent_status = array("ABC 101" => array("Login", "Pause", "192.168.1.110"), "BCD 201" => array("Login", "Resume", "192.168.1.111"), "XYZ 301" => array("Logout", "Pause", "192.168.1.112"));
         $lead_status = array("Unassigned" => "0", "Open" => "100", "Waiting On Customer" => "5", "Waiting On Third party" => "5", "Resolved" => "50", "Closed" => "200");
         $call_count_status = array("Success" => "200", "Failed" => "30");
-        $agent_count =  Users::query()->where('is_delete', 'No')->where('type', '3')->count();
+        $agent_count =  Users::query()->where('type', '3')->count();
         $final_array = array("type_wise_ticket" => $type_wise_ticket, "priority_wise_ticket" => $priority_wise_ticket, "agent_status" => $agent_status, "lead_status" => $lead_status, "call_count_status" => $call_count_status, "agent_count" => $agent_count);
         return response()->json([
             'data' => new TenantsResource($final_array)

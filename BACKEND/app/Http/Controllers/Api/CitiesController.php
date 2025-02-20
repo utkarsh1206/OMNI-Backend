@@ -14,7 +14,7 @@ class CitiesController extends Controller
             $searchTerm = $request->input('search', '');
             $state_id = $request->input('state_id', '');
 
-            $query = Cities::query()->where('is_delete', 'No')->where('state_id',$state_id);
+            $query = Cities::query()->where('state_id',$state_id);
     
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {

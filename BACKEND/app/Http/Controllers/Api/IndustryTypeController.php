@@ -12,7 +12,7 @@ class IndustryTypeController extends Controller
     {
         $searchTerm = $request->input('search', '');
 
-        $query = IndustryType::query()->where('is_delete', 'No');
+        $query = IndustryType::query();
 
         if (!empty($searchTerm)) {
             $query->where(function ($q) use ($searchTerm) {

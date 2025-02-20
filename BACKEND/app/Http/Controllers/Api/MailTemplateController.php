@@ -14,7 +14,7 @@ class MailTemplateController extends Controller
     {
         $searchTerm = $request->input('search', '');
 
-        $query = MailTemplate::query()->where('is_delete', 'No');
+        $query = MailTemplate::query();
 
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
@@ -135,7 +135,7 @@ class MailTemplateController extends Controller
     }
 
     // Soft delete: Set 'is_delete' to 'Yes'
-    $mailTemplate->update(['is_delete' => 'Yes']);
+        $mailTemplate->delete();
         return response()->json(['message' => 'Mail template deleted successfully.']);
     }
 }

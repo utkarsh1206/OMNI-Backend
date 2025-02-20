@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Countries extends Model
+class Country extends Model
 {
-    use HasFactory;
-    protected $table = 'countries';
+    use HasFactory, SoftDeletes;
     protected $connection = 'mysql';
     protected $fillable = [
         "id",
@@ -16,7 +16,6 @@ class Countries extends Model
         "country_code",
         "iso_code",
         "status",
-        "is_delete",
         "sort_by",
         "created_at",
         "updated_at"

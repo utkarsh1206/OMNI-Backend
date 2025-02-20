@@ -39,7 +39,7 @@ class DashboardController extends Controller
         $totalUsers = User::where('type', '!=', 0)->count();
 
         //Total Accounts
-        $totalAccounts = Account::where('is_delete', 'No')->count();
+        $totalAccounts = Account::count();
 
         // // Total Ticket Count
         // $totalTicketCount = SupportTicket::count();
@@ -125,7 +125,7 @@ class DashboardController extends Controller
         ];
 
         // Deleted ticket count
-        $deletedTicketCount = SupportTicket::where('is_delete', 'Yes')->count();
+        $deletedTicketCount = SupportTicket::count();
 
         // Combine all the data into a single response
         $dashboardData = [

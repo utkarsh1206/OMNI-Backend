@@ -16,7 +16,7 @@ class StatesController extends Controller
             $searchTerm = $request->input('search', '');
             $country_id = $request->input('country_id', '');
 
-            $query = States::query()->where('is_delete', 'No')->where('country_id',$country_id);
+            $query = States::query()->where('country_id',$country_id);
     
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {

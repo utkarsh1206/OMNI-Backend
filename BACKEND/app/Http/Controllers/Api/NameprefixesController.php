@@ -13,7 +13,7 @@ class NameprefixesController extends Controller
             // Get the search term from the request
             $searchTerm = $request->input('search', '');
 
-            $query = Nameprefixes::query()->where('is_delete', 'No');
+            $query = Nameprefixes::query();
     
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {

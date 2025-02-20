@@ -18,7 +18,7 @@ class AccountController extends Controller
     $campaignId = $request->input('campaign_id', '');
     $ownerId = $request->input('owner_id', '');
 
-    $query = Account::query()->where('is_delete', 'No');
+    $query = Account::query();
     $perPage = $request->input('per_page', 10);
     $page = $request->input('page', 1);
 
@@ -30,7 +30,7 @@ class AccountController extends Controller
 
       $owner = User::where('username', 'like', "%$searchTerm%")->first();
       if ($owner) {
-        $query->orWhere('owner_id', $owner->id)->where('is_delete', 'No');
+        $query->orWhere('owner_id', $owner->id);
       }
     }
 
@@ -70,7 +70,6 @@ class AccountController extends Controller
   {
     $existingAccount = Account::where('product_id', $request->product_id)
       ->where('name', $request->name)
-      ->where('is_delete', 'No')
       ->first();
 
     if ($existingAccount) {
@@ -171,7 +170,6 @@ class AccountController extends Controller
     
     $existingAccount = Account::where('product_id', $request->product_id)
       ->where('name', $request->name)
-      ->where('is_delete', 'No')
       ->where('id', '!=', $account->id)
       ->first();
 
@@ -266,8 +264,7 @@ class AccountController extends Controller
       return response()->json(['message' => 'Account not found'], 404);
     }
 
-    $account->is_delete = 'Yes';
-    $account->save();
+    $account->delete();
     return response()->json([
       'message' => 'Account deleted successfully',
     ]);

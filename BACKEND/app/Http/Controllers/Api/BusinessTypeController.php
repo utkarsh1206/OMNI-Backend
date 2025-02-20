@@ -12,7 +12,7 @@ class BusinessTypeController extends Controller
     {
         $searchTerm = $request->input('search', '');
 
-        $query = BusinessType::query()->where('is_delete', 'No');
+        $query = BusinessType::query();
 
         if (!empty($searchTerm)) {
             $query->where(function ($q) use ($searchTerm) {

@@ -27,11 +27,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('admins', function (Blueprint $table) {
-            $table->boolean('is_delete')->default('d9a9193805dc8832cadf31791f51949b');
-            $table->boolean('is_delete')->default(false);
-            $table->timestamp('created', precision: 0);
-            $table->timestamp('modified', precision: 0);
-        
+        $table->boolean('is_delete')->default(false);
+
+            // Drop the 'deleted_at' column (used for soft deletes)
             $table->dropSoftDeletes();
         });
     }

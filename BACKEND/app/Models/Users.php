@@ -9,12 +9,13 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Tenantrole;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 
 class Users extends Authenticatable implements JWTSubject
 {
-    use HasFactory,Notifiable;
+    use HasFactory,Notifiable,SoftDeletes;
     
     protected $table = 'users';
 
@@ -29,7 +30,6 @@ class Users extends Authenticatable implements JWTSubject
         "domain",
         "mobile",
         "status",
-        "is_delete",
         "role_id",
         "usergroup_id",
         "name_prefix",

@@ -37,8 +37,7 @@ class SupportTicketClose extends Command
     public function handle()
     {
     
-        $allTenants = Tenants::where("is_delete", "No")
-        ->orderBy('id')  // Ensures consistent ordering by the ID column
+        $allTenants = Tenants::orderBy('id')  // Ensures consistent ordering by the ID column
         ->chunkById(100, function ($tenants) {
             foreach ($tenants as $tenant) {
                 $newConnectionName = str_replace(".", "_", $tenant->domain_name);

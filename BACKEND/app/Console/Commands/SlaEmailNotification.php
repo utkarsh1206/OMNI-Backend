@@ -39,8 +39,7 @@ class SlaEmailNotification extends Command
     public function handle()
     {
      
-        $allTenants = Tenants::where("is_delete", "No")
-        ->orderBy('id')
+        $allTenants = Tenants::orderBy('id')
         ->chunkById(100, function ($tenants) {
             foreach ($tenants as $tenant) {
                 $newConnectionName = str_replace(".", "_", $tenant->domain_name);

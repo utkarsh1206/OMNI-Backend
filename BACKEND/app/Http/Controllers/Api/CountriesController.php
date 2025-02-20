@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Countries;
+use App\Models\Country;
 
 
 
@@ -15,7 +15,7 @@ class CountriesController extends Controller
             // Get the search term from the request
             $searchTerm = $request->input('search', '');
 
-            $query = Countries::query()->where('is_delete', 'No');
+            $query = Country::query();
     
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {

@@ -45,7 +45,7 @@ class SupportticketController extends Controller
         }
 
         // Start the query for tenants
-        $query = supportticket::query()->where('is_delete', 'No');
+        $query = supportticket::query();
 
         if ($roleId == 3) {
             $query->where('assign_to_id', $userId); // Filter by the logged-in user's ID
@@ -370,8 +370,7 @@ class SupportticketController extends Controller
     }
     public function destroy(Supportticket $supportticket)
     {
-        $supportticket->is_delete = 'Yes';
-        $supportticket->save();
+        $supportticket->delete();
         return response()->json([
             'message' => 'Support Ticket Deleted Successfully',
         ]);

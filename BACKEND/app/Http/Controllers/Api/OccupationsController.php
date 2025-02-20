@@ -13,7 +13,7 @@ class OccupationsController extends Controller
             // Get the search term from the request
             $searchTerm = $request->input('search', '');
 
-            $query = Occupations::query()->where('is_delete', 'No');
+            $query = Occupations::query();
     
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {

@@ -20,7 +20,7 @@ class EmailConfigureController extends Controller
         $searchTerm = $request->input('search', '');
 
         // Start the query for tenants
-        $query = EmailConfigure::query()->where('is_delete', 'No');
+        $query = EmailConfigure::query();
 
         // If there's a search term, apply it to the query
         if (!empty($searchTerm)) {
@@ -131,8 +131,7 @@ class EmailConfigureController extends Controller
     }
     public function destroy(EmailConfigure $email_configure)
     {
-        $email_configure->is_delete = 'Yes';
-        $email_configure->save();
+        $email_configure->delete();
         return response()->json([
             'message' => 'Email Configure Deleted Successfully',
         ]);
