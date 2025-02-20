@@ -9,6 +9,7 @@ use App\Http\Resources\TenantsResource;
 use Illuminate\Support\Facades\DB;
 use App\Http\Response\CustomApiResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+use Exception;
 
 class TenantRoleRepository
 {
@@ -24,10 +25,8 @@ class TenantRoleRepository
     public function list(Request $request)
     {
         $searchTerm = $request->input('search', '');
-
         // Start the query for tenants
         $query = TenantRole::query();
-
         // If there's a search term, apply it to the query
         if (!empty($searchTerm)) {
             $query->where(function ($q) use ($searchTerm) {
@@ -42,10 +41,8 @@ class TenantRoleRepository
 
         if ($page === 'all') {
             // If 'page' is 'all', retrieve all records without pagination
-            $tenant_role = $query->get();
-            return response()->json([
-                'data' => $tenant_role,
-            ]);
+            $tenantRole = $query->get();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantRole, trans('message.data_fetch'));
         } else {
             // Paginate the results
             $tenantRole = $query->paginate($perPage);
@@ -67,7 +64,7 @@ class TenantRoleRepository
             'message' => 'Tenant Role Created Successfully',
             'data' => new TenantsResource($tenantrole)
         ]);
-        } catch (QueryException $ex) {
+        } catch (Exception $ex) {
             Log::error('Error during authentication: ' . $ex->getMessage());
             return response()->json(['error' => trans('message.invalid_credentials')],  ResponseHTTP::HTTP_UNAUTHORIZED);
         }
@@ -76,14 +73,14 @@ class TenantRoleRepository
 
     public function update(Request $request, $tenantrole)
     {
-        $tenantrole = TenantRole::create([
+        $tenantrole->update([
             'name' => $request->name,
             "permission" => $request->permission,
             "description" => $request->description,
             "status" => $request->status
         ]);
         return response()->json([
-            'message' => 'Tenant Role Created Successfully',
+            'message' => 'Tenant Role Updated Successfully',
             'data' => new TenantsResource($tenantrole)
         ]);
     }

@@ -111,7 +111,7 @@ class UsergroupController extends Controller
     {
         $usergroup->delete();
         return response()->json([
-            'message' => 'User Group Deleted Successfully',
+            'message' => trans('message.user_group_delete_msg'),
         ]);
     }
 }

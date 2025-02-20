@@ -28,6 +28,11 @@ return [
     'logout' => 'You have logout from system successfully.!',
     //success
     'success' => 'Success.!',
+    'data_fetch'=> 'Data has been fetched successfully !',
+    'user_group_delete_msg' =>'User Group Deleted Successfully',
+    'tenant_delete_msg','Tenant deleted Successfully',
+    'tenant_update_msg'=>'Tenant Updated Successfully',
+    'tenant_create_msg'=>'Tenant Created Successfully'
 ]
 ?>
 
