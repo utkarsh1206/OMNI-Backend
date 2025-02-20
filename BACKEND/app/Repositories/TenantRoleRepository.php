@@ -12,6 +12,15 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class TenantRoleRepository
 {
+
+
+    private $apiResponse;
+
+    public function __construct(CustomApiResponse $customApiResponse)
+    {
+        $this->apiResponse = $customApiResponse;
+    }
+
     public function list(Request $request)
     {
         $searchTerm = $request->input('search', '');
@@ -39,17 +48,9 @@ class TenantRoleRepository
             ]);
         } else {
             // Paginate the results
-            $tenant_role = $query->paginate($perPage);
-            // Return the response with pagination meta
-            return response()->json([
-                'data' => $tenant_role->items(),
-                'meta' => [
-                    'current_page' => $tenant_role->currentPage(),
-                    'last_page' => $tenant_role->lastPage(),
-                    'per_page' => $tenant_role->perPage(),
-                    'total' => $tenant_role->total(),
-                ],
-            ]);
+            $tenantRole = $query->paginate($perPage);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantRole, trans('message.data_fetch'));
+           
         }
     }
 
