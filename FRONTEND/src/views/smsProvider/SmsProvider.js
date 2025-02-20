@@ -1,4 +1,4 @@
-import React, { useContext, useState, useCallback, useMemo } from 'react'
+import React, { useContext, useState, useCallback } from 'react'
 import { CButton, CCol, CContainer, CRow, CTableDataCell, CTableRow } from '@coreui/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { BASE_URL } from '../../config'
@@ -34,11 +34,11 @@ const SmsProvider = () => {
     const handlePageChange = useCallback((page) => setCurrentPage(page), []);
     const handlePerPageValue = useCallback((perPage) => setPerPage(perPage), []);
 
-    const renderProviderFilters = useMemo(() => {
+    const renderProviderFilters = () => {
         return (
             <SmsProviderFilters filters={filters} setFilters={setFilters} />
         )
-    }, [filters]);
+    };
 
     const handleDeleteProvider = async (id) => {
         try {
