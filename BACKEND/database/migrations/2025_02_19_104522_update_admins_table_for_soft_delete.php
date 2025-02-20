@@ -12,11 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('admins', function (Blueprint $table) {
-            // Remove the 'is_delete' column
+            $table->dropColumn('edit_id');
             $table->dropColumn('is_delete');
+            $table->dropColumn('created');
+            $table->dropColumn('modified');
 
-            // Add the 'softDeletes' column
-            $table->softDeletes(); // This adds a 'deleted_at' column for soft deletes
+            $table->softDeletes(); 
         });
     }
 
@@ -26,10 +27,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('admins', function (Blueprint $table) {
-            // Re-add the 'is_delete' column (assuming it's a boolean)
+            $table->boolean('is_delete')->default('d9a9193805dc8832cadf31791f51949b');
             $table->boolean('is_delete')->default(false);
-
-            // Drop the 'deleted_at' column (used for soft deletes)
+            $table->timestamp('created', precision: 0);
+            $table->timestamp('modified', precision: 0);
+        
             $table->dropSoftDeletes();
         });
     }

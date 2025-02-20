@@ -7,6 +7,7 @@ use App\Http\Requests\LoginRequest;
 use App\Repositories\LoginRepository;
 use Exception;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+use Illuminate\Http\Request;
 
 
 /**
@@ -68,13 +69,8 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
  *     )
  * )
  */
-
-
-
 class LoginController extends Controller
 {
-    protected $licenseController;
-
     private $loginRepository;
 
     public function __construct(LoginRepository $loginRepository)
@@ -88,7 +84,14 @@ class LoginController extends Controller
             $validator = $request->validated();
             return $this->loginRepository->login($request, $validator);
         } catch (Exception $e) {
-            return response()->json(['error' => 'Unauthorized: Invalid credentials'], ResponseHTTP::HTTP_UNAUTHORIZED);
+            return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
         }
+    }
+
+    
+    public function logout(Request $request)
+    {
+        $this->loginRepository->logout($request);
+        return response()->json(['message' => 'Successfully logged out']);
     }
 }

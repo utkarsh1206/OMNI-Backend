@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CountriesController;
 use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\LoginController;
@@ -13,7 +12,7 @@ use App\Http\Controllers\Api\StatesController;
 use App\Http\Controllers\Api\CitiesController;
 use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\UsergroupController;
-use App\Http\Controllers\Api\TenantroleController;
+use App\Http\Controllers\Api\TenantRoleController;
 use App\Http\Controllers\Api\SupportticketController;
 use App\Http\Controllers\Api\EmailConfigureController;
 use App\Http\Controllers\Api\EmailController;
@@ -23,9 +22,6 @@ use App\Http\Controllers\Api\SupportticketnotificationController;
 use App\Http\Controllers\Api\SupporttickettransferController;
 use App\Http\Controllers\Api\SupportticketmergeController;
 use App\Http\Controllers\Api\AuditController;
-use App\Models\EmailConfigure;
-use App\Models\Supportticket;
-use App\Models\Tenantrole;
 use App\Http\Controllers\Api\CallCDRListController;
 use App\Http\Controllers\Api\IngroupListController;
 use App\Http\Controllers\Api\CampaignListController;
@@ -67,10 +63,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-Route::group(['prefix' => 'auth'], function () {
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('register', [AuthController::class, 'register']);
-});
+
 //Route::get('login', [AuthController::class, 'login'])->name('login');
 Route::get('countries', [CountriesController::class, 'index']);
 Route::get('nameprefixes', [NameprefixesController::class, 'index']);
@@ -82,10 +75,10 @@ Route::apiResource('tenants', TenantController::class);
 
 Route::apiResource('users', UsersController::class);
 Route::apiResource('usergroup', UsergroupController::class);
-Route::apiResource('tenantrole', TenantroleController::class);
+Route::apiResource('tenantrole', TenantRoleController::class);
 Route::apiResource('email-configure', EmailConfigureController::class);
-Route::get('tenantrole-list', [TenantroleController::class, 'list']);
-Route::get('tenantrole-menu', [TenantroleController::class, 'menu']);
+Route::get('tenantrole-list', [TenantRoleController::class, 'list']);
+Route::get('tenantrole-menu', [TenantRoleController::class, 'menu']);
 Route::get('tenant-dashboard', [TenantController::class, 'dashboard']);
 Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);
 Route::get('my-profile', [UsersController::class, 'myprofile']);
@@ -144,19 +137,13 @@ Route::get('sla-priority', [SLAReportController::class, 'prioritySLA']);
 Route::get('sla-category', [SLAReportController::class, 'categorySLA']);
 Route::get('sla-incident', [SLAReportController::class, 'incidentSLA']);
 
-#Route::middleware('auth:api')->api Resource('users', UsersController::class);
-
-Route::middleware(['auth:api'])->group(function () {
-    Route::post('refresh', [AuthController::class, 'refresh']);
-    Route::post('me', [AuthController::class, 'me']);
-    Route::post('logout', [AuthController::class, 'logout']);
-});
 
 Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('supportticket', SupportticketController::class);
     Route::post('updateticketstatus/{supportticket}', [SupportticketController::class, 'statusupdate']);
     Route::apiResource('audit-logs', AuditController::class);
     Route::post('save-user-provider', [SmsProviderController::class, 'saveUserProvider']);
+    Route::post('logout', [LoginController::class, 'logout']);
 });
 
 Route::apiResource('cron-configurations', CronConfigurationsController::class);

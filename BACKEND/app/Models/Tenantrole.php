@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Tenantrole extends Model
+class TenantRole extends Model
 {
     protected $table = 'tenant_role';
 

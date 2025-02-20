@@ -26,6 +26,8 @@ return [
     'update_profile' => 'Your profile is updated successfully.!',
     'update_password' => 'Your password is updated successfully.!',
     'logout' => 'You have logout from system successfully.!',
+    //success
+    'success' => 'Success.!',
 ]
 ?>
 

@@ -4,125 +4,76 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Tenantrole;
+use App\Models\TenantRole;
 use App\Http\Resources\TenantsResource;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
-
-
-
-class TenantroleController extends Controller
+use App\Http\Requests\TenantRoleRequest;
+use App\Repositories\TenantRoleRepository;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+use Exception;
+class TenantRoleController extends Controller
 {
+
+    private $tenantRoleRepository;
+
+    public function __construct(TenantRoleRepository $tenantRoleRepository)
+    {
+        $this->tenantRoleRepository = $tenantRoleRepository;
+    }
+
     public function index(Request $request)
     {
-        // Get the search term from the request
-        $searchTerm = $request->input('search', '');
-
-        // Start the query for tenants
-        $query = tenantrole::query()->where('is_delete', 'No');
-
-        // If there's a search term, apply it to the query
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', '%' . $searchTerm . '%')
-                    ->orwhere('description', 'like', '%' . $searchTerm . '%');
-            });
-        }
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $tenant_role = $query->paginate($perPage);
-        $page = $request->input('page', 1);
-
-        if ($page === 'all') {
-            // If 'page' is 'all', retrieve all records without pagination
-            $tenant_role = $query->get();
-            return response()->json([
-                'data' => $tenant_role,
-            ]);
-        } else {
-            // Paginate the results
-            $tenant_role = $query->paginate($perPage);
-            // Return the response with pagination meta
-            return response()->json([
-                'data' => $tenant_role->items(),
-                'meta' => [
-                    'current_page' => $tenant_role->currentPage(),
-                    'last_page' => $tenant_role->lastPage(),
-                    'per_page' => $tenant_role->perPage(),
-                    'total' => $tenant_role->total(),
-                ],
-            ]);
+        try {
+            return $this->tenantRoleRepository->list($request);
+        } catch (Exception $e) {
+            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|unique:tenant_role',
-        ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+    public function store(TenantRoleRequest $request)
+    {
+        try {
+            return $this->tenantRoleRepository->create($request);
+        } catch (Exception $e) {
+            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }
-        $tenantrole = tenantrole::create([
-            'name' => $request->name,
-            "permission" => $request->permission,
-            "description" => $request->description,
-            "status" => $request->status
-        ]);
-        return response()->json([
-            'message' => 'Tenant Role Created Successfully',
-            'data' => new TenantsResource($tenantrole)
-        ]);
     }
-    public function show(Tenantrole $tenantrole)
-    {
-        return new TenantsResource($tenantrole);
-    }
-    public function update(Request $request, Tenantrole $tenantrole)
-    {
-        $validator = Validator::make($request->all(), [
-            // 'name' => 'required|unique:tenant_role',
-            'name' => 'required|unique:tenant_role,name,' . $tenantrole->id,
-            'description' => 'required',
-        ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+    public function show(TenantRole $tenantrole)
+    {
+        try {
+            return new TenantsResource($tenantrole);
+        } catch (Exception $e) {
+            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
 
-        $tenantrole->update([
-            'name' => $request->name,
-            "permission" => $request->permission,
-            "description" => $request->description,
-            "status" => $request->status
-        ]);
-        return response()->json([
-            'message' => 'Tenant Role Updated Successfully',
-            'data' => new TenantsResource($tenantrole)
-        ]);
-    }
-    public function destroy(Tenantrole $tenantrole)
+    public function update(TenantRoleRequest $request, TenantRole $tenantrole)
     {
-        $tenantrole->is_delete = 'Yes';
-        $tenantrole->save();
-        return response()->json([
-            'message' => 'Tenant Role Deleted Successfully',
-        ]);
+        try {
+            return $this->tenantRoleRepository->update($request, $tenantrole);
+        } catch (Exception $e) {
+            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
+
+    public function destroy(TenantRole $tenantrole)
+    {
+        try {
+            return $this->tenantRoleRepository->delete($tenantrole);
+        } catch (Exception $e) {
+            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     public function list()
     {
-        $final_permission_array = array();
-        $permissions = DB::table('omnichannel.menu_permissions')->get();
-        if (!empty($permissions)) {
-            foreach ($permissions as $permission_key => $permission_value) {
-                $final_permission_array[$permission_value->module_name] = explode(",", $permission_value->roles);
-            }
+        try {
+            return $this->tenantRoleRepository->menuListPermissions();
+        } catch (Exception $e) {
+            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        return  response()->json([
-            'data' => new TenantsResource($final_permission_array),
-        ]);
     }
+    
     // public function menu(){
     //     $navItems = [
     //         [

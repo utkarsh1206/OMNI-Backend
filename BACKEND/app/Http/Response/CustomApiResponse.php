@@ -6,6 +6,30 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class CustomApiResponse
 {
+
+
+    public function getResponseStructure($status , $payload = null, $message = '')
+    {
+        if (! empty($status) && ! empty($payload)) {
+            $data = [
+                'message' => $message,
+                'data' => $payload,
+            ];
+        } elseif ($status) {
+            $data = [
+                'message' => $message,
+            ];
+        } else {
+            $data = [
+                'error' => [
+                    $message,
+                ],
+            ];
+        }
+
+        return $data;
+        //json_encode($data);
+    }
     /**
      * Generate API Response
      *
