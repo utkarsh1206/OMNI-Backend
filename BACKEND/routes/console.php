@@ -20,8 +20,7 @@ Artisan::command('app:sla-email-notification', function () {
     $this->comment("Sla Email Notification");
 })->purpose('Sla Email Notification')->everyMinute();
 
-$allTenants = Tenants::where("is_delete", "No")
-    ->orderBy('id')  // Ensures consistent ordering by the ID column
+$allTenants = Tenants::orderBy('id')  // Ensures consistent ordering by the ID column
     ->chunkById(100, function ($tenants) {
         foreach ($tenants as $tenant) {
             $newConnectionName = str_replace(".", "_", $tenant->domain_name);
