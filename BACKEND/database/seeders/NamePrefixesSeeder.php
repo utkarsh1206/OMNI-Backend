@@ -22,7 +22,6 @@ class NamePrefixesSeeder extends Seeder
             Nameprefixes::insert([
                 'title' => $prefix,
                 'status' => 'Active',
-                'is_delete' => 'No',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);

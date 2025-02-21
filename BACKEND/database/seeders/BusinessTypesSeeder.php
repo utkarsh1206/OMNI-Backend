@@ -26,7 +26,7 @@ class BusinessTypesSeeder extends Seeder
             ['title' => 'Prospect'],
             ['title' => 'Reseller'],
             ['title' => 'Other'],
-            ['title' => 'Farmer', 'status' => 'Inactive', 'is_delete' => 'Yes'],
+            ['title' => 'Farmer', 'status' => 'Inactive'],
         ];
 
         // Insert data using the model
@@ -34,7 +34,6 @@ class BusinessTypesSeeder extends Seeder
             BusinessType::insert([
                 'title' => $type['title'],
                 'status' => 'Active',
-                'is_delete' => 'No',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ]);

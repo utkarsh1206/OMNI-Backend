@@ -60,10 +60,8 @@ class TenantRoleRepository
             "description" => $request->description,
             "status" => $request->status
         ]);
-        return response()->json([
-            'message' => 'Tenant Role Created Successfully',
-            'data' => new TenantsResource($tenantrole)
-        ]);
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantrole, trans('message.tenant_role_created'));
+       
         } catch (Exception $ex) {
             Log::error('Error during authentication: ' . $ex->getMessage());
             return response()->json(['error' => trans('message.invalid_credentials')],  ResponseHTTP::HTTP_UNAUTHORIZED);
@@ -79,18 +77,13 @@ class TenantRoleRepository
             "description" => $request->description,
             "status" => $request->status
         ]);
-        return response()->json([
-            'message' => 'Tenant Role Updated Successfully',
-            'data' => new TenantsResource($tenantrole)
-        ]);
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantrole, trans('message.tenant_role_updated'));
     }
 
     public function delete($tenantrole)
     {
         $tenantrole->delete();
-        return response()->json([
-            'message' => 'Tenant Role Deleted Successfully',
-        ]);
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantrole, trans('message.tenant_role_deleted'));
     }
 
     public function menuListPermissions()
@@ -103,8 +96,6 @@ class TenantRoleRepository
             }
         }
 
-        return  response()->json([
-            'data' => new TenantsResource($final_permission_array),
-        ]);
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $final_permission_array, trans('message.data_fetch'));
     }
 }

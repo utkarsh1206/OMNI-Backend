@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Cities;
+use App\Models\City;
 
-class CitiesController extends Controller
+class CityController extends Controller
 {
     public function index(Request $request)
     {
@@ -14,7 +14,7 @@ class CitiesController extends Controller
             $searchTerm = $request->input('search', '');
             $state_id = $request->input('state_id', '');
 
-            $query = Cities::query()->where('state_id',$state_id);
+            $query = City::query()->where('state_id',$state_id);
     
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {

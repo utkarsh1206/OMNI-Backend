@@ -91,7 +91,6 @@ class IndustryTypesSeeder extends Seeder
             IndustryType::create([
                 'title' => $industry['title'],
                 'status' => 'Active',
-                'is_delete' => 'No',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ]);

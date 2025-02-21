@@ -37,6 +37,12 @@ return [
     'license_invalid'=>'License data invalid',
     'license_invalid'=>'License data invalid',
     'max_tenant_allow'=> 'Tenant creation limit exceeded. Max number of tenants allowed is ',
+    'user_group_update_msg'=>'User Group Updated Successfully',
+    'user_group_create_msg'=>'User Group Created Successfully',
+    'tenant_role_updated'=>'Tenant Role Updated Successfully',
+    'tenant_role_created'=>'Tenant Role Created Successfully',
+    'tenant_role_created'=>'Tenant Role Created Successfully',
+    'tenant_role_deleted'=>'Tenant Role Deleted Successfully',
 ]
 ?>
 

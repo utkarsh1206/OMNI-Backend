@@ -28,7 +28,6 @@ class AdminsSeeder extends Seeder
             'otp' => null,
             'admin_type' => 'Super',
             'status' => 'Active',
-            'is_delete' => 'No',
             'license_key' => '',
             'license_updated_date' => Carbon::now(),
             'created_at' => Carbon::now(),
