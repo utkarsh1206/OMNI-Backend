@@ -57,6 +57,7 @@ use App\Http\Controllers\Api\EmailLogController;
 use App\Http\Controllers\Api\SmsProviderConfigurationsController;
 use App\Http\Controllers\Api\SmsProviderController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\EcdialListsController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -171,3 +172,5 @@ Route::apiResource('sms-configurations', SmsProviderConfigurationsController::cl
 Route::apiResource('sms-providers', SmsProviderController::class);
 
 Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
+
+Route::apiResource('lists', EcdialListsController::class);

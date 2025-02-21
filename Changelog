@@ -1,3 +1,12 @@
+2025-02-21 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : a4e9de34 
+	* Version : Dev
+	* Laravel : CRUD API for List Management list module based on list
+	creation list_id new table will created with name
+	custom_lead_<<list_id>> 
+
 <!-- ---------------------------------------------------------------------------------------- -->
 
 2025-02-21 Utkarsh Rokade<utkarsh.rokade@stltech.in> 
