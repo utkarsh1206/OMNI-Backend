@@ -32,7 +32,11 @@ return [
     'user_group_delete_msg' =>'User Group Deleted Successfully',
     'tenant_delete_msg','Tenant deleted Successfully',
     'tenant_update_msg'=>'Tenant Updated Successfully',
-    'tenant_create_msg'=>'Tenant Created Successfully'
+    'tenant_create_msg'=>'Tenant Created Successfully',
+    'license_invalid'=>'License data invalid',
+    'license_invalid'=>'License data invalid',
+    'license_invalid'=>'License data invalid',
+    'max_tenant_allow'=> 'Tenant creation limit exceeded. Max number of tenants allowed is ',
 ]
 ?>
 

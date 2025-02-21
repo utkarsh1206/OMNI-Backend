@@ -111,13 +111,12 @@ class TenantController extends Controller
 
             if ($currentTenantsCount >= $maxTenantsAllowed) {
                 return response()->json([
-                    'error' => 'Tenant creation limit exceeded. Max number of tenants allowed is ' . $maxTenantsAllowed
+                    'error' => trans("message.max_tenant_allow") . $maxTenantsAllowed
                 ], 400);
             }
         } else {
-            return response()->json(['error' => 'License data invalid'], 400);
+            return response()->json(['error' => trans("message.license_invalid")], 400);
         }
-        $validator = $request->validated();
         return $this->tenantRepository->store($request);
     }
     public function show(Tenants $tenant)

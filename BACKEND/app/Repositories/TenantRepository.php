@@ -25,21 +25,30 @@ class TenantRepository
 
     public function list(Request $request)
     {
-        $searchTerm = $request->input('search', '');
-        $companyName = $request->input('company_name', '');
-        $email = $request->input('email', '');
-        $mobile = $request->input('mobile', '');
-        $domainName = $request->input('domain_name', '');
-        $companyCode = $request->input('company_code', '');
-
+        $filters = [
+            'search' => 'searchTerm',
+            'company_name' => 'companyName',
+            'email' => 'email',
+            'mobile' => 'mobile',
+            'domain_name' => 'domainName',
+            'company_code' => 'companyCode',
+        ];
+        
+        // Retrieve input values
+        $inputs = [];
+        foreach ($filters as $key => $variable) {
+            $inputs[$variable] = $request->input($key, '');
+        }
+        
         // Start the query for tenants
         $query = Tenants::query();
-
-        // If there's a search term, apply it to the query
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
+        
+        // Apply search term conditions if available
+        if (!empty($inputs['searchTerm'])) {
+            $query->where(function ($q) use ($inputs) {
+                $searchTerm = $inputs['searchTerm'];
                 $q->where('username', 'like', '%' . $searchTerm . '%')
-                    ->orwhere('first_name', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('first_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('email', 'like', '%' . $searchTerm . '%')
                     ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
@@ -50,30 +59,20 @@ class TenantRepository
                     ->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
                     ->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
                     ->orWhere('domain_url', 'like', '%' . $searchTerm . '%');
-                // ->orWhere('status', 'like', '%' . $searchTerm . '%'); // Add any additional fields as needed
             });
         }
-
-        if (!empty($companyName)) {
-            $query->where('company_name', $companyName);
+        
+        // Apply other filters dynamically
+        foreach ($filters as $key => $variable) {
+            if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
+                $query->where($variable, $inputs[$variable]);
+            }
         }
-        if (!empty($email)) {
-            $query->where('email', $email);
-        }
-        if (!empty($mobile)) {
-            $query->where('mobile', $mobile);
-        }
-        if (!empty($domainName)) {
-            $query->where('domain_name', $domainName);
-        }
-        if (!empty($companyCode)) {
-            $query->where('company_code', $companyCode);
-        }
-
+        
         // Paginate the results
         $perPage = $request->input('per_page', 10);
         $tenants = $query->paginate($perPage);
-
+        
         // Return the response
         return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.data_fetch'));
     }
