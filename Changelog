@@ -1,3 +1,12 @@
+<!-- ---------------------------------------------------------------------------------------- -->
+
+2025-02-21 Utkarsh Rokade<utkarsh.rokade@stltech.in> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : --------
+	* Version : Dev
+	* React.JS and Laravel : Created a new Repository which will only be used for the Backend code. Removed complete Frontend code from this repo. Also removed the database folder as all of its code was already added to migration/seeder files.
+
 2025-02-14 Utkarsh Rokade<utkarsh.rokade@stltech.in> 
 	* NEWS
 	* Jira ID :
