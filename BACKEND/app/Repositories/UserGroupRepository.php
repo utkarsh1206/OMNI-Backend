@@ -5,8 +5,6 @@ namespace App\Repositories;
 use Illuminate\Http\Request;
 use App\Models\UserGroup;
 use Illuminate\Support\Facades\Log;
-use App\Http\Resources\TenantsResource;
-use Illuminate\Support\Facades\DB;
 use App\Http\Response\CustomApiResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
