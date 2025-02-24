@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\LicenseController;
+use App\Models\LiveAgents;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class LoginController extends Controller
@@ -160,7 +161,30 @@ class LoginController extends Controller
         }
 
         if ($userData && Hash::check($credentials['password'], $userData->password)) {
-            Log::error('Passwords match, proceed with token generation');
+            Log::info('Passwords match, proceed with token generation');
+            
+            if ($validator['flag'] != 0){
+                // LiveAgents::updateOrCreate(
+                LiveAgents::Create(
+                    ['user_id' => $userData->id], // Find by user_id
+                    [
+                        'status' => 'online',
+                        'extension' => $userData->extension ?? 'N/A',
+                        'status_last_updated_at' => now(),
+                        'login_time' => now(),
+                        // 'ready_hr' => now(),
+                        // 'total_calls' => 0,
+                        // 'campaign_id' => $userData->campaign_id ?? null,
+                        // 'ingroup_id' => $userData->ingroup_id ?? null,
+                        // 'talk_hr' => null,
+                        // 'talk_avg' => 0,
+                        // 'ingroup' => null,
+                        // 'lagged_duration' => 0,
+                        // 'rank' => 1,
+                    ]
+                );
+            }
+    
         } else {
             Log::error('Invalid credentials');
         }

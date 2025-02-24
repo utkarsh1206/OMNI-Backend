@@ -17,7 +17,8 @@ class TenantroleController extends Controller
     {
         // Get the search term from the request
         $searchTerm = $request->input('search', '');
-
+        $name = $request->input('name', '');
+        $description = $request->input('description', '');
         // Start the query for tenants
         $query = tenantrole::query()->where('is_delete', 'No');
 
@@ -28,6 +29,14 @@ class TenantroleController extends Controller
                     ->orwhere('description', 'like', '%' . $searchTerm . '%');
             });
         }
+
+        if (!empty($name)) {
+            $query->where('name', 'like', '%' . $name . '%');
+        }
+        if (!empty($description)) {
+            $query->where('description', 'like', '%' . $description . '%');
+        }
+
         // Paginate the results
         $perPage = $request->input('per_page', 10);
         $tenant_role = $query->paginate($perPage);

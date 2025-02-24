@@ -278,6 +278,18 @@ class TenantController extends Controller
     }
     public function update(Request $request, Tenants $tenant)
     {
+        $validator = Validator::make($request->all(), [
+            'username' => 'unique:tenants',
+            'domain_name' => 'unique:tenants',
+            'domain_url' => 'unique:tenants',
+            'email' => 'unique:tenants',
+            'tenant_logo' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            // other validation rules...
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
 
         $tenant_logo_url = "";
         if ($request->hasFile('tenant_logo')) {

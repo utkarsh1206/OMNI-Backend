@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Api\LicenseController;
+use App\Http\Resources\BrandingResource;
+use Illuminate\Support\Facades\Log;
 
 class UsersController extends Controller
 {
@@ -66,7 +68,7 @@ class UsersController extends Controller
             }
 
             if (!empty($name)) {
-                $query->where('name', $name);
+                $query->where('first_name', $name)->orWhere('last_name', $name);
             }
             if (!empty($email)) {
                 $query->where('email', $email);
@@ -234,13 +236,13 @@ class UsersController extends Controller
         $token = $request->bearerToken();
         if ($token != "") {
             $payload = JWTAuth::setToken($token)->getPayload();
-            $domain = $payload['domain'];
-            $tenants = DB::table('omnichannel.tenants')
-                ->select('title', 'footer_content', 'footer_url', 'tenant_logo')
-                ->where('domain_name', '=', $domain)
-                ->get();
-            $return_array = array();
-            $return_array['branding_information'] = (array)$tenants[0];
+            // $domain = $payload['domain'];
+            // $tenants = DB::table('omnichannel.tenants')
+            //     ->select('title', 'footer_content', 'footer_url', 'tenant_logo')
+            //     ->where('domain_name', '=', $domain)
+            //     ->get();
+            // $return_array = array();
+            // $return_array['branding_information'] = (array)$tenants[0];
             $users = Users::where('id', $payload['id'])->first();
             $return_array['profile_info'] = $users->toArray();
             unset($return_array['profile_info']['password']);
@@ -249,6 +251,42 @@ class UsersController extends Controller
             ]);
         } else {
             return response()->json(['error' => 'User Not Found.'], 403);
+        }
+    }
+
+    public function getBranding(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return response()->json(['error' => 'Unauthorized'], 401); // More appropriate status code
+        }
+
+        try {
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $domain = $payload['domain'];
+
+            // // Option 1: Using the Tenant Model (Recommended)
+            //  $tenant = Tenant::where('domain_name', $domain)->first();
+
+            // Option 2: Using DB facade (If you prefer)
+            $tenant = DB::table('omnichannel.tenants')
+                ->select('title', 'footer_content', 'footer_url', 'tenant_logo')
+                ->where('domain_name', $domain)
+                ->first();  // Use first() not get() as we expect only one result
+
+            if (!$tenant) {
+                return response()->json(['error' => 'Tenant not found'], 404);
+            }
+
+            return response()->json([
+                'data' => new BrandingResource($tenant) // Use the resource
+            ]);
+
+        } catch (\Exception $e) {
+            // Log the exception for debugging
+            Log::error($e);
+            return response()->json(['error' => 'Something went wrong'], 500); // Generic error message
         }
     }
 }

@@ -54,6 +54,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\TicketReportController;
 use App\Http\Controllers\Api\SLAReportController;
 use App\Http\Controllers\Api\EmailLogController;
+use App\Http\Controllers\Api\LiveAgentController;
 use App\Http\Controllers\Api\SmsProviderConfigurationsController;
 use App\Http\Controllers\Api\SmsProviderController;
 use App\Http\Controllers\Api\ProductController;
@@ -174,3 +175,7 @@ Route::apiResource('sms-providers', SmsProviderController::class);
 Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
 
 Route::apiResource('lists', EcdialListsController::class);
+
+Route::apiResource('live-agents', LiveAgentController::class);
+
+Route::get('/branding', [UsersController::class, 'getBranding']);
