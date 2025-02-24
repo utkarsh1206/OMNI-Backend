@@ -4,7 +4,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
 use App\Models\CronConfiguration;
-use App\Models\Tenants;
+use App\Models\Tenant;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
@@ -20,7 +20,7 @@ Artisan::command('app:sla-email-notification', function () {
     $this->comment("Sla Email Notification");
 })->purpose('Sla Email Notification')->everyMinute();
 
-$allTenants = Tenants::orderBy('id')  // Ensures consistent ordering by the ID column
+$allTenants = Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
     ->chunkById(100, function ($tenants) {
         foreach ($tenants as $tenant) {
             $newConnectionName = str_replace(".", "_", $tenant->domain_name);

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Tenants;
+use App\Models\Tenant;
 use App\Models\TenantLicense;
 use App\Models\Admins;
 use Illuminate\Support\Facades\Validator;
@@ -47,7 +47,7 @@ class TenantLicenseController extends Controller
             ], 400);
         }
 
-        $tenant = Tenants::find($id);
+        $tenant = Tenant::find($id);
         if (!$tenant) {
             return response()->json([
                 'message' => 'Tenant not found'

@@ -3,14 +3,12 @@
 namespace App\Repositories;
 
 use Illuminate\Http\Request;
-use App\Models\Tenants;
+use App\Models\Tenant;
 use Illuminate\Support\Facades\Log;
 use App\Http\Resources\TenantsResource;
-use Illuminate\Support\Facades\DB;
 use App\Http\Response\CustomApiResponse;
-use Illuminate\Support\Facades\Artisan;
 use App\Models\Users;
-use Illuminate\Support\Facades\Config;
+
 
 class TenantRepository
 {
@@ -41,7 +39,7 @@ class TenantRepository
         }
         
         // Start the query for tenants
-        $query = Tenants::query();
+        $query = Tenant::query();
         
         // Apply search term conditions if available
         if (!empty($inputs['searchTerm'])) {
@@ -90,7 +88,7 @@ class TenantRepository
             $tenant_logo_url = url('storage/' . $path);;
         }
 
-        $tenants = Tenants::create([
+        $tenants = Tenant::create([
             'username' => $request->username,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -111,61 +109,8 @@ class TenantRepository
             'footer_url' => $request->footer_url,
             'tenant_logo' => $tenant_logo_url
         ]);
-        $lastInsertedId = $tenants->id;
-
-        $databaseName = str_replace(".", "_", $request->domain_name);
-
-        DB::statement("CREATE DATABASE $databaseName");
-        $details_array = [
-            'db' => str_replace(".", "_", $request->domain_name),
-            'domain' => $request->domain_name,
-            'username'  => env('DB_USERNAME', 'root'),
-            'password'  => env('DB_PASSWORD', 'Sterlite@2025'),
-        ];
-        DB::table('details')->insert($details_array);
-        $newConnectionName = str_replace(".", "_", $request->domain_name);
-
-        Config::set("database.connections.$newConnectionName", [
-            'driver'    => 'mysql',
-            'host'      => env('DB_HOST', '127.0.0.1'),
-            'port'      => env('DB_PORT', '3306'),
-            'database'  => $databaseName,
-            'username'  => env('DB_USERNAME', 'root'),
-            'password'  => env('DB_PASSWORD', 'Sterlite@2025'),
-            'charset'   => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix'    => '',
-            'strict'    => true,
-            'engine'    => null,
-        ]);
-        Artisan::call('migrate', [
-            '--database' => $newConnectionName,
-            '--path'     => '/database/migrations/user', // Adjust the path as needed
-            '--force'    => true,
-        ]);
-        Users::on($newConnectionName)->create([
-            'tenant_id'  => $lastInsertedId,
-            'type' => 0,
-            'first_name' => $request->first_name,
-            'last_name'  => $request->last_name,
-            'password'   => bcrypt($request->password),
-            'email'      => $request->email,
-            'username'   => $request->username,
-            'domain'     => $request->domain_url,
-            'mobile'     => $request->mobile,
-            'status' => 'Active',
-            'role_id' => 1
-        ]);
-
-        Artisan::call('db:seed', [
-            '--database' => $newConnectionName,
-            '--class' => 'TenantSeeder',
-            '--force' => true, // Run seeders in production if necessary
-        ]);
-        return response()->json([
-            'message' => trans("message.tenant_create_msg"),
-            'data' => new TenantsResource($tenants)
-        ]);
+        
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.tenant_create_msg'));
     }
 
 
@@ -206,21 +151,13 @@ class TenantRepository
 
         // Now update the tenant with the filtered data
         $tenant->update($updateData);
-
-        // Cache::forget('tenants_index:' . md5(json_encode($request->all()))); // Clear the tenants index cache (adapt the key if needed)
-
-        return response()->json([
-            'message' =>  trans("message.tenant_update_msg"),
-            'data' => new TenantsResource($tenant)
-        ]);
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_update_msg'));
     }
 
     public function delete($tenant)
     {
         $tenant->delete();
-        return response()->json([
-            'message' => trans("message.tenant_delete_msg"),
-        ]);
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_delete_msg'));
     }
 
     public function dashboard()
@@ -232,8 +169,6 @@ class TenantRepository
         $call_count_status = array("Success" => "200", "Failed" => "30");
         $agent_count =  Users::query()->where('type', '3')->count();
         $final_array = array("type_wise_ticket" => $type_wise_ticket, "priority_wise_ticket" => $priority_wise_ticket, "agent_status" => $agent_status, "lead_status" => $lead_status, "call_count_status" => $call_count_status, "agent_count" => $agent_count);
-        return response()->json([
-            'data' => new TenantsResource($final_array)
-        ]);
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $final_array, trans('message.data_fetch'));
     }
 }

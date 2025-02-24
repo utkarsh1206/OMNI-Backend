@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Supportticket;
 use Carbon\Carbon;
-use App\Models\Tenants;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +39,7 @@ class SlaEmailNotification extends Command
     public function handle()
     {
      
-        $allTenants = Tenants::orderBy('id')
+        $allTenants = Tenant::orderBy('id')
         ->chunkById(100, function ($tenants) {
             foreach ($tenants as $tenant) {
                 $newConnectionName = str_replace(".", "_", $tenant->domain_name);

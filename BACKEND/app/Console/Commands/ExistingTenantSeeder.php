@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use App\Models\Tenants;
+use App\Models\Tenant;
 use Illuminate\Support\Facades\Artisan;
 
 class ExistingTenantSeeder extends Command
@@ -29,7 +29,7 @@ class ExistingTenantSeeder extends Command
      */
     public function handle()
     {
-        $allTenants = Tenants::orderBy('id')  // Ensures consistent ordering by the ID column
+        $allTenants = Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
         ->chunkById(100, function ($tenants) {
             foreach ($tenants as $tenant) {
                 $newConnectionName = str_replace(".", "_", $tenant->domain_name);
