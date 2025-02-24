@@ -6,8 +6,8 @@ use App\Http\Controllers\Api\CountryController;
 use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\TenantController;
-use App\Http\Controllers\Api\OccupationsController;
-use App\Http\Controllers\Api\NameprefixesController;
+use App\Http\Controllers\Api\OccupationController;
+use App\Http\Controllers\Api\NamePrefixController;
 use App\Http\Controllers\Api\StateController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\UsersController;
@@ -66,9 +66,9 @@ Route::get('/user', function (Request $request) {
 
 //Route::get('login', [AuthController::class, 'login'])->name('login');
 Route::get('countries', [CountryController::class, 'index']);
-Route::get('nameprefixes', [NameprefixesController::class, 'index']);
-Route::get('occupations', [OccupationsController::class, 'index']);
-Route::get('states', [StateController::class, 'index']);
+Route::get('nameprefixes', [NamePrefixController::class, 'index']);
+Route::get('occupations', [OccupationController::class, 'index']);
+Route::get('states', [StateController::class, 'index']);    
 Route::get('cities', [CityController::class, 'index']);
 #Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
 Route::apiResource('tenants', TenantController::class);

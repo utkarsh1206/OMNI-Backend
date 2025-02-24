@@ -84,18 +84,21 @@ if (! function_exists('authenticateUser')) {
 
     function authenticateUser($credentials, $model, $authGuard = 'api')
     {
+      
         $credentialsKey = isset($credentials['email']) ? 'email' : 'username';
         $credentialsValue = $credentials[$credentialsKey];
+        
         $userData = $model::where($credentialsKey, $credentialsValue)->first();
+     
         if (!$userData) {
             return response()->json(['error' => trans('message.invalid_credentials')], 401);
         }
-
+        
+       
         // Attempt to authenticate the user
         if (!$token = auth($authGuard)->attempt($credentials)) {
             return response()->json(['error' => trans('message.invalid_credentials')], 401);
         }
-
-        return $token;
+       return $token;
     }
 }

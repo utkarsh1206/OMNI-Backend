@@ -6,17 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Occupations extends Model
+
+class NamePrefix extends Model
 {
-    use HasFactory, SoftDeletes;
-    protected $table = 'occupations';
+    use HasFactory , SoftDeletes;
     protected $connection = 'mysql';
     protected $fillable = [
         "id",
-        "user_id",
         "title",
         "status",
         "created_at",
         "updated_at"
-    ];
-}
+    ];}
