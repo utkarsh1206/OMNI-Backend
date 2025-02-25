@@ -60,6 +60,7 @@ use App\Http\Controllers\Api\SmsProviderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\EcdialListsController;
 use App\Http\Controllers\Api\EcdialListFieldController;
+use App\Http\Controllers\Api\ChatbotController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -182,3 +183,5 @@ Route::apiResource('live-agents', LiveAgentController::class);
 Route::get('/branding', [UsersController::class, 'getBranding']);
 
 Route::apiResource('/lists_fields', EcdialListFieldController::class);
+
+Route::apiResource('chatbots', ChatbotController::class);
