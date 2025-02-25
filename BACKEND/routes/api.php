@@ -43,7 +43,7 @@ use App\Http\Controllers\Api\SlaSettingController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\IncidentTypeController;
-use App\Http\Controllers\Api\CronCommandsController;
+use App\Http\Controllers\Api\CronCommandController;
 use App\Http\Controllers\Api\CronExpressionsController;
 use App\Http\Controllers\Api\CronConfigurationsController;
 use App\Http\Controllers\Api\DashboardController;
@@ -148,7 +148,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
 Route::apiResource('cron-configurations', CronConfigurationsController::class);
 
-Route::get('cron-commands', [CronCommandsController::class, 'index']);
+Route::get('cron-commands', [CronCommandController::class, 'index']);
 Route::get('cron-expressions', [CronExpressionsController::class, 'index']);
 
 Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
