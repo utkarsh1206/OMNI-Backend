@@ -3,58 +3,132 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\SmsProvider;
-use App\Models\UserSmsGateway;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Exception;
-use Illuminate\Support\Facades\Log;
-use App\Http\Resources\SmsProviderConfigurationResource;
+use App\Repositories\SmsProviderRepository;
+use App\Http\Requests\UserSmsProviderRequest;
 
 class SmsProviderController extends Controller
 {
-    public function index()
+
+    private $smsProviderRepository;
+
+
+    
+
+
+
+    public function __construct(SmsProviderRepository $smsProviderRepository)
     {
-            $providers = SmsProvider::where("status","active")->get();
-                return response()->json([
-                    'data' => $providers,
-                ]);    
+        $this->smsProviderRepository = $smsProviderRepository;
     }
 
-    public function saveUserProvider(Request $request)
+
+    
+     /**
+     * @OA\Get(
+     *     path="api/sms-providers",
+     *     summary="Get list of name prefixes",
+     *     description="Fetches a list of name prefixes with optional search and pagination.",
+     *     operationId="listSmsProviders",
+     *     tags={"Sms Providers"},
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search term to filter by country name, country code, ISO code, or status",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Number of items per page for pagination",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="integer",
+     *             example=10
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of name prefixes successfully fetched",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Data fetched successfully"
+     *             ),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="country_name", type="string"),
+     *                     @OA\Property(property="country_code", type="string"),
+     *                     @OA\Property(property="iso_code", type="string"),
+     *                     @OA\Property(property="status", type="string")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request, possibly invalid query parameters",
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *     )
+     * )
+     */
+
+
+    public function index()
     {
-        try {
-            $apiUser = auth()->user();
-            $validator = Validator::make($request->all(), [
-                'provider_id' => 'required',
-            ]);
+        return $this->smsProviderRepository->list();
+    }
 
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 422);
-            }
 
-            $smsProviers = UserSmsGateway::updateOrCreate(
-                [
-                    'provider_id' => $request->provider_id,  // Condition for matching an existing record
-                    'user_id' => $apiUser->id,  // Another condition for matching an existing record
-                ],
-                [
-                    'provider_id' => $request->provider_id,  // Fields to be created or updated
-                    'user_id' => $apiUser->id,  // Fields to be created or updated
-                ]
-            );
-       
-            return response()->json([
-                'message' => ' Sms Provider Configuration created successfully!',
-                'data' => new SmsProviderConfigurationResource($smsProviers)
-            ], 200);
-        
-        } catch (Exception $e) {
-            Log::error('Error while generating the Sms configuration', [
-                'error' => $e->getMessage(),
-            ]);
-            
-            return response()->json(['message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
-        }
+    /**
+ * @OA\Post(
+ *     path="/api/user-sms-provider",
+ *     operationId="saveUserProvider",
+ *     tags={"Sms Providers"},
+ *     summary="Save or update a user's SMS provider configuration",
+ *     description="Creates or updates the SMS provider configuration for the authenticated user.",
+ *     @OA\RequestBody(
+ *         required=true,
+ *         description="Request body to save or update the user's SMS provider configuration",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="provider_id", type="integer", example=1, description="ID of the SMS provider")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successfully saved or updated the user SMS provider configuration",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="success", description="Response status"),
+ *             @OA\Property(property="message", type="string", example="Provider configurations created successfully", description="Response message")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal server error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string", example="Internal Server Error"),
+ *             @OA\Property(property="error", type="string", example="Error message from the exception")
+ *         )
+ *     )
+ * )
+ */
+
+   
+    public function saveUserProvider(UserSmsProviderRequest $request)
+    {
+        return $this->smsProviderRepository->saveUserProvider($request);
     }
 }

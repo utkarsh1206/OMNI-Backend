@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Tenants;
+use App\Models\Tenant;
 use App\Models\Detail;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +19,7 @@ class TenantLicenseUpdateController extends Controller
 
         $licenseKey = $validated['license_key'];
 
-        $tenant = Tenants::find($id);
+        $tenant = Tenant::find($id);
         $tenant->license_key = $licenseKey;
         $tenant->save();
 

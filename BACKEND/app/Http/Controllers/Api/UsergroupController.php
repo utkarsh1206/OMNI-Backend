@@ -36,18 +36,9 @@ class UserGroupController extends Controller
     }
     public function update(Request $request, Usergroup $usergroup)
     {
-        $usergroup->update([
-            'name' => $request->name,
-            "campaign_id" => $request->campaign_id,
-            "description" => $request->description,
-            //"tenant_id"=>1,//Make it dynamic
-            "status" => $request->status
-        ]);
-        return response()->json([
-            'message' => 'User Group Updated Successfully',
-            'data' => new TenantsResource($usergroup)
-        ]);
+        return $this->userGroupRepository->update($request,$usergroup);
     }
+    
     public function destroy(Usergroup $usergroup)
     {
        return $this->userGroupRepository->delete($usergroup);

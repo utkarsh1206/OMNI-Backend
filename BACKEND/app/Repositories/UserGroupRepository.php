@@ -87,6 +87,7 @@ class UserGroupRepository
             'name' => $request->name,
             "campaign_id" => $request->campaign_id,
             "description" => $request->description,
+            //"tenant_id"=>1,//Make it dynamic
             "status" => $request->status
         ]);
         return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.user_group_update_msg'));

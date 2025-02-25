@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Account extends Model
 {
     use HasFactory , SoftDeletes;
-    protected $table = 'accounts';
-
     // public $timestamps = false;
     
     protected $fillable = [

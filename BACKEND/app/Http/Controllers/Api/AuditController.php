@@ -9,12 +9,7 @@ use App\Repositories\AuditLogRepository;
 
 class AuditController extends Controller
 {
-
-
-
-    
     private $auditRepostory;
-
     public function __construct(AuditLogRepository $auditRepostory)
     {
         $this->auditRepostory = $auditRepostory;

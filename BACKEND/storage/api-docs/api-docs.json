@@ -776,6 +776,153 @@
                 }
             }
         },
+        "api/sms-providers": {
+            "get": {
+                "tags": [
+                    "Sms Providers"
+                ],
+                "summary": "Get list of name prefixes",
+                "description": "Fetches a list of name prefixes with optional search and pagination.",
+                "operationId": "listSmsProviders",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search term to filter by country name, country code, ISO code, or status",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page for pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of name prefixes successfully fetched",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "country_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "country_code": {
+                                                        "type": "string"
+                                                    },
+                                                    "iso_code": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request, possibly invalid query parameters"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/user-sms-provider": {
+            "post": {
+                "tags": [
+                    "Sms Providers"
+                ],
+                "summary": "Save or update a user's SMS provider configuration",
+                "description": "Creates or updates the SMS provider configuration for the authenticated user.",
+                "operationId": "saveUserProvider",
+                "requestBody": {
+                    "description": "Request body to save or update the user's SMS provider configuration",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "provider_id": {
+                                        "description": "ID of the SMS provider",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully saved or updated the user SMS provider configuration",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "description": "Response status",
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "description": "Response message",
+                                            "type": "string",
+                                            "example": "Provider configurations created successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal Server Error"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message from the exception"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/states": {
             "get": {
                 "tags": [
@@ -924,6 +1071,10 @@
         {
             "name": "Occupation",
             "description": "Occupation"
+        },
+        {
+            "name": "Sms Providers",
+            "description": "Sms Providers"
         },
         {
             "name": "State",

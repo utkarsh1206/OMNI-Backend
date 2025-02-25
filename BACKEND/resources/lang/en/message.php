@@ -43,6 +43,12 @@ return [
     'tenant_role_created'=>'Tenant Role Created Successfully',
     'tenant_role_created'=>'Tenant Role Created Successfully',
     'tenant_role_deleted'=>'Tenant Role Deleted Successfully',
+    'provider_configurations_created'=> 'User Provider Details Created Successfully !',
+    'account_product_error'=>'Product and Name combination already exists!',
+    'account_created'=>'Account created successfully!',
+    'account_not_found'=>'Account Not Found',
+    'account_deleted'=>'Account deleted successfully',
+    'account_updated','Account updated successfully!',
 ]
 ?>
 
