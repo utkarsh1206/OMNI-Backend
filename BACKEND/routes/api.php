@@ -59,6 +59,7 @@ use App\Http\Controllers\Api\SmsProviderConfigurationsController;
 use App\Http\Controllers\Api\SmsProviderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\EcdialListsController;
+use App\Http\Controllers\Api\EcdialListFieldController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -179,3 +180,5 @@ Route::apiResource('lists', EcdialListsController::class);
 Route::apiResource('live-agents', LiveAgentController::class);
 
 Route::get('/branding', [UsersController::class, 'getBranding']);
+
+Route::apiResource('/lists_fields', EcdialListFieldController::class);
