@@ -61,6 +61,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\EcdialListsController;
 use App\Http\Controllers\Api\EcdialListFieldController;
 use App\Http\Controllers\Api\ChatbotController;
+use App\Http\Controllers\Api\ImportLeadController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -185,3 +186,6 @@ Route::get('/branding', [UsersController::class, 'getBranding']);
 Route::apiResource('/lists_fields', EcdialListFieldController::class);
 
 Route::apiResource('chatbots', ChatbotController::class);
+
+Route::get('/download-sample/{list_id}', [ImportLeadController::class, 'downloadSampleCsv']);
+Route::post('/upload-lead-csv/{list_id}', [ImportLeadController::class, 'uploadLeadCsv']);

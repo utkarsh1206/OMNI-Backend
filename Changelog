@@ -1,3 +1,31 @@
+2025-02-26 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : d1e5942a 
+	* Version : Dev
+	* Laravel : 
+	1. Download Sample CSV:
+	Allows the user to download a CSV template containing the headers 
+	for a given list_id. The headers are fetched from the ecdial_list_fields table.
+	Example: sample_list_<list_id>.csv.
+
+	2. CSV File Upload and Validation:
+	User uploads a CSV file containing lead data.
+	The system validates the headers of the uploaded file against the headers 
+	defined for the corresponding list_id in the ecdial_list_fields table.
+	If the headers match, the data is inserted into the appropriate table (custom_lead_<list_id>).
+	If the headers do not match, an error message is returned.
+
+	3. Data Insertion:
+	For each row in the CSV file, the data is inserted into the custom_lead_<list_id> table
+
+	4. Import History:
+	After the data is successfully inserted or if there are any failures, the import 
+	history is recorded in the lead_import_histories table.
+	The import history includes details such as the file name, file type, the number 
+	of successful and failed insertions, and the user_id who performed the 
+	import (extracted from the JWT token).
+
 2025-02-25 Nidhi Jajal<nidhi.jajal@stltech.in> 
 	* NEWS
 	* Jira ID : NEOX-4044
