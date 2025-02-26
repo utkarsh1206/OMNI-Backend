@@ -51,10 +51,11 @@ class EcdialListFieldController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(EcdialListField $ecdialListField)
+    public function show($ecdialListField)
     {
         try {
-            return new EcdialListFieldResource($ecdialListField);
+            $listField = EcdialListField::findOrFail($ecdialListField);
+            return new EcdialListFieldResource($listField);
         } catch (Exception $e) {
             return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }

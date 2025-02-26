@@ -9,6 +9,7 @@ use App\Repositories\EcdialListRepository;
 use App\Http\Resources\EcdialListResource;
 use App\Models\EcdialLists;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class EcdialListsController extends Controller
@@ -44,10 +45,11 @@ class EcdialListsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(EcdialLists $ecdialLists)
+    public function show($ecdialLists)
     {
         try {
-            return new EcdialListResource($ecdialLists);
+            $list = EcdialLists::findOrFail($ecdialLists);
+            return new EcdialListResource($list);
         } catch (Exception $e) {
             return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }
