@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
-class Supportticketnotification extends Model
+class SupportTicketNotification extends Model
 {
     use HasFactory;
     protected $table = 'support_ticket_notification';
