@@ -1,20 +1,26 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Repositories;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Http\Resources\CronsResource;
 use App\Models\CronConfiguration;
+use App\Http\Response\CustomApiResponse;
 use Exception;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
-class CronConfigurationsController extends Controller
+class CronConfigurationRepository
 {
-    public function index(Request $request)
+
+
+    private $apiResponse;
+
+    public function __construct(CustomApiResponse $customApiResponse)
     {
-        // Get the search term from the request
+        $this->apiResponse = $customApiResponse;
+    }
+
+    public function list(Request $request)
+    {
         $searchTerm = $request->input('search', '');
         // Paginate the results
         $perPage = $request->input('per_page', 10);
@@ -48,42 +54,20 @@ class CronConfigurationsController extends Controller
         if ($status) {
             $query->where('status', $status);
         }
-        
+
         if ($page === 'all') {
-            // If 'page' is 'all', retrieve all records without pagination
             $cronConfiguration = $query->get();
-            return response()->json([
-                'data' => $cronConfiguration,
-            ]);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $cronConfiguration, trans('message.data_fetch'));
         } else {
             // Paginate the results
             $cronConfiguration = $query->paginate($perPage);
-            // Return the response with pagination meta
-            return response()->json([
-                'data' => $cronConfiguration->items(),
-                'meta' => [
-                    'current_page' => $cronConfiguration->currentPage(),
-                    'last_page' => $cronConfiguration->lastPage(),
-                    'per_page' => $cronConfiguration->perPage(),
-                    'total' => $cronConfiguration->total(),
-                ],
-            ]);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $cronConfiguration, trans('message.data_fetch'));
         }
     }
 
-    public function store(Request $request)
+    public function store($request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'command_signature' => 'required',
-                'schedule_type' => 'required',
-                'schedule_expression' => 'required',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 422);
-            }
-        
             $cronConfiguration = CronConfiguration::create([
                 'command_signature' => $request->command_signature,
                 'schedule_type' => $request->schedule_type,
@@ -91,84 +75,55 @@ class CronConfigurationsController extends Controller
                 'status' => isset($request->status) ? $request->status : "active"
             ]);
 
-            return response()->json([
-                'message' => ' Cron Configuration created successfully!',
-                'data' => new CronsResource($cronConfiguration)
-            ], 200);
-        
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $cronConfiguration, trans('message.data_fetch'));
         } catch (Exception $e) {
             Log::error('Error while generating the cron configuration', [
                 'error' => $e->getMessage(),
             ]);
-            
-            return response()->json(['message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
+
+            return response()->json(['message' => trans('message.wrong_with_system'), 'error' => $e->getMessage()], 500);
         }
     }
 
-    public function show(CronConfiguration $cronConfiguration)
-    {
-        return new CronsResource($cronConfiguration);
-    }
 
-    public function update(Request $request, $id)
+    public function update($request, $id)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'command_signature' => 'required',
-                'schedule_type' => 'required',
-                'schedule_expression' => 'required',
-            ]);
-    
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 422);
-            }
-
             $cronConfiguration = CronConfiguration::find($id);
 
             if (!$cronConfiguration) {
                 return response()->json([
-                    'message' => 'Cron Configuration not found.',
+                    'message' => trans("message.cron_configuration_not_found"),
                 ], 404);
             }
-            
             $cronConfiguration->update($request->all());
-
-            return response()->json([
-                'message' => 'Cron Configuration updated successfully!',
-                'data' => new CronsResource($cronConfiguration)
-            ], 200);
+            return $this->apiResponse->getResponseStructure(trans('message.cron_configuration_update'), $cronConfiguration, trans('message.data_fetch'));
         } catch (Exception $e) {
             Log::error('Error while generating the cron configuration', [
                 'error' => $e->getMessage(),
             ]);
-            
             return response()->json(['message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
         }
     }
 
-    public function destroy($id)
+
+    public function delete($id)
     {
         try {
             $cronConfiguration = CronConfiguration::find($id);
-
             if (!$cronConfiguration) {
                 return response()->json([
-                    'message' => 'Cron Configuration not found.',
+                    'message' => trans("message.cron_configuration_not_found"),
                 ], 404);
             }
-            
             $cronConfiguration->delete();
-
-            return response()->json([
-                'message' => ' Cron Configuration deleted successfully!',
-                'data' => new CronsResource($cronConfiguration)
-            ], 200);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $cronConfiguration, trans('message.cron_configuration_delete'));
         } catch (Exception $e) {
             Log::error('Error while generating the cron configuration', [
                 'error' => $e->getMessage(),
             ]);
-            
-            return response()->json(['message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
+
+            return response()->json(['message' => trans("message.wrong_with_system"), 'error' => $e->getMessage()], 500);
         }
     }
 }

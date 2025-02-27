@@ -49,6 +49,13 @@ return [
     'account_not_found'=>'Account Not Found',
     'account_deleted'=>'Account deleted successfully',
     'account_updated','Account updated successfully!',
+    'cron_configuration_delete'=> 'Cron Configuration deleted successfully !',
+    'cron_configuration_update'=> 'Cron Configuration updated successfully!',
+    'cron_configuration_not_found'=> 'Cron Configuration not found',
+    'sms_provider_not_found'=>'Sms Provider not found.',
+    'sms_provider_conf_delete'=>  'Sms Provider Configuration deleted successfully !',
+    'sms_provider_conf_add'=>  'Sms Provider Configuration added successfully !',
+    'sms_provider_conf_not_found'=> 'Sms Provider Configuration not found.',
 ]
 ?>
 

@@ -18,7 +18,7 @@ use App\Http\Controllers\Api\EmailConfigureController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\MailDetailController;
 use App\Http\Controllers\Api\NotesController;
-use App\Http\Controllers\Api\SupportticketnotificationController;
+use App\Http\Controllers\Api\SupportTicketNotificationController;
 use App\Http\Controllers\Api\SupporttickettransferController;
 use App\Http\Controllers\Api\SupportticketmergeController;
 use App\Http\Controllers\Api\AuditController;
@@ -44,13 +44,13 @@ use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\IncidentTypeController;
 use App\Http\Controllers\Api\CronCommandController;
-use App\Http\Controllers\Api\CronExpressionsController;
-use App\Http\Controllers\Api\CronConfigurationsController;
+use App\Http\Controllers\Api\CronExpressionController;
+use App\Http\Controllers\Api\CronConfigurationController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\TicketReportController;
 use App\Http\Controllers\Api\SLAReportController;
 use App\Http\Controllers\Api\EmailLogController;
-use App\Http\Controllers\Api\SmsProviderConfigurationsController;
+use App\Http\Controllers\Api\SmsProviderConfigurationController;
 use App\Http\Controllers\Api\SmsProviderController;
 use App\Http\Controllers\Api\ProductController;
 
@@ -65,21 +65,11 @@ Route::get('/user', function (Request $request) {
 
 
 //Route::get('login', [AuthController::class, 'login'])->name('login');
-Route::get('countries', [CountryController::class, 'index']);
-Route::get('nameprefixes', [NamePrefixController::class, 'index']);
-Route::get('occupations', [OccupationController::class, 'index']);
-Route::get('states', [StateController::class, 'index']);    
-Route::get('cities', [CityController::class, 'index']);
-#Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
-Route::apiResource('tenants', TenantController::class);
 
+#Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
+Route::apiResource('sla-settings', SlaSettingController::class);
 Route::apiResource('users', UsersController::class);
-Route::apiResource('usergroup', UserGroupController::class);
-Route::apiResource('tenantrole', TenantRoleController::class);
 Route::apiResource('email-configure', EmailConfigureController::class);
-Route::get('tenantrole-list', [TenantRoleController::class, 'list']);
-Route::get('tenantrole-menu', [TenantRoleController::class, 'menu']);
-Route::get('tenant-dashboard', [TenantController::class, 'dashboard']);
 Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);
 Route::get('my-profile', [UsersController::class, 'myprofile']);
 Route::post('send-email', [EmailController::class, 'sendEmail']);
@@ -87,7 +77,6 @@ Route::get('mail-details', [MailDetailController::class, 'index']);
 Route::post('mail-details', [MailDetailController::class, 'store']);
 Route::get('note', [NotesController::class, 'index']);
 Route::post('note', [NotesController::class, 'store']);
-Route::get('notification', [SupportticketnotificationController::class, 'index']);
 Route::post('transfer', [SupporttickettransferController::class, 'store']);
 Route::post('merge', [SupportticketmergeController::class, 'store']);
 
@@ -102,9 +91,7 @@ Route::get('ingroups', [IngroupListController::class, 'index']);
 Route::get('campaigns', [CampaignListController::class, 'index']);
 Route::get('usersList', [UsersListController::class, 'index']);
 
-Route::apiResource('accounts', AccountController::class);
-Route::get('industry_type', [IndustryTypeController::class, 'index']);
-Route::get('business_type', [BusinessTypeController::class, 'index']);
+
 
 Route::apiResource('contacts', ContactController::class);
 
@@ -119,7 +106,7 @@ Route::apiResource('phones', PhoneController::class);
 
 Route::apiResource('mail-templates', MailTemplateController::class);
 
-Route::apiResource('sla-settings', SlaSettingController::class);
+
 Route::apiResource('departments', DepartmentController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('incident-types', IncidentTypeController::class);
@@ -144,17 +131,30 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('audit-logs', AuditController::class);
     Route::post('save-user-provider', [SmsProviderController::class, 'saveUserProvider']);
     Route::post('logout', [LoginController::class, 'logout']);
+    Route::apiResource('tenants', TenantController::class);
+    Route::apiResource('usergroup', UserGroupController::class);
+    Route::apiResource('tenantrole', TenantRoleController::class);
+    Route::get('cron-commands', [CronCommandController::class, 'index']);
+    Route::apiResource('cron-configurations', CronConfigurationController::class);
+    Route::get('cron-expressions', [CronExpressionController::class, 'index']);
+    Route::get('tenantrole-list', [TenantRoleController::class, 'list']);
+    Route::get('tenantrole-menu', [TenantRoleController::class, 'menu']);
+    Route::get('tenant-dashboard', [TenantController::class, 'dashboard']);
+    Route::apiResource('sms-providers', SmsProviderController::class);
+    Route::apiResource('sms-configurations', SmsProviderConfigurationController::class);
+    Route::get('notification', [SupportTicketNotificationController::class, 'index']);
+    Route::apiResource('accounts', AccountController::class);
+    Route::get('industry_type', [IndustryTypeController::class, 'index']);
+    Route::get('business_type', [BusinessTypeController::class, 'index']);
+    Route::get('countries', [CountryController::class, 'index']);
+    Route::get('nameprefixes', [NamePrefixController::class, 'index']);
+    Route::get('occupations', [OccupationController::class, 'index']);
+    Route::get('states', [StateController::class, 'index']);    
+    Route::get('cities', [CityController::class, 'index']);
 });
 
-Route::apiResource('cron-configurations', CronConfigurationsController::class);
-
-Route::get('cron-commands', [CronCommandController::class, 'index']);
-Route::get('cron-expressions', [CronExpressionsController::class, 'index']);
 
 Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
-
 Route::apiResource('email-logs', EmailLogController::class);
-Route::apiResource('sms-configurations', SmsProviderConfigurationsController::class);
-Route::apiResource('sms-providers', SmsProviderController::class);
 
 Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);

@@ -4,18 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\BusinessType;
 use App\Repositories\BusinessTypeRepository;
 use Swagger\Annotations as SWG;
 
 class BusinessTypeController extends Controller
 {
-
     private $businessTypeRepository;
-  public function __construct(BusinessTypeRepository $businessTypeRepository)
-  {
-      $this->businessTypeRepository = $businessTypeRepository;
-  }
+
+    public function __construct(BusinessTypeRepository $businessTypeRepository)
+    {
+        $this->businessTypeRepository = $businessTypeRepository;
+    }
 
     /**
      * @SWG\Get(

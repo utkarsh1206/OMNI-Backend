@@ -11,11 +11,6 @@ class SmsProviderController extends Controller
 
     private $smsProviderRepository;
 
-
-    
-
-
-
     public function __construct(SmsProviderRepository $smsProviderRepository)
     {
         $this->smsProviderRepository = $smsProviderRepository;

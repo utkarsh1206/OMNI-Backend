@@ -1,19 +1,27 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Repositories;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Http\Resources\SmsProviderConfigurationResource;
 use App\Models\SmsProviderConfiguration;
 use App\Models\SmsProvider;
+use App\Http\Response\CustomApiResponse;
 use Exception;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
-class SmsProviderConfigurationsController extends Controller
+class SmsProviderConfigurationRepository
 {
-    public function index(Request $request)
+
+
+    private $apiResponse;
+
+    public function __construct(CustomApiResponse $customApiResponse)
+    {
+        $this->apiResponse = $customApiResponse;
+    }
+
+    public function list(Request $request)
     {
         $providerName = $request->input('provider_name', '');
         $method = $request->input('method', '');
@@ -28,11 +36,10 @@ class SmsProviderConfigurationsController extends Controller
             $smsConfigurations = SmsProviderConfiguration::query();
         }
 
-        if($search)
-        {
+        if ($search) {
             $smsConfigurations = $smsConfigurations->orWhere('config_value', 'like', '%' . $search . '%');
         }
-          
+
         $smsConfigurations = $smsConfigurations->pluck("provider_id");
         $configurations  = SmsProvider::whereIn("id", $smsConfigurations);
 
@@ -44,24 +51,13 @@ class SmsProviderConfigurationsController extends Controller
             $configurations = $configurations->orWhere('name', 'like', '%' . $search . '%');
         }
 
-        
         $configurations = $configurations->get();
-        return response()->json([
-            'data' => $this->formatListingData($configurations, $method, $enabled),
-        ]);
+        return $this->apiResponse->getResponseStructure(trans('message.success'),  $this->formatListingData($configurations, $method, $enabled), trans('message.data_fetch'));
     }
 
-    public function store(Request $request)
+    public function store($request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'provider_name' => 'required',
-                'configurations' => 'required|array',
-            ]);
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 422);
-            }
-
             $smsProviers = SmsProvider::Create([
                 "name" => $request->provider_name,
             ]);
@@ -78,42 +74,26 @@ class SmsProviderConfigurationsController extends Controller
                 }
             }
 
-            return response()->json([
-                'message' => ' Sms Provider Configuration created successfully!',
-                'data' => new SmsProviderConfigurationResource($smsConfigurations)
-            ], 200);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $smsConfigurations, trans('message.sms_provider_conf_add'));
         } catch (Exception $e) {
             Log::error('Error while generating the Sms configuration', [
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json(['message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => trans('message.wrong_with_query'), 'error' => $e->getMessage()], 500);
         }
     }
 
-    public function show($providerId)
-    {
-        $configurations = SmsProvider::where("id", $providerId)->get();
-        return new SmsProviderConfigurationResource($this->formatListingData($configurations));
-    }
 
-    public function update(Request $request, $providerId)
+    public function update($request, $providerId)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'configurations' => 'required|array',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 422);
-            }
-
             $smsConfigurations = SmsProviderConfiguration::where("provider_id", $providerId)->get();
 
             if (!$smsConfigurations) {
                 return response()->json([
-                    'message' => 'Sms Provider Configuration not found.',
-                ], 404);
+                    'message' => trans("message.sms_provider_conf_not_found"),
+                ], ResponseHTTP::HTTP_NOT_FOUND);
             }
 
 
@@ -130,10 +110,7 @@ class SmsProviderConfigurationsController extends Controller
                 }
             }
 
-            return response()->json([
-                'message' => 'Sms Provider Configuration updated successfully!',
-                'data' => new SmsProviderConfigurationResource($smsConfigurations)
-            ], 200);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $smsConfigurations, trans('message.sms_provider_conf_update'));
         } catch (Exception $e) {
             Log::error('Error while generating the cron configuration', [
                 'error' => $e->getMessage(),
@@ -143,31 +120,36 @@ class SmsProviderConfigurationsController extends Controller
         }
     }
 
-    public function destroy($providerId)
+
+    public function delete($providerId)
     {
         try {
             $configuration = SmsProviderConfiguration::where("provider_id", $providerId)->get();
 
             if (!$configuration) {
                 return response()->json([
-                    'message' => 'Sms Provider Configuration not found.',
-                ], 404);
+                    'message' => trans("message.sms_provider_not_found"),
+                ], ResponseHTTP::HTTP_NOT_FOUND);
             }
 
             foreach ($configuration as $smsConfiguration) {
                 $smsConfiguration->delete();
             }
-            return response()->json([
-                'message' => ' Sms Provider Configuration deleted successfully!',
-                'data' => new SmsProviderConfigurationResource($configuration)
-            ], 200);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $configuration, trans('message.sms_provider_conf_delete'));
         } catch (Exception $e) {
             Log::error('Error while generating the Sms configuration', [
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json(['message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => trans("message.wrong_with_query"), 'error' => $e->getMessage()], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+
+    public function show($providerId)
+    {
+        $configurations = SmsProvider::where("id", $providerId)->get();
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations), trans('message.data_fetch'));
     }
 
     private function formatListingData($configurations, $method = NULL, $enabled = NULL)

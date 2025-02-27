@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\BusinessType;
 use App\Http\Response\CustomApiResponse;
 
-
 class BusinessTypeRepository
 {
 
