@@ -12,14 +12,17 @@ use Exception;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use App\Http\Response\CustomApiResponse;
 
 class EcdialListFieldController extends Controller
 {
     protected $ecdialListFieldRepository;
+    private $apiResponse;
 
-    public function __construct(EcdialListFieldsRepository $ecdialListFieldRepository)
+    public function __construct(EcdialListFieldsRepository $ecdialListFieldRepository, CustomApiResponse $customApiResponse)
     {
         $this->ecdialListFieldRepository = $ecdialListFieldRepository;
+        $this->apiResponse = $customApiResponse;
     }
 
     public function index(Request $request)
@@ -27,7 +30,7 @@ class EcdialListFieldController extends Controller
         try {
             return $this->ecdialListFieldRepository->list($request);
         } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
@@ -39,11 +42,8 @@ class EcdialListFieldController extends Controller
         try {
             // Validation is automatically done by EcdialListFieldRequest
             return $this->ecdialListFieldRepository->create($request);
-        } catch (ValidationException $ex) {
-            // If validation fails, this will automatically return validation errors
-            return response()->json(['errors' => $ex->errors()], ResponseHTTP::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
@@ -57,7 +57,7 @@ class EcdialListFieldController extends Controller
             $listField = EcdialListField::findOrFail($ecdialListField);
             return new EcdialListFieldResource($listField);
         } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
@@ -69,7 +69,7 @@ class EcdialListFieldController extends Controller
         try {
             return $this->ecdialListFieldRepository->update($request, $id);
         } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
@@ -81,7 +81,7 @@ class EcdialListFieldController extends Controller
         try {
             return $this->ecdialListFieldRepository->delete($id);
         } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 }

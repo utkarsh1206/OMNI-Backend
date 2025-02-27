@@ -40,6 +40,14 @@ return [
     'invalid_csv_no_data' => 'Invalid csv file. No data found.',
     'no_field_definitions_found' => 'No field definitions found.',
     'csv_headers_mismatch' => 'CSV headers mismatch.',
+    //List Field
+    'list_field_create_success' => 'List field created successfully.',
+    'list_field_update_success' => 'List field updated successfully.',
+    'list_field_delete_success' => 'List field deleted successfully.',
+    //LIst
+    'list_create_success' => 'List created successfully.',
+    'list_update_success' => 'List updated successfully.',
+    'list_delete_success' => 'List deleted successfully.',
     
 ]
 ?>

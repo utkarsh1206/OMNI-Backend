@@ -1,3 +1,11 @@
+2025-02-27 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 47fb759a 
+	* Version : Dev
+	* Laravel : Added status filed in ecdial_lists_fields. added changes
+	accroding to status. als ochanges error messages. 
+
 2025-02-26 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

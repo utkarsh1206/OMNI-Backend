@@ -34,6 +34,7 @@ class EcdialListField extends Model
         "default_value",
         "value_masked",
         "duplicate_check",
+        "status",
     ];
 
     // Define the relationship to the EcdialList model

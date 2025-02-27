@@ -41,6 +41,7 @@ class EcdialListFieldRequest extends FormRequest
             'default_value' => 'nullable|string|max:255',
             'value_masked' => 'required|in:Y,N',
             'duplicate_check' => 'required|in:Y,N',
+            'status' => 'required|in:active,inactive',
         ];
     }
 }

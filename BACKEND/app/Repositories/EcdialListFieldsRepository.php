@@ -29,6 +29,7 @@ class EcdialListFieldsRepository
             $searchTerm = $request->input('search', '');
             $listId = $request->input('list_id', '');
             $fieldType = $request->input('field_type', '');
+            $status = $request->input('status', '');
             $perPage = $request->input('per_page', 10);
             $page = $request->input('page', 1);
 
@@ -39,7 +40,8 @@ class EcdialListFieldsRepository
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('field_name', 'like', "%$searchTerm%")
                         ->orWhere('field_label', 'like', "%$searchTerm%")
-                        ->orWhere('description', 'like', "%$searchTerm%");
+                        ->orWhere('description', 'like', "%$searchTerm%")
+                        ->orWhere('status', 'like', "%$searchTerm%");
                 });
             }
 
@@ -51,6 +53,10 @@ class EcdialListFieldsRepository
                 $query->where('field_type', $fieldType);
             }
 
+            if (!empty($status)) {
+                $query->where('status', $status);
+            }
+
             if ($page === 'all') {
                 $fieldData = $query->get();
                 return $this->apiResponse->getResponseStructure(trans('message.success'), $fieldData, trans('message.data_fetch'));
@@ -59,8 +65,7 @@ class EcdialListFieldsRepository
                 return $this->apiResponse->getResponseStructure(trans('message.success'), $fieldData, trans('message.data_fetch'));
             }
         } catch (Exception $ex) {
-            Log::error('Error fetching fields: ' . $ex->getMessage());
-            return response()->json(['error' => trans('message.internal_error')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -88,14 +93,11 @@ class EcdialListFieldsRepository
                 });
             }
 
-            return response()->json([
-                'message' => 'Field Created Successfully',
-                'data' => new EcdialListFieldResource($field)
-            ], ResponseHTTP::HTTP_CREATED);
+            $data = new EcdialListFieldResource($field);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_field_create_success'));
         } catch (Exception $ex) {
             DB::rollBack();
-            Log::error('Error creating field: ' . $ex->getMessage());
-            return response()->json(['error' => trans('message.internal_error')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -110,13 +112,11 @@ class EcdialListFieldsRepository
 
             $field->update($validatedData);
 
-            return response()->json([
-                'message' => 'Field Updated Successfully',
-                'data' => new EcdialListFieldResource($field)
-            ], ResponseHTTP::HTTP_OK);
+            $data = new EcdialListFieldResource($field);
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_field_update_success'));
         } catch (Exception $ex) {
-            Log::error('Error updating field: ' . $ex->getMessage());
-            return response()->json(['error' => trans('message.internal_error')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -126,12 +126,9 @@ class EcdialListFieldsRepository
             $field = EcdialListField::findOrFail($id);
             $field->delete();
 
-            return response()->json([
-                'message' => 'Field Deleted Successfully',
-            ], ResponseHTTP::HTTP_OK);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $id, trans('message.list_field_delete_success'));
         } catch (Exception $ex) {
-            Log::error('Error deleting field: ' . $ex->getMessage());
-            return response()->json(['error' => 'Failed to delete the field. It may not exist.'], ResponseHTTP::HTTP_NOT_FOUND);
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 }

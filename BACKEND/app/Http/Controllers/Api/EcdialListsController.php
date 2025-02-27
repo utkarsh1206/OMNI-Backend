@@ -11,14 +11,16 @@ use App\Models\EcdialLists;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
-
+use App\Http\Response\CustomApiResponse;
 class EcdialListsController extends Controller
 {
     protected $ecdialListRepository;
+    private $apiResponse;
 
-    public function __construct(EcdialListRepository $ecdialListRepository)
+    public function __construct(EcdialListRepository $ecdialListRepository, CustomApiResponse $customApiResponse)
     {
         $this->ecdialListRepository = $ecdialListRepository;
+        $this->apiResponse = $customApiResponse;
     }
 
     public function index(Request $request)
@@ -26,7 +28,7 @@ class EcdialListsController extends Controller
         try {
             return $this->ecdialListRepository->list($request);
         } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
@@ -38,7 +40,7 @@ class EcdialListsController extends Controller
         try {
             return $this->ecdialListRepository->create($request);
         } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
@@ -51,7 +53,7 @@ class EcdialListsController extends Controller
             $list = EcdialLists::findOrFail($ecdialLists);
             return new EcdialListResource($list);
         } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
@@ -63,7 +65,7 @@ class EcdialListsController extends Controller
         try {
             return $this->ecdialListRepository->update($request, $list_id);
         } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
@@ -75,7 +77,7 @@ class EcdialListsController extends Controller
         try {
             return $this->ecdialListRepository->delete($list_id);
         } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 }

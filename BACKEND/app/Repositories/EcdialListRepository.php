@@ -69,13 +69,10 @@ class EcdialListRepository
             // Generate custom table name
             $this->createCustomTable($ecdialLists->list_id);
 
-            return response()->json([
-                'message' => 'List Created Successfully',
-                'data' => new EcdialListResource($ecdialLists)
-            ]);
+            $data = new EcdialListResource($ecdialLists);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_create_success'));
         } catch (Exception $ex) {
-            Log::error('Error during authentication: ' . $ex->getMessage());
-            return response()->json(['error' => trans('message.invalid_credentials')],  ResponseHTTP::HTTP_UNAUTHORIZED);
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -89,13 +86,11 @@ class EcdialListRepository
                 "description" => $request->description,
                 "status" => $request->status
             ]);
-            return response()->json([
-                'message' => 'List Updated Successfully',
-                'data' => new EcdialListResource($ecdialLists)
-            ]);
+
+            $data = new EcdialListResource($ecdialLists);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_update_success'));
         } catch (Exception $ex) {
-            Log::error('Error during authentication: ' . $ex->getMessage());
-            return response()->json(['error' => trans('message.invalid_credentials')],  ResponseHTTP::HTTP_UNAUTHORIZED);
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -110,14 +105,9 @@ class EcdialListRepository
             // Delete the list
             $ecdialList->delete();
 
-            return response()->json([
-                'message' => 'List Deleted Successfully',
-            ], ResponseHTTP::HTTP_OK);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $list_id, trans('message.list_delete_success'));
         } catch (Exception $ex) {
-            Log::error('Error during deletion: ' . $ex->getMessage());
-            return response()->json([
-                'error' => 'Failed to delete the list. It may not exist.',
-            ], ResponseHTTP::HTTP_NOT_FOUND);
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -129,8 +119,6 @@ class EcdialListRepository
             $table->id(); // Primary Key (Auto Increment)
             $table->timestamps(); // Created & Updated timestamps
         });
-
-        Log::info("Custom table '$tableName' created successfully.");
     }
 
     /**
@@ -142,7 +130,6 @@ class EcdialListRepository
 
         if (Schema::hasTable($tableName)) {
             Schema::dropIfExists($tableName);
-            Log::info("Custom table '$tableName' deleted successfully.");
         }
     }
 }
