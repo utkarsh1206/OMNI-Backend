@@ -831,6 +831,269 @@
                 }
             }
         },
+        "/api/dashboard/ticket_details": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get dashboard statistics",
+                "description": "Fetches various statistics including total users, accounts, tickets, departments, and detailed ticket breakdowns.",
+                "operationId": "getDashboardData",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_users": {
+                                            "type": "integer",
+                                            "example": 150
+                                        },
+                                        "total_accounts": {
+                                            "type": "integer",
+                                            "example": 50
+                                        },
+                                        "total_pending_tickets": {
+                                            "type": "integer",
+                                            "example": 20
+                                        },
+                                        "total_departments": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "total_contacts": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "total_ticket_count": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "tickets_by_status": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "properties": {
+                                                    "count": {
+                                                        "type": "integer",
+                                                        "example": 120
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "tickets_by_priority": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "properties": {
+                                                    "count": {
+                                                        "type": "integer",
+                                                        "example": 50
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "tickets_by_department": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "properties": {
+                                                    "count": {
+                                                        "type": "integer",
+                                                        "example": 30
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "pending_tickets_by_agent": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "assign_to_id": {
+                                                        "type": "integer",
+                                                        "example": 12
+                                                    },
+                                                    "count": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    },
+                                                    "agent_name": {
+                                                        "type": "string",
+                                                        "example": "John Doe"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "tickets_by_incident_type": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "incident_id": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    },
+                                                    "count": {
+                                                        "type": "integer",
+                                                        "example": 40
+                                                    },
+                                                    "incident_name": {
+                                                        "type": "string",
+                                                        "example": "Server Downtime"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "tickets_by_product": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "product_id": {
+                                                        "type": "integer",
+                                                        "example": 7
+                                                    },
+                                                    "count": {
+                                                        "type": "integer",
+                                                        "example": 25
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "tickets_by_type": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "properties": {
+                                                    "count": {
+                                                        "type": "integer",
+                                                        "example": 100
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "activity_summary": {
+                                            "properties": {
+                                                "today": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "last_7_days": {
+                                                    "type": "integer",
+                                                    "example": 60
+                                                },
+                                                "last_30_days": {
+                                                    "type": "integer",
+                                                    "example": 200
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "deleted_ticket_count": {
+                                            "type": "integer",
+                                            "example": 5
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/api/send-email": {
+            "post": {
+                "tags": [
+                    "Email"
+                ],
+                "summary": "Send an email",
+                "description": "Sends an email to a specified recipient using SMTP settings from the database.",
+                "operationId": "sendEmail",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "configure_id",
+                                    "subject",
+                                    "content",
+                                    "to"
+                                ],
+                                "properties": {
+                                    "configure_id": {
+                                        "description": "ID of the email configuration",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "subject": {
+                                        "description": "Subject of the email",
+                                        "type": "string",
+                                        "example": "Important Update"
+                                    },
+                                    "content": {
+                                        "description": "Content of the email",
+                                        "type": "string",
+                                        "example": "This is the body of the email."
+                                    },
+                                    "to": {
+                                        "description": "Recipient's email address",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email sent successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to send email",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to send email"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "SMTP authentication failed"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/email-logs": {
             "get": {
                 "tags": [
@@ -1045,6 +1308,44 @@
                                         }
                                     },
                                     "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/api/ingroups": {
+            "get": {
+                "tags": [
+                    "Inbound Groups"
+                ],
+                "summary": "Get a list of inbound groups",
+                "description": "Fetches a list of inbound groups ordered by group_id.",
+                "operationId": "getInboundGroups",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "group_id": {
+                                                "type": "string",
+                                                "example": "IG123"
+                                            },
+                                            "group_name": {
+                                                "type": "string",
+                                                "example": "Support Group"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
                                 }
                             }
                         }
@@ -1312,6 +1613,152 @@
                     },
                     "500": {
                         "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/note": {
+            "get": {
+                "tags": [
+                    "Notes"
+                ],
+                "summary": "Get notes for a support ticket",
+                "description": "Fetches all notes associated with a given support ticket ID.",
+                "operationId": "getNotes",
+                "parameters": [
+                    {
+                        "name": "supportticket_id",
+                        "in": "query",
+                        "description": "The ID of the support ticket to retrieve notes for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "supportticket_id": {
+                                                "type": "integer",
+                                                "example": 101
+                                            },
+                                            "date": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2024-03-03 12:00:00"
+                                            },
+                                            "note": {
+                                                "type": "string",
+                                                "example": "Follow up with customer."
+                                            },
+                                            "created_by": {
+                                                "type": "integer",
+                                                "example": 5
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Notes"
+                ],
+                "summary": "Create a new note",
+                "description": "Creates a new note associated with a support ticket.",
+                "operationId": "createNote",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "supportticket_id",
+                                    "note"
+                                ],
+                                "properties": {
+                                    "supportticket_id": {
+                                        "type": "integer",
+                                        "example": 101
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Resolved the customer issue."
+                                    },
+                                    "user_id": {
+                                        "description": "User who created the note",
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Note created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Note created successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "supportticket_id": {
+                                                    "type": "integer",
+                                                    "example": 101
+                                                },
+                                                "date": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2024-03-03 12:00:00"
+                                                },
+                                                "note": {
+                                                    "type": "string",
+                                                    "example": "Resolved the customer issue."
+                                                },
+                                                "created_by": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
                     }
                 }
             }
@@ -2152,6 +2599,14 @@
             "description": "CronExpressions"
         },
         {
+            "name": "Dashboard",
+            "description": "Dashboard"
+        },
+        {
+            "name": "Email",
+            "description": "Email"
+        },
+        {
             "name": "Email Logs",
             "description": "Email Logs"
         },
@@ -2160,12 +2615,20 @@
             "description": "Industry Types"
         },
         {
+            "name": "Inbound Groups",
+            "description": "Inbound Groups"
+        },
+        {
             "name": "Authentication",
             "description": "Authentication"
         },
         {
             "name": "Name Prefixes",
             "description": "Name Prefixes"
+        },
+        {
+            "name": "Notes",
+            "description": "Notes"
         },
         {
             "name": "Occupation",

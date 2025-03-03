@@ -1,0 +1,69 @@
+<?php
+
+namespace App\Repositories;
+use App\Models\EmailConfigure;
+use App\Http\Response\CustomApiResponse;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Exception;
+use App\Mail\SendEmail;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+
+class EmailRepository
+{
+
+
+    private $apiResponse;
+
+    public function __construct(CustomApiResponse $customApiResponse)
+    {
+        $this->apiResponse = $customApiResponse;
+    }
+
+    public function index($validated)
+    {
+        // Retrieve SMTP settings from the database
+        $emailConfig = EmailConfigure::where('id', $validated['configure_id'])->first();
+        $smtpHost = $emailConfig->smtp_host;
+        $smtpPort = $emailConfig->smtp_port;
+        $smtpUser = $emailConfig->smtp_user;
+        $smtpPassword = $emailConfig->smtp_password;
+        $sender_name = $emailConfig->sender_name;
+        $sender_email = $emailConfig->sender_email;
+        // Configure SMTP dynamically
+        config([
+            'mail.mailers.smtp.host' =>  $smtpHost,
+            'mail.mailers.smtp.port' => $smtpPort,
+            'mail.mailers.smtp.username' => $smtpUser,
+            'mail.mailers.smtp.password' => $smtpPassword,
+            'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
+            'mail.from.address' => $sender_email,
+            'mail.from.name' => $sender_name,
+        ]);
+
+        try {
+            // Attempt to send the email
+            Mail::to($validated['to'])->send(new SendEmail($validated['subject'], $validated['content'], ""));
+
+            // Log success (optional)
+            Log::info("Email sent successfully to {$validated['to']} with subject: {$validated['subject']}");
+            return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.email_sent_success'));
+        } catch (Exception $e) {
+            // Log the error message if email fails to send
+            Log::error('Failed to send email', [
+                'error' => $e->getMessage(),
+                'recipient' => $validated['to'],
+                'subject' => $validated['subject'],
+            ]);
+
+            // Return a response indicating failure
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+       
+    }
+
+   
+
+   
+
+}

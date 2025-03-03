@@ -56,6 +56,8 @@ return [
     'sms_provider_conf_delete'=>  'Sms Provider Configuration deleted successfully !',
     'sms_provider_conf_add'=>  'Sms Provider Configuration added successfully !',
     'sms_provider_conf_not_found'=> 'Sms Provider Configuration not found.',
+    'note_created_msg'=>'Note created successfully.',
+    'email_sent_success'=>'Email sent successfully',
 ]
 ?>
 

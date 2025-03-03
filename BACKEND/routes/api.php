@@ -17,7 +17,7 @@ use App\Http\Controllers\Api\SupportticketController;
 use App\Http\Controllers\Api\EmailConfigureController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\MailDetailController;
-use App\Http\Controllers\Api\NotesController;
+use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\SupportTicketNotificationController;
 use App\Http\Controllers\Api\SupporttickettransferController;
 use App\Http\Controllers\Api\SupportticketmergeController;
@@ -75,8 +75,6 @@ Route::get('my-profile', [UsersController::class, 'myprofile']);
 Route::post('send-email', [EmailController::class, 'sendEmail']);
 Route::get('mail-details', [MailDetailController::class, 'index']);
 Route::post('mail-details', [MailDetailController::class, 'store']);
-Route::get('note', [NotesController::class, 'index']);
-Route::post('note', [NotesController::class, 'store']);
 Route::post('transfer', [SupporttickettransferController::class, 'store']);
 Route::post('merge', [SupportticketmergeController::class, 'store']);
 
@@ -87,8 +85,7 @@ Route::post('insert-update-custom', [UpdateCustomFieldsController::class, 'updat
 
 Route::get('agent-activity', [AgentActivityController::class, 'getAgentActivity']);
 
-Route::get('ingroups', [IngroupListController::class, 'index']);
-Route::get('campaigns', [CampaignListController::class, 'index']);
+
 
 
 
@@ -154,7 +151,12 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('email-logs', EmailLogController::class);
     Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
     Route::get('usersList', [UserListController::class, 'index']);
+    Route::get('campaigns', [CampaignListController::class, 'index']);
+    Route::get('ingroups', [IngroupListController::class, 'index']);
+    Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
+    Route::get('note', [NoteController::class, 'index']);
+    Route::post('note', [NoteController::class, 'store']);
 });
 
 
-Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
+
