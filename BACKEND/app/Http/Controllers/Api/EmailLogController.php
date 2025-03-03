@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\EmailLog;
 use App\Http\Resources\EmailLogResource;
+use App\Repositories\EmailLogRepository;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -14,87 +15,113 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EmailLogController extends Controller
 {
+
+    private $emailLogRepository;
+
+    public function __construct(EmailLogRepository $emailLogRepository)
+    {
+        $this->emailLogRepository = $emailLogRepository;
+    }
+     /**
+     * @OA\Get(
+     *     path="/api/email-logs",
+     *     summary="Get all email logs with filters",
+     *     description="Retrieve email logs with optional filters such as search term, status, user id, and date",
+     *     operationId="getEmailLogs",
+     *     tags={"Email Logs"},
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search term for email template subject or user details",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filter by email log status (e.g., sent, failed)",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="user_id",
+     *         in="query",
+     *         description="Filter by user ID",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="date",
+     *         in="query",
+     *         description="Filter by creation date (format: yyyy-mm-dd)",
+     *         required=false,
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Number of results per page",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number for pagination. Use 'all' to fetch all records without pagination.",
+     *         required=false,
+     *         @OA\Schema(type="string", default="1")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of email logs",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="meta", type="object", 
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="last_page", type="integer"),
+     *                 @OA\Property(property="per_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid input parameters"
+     *     )
+     * )
+     */
     public function index(Request $request)
     {
-        // Get the search term from the request
-        $searchTerm = $request->input('search', '');
-        $status = $request->input('status', '');
-        $userId = $request->input('user_id', '');
-        $date = $request->input('date', ''); // Single date filter
-
-        $query = EmailLog::with('user', 'email_template');
-
-        // Apply search filter for email template subject and user details
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->whereHas('email_template', function ($query) use ($searchTerm) {
-                    $query->where('subject', 'like', "%$searchTerm%");
-                })
-                ->orWhereHas('user', function ($query) use ($searchTerm) {
-                    $query->where('username', 'like', "%$searchTerm%")
-                        ->orWhere('email', 'like', "%$searchTerm%");
-                });
-            });
-        }
-
-        // Apply status filter if provided
-        if (!empty($status)) {
-            $query->where('status', $status);
-        }
-
-        // Apply user filter if provided
-        if (!empty($userId)) {
-            $query->where('user_id', $userId);
-        }
-
-        // Apply date filter if provided
-        if (!empty($date)) {
-            $query->whereDate('created_at', '=', Carbon::parse($date)->format('Y-m-d'));
-        }
-
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $page = $request->input('page', 1);
-
-        if ($page === 'all') {
-            // If 'page' is 'all', retrieve all records without pagination
-            $result = $query->get();
-            return response()->json([
-                'data' => $result,
-            ]);
-        } else {
-            // Paginate the results
-            $result = $query->paginate($perPage);
-            // Return the response with pagination meta
-            return response()->json([
-                'data' => $result->items(),
-                'meta' => [
-                    'current_page' => $result->currentPage(),
-                    'last_page' => $result->lastPage(),
-                    'per_page' => $result->perPage(),
-                    'total' => $result->total(),
-                ],
-            ]);
-        }
+        return $this->emailLogRepository->list($request);
     }
 
-
-    public function getUsersInEmailLogs()
-    {
-        $usersInLogs = EmailLog::with('user')->distinct()->get(['user_id']);
-
-        // Get unique users who are part of the email logs
-        $users = $usersInLogs->map(function ($log) {
-            return $log->user;
-        });
-
-        return response()->json(['data' => $users]);
-    }
-
+     /**
+     * @OA\Get(
+     *     path="/api/email-logs/{id}",
+     *     summary="Get a specific email log",
+     *     description="Retrieve the details of a specific email log by ID",
+     *     operationId="getEmailLogById",
+     *     tags={"Email Logs"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the email log",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Details of the email log"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Email log not found"
+     *     )
+     * )
+     */
     public function show($id)
     {
-        $info =  EmailLog::find($id);
-        return new EmailLogResource($info);
+        return $this->emailLogRepository->show($id);
     }
     /**
      * Export email logs to CSV
@@ -104,52 +131,6 @@ class EmailLogController extends Controller
      */
     public function exportCsv(Request $request)
     {
-        // Modify query to select from both email_logs and users
-        $logsQuery = DB::table('email_logs')
-            ->join('users', 'email_logs.user_id', '=', 'users.id')  // Join with users table
-            ->join('mail_template', 'email_logs.email_template_id','=','mail_template.id')
-            ->select(
-                'email_logs.id',
-                'email_logs.from_email',
-                'users.email as to_email',  // Selecting the email from users table as to_email
-                'users.first_name as username',
-                'users.mobile as contact', 
-                'mail_template.subject as subject',
-                'email_logs.created_at',
-                'email_logs.status'
-            );
-
-        // Fetch the logs
-        $logs = $logsQuery->get();
-
-        // Simplified headers, now including "To Email"
-        $headers = ['From Email', 'To Email','Username','Contact','subject', 'Date & Time', 'Status'];
-
-        $callback = function () use ($headers, $logs) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $headers);
-
-            foreach ($logs as $log) {
-                $row = [
-                    $log->from_email,
-                    $log->to_email,  // Displaying to_email from users table
-                    $log->username,
-                    $log->contact,
-                    $log->subject,
-                    $log->created_at,
-                    $log->status === 'sent' ? 'Sent' : 'Failed',
-                ];
-                fputcsv($file, $row);
-            }
-
-            fclose($file);
-        };
-
-        $response = new StreamedResponse($callback, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="email_logs.csv"',
-        ]);
-
-        return $response;
+       return $this->emailLogRepository->exportCsv($request);
     }
 }

@@ -25,7 +25,7 @@ use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Api\CallCDRListController;
 use App\Http\Controllers\Api\IngroupListController;
 use App\Http\Controllers\Api\CampaignListController;
-use App\Http\Controllers\Api\UsersListController;
+use App\Http\Controllers\Api\UserListController;
 use App\Http\Controllers\Api\CustomFieldController;
 use App\Http\Controllers\Api\UpdateCustomFieldsController;
 use App\Http\Controllers\Api\AgentActivityController;
@@ -89,7 +89,7 @@ Route::get('agent-activity', [AgentActivityController::class, 'getAgentActivity'
 
 Route::get('ingroups', [IngroupListController::class, 'index']);
 Route::get('campaigns', [CampaignListController::class, 'index']);
-Route::get('usersList', [UsersListController::class, 'index']);
+
 
 
 
@@ -151,10 +151,10 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('occupations', [OccupationController::class, 'index']);
     Route::get('states', [StateController::class, 'index']);    
     Route::get('cities', [CityController::class, 'index']);
+    Route::apiResource('email-logs', EmailLogController::class);
+    Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
+    Route::get('usersList', [UserListController::class, 'index']);
 });
 
 
 Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
-Route::apiResource('email-logs', EmailLogController::class);
-
-Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
