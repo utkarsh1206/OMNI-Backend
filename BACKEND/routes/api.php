@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CountryController;
-use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\TenantController;
 use App\Http\Controllers\Api\OccupationController;
@@ -55,8 +54,6 @@ use App\Http\Controllers\Api\SmsProviderController;
 use App\Http\Controllers\Api\ProductController;
 
 Route::post('login', [LoginController::class, 'login_action']);
-
-Route::get('get_test', [TestController::class, 'index']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();
