@@ -72,7 +72,6 @@ Route::apiResource('users', UsersController::class);
 Route::apiResource('email-configure', EmailConfigureController::class);
 Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);
 Route::get('my-profile', [UsersController::class, 'myprofile']);
-Route::post('send-email', [EmailController::class, 'sendEmail']);
 Route::get('mail-details', [MailDetailController::class, 'index']);
 Route::post('mail-details', [MailDetailController::class, 'store']);
 Route::post('transfer', [SupporttickettransferController::class, 'store']);
@@ -84,12 +83,6 @@ Route::get('custome-field/value', [CustomFieldController::class, 'custumFieldval
 Route::post('insert-update-custom', [UpdateCustomFieldsController::class, 'updateInsertCustomField']);
 
 Route::get('agent-activity', [AgentActivityController::class, 'getAgentActivity']);
-
-
-
-
-
-
 Route::apiResource('contacts', ContactController::class);
 
 Route::middleware('auth:api')->post('license_update', [LicenseUpdateController::class, 'updateLicense']);
@@ -102,13 +95,10 @@ Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense'
 Route::apiResource('phones', PhoneController::class);
 
 Route::apiResource('mail-templates', MailTemplateController::class);
-
-
 Route::apiResource('departments', DepartmentController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('incident-types', IncidentTypeController::class);
 Route::apiResource('products', ProductController::class);
-
 Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
 Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);
 Route::get('/ticket/summary/category', [TicketReportController::class, 'categorySummary']);
@@ -156,6 +146,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
     Route::get('note', [NoteController::class, 'index']);
     Route::post('note', [NoteController::class, 'store']);
+    Route::post('send-email', [EmailController::class, 'sendEmail']);
 });
 
 
