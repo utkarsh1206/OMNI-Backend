@@ -60,7 +60,8 @@ class ImportExportLeadRepository
         $fields = $this->getFieldsByListId($list_id);
         $insertedCount = 0; // Track the number of successfully inserted rows
         $failedCount = 0; // Track failed insertions
-
+        $importedData = [];
+        
         foreach ($validData as $row) {
             $insertData = [];
 
@@ -74,11 +75,24 @@ class ImportExportLeadRepository
             try {
                 DB::table($tableName)->insert($insertData);
                 $insertedCount++; // Increment count on successful insertion
+                $status = 'success';
             } catch (\Exception $e) {
                 $failedCount++; // Increment failed count on error
+                $status = 'failed';
                 return $this->apiResponse->handleAndResponseException($e);
             }
+
+            $importedData[] = [
+                'row' => $row,
+                'status' => $status
+            ];
         }
+
+        $data = [
+            'imported_data' => $importedData, // Include the detailed import status data
+            'inserted_count' => $insertedCount,
+            'failed_count' => $failedCount
+        ];
 
         // Log the import history
         $this->logImportHistory($list_id, $insertedCount, $failedCount, $fileName, $fileType);
@@ -86,9 +100,9 @@ class ImportExportLeadRepository
         // After the loop, return success if any rows were inserted
         if ($insertedCount > 0) {
             // Make sure you're sending a message that indicates success.
-            return $this->apiResponse->getResponseStructure(trans('message.success'), null, trans('message.data_inserted_successfully'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_inserted_successfully'));
         } else {
-            return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.no_data_inserted'));
+            return $this->apiResponse->getResponseStructure(trans('message.error'), $data, trans('message.no_data_inserted'));
         }
     }
 
@@ -114,7 +128,7 @@ class ImportExportLeadRepository
         try {
             $fileName = $file->getClientOriginalName();
             $fileType = $file->getClientMimeType();
-            
+
             $path = $file->getRealPath();
             $csvData = array_map('str_getcsv', file($path));
 
@@ -160,7 +174,7 @@ class ImportExportLeadRepository
     private function logImportHistory($list_id, $successCount, $failCount, $fileName, $fileType)
     {
         $user = JWTAuth::parseToken()->authenticate();
-        
+
         // If the user is authenticated, retrieve the user ID
         if ($user) {
             $userId = $user->id;
@@ -168,7 +182,7 @@ class ImportExportLeadRepository
             // Handle case when user is not found (invalid token or unauthenticated)
             $userId = null;
         }
-        
+
         // Prepare the data to store in the history table
         $historyData = [
             'user_id' => $userId,
