@@ -58,6 +58,14 @@ return [
     'sms_provider_conf_not_found'=> 'Sms Provider Configuration not found.',
     'note_created_msg'=>'Note created successfully.',
     'email_sent_success'=>'Email sent successfully',
+    'custom_query_error'=>'The custom_query should be an associative array.',
+    'record_modified'=>'Record has been modified successfully.',
+    'record_created'=>'Record has been inserted successfully.',
+    'no_data_insert'=>'No data provided to insert.',
+    'contact_updated'=>'Contact updated successfully!',
+    'contact_created'=>'Contact created successfully!',
+    'contact_deleted'=>'Contact deleted successfully!',
+    'contact_not_found'=> "Contact Not Found",
 ]
 ?>
 

@@ -3,180 +3,273 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ContactRequest;
 use Illuminate\Http\Request;
 use App\Models\Contact;
-use App\Models\Account;
-use App\Models\User;
-use Illuminate\Support\Facades\Validator;
-use App\Http\Resources\ContactResource;
+use App\Repositories\ContactRepository;
 
 class ContactController extends Controller
 {
+
+  private $contactRepository;
+
+    public function __construct(ContactRepository $contactRepository)
+    {
+        $this->contactRepository = $contactRepository;
+    }
+  /**
+     * @OA\Get(
+     *     path="/api/contacts",
+     *     summary="Get list of contacts",
+     *     description="Retrieve a paginated list of contacts, with optional search and filter parameters.",
+     *     tags={"Contacts"},
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search term for filtering contacts by first name, last name, email, mobile, etc.",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="product_id",
+     *         in="query",
+     *         description="Filter by product ID.",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="account_id",
+     *         in="query",
+     *         description="Filter by account ID.",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="owner_id",
+     *         in="query",
+     *         description="Filter by owner ID.",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number for pagination.",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Number of results per page.",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of contacts successfully retrieved",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="meta", type="object",
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="last_page", type="integer"),
+     *                 @OA\Property(property="per_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             )
+     *         )
+     *     )
+     * )
+     */
   public function index(Request $request)
   {
-    $searchTerm = $request->input('search', '');
-    $productId = $request->input('product_id', '');
-    $accountId = $request->input('account_id', '');
-    $ownerId = $request->input('owner_id', '');
-
-    $query = Contact::query();
-    $perPage = $request->input('per_page', 10);
-    $page = $request->input('page', 1);
-
-    if (!empty($searchTerm)) {
-      $query->where(function ($q) use ($searchTerm) {
-        $q->where('first_name', 'like', "%$searchTerm%")
-          ->orWhere('last_name', 'like', "%$searchTerm%")
-          ->orWhere('email', 'like', "%$searchTerm%")
-          ->orWhere('mobile', 'like', "%$searchTerm%")
-          ->orWhere('product_id', 'like', "%$searchTerm%")
-          ->orWhere('account_id', 'like', "%$searchTerm%")
-          ->orWhere('owner_id', 'like', "%$searchTerm%");
-      });
-
-      $account = Account::where('name', 'like', "%$searchTerm%")->first();
-      if ($account) {
-        $query->orWhere('account_id', $account->id);
-      }
-
-      $owner = User::where('username', 'like', "%$searchTerm%")->first();
-      if ($owner) {
-        $query->orWhere('owner_id', $owner->id);
-      }
-    }
-
-    if (!empty($productId)) {
-      $query->where('product_id', $productId);
-    }
-
-    if (!empty($accountId)) {
-      $query->where('account_id', $accountId);
-    }
-
-    if (!empty($ownerId)) {
-      $query->where('owner_id', $ownerId);
-    }
-
-    if ($page === 'all') {
-      $contact = $query->get();
-      return response()->json([
-        'data' => $contact,
-      ]);
-    } else {
-      $contact = $query->paginate($perPage);
-      return response()->json([
-        'meta' => [
-          'current_page' => $contact->currentPage(),
-          'last_page' => $contact->lastPage(),
-          'per_page' => $contact->perPage(),
-          'total' => $contact->total(),
-        ],
-        'data' => $contact->items(),
-
-      ]);
-    }
+    return $this->contactRepository->list($request);
   }
 
-  public function store(Request $request)
+
+
+  /**
+     * @OA\Post(
+     *     path="/api/contacts",
+     *     summary="Create a new contact",
+     *     description="Create a new contact with the provided data.",
+     *     tags={"Contacts"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"product_id", "account_id", "first_name", "last_name", "mobile", "gender"},
+     *             @OA\Property(property="product_id", type="string"),
+     *             @OA\Property(property="account_id", type="string"),
+     *             @OA\Property(property="name_prefix", type="string", nullable=true),
+     *             @OA\Property(property="first_name", type="string"),
+     *             @OA\Property(property="last_name", type="string"),
+     *             @OA\Property(property="email", type="string", nullable=true),
+     *             @OA\Property(property="mobile", type="integer"),
+     *             @OA\Property(property="owner_id", type="string", nullable=true),
+     *             @OA\Property(property="country_id", type="string", nullable=true),
+     *             @OA\Property(property="state_id", type="string", nullable=true),
+     *             @OA\Property(property="city_id", type="string", nullable=true),
+     *             @OA\Property(property="pincode", type="string", nullable=true),
+     *             @OA\Property(property="address", type="string", nullable=true),
+     *             @OA\Property(property="gender", type="string"),
+     *             @OA\Property(property="description", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Contact created successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Contact created successfully!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
+  public function store(ContactRequest $request)
   {
-    $validator = Validator::make($request->all(), [
-      'product_id' => 'required',
-      'account_id' => 'required',
-      'first_name' => 'required|string',
-      'last_name' => 'required|string',
-      'mobile' => 'required|integer',
-      'gender' => 'required|string',
-    ]);
-
-    if ($validator->fails()) {
-      return response()->json($validator->errors(), 422);
-    }
-
-    $contact = Contact::create([
-      'product_id' => $request->product_id,
-      'account_id' => $request->account_id,
-      'name_prefix' => $request->name_prefix,
-      'first_name' => $request->first_name,
-      'last_name' => $request->last_name,
-      'email' => $request->email,
-      'mobile' => $request->mobile,
-      'owner_id' => $request->owner_id,
-      'country_id' => $request->country_id,
-      'state_id' => $request->state_id,
-      'city_id' => $request->state_id,
-      'pincode' => $request->pincode,
-      'address' => $request->address,
-      'gender' => $request->gender,
-      'description' => $request->description
-    ]);
-
-    return response()->json([
-      'message' => 'Contact created successfully!',
-      'data' => new ContactResource($contact)
-    ], 201);
+    return $this->contactRepository->store($request);
   }
 
+
+   /**
+     * @OA\Get(
+     *     path="/api/contacts/{id}",
+     *     summary="Get a specific contact",
+     *     description="Retrieve details of a single contact by ID.",
+     *     tags={"Contacts"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="The ID of the contact to retrieve",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Contact details successfully retrieved"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Contact not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Contact not found")
+     *         )
+     *     )
+     * )
+     */
   public function show(Contact $contact)
   {
-    return new ContactResource($contact);
+    return $this->contactRepository->show($contact);
   }
 
-  public function update(Request $request, string $id)
+
+  /**
+     * @OA\Put(
+     *     path="/api/contacts/{id}",
+     *     summary="Update an existing contact",
+     *     description="Update the details of an existing contact by ID.",
+     *     tags={"Contacts"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="The ID of the contact to update",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"product_id", "account_id", "first_name", "last_name", "mobile", "gender"},
+     *             @OA\Property(property="product_id", type="string"),
+     *             @OA\Property(property="account_id", type="string"),
+     *             @OA\Property(property="name_prefix", type="string", nullable=true),
+     *             @OA\Property(property="first_name", type="string"),
+     *             @OA\Property(property="last_name", type="string"),
+     *             @OA\Property(property="email", type="string", nullable=true),
+     *             @OA\Property(property="mobile", type="integer"),
+     *             @OA\Property(property="owner_id", type="string", nullable=true),
+     *             @OA\Property(property="country_id", type="string", nullable=true),
+     *             @OA\Property(property="state_id", type="string", nullable=true),
+     *             @OA\Property(property="city_id", type="string", nullable=true),
+     *             @OA\Property(property="pincode", type="string", nullable=true),
+     *             @OA\Property(property="address", type="string", nullable=true),
+     *             @OA\Property(property="gender", type="string"),
+     *             @OA\Property(property="description", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Contact updated successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Contact updated successfully!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Contact not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Contact not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
+  public function update(ContactRequest $request, string $id)
   {
-    $contact = Contact::find($id);
-
-    if (!$contact) {
-      return response()->json(['message' => 'Contact not found'], 404);
-    }
-
-    $validator = Validator::make($request->all(), [
-      'product_id' => 'required',
-      'account_id' => 'required',
-      'first_name' => 'required|string',
-      'last_name' => 'required|string',
-      'mobile' => 'required|integer',
-      'gender' => 'required|string',
-    ]);
-
-    if ($validator->fails()) {
-      return response()->json($validator->errors(), 422);
-    }
-
-    $contact->update([
-      'product_id' => $request->product_id,
-      'account_id' => $request->account_id,
-      'name_prefix' => $request->name_prefix,
-      'first_name' => $request->first_name,
-      'last_name' => $request->last_name,
-      'email' => $request->email,
-      'mobile' => $request->mobile,
-      'owner_id' => $request->owner_id,
-      'country_id' => $request->country_id,
-      'state_id' => $request->state_id,
-      'city_id' => $request->state_id,
-      'pincode' => $request->pincode,
-      'address' => $request->address,
-      'gender' => $request->gender,
-      'description' => $request->description
-    ]);
-
-    return response()->json([
-      'message' => 'Contact updated successfully!',
-      'data' => new ContactResource($contact)
-    ], 201);
+    return $this->contactRepository->update($request,$id);
   }
+
+   /**
+     * @OA\Delete(
+     *     path="/api/contacts/{id}",
+     *     summary="Delete a contact",
+     *     description="Delete a contact by ID.",
+     *     tags={"Contacts"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="The ID of the contact to delete",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Contact successfully deleted",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Contact deleted successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Contact not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Contact not found")
+     *         )
+     *     )
+     * )
+     */
 
   public function destroy(string $id)
   {
-    $contact = Contact::find($id);
-
-    if (!$contact) {
-      return response()->json(['message' => 'Contact not found'], 404);
-    }
-
-    $contact->delete();
-    return response()->json([
-      'message' => 'Contact deleted successfully',
-    ]);
+    return $this->contactRepository->delete($id);
   }
 }

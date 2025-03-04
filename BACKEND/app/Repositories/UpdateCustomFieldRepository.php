@@ -1,14 +1,26 @@
 <?php
-namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+namespace App\Repositories;
+
 use Illuminate\Http\Request;
+use App\Http\Response\CustomApiResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
-class UpdateCustomFieldsController extends Controller
+
+class UpdateCustomFieldRepository
 {
-    public function updateInsertCustomField(Request $request)
+
+
+    private $apiResponse;
+
+    public function __construct(CustomApiResponse $customApiResponse)
+    {
+        $this->apiResponse = $customApiResponse;
+    }
+
+    public function index(Request $request)
     {
         // Retrieve inputs
         $custom_query = $request->input('custom_query');
@@ -17,8 +29,8 @@ class UpdateCustomFieldsController extends Controller
 
         if (!is_array($custom_query)) {
             return response()->json([
-                'message' => 'The custom_query should be an associative array.'
-            ], 400);
+                'message' => trans("message.custom_query_error")
+            ], ResponseHTTP::HTTP_BAD_REQUEST);
         }
 
         // Check if there is an existing record
@@ -33,15 +45,15 @@ class UpdateCustomFieldsController extends Controller
                 ->update($custom_query);
 
             return response()->json([
-                'message' => 'Record has been modified successfully.',
+                'message' => trans("message.record_modified"),
                 'affected_rows' => $affectedRows
             ]);
         } else {
             // Ensure custom_query is not empty before inserting
             if (empty($custom_query)) {
                 return response()->json([
-                    'message' => 'No data provided to insert.'
-                ], 400);
+                    'message' => trans("message.no_data_insert"),
+                ], ResponseHTTP::HTTP_BAD_REQUEST);
             }
 
             // Insert the record if it doesn't exist
@@ -50,18 +62,16 @@ class UpdateCustomFieldsController extends Controller
                     ->insertGetId($custom_query);
                 
                 return response()->json([
-                    'message' => 'Record has been inserted successfully.',
+                    'message' =>  trans("message.record_created"),
                     'inserted_id' => $insertedId
                 ]);
             } catch (\Exception $e) {
                 // Log any exception that occurs during insertion
                 Log::error('Insert failed: ' . $e->getMessage());
-                
-                return response()->json([
-                    'message' => 'Error inserting the record.',
-                    'error' => $e->getMessage()
-                ], 500);
+                return $this->apiResponse->handleAndResponseException($e);
             }
         }
+        
     }
 }
+
