@@ -2286,6 +2286,467 @@
                 }
             }
         },
+        "/mail-templates": {
+            "get": {
+                "tags": [
+                    "MailTemplates"
+                ],
+                "summary": "List Mail Templates with optional search and pagination",
+                "description": "Fetches a list of mail templates with optional search filters and pagination.",
+                "operationId": "listMailTemplates",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search term to filter mail templates by title, type, subject, or mail_for.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page for pagination.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number to fetch. Use 'all' to fetch all records without pagination.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved mail templates.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "title": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "subject": {
+                                                        "type": "string"
+                                                    },
+                                                    "mail_for": {
+                                                        "type": "string"
+                                                    },
+                                                    "body": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters."
+                    },
+                    "500": {
+                        "description": "Internal server error."
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "MailTemplates"
+                ],
+                "summary": "Create a new Mail Template",
+                "description": "Creates a new mail template by receiving the template details in the request body.",
+                "operationId": "storeMailTemplate",
+                "requestBody": {
+                    "description": "Mail template data to be created",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "type",
+                                    "subject",
+                                    "mail_for",
+                                    "body"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "description": "Title of the mail template",
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "description": "Type of the mail template (e.g., notification, welcome, etc.)",
+                                        "type": "string"
+                                    },
+                                    "subject": {
+                                        "description": "Subject of the email template",
+                                        "type": "string"
+                                    },
+                                    "mail_for": {
+                                        "description": "What the template is used for (e.g., user registration, password reset, etc.)",
+                                        "type": "string"
+                                    },
+                                    "body": {
+                                        "description": "Body of the mail template",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Mail Template created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mail Template created successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/mail-templates/{id}": {
+            "get": {
+                "tags": [
+                    "MailTemplates"
+                ],
+                "summary": "Get a Mail Template by ID",
+                "description": "Fetch a specific mail template by its ID.",
+                "operationId": "showMailTemplate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the mail template to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the mail template",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "description": "ID of the mail template",
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Title of the mail template",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "Type of the mail template",
+                                            "type": "string"
+                                        },
+                                        "subject": {
+                                            "description": "Subject of the email template",
+                                            "type": "string"
+                                        },
+                                        "mail_for": {
+                                            "description": "Purpose of the mail template",
+                                            "type": "string"
+                                        },
+                                        "body": {
+                                            "description": "Body of the email template",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Mail Template not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mail Template not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "MailTemplates"
+                ],
+                "summary": "Update a Mail Template",
+                "description": "Update the details of a specific mail template by its ID.",
+                "operationId": "updateMailTemplate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the mail template to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Mail template data to update",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "type",
+                                    "subject",
+                                    "mail_for",
+                                    "body"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "description": "Title of the mail template",
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "description": "Type of the mail template (e.g., notification, welcome, etc.)",
+                                        "type": "string"
+                                    },
+                                    "subject": {
+                                        "description": "Subject of the email template",
+                                        "type": "string"
+                                    },
+                                    "mail_for": {
+                                        "description": "What the template is used for (e.g., user registration, password reset, etc.)",
+                                        "type": "string"
+                                    },
+                                    "body": {
+                                        "description": "Body of the mail template",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mail Template updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mail template updated successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Mail Template not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mail template not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "MailTemplates"
+                ],
+                "summary": "Delete a Mail Template by ID",
+                "description": "Delete a specific mail template by its ID. If the template is not found or cannot be deleted, an appropriate error is returned.",
+                "operationId": "deleteMailTemplate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the mail template to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Mail template deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mail template deleted successfully"
+                                        },
+                                        "data": {
+                                            "description": "Mail template that was deleted",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Mail Template not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mail template not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Mail Template deletion not allowed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mail template cannot be deleted"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
         "api/nameprefixes": {
             "get": {
                 "tags": [
@@ -3485,6 +3946,10 @@
         {
             "name": "MailDetails",
             "description": "MailDetails"
+        },
+        {
+            "name": "MailTemplates",
+            "description": "MailTemplates"
         },
         {
             "name": "Name Prefixes",

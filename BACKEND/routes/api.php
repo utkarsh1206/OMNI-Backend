@@ -69,8 +69,6 @@ Route::apiResource('users', UsersController::class);
 Route::apiResource('email-configure', EmailConfigureController::class);
 Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);
 Route::get('my-profile', [UsersController::class, 'myprofile']);
-Route::get('mail-details', [MailDetailController::class, 'index']);
-Route::post('mail-details', [MailDetailController::class, 'store']);
 Route::post('transfer', [SupporttickettransferController::class, 'store']);
 Route::post('merge', [SupportticketmergeController::class, 'store']);
 
@@ -85,8 +83,6 @@ Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
 Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
 
 Route::apiResource('phones', PhoneController::class);
-
-Route::apiResource('mail-templates', MailTemplateController::class);
 Route::apiResource('departments', DepartmentController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('incident-types', IncidentTypeController::class);
@@ -142,7 +138,9 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('insert-update-custom', [UpdateCustomFieldController::class, 'index']);
     Route::apiResource('contacts', ContactController::class);
     Route::get('agent-activity', [AgentActivityController::class, 'getAgentActivity']);
-
+    Route::get('mail-details', [MailDetailController::class, 'index']);
+    Route::post('mail-details', [MailDetailController::class, 'store']);
+    Route::apiResource('mail-templates', MailTemplateController::class);
 });
 
 

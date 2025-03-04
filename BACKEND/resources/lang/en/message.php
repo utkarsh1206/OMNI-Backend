@@ -66,6 +66,11 @@ return [
     'contact_created'=>'Contact created successfully!',
     'contact_deleted'=>'Contact deleted successfully!',
     'contact_not_found'=> "Contact Not Found",
+    'mail_template_delete'=>'Mail template deleted successfully.',
+    'mail_template_delete_not_allow'=>'Delete operation not allowed for this template.',
+    'mail_template_not_found'=>'Mail template not found.',
+    'mail_template_updated'=>'Mail template updated successfully!',
+    'mail_template_created'=>' Mail Template created successfully!',
 ]
 ?>
 
