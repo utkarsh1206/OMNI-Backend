@@ -210,74 +210,74 @@ class MailTemplateController extends Controller
     }
 
     /**
- * @OA\Put(
- *     path="/mail-templates/{id}",
- *     summary="Update a Mail Template",
- *     description="Update the details of a specific mail template by its ID.",
- *     operationId="updateMailTemplate",
- *     tags={"MailTemplates"},
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         description="ID of the mail template to update",
- *         required=true,
- *         @OA\Schema(type="integer")
- *     ),
- *     @OA\RequestBody(
- *         required=true,
- *         description="Mail template data to update",
- *         @OA\JsonContent(
- *             required={"title", "type", "subject", "mail_for", "body"},
- *             type="object",
- *             properties={
- *                 @OA\Property(property="title", type="string", description="Title of the mail template"),
- *                 @OA\Property(property="type", type="string", description="Type of the mail template (e.g., notification, welcome, etc.)"),
- *                 @OA\Property(property="subject", type="string", description="Subject of the email template"),
- *                 @OA\Property(property="mail_for", type="string", description="What the template is used for (e.g., user registration, password reset, etc.)"),
- *                 @OA\Property(property="body", type="string", description="Body of the mail template"),
- *             }
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Mail Template updated successfully",
- *         @OA\JsonContent(
- *             type="object",
- *             properties={
- *                 @OA\Property(property="message", type="string", example="Mail template updated successfully!")
- *             }
- *         )
- *     ),
- *     @OA\Response(
- *         response=404,
- *         description="Mail Template not found",
- *         @OA\JsonContent(
- *             type="object",
- *             properties={
- *                 @OA\Property(property="message", type="string", example="Mail template not found.")
- *             }
- *         )
- *     ),
- *     @OA\Response(
- *         response=422,
- *         description="Validation error",
- *         @OA\JsonContent(
- *             type="object",
- *             properties={
- *                 @OA\Property(property="message", type="string", example="Validation error"),
- *                 @OA\Property(property="errors", type="object")
- *             }
- *         )
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Internal server error"
- *     )
- * )
- */
+     * @OA\Put(
+     *     path="/mail-templates/{id}",
+     *     summary="Update a Mail Template",
+     *     description="Update the details of a specific mail template by its ID.",
+     *     operationId="updateMailTemplate",
+     *     tags={"MailTemplates"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the mail template to update",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Mail template data to update",
+     *         @OA\JsonContent(
+     *             required={"title", "type", "subject", "mail_for", "body"},
+     *             type="object",
+     *             properties={
+     *                 @OA\Property(property="title", type="string", description="Title of the mail template"),
+     *                 @OA\Property(property="type", type="string", description="Type of the mail template (e.g., notification, welcome, etc.)"),
+     *                 @OA\Property(property="subject", type="string", description="Subject of the email template"),
+     *                 @OA\Property(property="mail_for", type="string", description="What the template is used for (e.g., user registration, password reset, etc.)"),
+     *                 @OA\Property(property="body", type="string", description="Body of the mail template"),
+     *             }
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Mail Template updated successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             properties={
+     *                 @OA\Property(property="message", type="string", example="Mail template updated successfully!")
+     *             }
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Mail Template not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             properties={
+     *                 @OA\Property(property="message", type="string", example="Mail template not found.")
+     *             }
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             properties={
+     *                 @OA\Property(property="message", type="string", example="Validation error"),
+     *                 @OA\Property(property="errors", type="object")
+     *             }
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error"
+     *     )
+     * )
+     */
     public function update(MailTemplateRequest $request, $id)
     {
-      return $this->mailTemplateRepository->update($request,$id);
+        return $this->mailTemplateRepository->update($request, $id);
     }
 
     public function destroy($id)
