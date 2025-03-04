@@ -2105,6 +2105,187 @@
                 ]
             }
         },
+        "/mail-details": {
+            "get": {
+                "tags": [
+                    "MailDetails"
+                ],
+                "summary": "Get Mail Details by Support Ticket ID",
+                "description": "Fetches the mail details associated with a specific support ticket ID.",
+                "operationId": "getMailDetailsBySupportTicketId",
+                "parameters": [
+                    {
+                        "name": "supportticket_id",
+                        "in": "query",
+                        "description": "The ID of the support ticket to fetch the mail details for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved mail details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "supportticket_id": {
+                                                "type": "integer"
+                                            },
+                                            "date": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "user_id": {
+                                                "type": "integer"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "priority": {
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "to": {
+                                                "type": "string"
+                                            },
+                                            "cc": {
+                                                "type": "string"
+                                            },
+                                            "bcc": {
+                                                "type": "string"
+                                            },
+                                            "body": {
+                                                "type": "string"
+                                            },
+                                            "attachment": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request, missing or invalid parameters."
+                    },
+                    "404": {
+                        "description": "Mail details not found for the specified support ticket ID."
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "MailDetails"
+                ],
+                "summary": "Send Mail and Store Mail Detail",
+                "description": "Sends an email with attachments and stores mail details for a support ticket.",
+                "operationId": "storeMailDetail",
+                "requestBody": {
+                    "description": "Mail details to be sent and stored",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "supportticket_id",
+                                    "user_id",
+                                    "to",
+                                    "body"
+                                ],
+                                "properties": {
+                                    "supportticket_id": {
+                                        "description": "ID of the support ticket",
+                                        "type": "integer"
+                                    },
+                                    "user_id": {
+                                        "description": "User ID of the sender",
+                                        "type": "integer"
+                                    },
+                                    "to": {
+                                        "description": "Recipient's email address",
+                                        "type": "string"
+                                    },
+                                    "cc": {
+                                        "description": "CC email addresses",
+                                        "type": "string"
+                                    },
+                                    "bcc": {
+                                        "description": "BCC email addresses",
+                                        "type": "string"
+                                    },
+                                    "body": {
+                                        "description": "Body content of the email",
+                                        "type": "string"
+                                    },
+                                    "default_type": {
+                                        "description": "The default type of the email",
+                                        "type": "string"
+                                    },
+                                    "default_priority": {
+                                        "description": "The default priority of the email",
+                                        "type": "string"
+                                    },
+                                    "default_status": {
+                                        "description": "The default status of the email",
+                                        "type": "string"
+                                    },
+                                    "attachment": {
+                                        "description": "The email attachments",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "file"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Mail sent successfully and mail details stored.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mail sent successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request, missing or invalid parameters."
+                    },
+                    "500": {
+                        "description": "Failed to send email, internal server error."
+                    }
+                }
+            }
+        },
         "api/nameprefixes": {
             "get": {
                 "tags": [
@@ -3300,6 +3481,10 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "MailDetails",
+            "description": "MailDetails"
         },
         {
             "name": "Name Prefixes",

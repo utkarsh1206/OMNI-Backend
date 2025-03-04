@@ -3,131 +3,135 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\MailDetail;
-use App\Models\EmailConfigure;
-use App\Models\SupportTicketnotification;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use App\Mail\SendEmail;
-use Illuminate\Support\Facades\Log;
-use Exception;
-
+use App\Http\Requests\MailDetailIndexRequest;
+use App\Http\Requests\MailDetailRequest;
+use App\Repositories\MailDetailRepository;
 
 
 class MailDetailController extends Controller
 {
-    public function index(Request $request)
+
+    private $mailDetailRepository;
+
+    public function __construct(MailDetailRepository $mailDetailRepository)
     {
-        // Validate the incoming request to ensure 'supportticket_id' is provided
-        $request->validate([
-            'supportticket_id' => 'required', // Assuming you have a support_tickets table
-        ]);
-    
-        // Get the supportticket_id from the request body
-        $supportticketId = $request->input('supportticket_id');
-    
-        // Filter the records by supportticket_id
-        $mailDetails = MailDetail::where('supportticket_id', $supportticketId)->orderBy('id', 'desc')->get();
-    
-        // Return the records as a JSON response
-        return response()->json($mailDetails);
+        $this->mailDetailRepository = $mailDetailRepository;
     }
-    public function store(Request $request)
+    /**
+     * @OA\Get(
+     *     path="/mail-details",
+     *     summary="Get Mail Details by Support Ticket ID",
+     *     description="Fetches the mail details associated with a specific support ticket ID.",
+     *     operationId="getMailDetailsBySupportTicketId",
+     *     tags={"MailDetails"},
+     *     @OA\Parameter(
+     *         name="supportticket_id",
+     *         in="query",
+     *         required=true,
+     *         description="The ID of the support ticket to fetch the mail details for",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successfully retrieved mail details.",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 type="object",
+     *                 properties={
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="supportticket_id", type="integer"),
+     *                     @OA\Property(property="date", type="string", format="date-time"),
+     *                     @OA\Property(property="user_id", type="integer"),
+     *                     @OA\Property(property="type", type="string"),
+     *                     @OA\Property(property="priority", type="string"),
+     *                     @OA\Property(property="status", type="string"),
+     *                     @OA\Property(property="to", type="string"),
+     *                     @OA\Property(property="cc", type="string"),
+     *                     @OA\Property(property="bcc", type="string"),
+     *                     @OA\Property(property="body", type="string"),
+     *                     @OA\Property(property="attachment", type="array", items=@OA\Items(type="string"))
+     *                 }
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request, missing or invalid parameters."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Mail details not found for the specified support ticket ID."
+     *     )
+     * )
+     */
+    public function index(MailDetailIndexRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'date' => 'required|date',
-            'user_id' => 'required|integer|exists:users,id', // assuming you have a users table
-            'default_type' => 'required|string',
-            'default_priority' => 'required|string',
-            'default_status' => 'required|string',
-            'to' => 'required|email',
-            'cc' => 'nullable|email',
-            'bcc' => 'nullable|email',
-            'body' => 'required|string',
-        ]);
-        $attachment_urls = [];
-        $mail_attachment_urls = [];
-        if ($request->hasFile('attachment')) {
-            $files = $request->file('attachment');
-            
-            if (is_array($files)) {
-                foreach ($files as $attachment) {
-                    $filename = now()->format('Y_m_d_H_i_s') . '_' . uniqid() . '.' . $attachment->getClientOriginalExtension();
-                    $path = $attachment->storeAs('support_ticket', $filename, 'public');
-                    $attachment_urls[] = url('storage/' . $path);
-                    $mail_attachment_urls[] = [
-                        'path' => storage_path('app/public/' . $path),
-                        'name' => $filename,
-                        'mime' => $attachment->getMimeType()
-                    ];
-                }
-            } else {
-                $filename = now()->format('Y_m_d_H_i_s') . '_' . uniqid() . '.' . $files->getClientOriginalExtension();
-                $path = $files->storeAs('support_ticket', $filename, 'public');
-                $attachment_urls[] = url('storage/' . $path);
-                $mail_attachment_urls[] = [
-                    'path' => storage_path('app/public/' . $path),
-                    'name' => $filename,
-                    'mime' => $files->getMimeType()
-                ];
-            }
-        }
-        $mailDetail = MailDetail::create([
-            'supportticket_id'=>$request->supportticket_id,
-            'date' =>gmdate('Y-m-d H:i:s'),
-            'user_id' => $request->user_id,
-            'type' => $request->default_type,
-            'priority' => $request->default_priority,
-            'status' => $request->default_status,
-            'to' => $request->to,
-            'cc' => $request->cc,
-            'bcc' => $request->bcc,
-            'body' => $request->body,
-            'attachment' => json_encode($attachment_urls),
-        ]);
-        $notification = SupportTicketNotification::create([
-            'type' => isset($request->default_status) ? $request->default_status : "",
-            'comment' => "",
-            'support_ticket_id' => $request->supportticket_id,
-            'date' =>gmdate('Y-m-d H:i:s'),
-        ]);
-        $emailConfig = EmailConfigure::where('type', 'gmail')->first();
-        $smtpHost = $emailConfig->smtp_host;
-        $smtpPort = $emailConfig->smtp_port;
-        $smtpUser = $emailConfig->smtp_user;
-        $smtpPassword = $emailConfig->smtp_password;
-        $sender_name = $emailConfig->sender_name;
-        $sender_email = $emailConfig->sender_email;
-  
-        config([
-            'mail.mailers.smtp.host' => $smtpHost,
-            'mail.mailers.smtp.port' => $smtpPort,
-            'mail.mailers.smtp.username' => $smtpUser,
-            'mail.mailers.smtp.password' =>$smtpPassword,
-            'mail.mailers.smtp.encryption' => ($smtpPort==587)?'TLS':'SSL',
-            'mail.from.address' =>  $sender_email,
-            'mail.from.name' => $sender_name,
-        ]);
-        // Attempt to send the email
-        try {
-            Mail::to($request->to)->send(new SendEmail("Test support mail sent", $request->body,$mail_attachment_urls));
-        } catch (Exception $e) {
-            // Log the error message if email fails to send
-            Log::error('Failed to send email', [
-                'error' => $e->getMessage(),
-                'recipient' =>$request->to_emails,
-                'subject' => $request->subject,
-            ]);
+        return $this->mailDetailRepository->index($request);
+    }
 
-            // Return a response indicating failure
-            return response()->json(['message' => 'Failed to send email', 'error' => $e->getMessage()], 500);
-        }
 
-        // Return the created record with a success message
-        return response()->json([
-            'message' => 'Mail sent successfully.',
-            'data' => $mailDetail
-        ], 201);
+
+    /**
+ * @OA\Post(
+ *     path="/mail-details",
+ *     summary="Send Mail and Store Mail Detail",
+ *     description="Sends an email with attachments and stores mail details for a support ticket.",
+ *     operationId="storeMailDetail",
+ *     tags={"MailDetails"},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         description="Mail details to be sent and stored",
+ *         @OA\JsonContent(
+ *             required={"supportticket_id", "user_id", "to", "body"},
+ *             type="object",
+ *             properties={
+ *                 @OA\Property(property="supportticket_id", type="integer", description="ID of the support ticket"),
+ *                 @OA\Property(property="user_id", type="integer", description="User ID of the sender"),
+ *                 @OA\Property(property="to", type="string", description="Recipient's email address"),
+ *                 @OA\Property(property="cc", type="string", description="CC email addresses"),
+ *                 @OA\Property(property="bcc", type="string", description="BCC email addresses"),
+ *                 @OA\Property(property="body", type="string", description="Body content of the email"),
+ *                 @OA\Property(property="default_type", type="string", description="The default type of the email"),
+ *                 @OA\Property(property="default_priority", type="string", description="The default priority of the email"),
+ *                 @OA\Property(property="default_status", type="string", description="The default status of the email"),
+ *                 @OA\Property(
+ *                     property="attachment",
+ *                     type="array",
+ *                     description="The email attachments",
+ *                     @OA\Items(
+ *                         type="file"
+ *                     )
+ *                 )
+ *             }
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=201,
+ *         description="Mail sent successfully and mail details stored.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             properties={
+ *                 @OA\Property(property="message", type="string", example="Mail sent successfully."),
+ *                 @OA\Property(
+ *                     property="data",
+ *                     type="object"
+ *                 )
+ *             }
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad request, missing or invalid parameters."
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Failed to send email, internal server error."
+ *     )
+ * )
+ */
+    public function store(MailDetailRequest $request)
+    {
+        return $this->mailDetailRepository->store($request);
     }
 }
