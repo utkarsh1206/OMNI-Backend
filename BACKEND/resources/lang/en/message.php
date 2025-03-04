@@ -48,6 +48,10 @@ return [
     'list_create_success' => 'List created successfully.',
     'list_update_success' => 'List updated successfully.',
     'list_delete_success' => 'List deleted successfully.',
+    //product
+    'product_delete_success' => 'Product deleted successfully.',
+    'product_update_success' => 'Product updated successfully.',
+    'product_create_success' => 'Product created successfully.'
     
 ]
 ?>
