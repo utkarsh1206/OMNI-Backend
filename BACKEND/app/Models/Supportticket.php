@@ -16,6 +16,7 @@ class Supportticket extends Model
         "product_id",
         "campaign_id",
         //"inbound_group_id",
+        "account_id",
         "contact_id",
         "assign_to_id",
         "default_type",

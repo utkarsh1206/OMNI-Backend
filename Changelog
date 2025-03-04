@@ -1,6 +1,13 @@
 2025-03-04 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :
+	* Previous Commit ID : 4673bb11 
+	* Version : Dev
+	* Laravel : Added account_id to support ticket Model
+
+2025-03-04 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
 	* Previous Commit ID : 3f0e5896 
 	* Version : Dev
 	* Laravel : Added account_id to support ticket. For CSV Import in leads, added .txt format
