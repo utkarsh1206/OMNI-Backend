@@ -77,11 +77,6 @@ Route::post('merge', [SupportticketmergeController::class, 'store']);
 Route::get('callCDR', [CallCDRListController::class, 'getCallCDRList']);
 Route::get('custome-field/header', [CustomFieldController::class, 'custumFieldHeader']);
 Route::get('custome-field/value', [CustomFieldController::class, 'custumFieldvalue']);
-
-
-Route::get('agent-activity', [AgentActivityController::class, 'getAgentActivity']);
-
-
 Route::middleware('auth:api')->post('license_update', [LicenseUpdateController::class, 'updateLicense']);
 Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
 Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
@@ -146,6 +141,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('send-email', [EmailController::class, 'sendEmail']);
     Route::post('insert-update-custom', [UpdateCustomFieldController::class, 'index']);
     Route::apiResource('contacts', ContactController::class);
+    Route::get('agent-activity', [AgentActivityController::class, 'getAgentActivity']);
+
 });
 
 
