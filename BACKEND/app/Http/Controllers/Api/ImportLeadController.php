@@ -34,7 +34,7 @@ class ImportLeadController extends Controller
     public function uploadLeadCsv(Request $request, $list_id)
     {
         try {
-            $request->validate(['file' => 'required|mimes:csv']);
+            $request->validate(['file' => 'required|mimes:csv,txt']);
             $file = $request->file('file');
 
             $csvData = $this->importExportLeadRepository->processCsvFile($file, $list_id);
@@ -44,5 +44,4 @@ class ImportLeadController extends Controller
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
-
 }
