@@ -264,6 +264,6 @@ class EmailConfigureController extends Controller
      */
     public function destroy(EmailConfigure $email_configure)
     {
-       
+      return $this->emailConfigureRepository->delete($email_configure);
     }
 }

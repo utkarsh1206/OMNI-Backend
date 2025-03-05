@@ -82,6 +82,13 @@ return [
     'email_configure_created'=>'Email Configure Created Successfully',
     'email_configure_updated'=>'Email Configure Updated Successfully',
     'email_configure_deleted'=>'Email Configure Deleted Successfully',
+    'product_not_found'=>'Product not found.',
+    'product_deleted'=>'Product deleted successfully',
+    'product_updated'=>'Product updated successfully!',
+    'product_created'=> 'Product created successfully!',
+
+
+
 ]
 ?>
 

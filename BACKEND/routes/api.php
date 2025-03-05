@@ -83,7 +83,6 @@ Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense'
 
 Route::apiResource('phones', PhoneController::class);
 Route::apiResource('incident-types', IncidentTypeController::class);
-Route::apiResource('products', ProductController::class);
 Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
 Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);
 Route::get('/ticket/summary/category', [TicketReportController::class, 'categorySummary']);
@@ -141,6 +140,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('departments', DepartmentController::class);
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('email-configure', EmailConfigureController::class);
+    Route::apiResource('products', ProductController::class);
 });
 
 
