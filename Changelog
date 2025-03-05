@@ -1,6 +1,19 @@
 2025-03-05 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
+	* Previous Commit ID : 418d986
+	* Version : Dev
+	* Laravel : Created migration file to change
+	Change "campaign_id" to null, add "department_id" and remove "department_name" from "accounts" table
+
+	UserGroup DB change campaign_id to Department_id
+
+	Support Ticket Campaign_id should be null (as of now), Departments column should be 
+	removed, and department_id should be added. Department_id should be foreign_key
+
+2025-03-05 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
 	* Previous Commit ID : 9bc09cc
 	* Version : Dev
 	* Laravel : Create API to get list, update and delete functionality
