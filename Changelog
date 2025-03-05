@@ -1,3 +1,26 @@
+2025-03-05 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 9bc09cc
+	* Version : Dev
+	* Laravel : Create API to get list, update and delete functionality
+	for custom lead.
+
+	Improved logic to fetch either a single lead or all leads based on the provided parameters.
+	Added handling for cases where the requested table does not exist.
+	Data is now dynamically formatted based on table columns, ensuring consistency and 
+	avoiding unnecessary data retrieval.
+	Added checks to ensure that only valid data is passed for updates.
+	Included a check to ensure the lead exists in the table before attempting an update.
+	Error handling is now improved, providing specific error messages when no changes 
+	are made or when invalid data is provided.
+	Checks if the lead exists before attempting deletion.
+	Returns detailed success or failure messages based on the result of the deletion attempt.
+	we've added checks for the existence of the table before proceeding with any 
+	database operations. If the table doesn’t exist, an appropriate error message is returned to the user.
+	Additionally, Swagger documentation has been added to the controller methods to 
+	improve API documentation and facilitate easier integration.
+
 2025-03-04 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :

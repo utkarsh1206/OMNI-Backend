@@ -62,6 +62,7 @@ use App\Http\Controllers\Api\EcdialListsController;
 use App\Http\Controllers\Api\EcdialListFieldController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\ImportLeadController;
+use App\Http\Controllers\Api\CustomLeadController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -189,3 +190,10 @@ Route::apiResource('chatbots', ChatbotController::class);
 
 Route::get('/download-sample/{list_id}', [ImportLeadController::class, 'downloadSampleCsv']);
 Route::post('/upload-lead-csv/{list_id}', [ImportLeadController::class, 'uploadLeadCsv']);
+
+Route::middleware(['jwt.auth'])->group(function () {
+    Route::get('/custom-leads/{list_id}', [CustomLeadController::class, 'index']);  // Get all leads for a list
+    Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']); // Get a single lead by ID
+    Route::put('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'update']);
+    Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
+});

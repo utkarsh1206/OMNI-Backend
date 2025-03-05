@@ -1,0 +1,261 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Omni Api",
+        "version": "0.1"
+    },
+    "paths": {
+        "/api/custom-leads/{list_id}": {
+            "get": {
+                "tags": [
+                    "Custom Leads"
+                ],
+                "summary": "Get list of leads",
+                "description": "Retrieve a paginated list of leads for a given list ID.",
+                "operationId": "5bb3d755be76380b76bdb5c1bcda04ad",
+                "parameters": [
+                    {
+                        "name": "list_id",
+                        "in": "path",
+                        "description": "List ID to fetch leads",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of leads per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number or 'all' to fetch all leads",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token"
+                    },
+                    "404": {
+                        "description": "List not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/custom-leads/{list_id}/{lead_id}": {
+            "get": {
+                "tags": [
+                    "Custom Leads"
+                ],
+                "summary": "Get a single lead",
+                "description": "Fetch details of a specific lead by ID",
+                "operationId": "c92242f478b5cf001e0b97ac7fa24ca1",
+                "parameters": [
+                    {
+                        "name": "list_id",
+                        "in": "path",
+                        "description": "List ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "lead_id",
+                        "in": "path",
+                        "description": "Lead ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token"
+                    },
+                    "404": {
+                        "description": "Lead not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Custom Leads"
+                ],
+                "summary": "Update a lead",
+                "description": "Update a specific lead's details",
+                "operationId": "8e655b4d08f38df273e5c9e304c2118f",
+                "parameters": [
+                    {
+                        "name": "list_id",
+                        "in": "path",
+                        "description": "List ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "lead_id",
+                        "in": "path",
+                        "description": "Lead ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Lead data to update",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            },
+                            "example": {
+                                "name": "John Doe",
+                                "email": "john@example.com"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Lead updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data"
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token"
+                    },
+                    "404": {
+                        "description": "Lead not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Custom Leads"
+                ],
+                "summary": "Delete a lead",
+                "description": "Delete a specific lead from the system",
+                "operationId": "645c0fc1822b16112f7042e403b0588e",
+                "parameters": [
+                    {
+                        "name": "list_id",
+                        "in": "path",
+                        "description": "List ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "lead_id",
+                        "in": "path",
+                        "description": "Lead ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lead deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token"
+                    },
+                    "404": {
+                        "description": "Lead not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Custom Leads",
+            "description": "Custom Leads"
+        }
+    ]
+}

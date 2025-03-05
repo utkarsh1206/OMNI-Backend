@@ -51,7 +51,13 @@ return [
     //product
     'product_delete_success' => 'Product deleted successfully.',
     'product_update_success' => 'Product updated successfully.',
-    'product_create_success' => 'Product created successfully.'
-    
+    'product_create_success' => 'Product created successfully.',
+    //Custom lead
+    'table_not_found' => 'Table not found.',
+    'lead_not_found' => 'Lead not found.',
+    'lead_update_success' => 'Lead updated successfully.',
+    'no_changes_made' => 'No changes made.',
+    'lead_delete_success' => 'Lead deleted successfully.',
+    'lead_delete_failed' => 'Lead deletion failed.',
 ]
 ?>
