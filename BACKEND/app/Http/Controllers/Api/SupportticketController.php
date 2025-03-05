@@ -45,7 +45,7 @@ class SupportticketController extends Controller
         }
 
         // Start the query for tenants
-        $query = supportticket::query()->where('is_delete', 'No');
+        $query = supportticket::query()->where('is_delete', 'No')->with('department');
 
         if ($roleId == 3) {
             $query->where('assign_to_id', $userId); // Filter by the logged-in user's ID
@@ -135,7 +135,7 @@ class SupportticketController extends Controller
             'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
             'default_status' => isset($request->default_status) ? $request->default_status : "",
             'subject' => isset($request->subject) ? $request->subject : "",
-            'departments' => isset($request->departments) ? $request->departments : "",
+            'department_id' => isset($request->department_id) ? $request->department_id : "",
             'to_emails' => isset($request->to_emails) ? $request->to_emails : "",
             'cc' => isset($request->cc) ? $request->cc : "",
             'bcc' => isset($request->bcc) ? $request->bcc : "",
@@ -256,7 +256,7 @@ class SupportticketController extends Controller
             'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
             'default_status' => isset($request->default_status) ? $request->default_status : "",
             'subject' => isset($request->subject) ? $request->subject : "",
-            'departments' => isset($request->departments) ? $request->departments : "",
+            'department_id' => isset($request->department_id) ? $request->department_id : "",
             'to_emails' => isset($request->to_emails) ? $request->to_emails : "",
             'cc' => isset($request->cc) ? $request->cc : "",
             'bcc' => isset($request->bcc) ? $request->bcc : "",

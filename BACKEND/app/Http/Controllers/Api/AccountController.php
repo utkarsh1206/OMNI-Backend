@@ -15,7 +15,7 @@ class AccountController extends Controller
   {
     $searchTerm = $request->input('search', '');
     $productId = $request->input('product_id', '');
-    $campaignId = $request->input('campaign_id', '');
+    $departmentID = $request->input('department_id', '');
     $ownerId = $request->input('owner_id', '');
 
     $query = Account::query()->where('is_delete', 'No');
@@ -25,7 +25,7 @@ class AccountController extends Controller
     if (!empty($searchTerm)) {
       $query->where(function ($q) use ($searchTerm) {
         $q->where('name', 'like', "%$searchTerm%")
-              ->orWhere('mobile', 'like', "%$searchTerm%" );
+          ->orWhere('mobile', 'like', "%$searchTerm%");
       });
 
       $owner = User::where('username', 'like', "%$searchTerm%")->first();
@@ -38,8 +38,8 @@ class AccountController extends Controller
       $query->where('product_id', $productId);
     }
 
-    if (!empty($campaignId)) {
-      $query->where('campaign_id', $campaignId);
+    if (!empty($departmentID)) {
+      $query->where('department_id', $departmentID);
     }
 
     if (!empty($ownerId)) {
@@ -81,7 +81,7 @@ class AccountController extends Controller
 
     $validator = Validator::make($request->all(), [
       'name' => 'required|string|max:255',
-      'campaign_id' => 'required|string',
+      'department_id' => 'required|string',
       // 'product_deployed_type' => 'required|string',
       // 'neox_integration' => 'required|string',
       // 'phone_type' => 'required|string',
@@ -111,7 +111,7 @@ class AccountController extends Controller
 
     $account = Account::create([
       'product_id' => $request->product_id,
-      'campaign_id' => $request->campaign_id,
+      'department_id' => $request->department_id,
       'name' => $request->name,
       'mobile' => $request->mobile,
       'website' => $request->website,
@@ -168,7 +168,7 @@ class AccountController extends Controller
     if (!$account) {
       return response()->json(['message' => 'Account not found'], 404);
     }
-    
+
     $existingAccount = Account::where('product_id', $request->product_id)
       ->where('name', $request->name)
       ->where('is_delete', 'No')
@@ -183,7 +183,7 @@ class AccountController extends Controller
 
     $validator = Validator::make($request->all(), [
       'name' => 'required|string|max:255',
-      'campaign_id' => 'required',
+      'department_id' => 'required',
       // 'product_deployed_type' => 'required|string',
       // 'neox_integration' => 'required|string',
       // 'phone_type' => 'required|string',
@@ -213,7 +213,7 @@ class AccountController extends Controller
 
     $account->update([
       'product_id' => $request->product_id,
-      'campaign_id' => $request->campaign_id,
+      'department_id' => $request->department_id,
       'name' => $request->name,
       'mobile' => $request->mobile,
       'website' => $request->website,

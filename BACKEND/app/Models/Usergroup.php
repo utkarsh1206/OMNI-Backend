@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Usergroup extends Model
 {
- protected $table = 'usergroup';
+    protected $table = 'usergroup';
 
     protected $fillable = [
         //"tenant_id",
         "name",
-        "campaign_id",
+        "department_id",
         "description",
         "status"
     ];

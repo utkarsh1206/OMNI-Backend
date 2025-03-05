@@ -1,3 +1,13 @@
+2025-03-05 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 399ec8af
+	* Version : Dev
+	* Laravel : Replaces campaign ID with department ID across multiple entities
+- Updates Account, Support Ticket, and User Group models and controllers to use 'department_id' instead of 'campaign_id'.
+- Refactors database queries, validation rules, and data structures to reflect the change.
+- Improves the Support Ticket model by including a relationship with the Department model.
+
 2025-03-05 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

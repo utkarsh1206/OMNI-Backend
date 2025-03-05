@@ -11,10 +11,10 @@ class Account extends Model
     protected $table = 'accounts';
 
     // public $timestamps = false;
-    
+
     protected $fillable = [
         'product_id',
-        'campaign_id',
+        'department_id',
         'name',
         'mobile',
         'website',

@@ -8,9 +8,6 @@ use App\Models\Usergroup;
 use App\Http\Resources\TenantsResource;
 use Illuminate\Support\Facades\Validator;
 
-
-
-
 class UsergroupController extends Controller
 {
     public function index(Request $request)
@@ -18,7 +15,7 @@ class UsergroupController extends Controller
         // Get the search term from the request
         $searchTerm = $request->input('search', '');
         $name = $request->input('name', '');
-        $campaign_id = $request->input('campaign_id', '');
+        $department_id = $request->input('department_id', '');
         $status = $request->input('status', '');
 
         // Start the query for tenants
@@ -35,8 +32,8 @@ class UsergroupController extends Controller
         if (!empty($name)) {
             $query->where('name', $name);
         }
-        if (!empty($campaign_id)) {
-            $query->where('campaign_id', $campaign_id);
+        if (!empty($department_id)) {
+            $query->where('department_id', $department_id);
         }
         if (!empty($status)) {
             $query->where('status', $status);
@@ -79,7 +76,7 @@ class UsergroupController extends Controller
 
         $usergroup = usergroup::create([
             'name' => $request->name,
-            "campaign_id" => $request->campaign_id,
+            "department_id" => $request->department_id,
             "description" => $request->description,
             //"tenant_id"=>1,//Make it dynamic
             "status" => $request->status
@@ -97,7 +94,7 @@ class UsergroupController extends Controller
     {
         $usergroup->update([
             'name' => $request->name,
-            "campaign_id" => $request->campaign_id,
+            "department_id" => $request->department_id,
             "description" => $request->description,
             //"tenant_id"=>1,//Make it dynamic
             "status" => $request->status
