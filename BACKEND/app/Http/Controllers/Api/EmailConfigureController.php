@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\EmailConfigureRequest;
 use App\Models\EmailConfigure;
 use App\Http\Resources\TenantsResource;
+use App\Repositories\EmailConfigureRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Artisan;
@@ -14,126 +16,254 @@ use Illuminate\Http\Request;
 
 class EmailConfigureController extends Controller
 {
+
+    private $emailConfigureRepository;
+
+    public function __construct(EmailConfigureRepository $emailConfigureRepository)
+    {
+        $this->emailConfigureRepository = $emailConfigureRepository;
+    }
+     /**
+     * @OA\Get(
+     *     path="/api/email-configure",
+     *     summary="Get all email configurations",
+     *     description="Fetch email configurations with optional search and pagination.",
+     *     tags={"Email Configuration"},
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search term for filtering email configurations",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Results per page for pagination",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of email configurations",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="meta", type="object", 
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="last_page", type="integer"),
+     *                 @OA\Property(property="per_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Error fetching email configurations")
+     *         )
+     *     )
+     * )
+     */
     public function index(Request $request)
     {
-        // Get the search term from the request
-        $searchTerm = $request->input('search', '');
-
-        // Start the query for tenants
-        $query = EmailConfigure::query();
-
-        // If there's a search term, apply it to the query
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('type', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('smtp_host', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('smtp_port', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('smtp_user', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('smtp_password', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('default_type', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('default_status', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('imap_host', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('imap_port', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('imap_user', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('imap_password', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('sender_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('sender_email', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('assign_method', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('signature', 'like', '%' . $searchTerm . '%');
-            });
-        }
-
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $email_configure = $query->paginate($perPage);
-
-        // Return the response
-        return response()->json([
-            'data' => $email_configure->items(),
-            'meta' => [
-                'current_page' => $email_configure->currentPage(),
-                'last_page' => $email_configure->lastPage(),
-                'per_page' => $email_configure->perPage(),
-                'total' => $email_configure->total(),
-            ],
-        ]);
+       return $this->emailConfigureRepository->list($request);
     }
-    public function store(Request $request)
+
+
+    /**
+     * @OA\Post(
+     *     path="/api/email-configure",
+     *     summary="Create a new email configuration",
+     *     description="Create a new email configuration with the provided data.",
+     *     tags={"Email Configuration"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"type", "smtp_host", "smtp_port", "smtp_user", "smtp_password"},
+     *             @OA\Property(property="type", type="string", example="SMTP"),
+     *             @OA\Property(property="smtp_host", type="string", example="smtp.example.com"),
+     *             @OA\Property(property="smtp_port", type="integer", example=587),
+     *             @OA\Property(property="smtp_user", type="string", example="user@example.com"),
+     *             @OA\Property(property="smtp_password", type="string", example="password123"),
+     *             @OA\Property(property="default_type", type="string", example="default"),
+     *             @OA\Property(property="default_status", type="string", example="active"),
+     *             @OA\Property(property="imap_host", type="string", example="imap.example.com"),
+     *             @OA\Property(property="imap_port", type="integer", example=993),
+     *             @OA\Property(property="imap_user", type="string", example="user@imap.com"),
+     *             @OA\Property(property="imap_password", type="string", example="imapPassword123"),
+     *             @OA\Property(property="sender_name", type="string", example="Sender Name"),
+     *             @OA\Property(property="sender_email", type="string", example="sender@example.com"),
+     *             @OA\Property(property="assign_method", type="string", example="auto"),
+     *             @OA\Property(property="signature", type="string", example="Best regards, Team")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Email configuration created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Email configuration created successfully!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Error creating email configuration")
+     *         )
+     *     )
+     * )
+     */
+    public function store(EmailConfigureRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'smtp_host' => 'required',
-            'smtp_port' => 'required',
-            'imap_host' => 'required',
-            'imap_port' => 'required',
-            'sender_email' => 'required|unique:email_configures',
-            // other validation rules...
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $users = EmailConfigure::create([
-            'type' => $request->type,
-            'product_id' => $request->product_id,
-            'campaign_id' => $request->campaign_id,
-            'inbound_id' => $request->inbound_id,
-            'smtp_host' => $request->smtp_host,
-            'smtp_port' => $request->smtp_port,
-            'smtp_user' => $request->smtp_user,
-            'smtp_password' => $request->smtp_password,
-            'default_type' => $request->default_type,
-            'default_status' => $request->default_status,
-            'imap_host' => $request->imap_host,
-            'imap_port' => $request->imap_port,
-            'imap_user' => $request->imap_user,
-            'imap_password' => $request->imap_password,
-            'sender_name' => $request->sender_name,
-            'sender_email' => $request->sender_email,
-            'assign_method' => $request->assign_method,
-            'signature' => $request->signature,
-        ]);
-        return response()->json([
-            'message' => 'Email Configure Created Successfully',
-            'data' => new TenantsResource($users)
-        ]);
+       return $this->emailConfigureRepository->store($request);
     }
+
+     /**
+     * @OA\Get(
+     *     path="/api/email-configure/{id}",
+     *     summary="Get an email configuration by ID",
+     *     description="Fetch a specific email configuration by its ID.",
+     *     tags={"Email Configuration"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the email configuration",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email configuration details"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Email configuration not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Email configuration not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Error fetching email configuration")
+     *         )
+     *     )
+     * )
+     */
     public function show(EmailConfigure $email_configure)
     {
-        return new TenantsResource($email_configure);
+       return $this->emailConfigureRepository->show($email_configure);
     }
+
+
+    /**
+     * @OA\Put(
+     *     path="/api/email-configure/{id}",
+     *     summary="Update an email configuration",
+     *     description="Update the details of an existing email configuration.",
+     *     tags={"Email Configuration"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the email configuration to update",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="type", type="string", example="SMTP"),
+     *             @OA\Property(property="smtp_host", type="string", example="smtp.example.com"),
+     *             @OA\Property(property="smtp_port", type="integer", example=587),
+     *             @OA\Property(property="smtp_user", type="string", example="user@example.com"),
+     *             @OA\Property(property="smtp_password", type="string", example="password123"),
+     *             @OA\Property(property="default_type", type="string", example="default"),
+     *             @OA\Property(property="default_status", type="string", example="active"),
+     *             @OA\Property(property="imap_host", type="string", example="imap.example.com"),
+     *             @OA\Property(property="imap_port", type="integer", example=993),
+     *             @OA\Property(property="imap_user", type="string", example="user@imap.com"),
+     *             @OA\Property(property="imap_password", type="string", example="imapPassword123"),
+     *             @OA\Property(property="sender_name", type="string", example="Sender Name"),
+     *             @OA\Property(property="sender_email", type="string", example="sender@example.com"),
+     *             @OA\Property(property="assign_method", type="string", example="auto"),
+     *             @OA\Property(property="signature", type="string", example="Best regards, Team")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email configuration updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Email configuration updated successfully!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Email configuration not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Email configuration not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Error updating email configuration")
+     *         )
+     *     )
+     * )
+     */
     public function update(Request $request, EmailConfigure $email_configure)
     {
-        $email_configure->update([
-            'type' => $request->type,
-            'product_id' => $request->product_id,
-            'campaign_id' => $request->campaign_id,
-            'inbound_id' => $request->inbound_id,
-            'smtp_host' => $request->smtp_host,
-            'smtp_port' => $request->smtp_port,
-            'smtp_user' => $request->smtp_user,
-            'smtp_password' => $request->smtp_password,
-            'default_type' => $request->default_type,
-            'default_status' => $request->default_status,
-            'imap_host' => $request->imap_host,
-            'imap_port' => $request->imap_port,
-            'imap_user' => $request->imap_user,
-            'imap_password' => $request->imap_password,
-            'sender_name' => $request->sender_name,
-            'sender_email' => $request->sender_email,
-            'assign_method' => $request->assign_method,
-            'signature' => $request->signature,
-        ]);
-        return response()->json([
-            'message' => 'Email Configure Updated Successfully',
-            'data' => new TenantsResource($email_configure)
-        ]);
+        return $this->emailConfigureRepository->update($request,$email_configure);
     }
+
+     /**
+     * @OA\Delete(
+     *     path="/api/email-configure/{id}",
+     *     summary="Delete an email configuration",
+     *     description="Delete an email configuration by its ID.",
+     *     tags={"Email Configuration"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the email configuration to delete",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email configuration deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Email configuration deleted successfully!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Email configuration not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Email configuration not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Error deleting email configuration")
+     *         )
+     *     )
+     * )
+     */
     public function destroy(EmailConfigure $email_configure)
     {
-        $email_configure->delete();
-        return response()->json([
-            'message' => 'Email Configure Deleted Successfully',
-        ]);
+       
     }
 }

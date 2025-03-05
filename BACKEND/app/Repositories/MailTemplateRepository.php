@@ -76,58 +76,7 @@ class MailTemplateRepository
         }
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/mail-templates/{id}",
-     *     summary="Delete a Mail Template by ID",
-     *     description="Delete a specific mail template by its ID. If the template is not found or cannot be deleted, an appropriate error is returned.",
-     *     operationId="deleteMailTemplate",
-     *     tags={"MailTemplates"},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="ID of the mail template to delete",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Mail template deleted successfully",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             properties={
-     *                 @OA\Property(property="message", type="string", example="Mail template deleted successfully"),
-     *                 @OA\Property(property="data", type="object", description="Mail template that was deleted")
-     *             }
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Mail Template not found",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             properties={
-     *                 @OA\Property(property="message", type="string", example="Mail template not found")
-     *             }
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Mail Template deletion not allowed",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             properties={
-     *                 @OA\Property(property="message", type="string", example="Mail template cannot be deleted")
-     *             }
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal server error"
-     *     )
-     * )
-     */
-
+   
     public function delete($id)
     {
         // Find the mail template by ID

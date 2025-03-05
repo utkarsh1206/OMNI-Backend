@@ -66,7 +66,6 @@ Route::get('/user', function (Request $request) {
 #Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
 Route::apiResource('sla-settings', SlaSettingController::class);
 Route::apiResource('users', UsersController::class);
-Route::apiResource('email-configure', EmailConfigureController::class);
 Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);
 Route::get('my-profile', [UsersController::class, 'myprofile']);
 Route::post('transfer', [SupporttickettransferController::class, 'store']);
@@ -83,8 +82,6 @@ Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
 Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
 
 Route::apiResource('phones', PhoneController::class);
-Route::apiResource('departments', DepartmentController::class);
-Route::apiResource('categories', CategoryController::class);
 Route::apiResource('incident-types', IncidentTypeController::class);
 Route::apiResource('products', ProductController::class);
 Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
@@ -141,6 +138,9 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('mail-details', [MailDetailController::class, 'index']);
     Route::post('mail-details', [MailDetailController::class, 'store']);
     Route::apiResource('mail-templates', MailTemplateController::class);
+    Route::apiResource('departments', DepartmentController::class);
+    Route::apiResource('categories', CategoryController::class);
+    Route::apiResource('email-configure', EmailConfigureController::class);
 });
 
 

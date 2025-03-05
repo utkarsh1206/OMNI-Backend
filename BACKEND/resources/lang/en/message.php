@@ -71,6 +71,17 @@ return [
     'mail_template_not_found'=>'Mail template not found.',
     'mail_template_updated'=>'Mail template updated successfully!',
     'mail_template_created'=>' Mail Template created successfully!',
+    'category_created_msg'=>'Category created successfully!',
+    'category_updated_msg'=>'Category updated successfully!',
+    'category_deleted_msg'=> 'Category deleted successfully',
+    'category_not_found'=> 'Category Not Found',
+    'department_not_found'=>'Department not found.',
+    'department_deleted'=>'Department deleted successfully',
+    'department_updated'=>'Department updated successfully!',
+    'department_created'=>'Department created successfully!',
+    'email_configure_created'=>'Email Configure Created Successfully',
+    'email_configure_updated'=>'Email Configure Updated Successfully',
+    'email_configure_deleted'=>'Email Configure Deleted Successfully',
 ]
 ?>
 
