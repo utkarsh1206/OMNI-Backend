@@ -386,7 +386,7 @@ class SupportticketController extends Controller
         $supportticket->update($updateData);
         $ticketResponse = $this->createTicket($supportticket, $type, $comment, $apiUser, $statusInfo);
         if ($request->default_status == "Resolved") {
-            $this->sendSms($apiUser, "Ticket Resolved", $apiUser->mobile, $supportticket);
+            // $this->sendSms($apiUser, "Ticket Resolved", $apiUser->mobile, $supportticket);
             $toEmails = $supportticket->assignedUser->email ?? '';
             setEmailConfig();
             $mailTemplate = MailTemplate::where("type", "agent_solve_the_ticket")->first();
@@ -430,6 +430,7 @@ class SupportticketController extends Controller
         ]);
 
         return [
+            'type' => $statusChange,
             'status' => $notification->status,
             'comment' => $notification->comment,
             'support_ticket_id' => $notification->support_ticket_id,
