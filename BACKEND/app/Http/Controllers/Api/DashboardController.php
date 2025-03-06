@@ -67,11 +67,12 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('default_priority');
 
-        // Tickets by department
-        $ticketsByDepartment = SupportTicket::where($conditionalFilter)->select(DB::raw('departments, COUNT(*) as count'))
-            ->groupBy('departments')
+        $ticketsByDepartment = SupportTicket::where($conditionalFilter)
+            ->join('departments', 'supportticket.department_id', '=', 'departments.id')
+            ->select('departments.name as department_name', DB::raw('COUNT(*) as count'))
+            ->groupBy('departments.name')
             ->get()
-            ->keyBy('departments');
+            ->keyBy('department_name');
 
         // // Pending tickets by agent (assign_to_id represents agent)
         // $pendingTicketsByAgent = SupportTicket::whereNotIn('default_status', ['Resolved', 'Closed'])
