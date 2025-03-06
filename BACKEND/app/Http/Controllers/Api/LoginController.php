@@ -88,37 +88,37 @@ class LoginController extends Controller
     }
 
     /**
- * @OA\Post(
- *     path="/logout",
- *     summary="Logout user",
- *     description="Logs the user out by invalidating the JWT token.",
- *     operationId="logout",
- *     tags={"Authentication"},
- *     security={{
- *         "bearerAuth": {}
- *     }},
- *     @OA\Response(
- *         response=200,
- *         description="Successfully logged out",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(
- *                 property="message",
- *                 type="string",
- *                 example="Successfully logged out"
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthorized - Token invalid or expired",
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Internal server error",
- *     )
- * )
- */
+     * @OA\Post(
+     *     path="/logout",
+     *     summary="Logout user",
+     *     description="Logs the user out by invalidating the JWT token.",
+     *     operationId="logout",
+     *     tags={"Authentication"},
+     *     security={{
+     *         "bearerAuth": {}
+     *     }},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successfully logged out",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Successfully logged out"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized - Token invalid or expired",
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *     )
+     * )
+     */
     public function logout(Request $request)
     {
         $this->loginRepository->logout($request);

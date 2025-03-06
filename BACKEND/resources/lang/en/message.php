@@ -111,7 +111,10 @@ return [
     'no_changes_made' => 'No changes made.',
     'lead_delete_success' => 'Lead deleted successfully.',
     'lead_delete_failed' => 'Lead deletion failed.',
-
+    'incident_type_delete'=>'Incident Type deleted successfully',
+    'incident_type_not_found'=> 'Incident Type not found.',
+    'incident_type_created'=>'Incident Type created successfully',
+    'incident_type_update'=>'Incident Type updated successfully',
 
 
 ]

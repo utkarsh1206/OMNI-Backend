@@ -87,8 +87,6 @@ Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
 Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
 Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
 
-Route::apiResource('phones', PhoneController::class);
-Route::apiResource('incident-types', IncidentTypeController::class);
 Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
 Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);
 Route::get('/ticket/summary/category', [TicketReportController::class, 'categorySummary']);
@@ -147,19 +145,17 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('email-configure', EmailConfigureController::class);
     Route::apiResource('products', ProductController::class);
+    Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
+    Route::apiResource('email-logs', EmailLogController::class);
+    Route::apiResource('sms-configurations', SmsProviderConfigurationController::class);
+    Route::apiResource('sms-providers', SmsProviderController::class);
+    Route::apiResource('lists', EcdialListsController::class);
+    Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
+    Route::apiResource('incident-types', IncidentTypeController::class);
+    Route::apiResource('phones', PhoneController::class);
 });
 
 
-
-Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
-
-Route::apiResource('email-logs', EmailLogController::class);
-Route::apiResource('sms-configurations', SmsProviderConfigurationController::class);
-Route::apiResource('sms-providers', SmsProviderController::class);
-
-Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
-
-Route::apiResource('lists', EcdialListsController::class);
 
 Route::apiResource('live-agents', LiveAgentController::class);
 

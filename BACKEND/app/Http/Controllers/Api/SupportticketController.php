@@ -43,7 +43,7 @@ class SupportticketController extends Controller
             $roleId = $payload['role_id'];
             $userId = $payload['id'];
         }
- 
+
         // Start the query for tenants
         $query = supportticket::query()->where('is_delete', 'No')->with('department');
 
