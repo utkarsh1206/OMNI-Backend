@@ -10,4 +10,15 @@ class EcdialLists extends Model
     use HasFactory;
 
     protected $table = 'ecdial_lists';
+
+    protected $primaryKey = 'list_id';
+
+    public $timestamps = true;
+
+    protected $fillable = ['name', 'description', 'status'];
+
+    public function ecdialListFields()
+    {
+        return $this->hasMany(EcdialListField::class, 'list_id', 'list_id');
+    }
 }

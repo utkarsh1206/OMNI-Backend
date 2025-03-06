@@ -52,6 +52,12 @@ use App\Http\Controllers\Api\EmailLogController;
 use App\Http\Controllers\Api\SmsProviderConfigurationController;
 use App\Http\Controllers\Api\SmsProviderController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\EcdialListsController;
+use App\Http\Controllers\Api\EcdialListFieldController;
+use App\Http\Controllers\Api\ChatbotController;
+use App\Http\Controllers\Api\ImportLeadController;
+use App\Http\Controllers\Api\CustomLeadController;
+use App\Http\Controllers\Api\LiveAgentController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -145,3 +151,30 @@ Route::middleware(['jwt.auth'])->group(function () {
 
 
 
+Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
+
+Route::apiResource('email-logs', EmailLogController::class);
+Route::apiResource('sms-configurations', SmsProviderConfigurationController::class);
+Route::apiResource('sms-providers', SmsProviderController::class);
+
+Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
+
+Route::apiResource('lists', EcdialListsController::class);
+
+Route::apiResource('live-agents', LiveAgentController::class);
+
+Route::get('/branding', [UsersController::class, 'getBranding']);
+
+Route::apiResource('/lists_fields', EcdialListFieldController::class);
+
+Route::apiResource('chatbots', ChatbotController::class);
+
+Route::get('/download-sample/{list_id}', [ImportLeadController::class, 'downloadSampleCsv']);
+Route::post('/upload-lead-csv/{list_id}', [ImportLeadController::class, 'uploadLeadCsv']);
+
+Route::middleware(['jwt.auth'])->group(function () {
+    Route::get('/custom-leads/{list_id}', [CustomLeadController::class, 'index']);  // Get all leads for a list
+    Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']); // Get a single lead by ID
+    Route::put('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'update']);
+    Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
+});

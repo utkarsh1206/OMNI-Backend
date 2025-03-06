@@ -10,7 +10,6 @@ return [
     'invalid_license' => 'License data invalid.!',
     'license_expired'=>'License expired',
     'domain_required'=> 'Domain is required',
-    'domain_required'=> 'Domain is required',
     'invalid_credentials'=>'Unauthorized: Invalid credentials',
     'invalid_phone_credentials'=>'Unauthorized: Invalid phone credentials',
     // User Message
@@ -33,8 +32,6 @@ return [
     'tenant_delete_msg','Tenant deleted Successfully',
     'tenant_update_msg'=>'Tenant Updated Successfully',
     'tenant_create_msg'=>'Tenant Created Successfully',
-    'license_invalid'=>'License data invalid',
-    'license_invalid'=>'License data invalid',
     'license_invalid'=>'License data invalid',
     'max_tenant_allow'=> 'Tenant creation limit exceeded. Max number of tenants allowed is ',
     'user_group_update_msg'=>'User Group Updated Successfully',
@@ -86,6 +83,34 @@ return [
     'product_deleted'=>'Product deleted successfully',
     'product_updated'=>'Product updated successfully!',
     'product_created'=> 'Product created successfully!',
+    //Lead Upload
+    'error' => 'Error ',
+    'no_data_inserted' => 'No data inserted.',
+    'table_not_exist' => 'Table does not exist.',
+    'error_inserting_data' => 'Error while inserting data.',
+    'data_inserted_successfully' => 'Data inserted successfully.',
+    'invalid_csv_no_data' => 'Invalid csv file. No data found.',
+    'no_field_definitions_found' => 'No field definitions found.',
+    'csv_headers_mismatch' => 'CSV headers mismatch.',
+    //List Field
+    'list_field_create_success' => 'List field created successfully.',
+    'list_field_update_success' => 'List field updated successfully.',
+    'list_field_delete_success' => 'List field deleted successfully.',
+    //LIst
+    'list_create_success' => 'List created successfully.',
+    'list_update_success' => 'List updated successfully.',
+    'list_delete_success' => 'List deleted successfully.',
+    //product
+    'product_delete_success' => 'Product deleted successfully.',
+    'product_update_success' => 'Product updated successfully.',
+    'product_create_success' => 'Product created successfully.',
+    //Custom lead
+    'table_not_found' => 'Table not found.',
+    'lead_not_found' => 'Lead not found.',
+    'lead_update_success' => 'Lead updated successfully.',
+    'no_changes_made' => 'No changes made.',
+    'lead_delete_success' => 'Lead deleted successfully.',
+    'lead_delete_failed' => 'Lead deletion failed.',
 
 
 

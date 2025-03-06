@@ -43,9 +43,9 @@ class SupportticketController extends Controller
             $roleId = $payload['role_id'];
             $userId = $payload['id'];
         }
-
+ 
         // Start the query for tenants
-        $query = supportticket::query();
+        $query = supportticket::query()->where('is_delete', 'No')->with('department');
 
         if ($roleId == 3) {
             $query->where('assign_to_id', $userId); // Filter by the logged-in user's ID
@@ -135,20 +135,21 @@ class SupportticketController extends Controller
             'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
             'default_status' => isset($request->default_status) ? $request->default_status : "",
             'subject' => isset($request->subject) ? $request->subject : "",
-            'departments' => isset($request->departments) ? $request->departments : "",
+            'department_id' => isset($request->department_id) ? $request->department_id : "",
             'to_emails' => isset($request->to_emails) ? $request->to_emails : "",
             'cc' => isset($request->cc) ? $request->cc : "",
             'bcc' => isset($request->bcc) ? $request->bcc : "",
             'description' => isset($request->description) ? $request->description : "",
             'attachment' => json_encode($attachment_urls),
             'incident_id' => isset($request->incident_id) ? $request->incident_id : 0,
+            'account_id' => isset($request->account_id) ? $request->account_id : 0,
         ]);
 
         $datePrefix = now()->format('dmy'); // Get the current date in ddmmyy format
         $supportTicketId = $datePrefix . $supportticket->id; // Use the newly inserted ID
         $mail_details = MailDetail::create([
             'default_type' => isset($request->default_type) ? $request->default_type : "",
-            'user_id'=> $apiUser->id ?? '',
+            'user_id' => $apiUser->id ?? '',
             'priority' => isset($request->default_priority) ? $request->default_priority : "",
             'status' => isset($request->default_status) ? $request->default_status : "",
             'to' => isset($request->to_emails) ? $request->to_emails : "",
@@ -162,7 +163,7 @@ class SupportticketController extends Controller
         ]);
 
         $supportticket->update(['support_ticket_id' => $supportTicketId]);
-        $comment = $apiUser->first_name." ".$apiUser->last_name." has created the ticket"; 
+        $comment = $apiUser->first_name . " " . $apiUser->last_name . " has created the ticket";
         $this->createTicket($supportticket, "Ticket Created", $comment, $apiUser);
         $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportticket);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
@@ -172,7 +173,7 @@ class SupportticketController extends Controller
         $smtpPassword = $emailConfig->smtp_password;
         $sender_name = $emailConfig->sender_name;
         $sender_email = $emailConfig->sender_email;
-       
+
         config([
             'mail.mailers.smtp.host' => $smtpHost,
             'mail.mailers.smtp.port' => $smtpPort,
@@ -183,16 +184,16 @@ class SupportticketController extends Controller
             'mail.from.name' => $sender_name,
         ]);
         // Attempt to send the email
-       
+
         try {
             Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
             logEmail([
-                "user_id"=>$request->assign_to_id,
-                "email_template_id"=> 0, 
-                "from_email"=> $sender_email,
-                "module_name"=> "Support Ticket",
-                "entity_id"=> $supportticket->id,
-                "status" =>"sent",
+                "user_id" => $request->assign_to_id,
+                "email_template_id" => 0,
+                "from_email" => $sender_email,
+                "module_name" => "Support Ticket",
+                "entity_id" => $supportticket->id,
+                "status" => "sent",
             ]);
         } catch (Exception $e) {
             // Log the error message if email fails to send
@@ -255,18 +256,19 @@ class SupportticketController extends Controller
             'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
             'default_status' => isset($request->default_status) ? $request->default_status : "",
             'subject' => isset($request->subject) ? $request->subject : "",
-            'departments' => isset($request->departments) ? $request->departments : "",
+            'department_id' => isset($request->department_id) ? $request->department_id : "",
             'to_emails' => isset($request->to_emails) ? $request->to_emails : "",
             'cc' => isset($request->cc) ? $request->cc : "",
             'bcc' => isset($request->bcc) ? $request->bcc : "",
             'description' => isset($request->description) ? $request->description : "",
             'incident_id' => isset($request->incident_id) ? $request->incident_id : 0,
+            'account_id' => isset($request->account_id) ? $request->account_id : 0,
         ];
         if (!empty($attachment_urls)) {
             $updateData['attachment'] = $attachment_urls;
         }
         $supportticket->update($updateData);
-        $this->createTicket($supportticket,isset($request->default_status) ? $request->default_status : "","Edit Support Ticket",$apiUser);
+        $this->createTicket($supportticket, isset($request->default_status) ? $request->default_status : "", "Edit Support Ticket", $apiUser);
         $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportticket);
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host;
@@ -287,15 +289,15 @@ class SupportticketController extends Controller
         ]);
         // Attempt to send the email
         try {
-           
+
             Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
             logEmail([
-                "user_id"=>$request->assign_to_id,
-                "email_template_id"=> 0, 
-                "from_email"=> $sender_email,
-                "module_name"=> "Support Ticket",
-                "entity_id"=> $supportticket->id,
-                "status" =>"sent",
+                "user_id" => $request->assign_to_id,
+                "email_template_id" => 0,
+                "from_email" => $sender_email,
+                "module_name" => "Support Ticket",
+                "entity_id" => $supportticket->id,
+                "status" => "sent",
             ]);
         } catch (Exception $e) {
             // Log the error message if email fails to send
@@ -348,21 +350,20 @@ class SupportticketController extends Controller
 
 
         $supportticket->update($updateData);
-        $this->createTicket($supportticket,$type,$comment,$apiUser,$statusInfo); 
-        if($request->default_status == "Resolved")
-        {
+        $this->createTicket($supportticket, $type, $comment, $apiUser, $statusInfo);
+        if ($request->default_status == "Resolved") {
             $this->sendSms($apiUser, "Ticket Resolved", $apiUser->mobile, $supportticket);
             $toEmails = $supportticket->assignedUser->email ?? '';
             setEmailConfig();
-            $mailTemplate = MailTemplate::where("type","agent_solve_the_ticket")->first();
+            $mailTemplate = MailTemplate::where("type", "agent_solve_the_ticket")->first();
             $subject =  $mailTemplate->subject ?? '';
             $body =  $mailTemplate->body ?? '';
-            $body = str_replace("{ticket_number}",$supportticket->support_ticket_id,$body);
-            $body = str_replace("{{customer_name}}",$supportticket->assignedUser->first_name,$body);
-            $subject = str_replace("{ticket_number}",$supportticket->support_ticket_id,$subject);
-           $res =  Mail::to($toEmails)->send(new SendEmail($subject, $body));
+            $body = str_replace("{ticket_number}", $supportticket->support_ticket_id, $body);
+            $body = str_replace("{{customer_name}}", $supportticket->assignedUser->first_name, $body);
+            $subject = str_replace("{ticket_number}", $supportticket->support_ticket_id, $subject);
+            $res =  Mail::to($toEmails)->send(new SendEmail($subject, $body));
         }
-      
+
         return response()->json([
             'message' => 'Support Ticket Status Updated Successfully',
             'data' => new TenantsResource($supportticket)
@@ -376,7 +377,7 @@ class SupportticketController extends Controller
         ]);
     }
 
-    public function createTicket($supportticket, $type, $comment, $apiUser, $statusChange=NULL)
+    public function createTicket($supportticket, $type, $comment, $apiUser, $statusChange = NULL)
     {
         $notification = SupportTicketNotification::create([
             'type' => $statusChange ?? $type,
@@ -384,23 +385,23 @@ class SupportticketController extends Controller
             'comment' => $comment,
             'support_ticket_id' => $supportticket->id,
             'date' => gmdate('Y-m-d H:i:s'),
-            'created_by'=> $apiUser->id ?? 0,
+            'created_by' => $apiUser->id ?? 0,
             'icon' =>  $statusChange ? $this->getIconforNotification($statusChange) : $this->getIconforNotification($type),
-            'color'=>  $statusChange ? $this->getColorforNotification($statusChange) : $this->getColorforNotification($type),
+            'color' =>  $statusChange ? $this->getColorforNotification($statusChange) : $this->getColorforNotification($type),
         ]);
     }
 
     public function getColorforNotification($type)
-    {   
+    {
         $color =   [
-                "Ticket Created" => "primary",
-                "Ticket Transfer" => "info",
-                "Ticket Merge" => "warning",
-                "Priority Changed" => "secondary",
-                "Type Changed"=>"danger",
-                "Ticket Close" => "success",
-                "Status Changed" => "info",
-                ];
+            "Ticket Created" => "primary",
+            "Ticket Transfer" => "info",
+            "Ticket Merge" => "warning",
+            "Priority Changed" => "secondary",
+            "Type Changed" => "danger",
+            "Ticket Close" => "success",
+            "Status Changed" => "info",
+        ];
 
         return $color[$type] ?? "secondary";
     }
@@ -412,7 +413,7 @@ class SupportticketController extends Controller
             "Ticket Transfer" => "cilTransfer",
             "Ticket Merge" => "cilSync",
             "Priority Changed" => "cilChevronDoubleUp",
-            "Type Changed"=>"cilFire",
+            "Type Changed" => "cilFire",
             "Ticket Close" => "cilCheck",
             "Status Changed" => "cilBolt",
         ];
@@ -422,13 +423,13 @@ class SupportticketController extends Controller
 
     public function sendSms($apiUser, $type, $phone, $supportticket)
     {
-       $smsInfo = new SmsService;
-      
-       $templateInfo = SmsTemplate::where("name",$type)->first();
-       $templateName = $templateInfo->name ?? '';
-       $template = $templateInfo->content ?? '';
-       $template = str_replace("{#ticket ##}",$supportticket->support_ticket_id, $template);
-       $template = str_replace("{#customer name#}",$apiUser->first_name.' '.$apiUser->last_name, $template);
-       $smsInfo->sendSMS($apiUser->id, $templateName, $template, $phone);
+        $smsInfo = new SmsService;
+
+        $templateInfo = SmsTemplate::where("name", $type)->first();
+        $templateName = $templateInfo->name ?? '';
+        $template = $templateInfo->content ?? '';
+        $template = str_replace("{#ticket ##}", $supportticket->support_ticket_id, $template);
+        $template = str_replace("{#customer name#}", $apiUser->first_name . ' ' . $apiUser->last_name, $template);
+        $smsInfo->sendSMS($apiUser->id, $templateName, $template, $phone);
     }
 }

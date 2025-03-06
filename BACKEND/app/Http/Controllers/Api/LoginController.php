@@ -83,8 +83,6 @@ class LoginController extends Controller
             $validator = $request->validated();
             return $this->loginRepository->login($request, $validator);
         } catch (Exception $e) {
-            echo $e->getMessage();
-            exit;
             return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
         }
     }

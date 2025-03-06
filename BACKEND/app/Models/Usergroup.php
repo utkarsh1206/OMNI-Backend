@@ -14,7 +14,7 @@ class UserGroup extends Model
     protected $fillable = [
         //"tenant_id",
         "name",
-        "campaign_id",
+        "department_id",
         "description",
         "status"
     ];

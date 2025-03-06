@@ -17,13 +17,14 @@ class Supportticket extends Model
         "product_id",
         "campaign_id",
         //"inbound_group_id",
+        "account_id",
         "contact_id",
         "assign_to_id",
         "default_type",
         "default_priority",
         "default_status",
         "subject",
-        "departments",
+        "department_id",
         "to_emails",
         "cc",
         "bcc",
@@ -64,5 +65,10 @@ class Supportticket extends Model
     public function incidentType()
     {
         return $this->belongsTo(IncidentType::class, 'incident_id', 'id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id', 'id');
     }
 }

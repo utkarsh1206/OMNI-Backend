@@ -2,15 +2,18 @@
 
 namespace App\Repositories;
 
-use Illuminate\Http\Request;
-use App\Http\Response\CustomApiResponse;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\Product;
-use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
+use App\Http\Resources\ProductResource;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+use Exception;
+use Illuminate\Support\Facades\Log;
+use App\Http\Response\CustomApiResponse;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Config;
 
-
-class ProductRepository
-{
+class ProductRepository{
 
     private $apiResponse;
 
@@ -21,108 +24,112 @@ class ProductRepository
 
     public function list(Request $request)
     {
+        $filters = [
+            'search' => 'searchTerm',
+            'name' => 'name',
+            'description' => 'description',
+            'status' => 'status',
+        ];
 
-        try {
-
-            $searchTerm = $request->input('search', '');
-            $name = $request->input('name', '');
-            $status = $request->input('status', '');
-            $perPage = $request->input('per_page', 10);
-            $page = $request->input('page', 1);
-
-            $query = Product::query();
-
-            if (!empty($searchTerm)) {
-                $query->where('name', 'like', "%$searchTerm%");
-            }
-
-            if (!empty($name)) {
-                $query->where('name', $name);
-            }
-
-            if (!empty($status)) {
-                $query->where('status', $status === 'true');
-            }
-            if ($page === 'all') {
-                $products = $query->get();
-            } else {
-                $products = $query->paginate($perPage);
-            }
-
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $products, trans('message.fetch_data'));
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        $inputs = [];
+        foreach ($filters as $key => $variable) {
+            $inputs[$variable] = $request->input($key, '');
         }
+
+        $perPage = $request->input('per_page', 10); 
+        $page = $request->input('page', 1);         
+    
+        $perPage = (int)$perPage;
+
+        
+        $query = Product::query();
+
+        if (!empty($inputs['searchTerm'])) {
+            $query->where(function ($q) use ($inputs) {
+                $searchTerm = $inputs['searchTerm'];
+                $q->where('name', 'like', "%" . $searchTerm . "%")
+                    ->orWhere('description', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        foreach ($filters as $key => $variable) {
+            if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
+                if ($variable === 'status') {
+
+                    $status = filter_var($inputs[$variable], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                    if (!is_null($status)) {
+                        $query->where($variable, $status);
+                    }
+                } else {
+                    $query->where($variable, $inputs[$variable]);
+                }
+            }
+        }
+
+        if ($page === 'all') {
+            $products = $query->get(); 
+        } else {
+            $products = $query->paginate($perPage); 
+        }
+
+        
+        return $this->apiResponse->getResponseStructure(
+            trans('message.success'),
+            $products, 
+            trans('message.data_fetch')
+        );
     }
 
-    public function store(Request $request)
-    {
 
+    public function create(Request $request)
+    {
         try {
-            
+
+            $status = filter_var($request->status, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
             $product = Product::create([
                 'name' => $request->name,
-                'description' => $request->description,
-                'status' => $request->status,
+                "description" => $request->description,
+                "status" => $status
             ]);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $product, trans('message.product_created'), ResponseHTTP::HTTP_CREATED);
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+
+            $data = new ProductResource($product);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.product_create_success'));
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
-
 
     public function update(Request $request, $id)
     {
         try {
-            $product = Product::find($id);
-            if (!$product) {
-                return response()->json([
-                    'message' => trans("message.product_not_found")
-                ], ResponseHTTP::HTTP_NOT_FOUND);
-            }
+
+            $status = filter_var($request->status, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+            $product = Product::findOrFail($id);
 
             $product->update([
                 'name' => $request->name,
                 'description' => $request->description,
-                'status' => $request->status,
+                'status' => $status
             ]);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $product, trans('message.product_updated'));
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+            $data = new ProductResource($product);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.product_update_success'));        
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
-
 
     public function delete($id)
     {
         try {
-            $product = Product::find($id);
+            $product = Product::where('id', $id)->firstOrFail();
 
-            if (!$product) {
-                return response()->json([
-                    'message' => trans("message.product_not_found")
-                ], ResponseHTTP::HTTP_NOT_FOUND);
-            }
             $product->delete();
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $product, trans('message.product_deleted'));
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
-    }
 
-    public function show($id)
-    {
-        try {
-            $product = Product::find($id);
-            if (!$product) {
-                return response()->json([
-                    'message' => trans("message.product_not_found")
-                ], ResponseHTTP::HTTP_NOT_FOUND);
-            }
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $product, trans('message.fetch_data'));
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $id, trans('message.product_delete_success'));
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 }

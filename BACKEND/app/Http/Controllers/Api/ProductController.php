@@ -2,176 +2,58 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ProductRequest;
-use Illuminate\Http\Request;
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Repositories\ProductRepository;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use App\Http\Requests\ProductRequest;
+use App\Http\Response\CustomApiResponse;
+use Exception;
+
+// use Illuminate\Database\QueryException;
 
 class ProductController extends Controller
 {
 
-    private $productRepository;
+    protected $ProductRepository;
+    private $apiResponse;
 
-    public function __construct(ProductRepository $productRepository)
+    public function __construct(ProductRepository $ProductRepository, CustomApiResponse $customApiResponse)
     {
-        $this->productRepository = $productRepository;
+        $this->ProductRepository = $ProductRepository;
+        $this->apiResponse = $customApiResponse;
     }
-     /**
-     * @OA\Get(
-     *     path="/api/products",
-     *     summary="Get all products",
-     *     description="Fetch a list of all products with optional filters and pagination.",
-     *     tags={"Products"},
-     *     @OA\Parameter(
-     *         name="search",
-     *         in="query",
-     *         description="Search term for filtering products by name",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="name",
-     *         in="query",
-     *         description="Filter products by name",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="status",
-     *         in="query",
-     *         description="Filter products by status (true or false)",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="per_page",
-     *         in="query",
-     *         description="Number of products per page",
-     *         required=false,
-     *         @OA\Schema(type="integer", default=10)
-     *     ),
-     *     @OA\Parameter(
-     *         name="page",
-     *         in="query",
-     *         description="Page number for pagination",
-     *         required=false,
-     *         @OA\Schema(type="integer", default=1)
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="List of products",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="meta", type="object",
-     *                 @OA\Property(property="current_page", type="integer"),
-     *                 @OA\Property(property="last_page", type="integer"),
-     *                 @OA\Property(property="per_page", type="integer"),
-     *                 @OA\Property(property="total", type="integer")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Error fetching products")
-     *         )
-     *     )
-     * )
-     */
+
     public function index(Request $request)
     {
-       return $this->productRepository->list($request);
+        try {
+            return $this->ProductRepository->list($request);
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/products",
-     *     summary="Create a new product",
-     *     description="Create a new product with the provided data.",
-     *     tags={"Products"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"name", "status"},
-     *             @OA\Property(property="name", type="string", example="Product Name"),
-     *             @OA\Property(property="description", type="string", example="Product description"),
-     *             @OA\Property(property="status", type="boolean", example=true)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Product created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Product created successfully!")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Validation failed."),
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Error creating product")
-     *         )
-     *     )
-     * )
-     */
     public function store(ProductRequest $request)
     {
-     return $this->productRepository->store($request);
+        try {
+            return $this->ProductRepository->create($request);
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 
-
-    /**
-     * @OA\Get(
-     *     path="/api/products/{id}",
-     *     summary="Get a product by ID",
-     *     description="Fetch a specific product by its ID.",
-     *     tags={"Products"},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="ID of the product",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Product details"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Product not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Product not found.")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Error fetching product")
-     *         )
-     *     )
-     * )
-     */
-    public function show($id)
+    public function show($product)
     {
         try {
-            
-        } catch (QueryException $e) {
-            return response()->json([
-                'message' => 'Error fetching product: ' . $e->getMessage()
-            ], 500);
+            $data = Product::findOrFail($product);
+            return new ProductResource($data);
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);                
         }
     }
 
@@ -232,7 +114,11 @@ class ProductController extends Controller
 
     public function update(ProductRequest $request, $id)
     {
-       return $this->productRepository->update($request,$id);
+        try {
+            return $this->ProductRepository->update($request, $id);
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 
     /**
@@ -273,6 +159,10 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-      return $this->productRepository->delete($id);
+        try {
+            return $this->ProductRepository->delete($id);
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 }

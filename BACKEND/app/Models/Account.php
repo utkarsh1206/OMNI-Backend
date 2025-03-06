@@ -10,10 +10,10 @@ class Account extends Model
 {
     use HasFactory , SoftDeletes;
     // public $timestamps = false;
-    
+
     protected $fillable = [
         'product_id',
-        'campaign_id',
+        'department_id',
         'name',
         'mobile',
         'website',
