@@ -1,5 +1,12 @@
 2025-03-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
+	* Jira ID : Neox-4114
+	* Previous Commit ID : 3166be62
+	* Version : Dev
+	* Laravel : Added Search Filters in Support Ticket
+
+2025-03-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
 	* Jira ID :
 	* Previous Commit ID : e9f9f53c
 	* Version : Dev

@@ -37,6 +37,15 @@ class SupportticketController extends Controller
         // Get the search term from the request
         $searchTerm = $request->input('search', '');
 
+        $ticket_id = $request->input('ticket_id', '');
+        $product_id = $request->input('product_id', '');
+        $subject = $request->input('subject', '');
+        $default_type = $request->input('default$default_type', '');
+        $default_status = $request->input('default_status', '');
+        $default_priority = $request->input('default_priority', '');
+        $assign_to_id = $request->input('assign_to_id', '');
+        $contact_id = $request->input('contact_id', '');
+
         $token = $request->bearerToken();
         if ($token != "") {
             $payload = JWTAuth::setToken($token)->getPayload();
@@ -63,6 +72,31 @@ class SupportticketController extends Controller
         $perPage = $request->input('per_page', 10);
         $supportticket = $query->paginate($perPage);
         $page = $request->input('page', 1);
+
+        if (!empty($ticket_id)) {
+            $query->where('ticket_id', $ticket_id);
+        }
+        if (!empty($product_id)) {
+            $query->where('product_id', $product_id);
+        }
+        if (!empty($subject)) {
+            $query->where('subject', $subject);
+        }
+        if (!empty($default_type)) {
+            $query->where('default_type', $default_type);
+        }
+        if (!empty($default_status)) {
+            $query->where('default_status', $default_status);
+        }
+        if (!empty($default_priority)) {
+            $query->where('default_priority', $default_priority);
+        }
+        if (!empty($assign_to_id)) {
+            $query->where('assign_to_id', $assign_to_id);
+        }
+        if (!empty($contact_id)) {
+            $query->where('contact_id', $contact_id);
+        }
 
         if ($page === 'all') {
             // If 'page' is 'all', retrieve all records without pagination
