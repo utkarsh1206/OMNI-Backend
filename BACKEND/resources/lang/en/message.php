@@ -115,6 +115,10 @@ return [
     'incident_type_not_found'=> 'Incident Type not found.',
     'incident_type_created'=>'Incident Type created successfully',
     'incident_type_update'=>'Incident Type updated successfully',
+    'phone_created'=>'Phone created successfully',
+    'phone_updated'=>'Phone updated successfully',
+    'phone_deleted'=>'Phone deleted successfully',
+    'phone_not_found'=>'Phone not found',
 
 
 ]
