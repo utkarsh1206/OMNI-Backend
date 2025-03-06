@@ -384,7 +384,7 @@ class SupportticketController extends Controller
 
 
         $supportticket->update($updateData);
-        $this->createTicket($supportticket, $type, $comment, $apiUser, $statusInfo);
+        $ticketResponse = $this->createTicket($supportticket, $type, $comment, $apiUser, $statusInfo);
         if ($request->default_status == "Resolved") {
             $this->sendSms($apiUser, "Ticket Resolved", $apiUser->mobile, $supportticket);
             $toEmails = $supportticket->assignedUser->email ?? '';
@@ -400,7 +400,11 @@ class SupportticketController extends Controller
 
         return response()->json([
             'message' => 'Support Ticket Status Updated Successfully',
-            'data' => new TenantsResource($supportticket)
+            // 'data' => new TenantsResource($supportticket),
+            'data' => array_merge(
+                (new TenantsResource($supportticket))->toArray($request),
+                $ticketResponse
+            ),
         ]);
     }
     public function destroy(Supportticket $supportticket)
@@ -424,6 +428,18 @@ class SupportticketController extends Controller
             'icon' =>  $statusChange ? $this->getIconforNotification($statusChange) : $this->getIconforNotification($type),
             'color' =>  $statusChange ? $this->getColorforNotification($statusChange) : $this->getColorforNotification($type),
         ]);
+
+        return [
+            'status' => $notification->status,
+            'comment' => $notification->comment,
+            'support_ticket_id' => $notification->support_ticket_id,
+            'created_by' => $notification->created_by,
+            'icon' => $notification->icon,
+            'color' => $notification->color,
+            'date' => $notification->date,
+            'created_at' => $notification->created_at,
+            'updated_at' => $notification->updated_at,
+        ];
     }
 
     public function getColorforNotification($type)
