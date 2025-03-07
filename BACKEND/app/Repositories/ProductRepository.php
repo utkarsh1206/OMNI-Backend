@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Config;
 
-class ProductRepository{
+class ProductRepository
+{
 
     private $apiResponse;
 
@@ -36,8 +37,8 @@ class ProductRepository{
             $inputs[$variable] = $request->input($key, '');
         }
 
-        $perPage = $request->input('per_page', 10); 
-        $page = $request->input('page', 1);         
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
     
         $perPage = (int)$perPage;
 
@@ -55,7 +56,6 @@ class ProductRepository{
         foreach ($filters as $key => $variable) {
             if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
                 if ($variable === 'status') {
-
                     $status = filter_var($inputs[$variable], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                     if (!is_null($status)) {
                         $query->where($variable, $status);
@@ -67,15 +67,15 @@ class ProductRepository{
         }
 
         if ($page === 'all') {
-            $products = $query->get(); 
+            $products = $query->get();
         } else {
-            $products = $query->paginate($perPage); 
+            $products = $query->paginate($perPage);
         }
 
         
         return $this->apiResponse->getResponseStructure(
             trans('message.success'),
-            $products, 
+            $products,
             trans('message.data_fetch')
         );
     }
@@ -84,7 +84,6 @@ class ProductRepository{
     public function create(Request $request)
     {
         try {
-
             $status = filter_var($request->status, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
             $product = Product::create([
@@ -103,7 +102,6 @@ class ProductRepository{
     public function update(Request $request, $id)
     {
         try {
-
             $status = filter_var($request->status, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
             $product = Product::findOrFail($id);
@@ -114,7 +112,7 @@ class ProductRepository{
                 'status' => $status
             ]);
             $data = new ProductResource($product);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.product_update_success'));        
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.product_update_success'));
         } catch (Exception $ex) {
             return $this->apiResponse->handleAndResponseException($ex);
         }

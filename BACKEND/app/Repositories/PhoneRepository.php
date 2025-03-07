@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Repositories;
 
 use Illuminate\Http\Request;
@@ -8,10 +7,8 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\Phone;
 use Illuminate\Database\QueryException;
 
-
 class PhoneRepository
 {
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)

@@ -77,7 +77,7 @@ class LoginController extends Controller
      *     )
      * )
      */
-    public function login_action(LoginRequest $request)
+    public function login(LoginRequest $request)
     {
         try {
             $validator = $request->validated();

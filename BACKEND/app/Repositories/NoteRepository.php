@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Repositories;
+
 use App\Models\Notes;
 use App\Http\Response\CustomApiResponse;
 use Illuminate\Http\Request;
@@ -35,7 +36,4 @@ class NoteRepository
 
         return $this->apiResponse->getResponseStructure(trans('message.success'), $notedetail, trans('message.note_created_msg'), ResponseHTTP::HTTP_CREATED);
     }
-
-   
-
 }

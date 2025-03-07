@@ -112,7 +112,7 @@ class ImportExportLeadRepository
             $fields = $this->getFieldsByListId($list_id);
 
             if ($fields->isEmpty()) {
-                return $this->apiResponse->getResponseStructure(trans('message.error'),  $list_id, trans('message.no_fields_found_for_list'));
+                return $this->apiResponse->getResponseStructure(trans('message.error'), $list_id, trans('message.no_fields_found_for_list'));
             }
 
             $headers = $fields->pluck('field_label')->toArray();

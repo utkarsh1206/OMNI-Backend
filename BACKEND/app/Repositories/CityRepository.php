@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\City;
 use App\Http\Response\CustomApiResponse;
 
-
 class CityRepository
 {
 
@@ -24,7 +23,7 @@ class CityRepository
         $searchTerm = $request->input('search', '');
         $state_id = $request->input('state_id', '');
 
-        $query = City::query()->where('state_id',$state_id);
+        $query = City::query()->where('state_id', $state_id);
 
         // If there's a search term, apply it to the query
         if (!empty($searchTerm)) {
@@ -47,9 +46,5 @@ class CityRepository
             $cities = $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $cities, trans('message.data_fetch'));
         }
-
     }
-
-   
-
 }

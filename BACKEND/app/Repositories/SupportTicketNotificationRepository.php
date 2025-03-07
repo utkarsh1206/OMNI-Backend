@@ -27,6 +27,4 @@ class SupportTicketNotificationRepository
             ->get();
         return $this->apiResponse->getResponseStructure(trans('message.success'), $notifications, trans('message.data_fetch'));
     }
-
- 
 }

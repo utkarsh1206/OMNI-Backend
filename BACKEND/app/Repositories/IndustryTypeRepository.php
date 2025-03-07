@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\IndustryType;
 use App\Http\Response\CustomApiResponse;
 
-
 class IndustryTypeRepository
 {
 
@@ -43,9 +42,5 @@ class IndustryTypeRepository
             // Return the response with pagination meta
             return $this->apiResponse->getResponseStructure(trans('message.success'), $industry_type, trans('message.data_fetch'));
         }
-
     }
-
-   
-
 }

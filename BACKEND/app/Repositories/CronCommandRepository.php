@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\CronCommand;
 use App\Http\Response\CustomApiResponse;
 
-
 class CronCommandRepository
 {
 

@@ -6,8 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\ActivityLog;
 
-
-
 class AuditLogRepository
 {
 

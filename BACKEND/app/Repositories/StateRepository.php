@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\State;
 use App\Http\Response\CustomApiResponse;
 
-
 class StateRepository
 {
 

@@ -14,7 +14,6 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 
-
 class DashboardRepository
 {
 

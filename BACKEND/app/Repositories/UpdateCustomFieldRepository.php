@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
-
 class UpdateCustomFieldRepository
 {
 
@@ -71,7 +70,5 @@ class UpdateCustomFieldRepository
                 return $this->apiResponse->handleAndResponseException($e);
             }
         }
-        
     }
 }
-

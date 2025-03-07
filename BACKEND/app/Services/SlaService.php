@@ -144,7 +144,7 @@ class SlaService
         if ($startTime->lt($businessStartTime)) {
             $startTime = $startTime->copy()->setTimeFromTimeString($slaSetting->start_time);
             Log::info("Created time is before business hours, setting start time to business start time: {$startTime}");
-        } else if ($startTime->gt($businessEndTime)) {
+        } elseif ($startTime->gt($businessEndTime)) {
             $startTime = $startTime->copy()->addDay()->setTimeFromTimeString($slaSetting->start_time);
             Log::info("Created time is after business hours, moving start time to next business day: {$startTime}");
         } else {

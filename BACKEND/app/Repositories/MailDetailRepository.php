@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Repositories;
+
 use App\Models\MailDetail;
 use App\Http\Response\CustomApiResponse;
 use Illuminate\Http\Request;
@@ -97,7 +98,7 @@ class MailDetailRepository
         ]);
         // Attempt to send the email
         try {
-            Mail::to($request->to)->send(new SendEmail("Test support mail sent", $request->body,$mail_attachment_urls));
+            Mail::to($request->to)->send(new SendEmail("Test support mail sent", $request->body, $mail_attachment_urls));
         } catch (Exception $e) {
             // Log the error message if email fails to send
             Log::error('Failed to send email', [
@@ -110,7 +111,4 @@ class MailDetailRepository
 
         return $this->apiResponse->getResponseStructure(trans('message.success'), $mailDetail, trans('message.email_sent_success'), ResponseHTTP::HTTP_CREATED);
     }
-
-   
-
 }

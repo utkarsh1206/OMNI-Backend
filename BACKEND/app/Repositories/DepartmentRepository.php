@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\Department;
 use Illuminate\Database\QueryException;
 
-
 class DepartmentRepository
 {
 
@@ -52,7 +51,6 @@ class DepartmentRepository
     public function store(Request $request)
     {
         try {
-
             $department = Department::create([
                 'name' => $request->name,
                 'description' => $request->description,

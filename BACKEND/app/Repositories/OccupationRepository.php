@@ -6,8 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Occupation;
 
-
-
 class OccupationRepository
 {
 
@@ -39,7 +37,5 @@ class OccupationRepository
         $perPage = $request->input('per_page', 10);
         $occupations = $query->paginate($perPage);
         return $this->apiResponse->getResponseStructure(trans('message.success'), $occupations, trans('message.data_fetch'));
-        
     }
 }
-

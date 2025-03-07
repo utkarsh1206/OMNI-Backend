@@ -30,7 +30,7 @@ class SmsProviderConfigurationRepository
 
         if ($method) {
             $smsConfigurations = SmsProviderConfiguration::where('config_value', $method);
-        } else if ($enabled) {
+        } elseif ($enabled) {
             $smsConfigurations = SmsProviderConfiguration::where('config_value', $enabled);
         } else {
             $smsConfigurations = SmsProviderConfiguration::query();
@@ -52,7 +52,7 @@ class SmsProviderConfigurationRepository
         }
 
         $configurations = $configurations->get();
-        return $this->apiResponse->getResponseStructure(trans('message.success'),  $this->formatListingData($configurations, $method, $enabled), trans('message.data_fetch'));
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations, $method, $enabled), trans('message.data_fetch'));
     }
 
     public function store($request)
@@ -152,7 +152,7 @@ class SmsProviderConfigurationRepository
         return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations), trans('message.data_fetch'));
     }
 
-    private function formatListingData($configurations, $method = NULL, $enabled = NULL)
+    private function formatListingData($configurations, $method = null, $enabled = null)
     {
         $formattedData =  collect($configurations)->map(function ($item) use ($method, $enabled) {
             $providerInfo = SmsProviderConfiguration::select(["id", "config_key", "config_value"])->where("provider_id", $item['id']);

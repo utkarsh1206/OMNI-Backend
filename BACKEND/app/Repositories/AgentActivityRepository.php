@@ -297,7 +297,5 @@ class AgentActivityRepository
         } catch (\Exception $e) {
             return $this->apiResponse->handleAndResponseException($e);
         }
-
     }
-
 }

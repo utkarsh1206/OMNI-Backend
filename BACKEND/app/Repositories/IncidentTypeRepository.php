@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\IncidentType;
 use Illuminate\Database\QueryException;
 
-
 class IncidentTypeRepository
 {
 
@@ -61,7 +60,6 @@ class IncidentTypeRepository
                 $incidentType = $query->with('category.department', 'sla_settings')->paginate($perPage);
                 return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.fetch_data'));
             }
-            
         } catch (QueryException $e) {
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -70,7 +68,6 @@ class IncidentTypeRepository
     public function store(Request $request)
     {
         try {
-
             $incidentType = IncidentType::create([
                 'name' => $request->name,
                 'description' => $request->description,

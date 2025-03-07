@@ -69,7 +69,7 @@ class LoginRepository
                 $phoneData = $this->getPhoneData($request);
                 if (!$phoneData) {
                     Log::error('Phone not found or inactive', ['phone' => $request->input('phone')]);
-                    return response()->json(['error' =>  trans('message.invalid_phone_credentials')],  ResponseHTTP::HTTP_UNAUTHORIZED);
+                    return response()->json(['error' =>  trans('message.invalid_phone_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
                 }
                 Log::info('Phone data retrieved:', ['phoneData' => $phoneData]);
                 if ($this->authenticatePassword($credentials, $userData, $request->input('phone_password'), $phoneData)) {
@@ -79,7 +79,7 @@ class LoginRepository
                     $token = JWTAuth::attempt($credentials);
                 } else {
                     Log::error('Unauthorized: Invalid credentials', ['userData' => $userData]);
-                    return response()->json(['error' => trans('message.invalid_credentials')],  ResponseHTTP::HTTP_UNAUTHORIZED);
+                    return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
                 }
             }
             $dataArr = [
@@ -89,7 +89,7 @@ class LoginRepository
             return is_string($token) ? $this->apiResponse->getResponseStructure(trans('message.success'), $dataArr, trans('message.login')) : $token;
         } catch (\Exception $ex) {
             Log::error('Error during authentication: ' . $ex->getMessage());
-            return response()->json(['error' => trans('message.invalid_credentials')],  ResponseHTTP::HTTP_UNAUTHORIZED);
+            return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
         }
     }
 

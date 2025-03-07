@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\EmailConfigure;
 use Illuminate\Database\QueryException;
 
-
 class EmailConfigureRepository
 {
 
@@ -23,7 +22,6 @@ class EmailConfigureRepository
     {
 
         try {
-
             $searchTerm = $request->input('search', '');
 
             // Start the query for tenants
@@ -63,7 +61,6 @@ class EmailConfigureRepository
     {
         
         try {
-
             $emailConfig = EmailConfigure::create([
                 'type' => $request->type,
                 'product_id' => $request->product_id,

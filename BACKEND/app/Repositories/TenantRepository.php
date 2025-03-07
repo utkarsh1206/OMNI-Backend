@@ -9,7 +9,6 @@ use App\Http\Resources\TenantsResource;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Users;
 
-
 class TenantRepository
 {
 
@@ -124,7 +123,8 @@ class TenantRepository
             $path = $tenant_logo->storeAs('tenant_logo', $filename, 'public');
 
             // Return the URL to access the uploaded image
-            $tenant_logo_url = url('storage/' . $path);;
+            $tenant_logo_url = url('storage/' . $path);
+            ;
         }
         $updateData = [
             'first_name' => $request->first_name,

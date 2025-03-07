@@ -109,7 +109,7 @@ class ContactRepository
         $contact = Contact::find($id);
 
         if (!$contact) {
-            return response()->json(['message' => trans("message.contact_not_found")],  ResponseHTTP::HTTP_NOT_FOUND);
+            return response()->json(['message' => trans("message.contact_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
         }
 
         $contact->update([
@@ -136,7 +136,7 @@ class ContactRepository
     {
         $contact = Contact::find($id);
         if (!$contact) {
-            return response()->json(['message' => trans("message.contact_not_found")],  ResponseHTTP::HTTP_NOT_FOUND);
+            return response()->json(['message' => trans("message.contact_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
         }
         $contact->delete();
         return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.contact_deleted'));

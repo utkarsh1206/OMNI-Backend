@@ -6,8 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Nameprefix;
 
-
-
 class NamePrefixRepository
 {
 
@@ -40,7 +38,5 @@ class NamePrefixRepository
         $perPage = $request->input('per_page', 10);
         $nameprefixes = $query->paginate($perPage);
         return $this->apiResponse->getResponseStructure(trans('message.success'), $nameprefixes, trans('message.data_fetch'));
-
     }
 }
-

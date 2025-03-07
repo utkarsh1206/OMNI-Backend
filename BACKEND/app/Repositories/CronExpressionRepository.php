@@ -27,27 +27,25 @@ class CronExpressionRepository
          $query = CronExpression::select("id", "schedule_type", "schedule_expression");
  
          // If there's a search term, apply it to the query
-         if (!empty($searchTerm)) {
-             $query->where(function ($q) use ($searchTerm) {
-                 $q->where('schedule_type', 'like', '%' . $searchTerm . '%');
-             });
-         }
+        if (!empty($searchTerm)) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('schedule_type', 'like', '%' . $searchTerm . '%');
+            });
+        }
  
          // Paginate the results
          $perPage = $request->input('per_page', 10);
          $page = $request->input('page', 1);
 
-         if ($page === 'all') {
-             // If 'page' is 'all', retrieve all records without pagination
-             $expressions = $query->get();
-             return $this->apiResponse->getResponseStructure(trans('message.success'), $expressions, trans('message.data_fetch'));
-         } else {
-             // Paginate the results
-             $expressions = $query->paginate($perPage);
-             // Return the response with pagination meta
-             return $this->apiResponse->getResponseStructure(trans('message.success'), $expressions, trans('message.data_fetch'));
-         }
+        if ($page === 'all') {
+            // If 'page' is 'all', retrieve all records without pagination
+            $expressions = $query->get();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $expressions, trans('message.data_fetch'));
+        } else {
+            // Paginate the results
+            $expressions = $query->paginate($perPage);
+            // Return the response with pagination meta
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $expressions, trans('message.data_fetch'));
+        }
     }
-
- 
 }

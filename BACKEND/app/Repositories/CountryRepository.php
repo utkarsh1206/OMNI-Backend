@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Country;
 use App\Http\Response\CustomApiResponse;
 
-
 class CountryRepository
 {
 
@@ -49,9 +48,5 @@ class CountryRepository
             // Return the response with pagination meta
             return $this->apiResponse->getResponseStructure(trans('message.success'), $countires, trans('message.data_fetch'));
         }
-
     }
-
-   
-
 }

@@ -59,7 +59,7 @@ use App\Http\Controllers\Api\ImportLeadController;
 use App\Http\Controllers\Api\CustomLeadController;
 use App\Http\Controllers\Api\LiveAgentController;
 
-Route::post('login', [LoginController::class, 'login_action']);
+Route::post('login', [LoginController::class, 'login']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();

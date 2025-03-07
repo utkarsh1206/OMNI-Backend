@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\Category;
 use Illuminate\Database\QueryException;
 
-
 class CategoryRepository
 {
 

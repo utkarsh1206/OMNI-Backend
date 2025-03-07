@@ -9,13 +9,13 @@ use App\Repositories\PhoneRepository;
 
 class PhoneController extends Controller
 {
-
     private $phoneRepository;
 
     public function __construct(PhoneRepository $phoneRepository)
     {
         $this->phoneRepository = $phoneRepository;
     }
+
     /**
      * @OA\Get(
      *     path="/phones",
@@ -90,10 +90,10 @@ class PhoneController extends Controller
      */
     public function index(Request $request)
     {
-       return $this->phoneRepository->list($request);
+        return $this->phoneRepository->list($request);
     }
 
-      /**
+    /**
      * @OA\Post(
      *     path="/phones",
      *     summary="Create a new phone",
@@ -126,7 +126,6 @@ class PhoneController extends Controller
         $validatedData = $request->validated();
         return $this->phoneRepository->store($validatedData);
     }
-
 
     /**
      * @OA\Get(
@@ -199,11 +198,10 @@ class PhoneController extends Controller
     public function update(PhoneRequest $request, $extension)
     {
         $validatedData = $request->validated();
-        return $this->phoneRepository->update($validatedData,$extension);
+        return $this->phoneRepository->update($validatedData, $extension);
     }
 
-
-     /**
+    /**
      * @OA\Delete(
      *     path="/phones/{extension}",
      *     summary="Delete a phone",

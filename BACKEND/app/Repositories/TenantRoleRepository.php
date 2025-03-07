@@ -47,24 +47,22 @@ class TenantRoleRepository
             // Paginate the results
             $tenantRole = $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantRole, trans('message.data_fetch'));
-           
         }
     }
 
     public function create(Request $request)
     {
         try {
-        $tenantrole = TenantRole::create([
+            $tenantrole = TenantRole::create([
             'name' => $request->name,
             "permission" => $request->permission,
             "description" => $request->description,
             "status" => $request->status
-        ]);
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantrole, trans('message.tenant_role_created'));
-       
+            ]);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantrole, trans('message.tenant_role_created'));
         } catch (Exception $ex) {
             Log::error('Error during authentication: ' . $ex->getMessage());
-            return response()->json(['error' => trans('message.invalid_credentials')],  ResponseHTTP::HTTP_UNAUTHORIZED);
+            return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
         }
     }
 

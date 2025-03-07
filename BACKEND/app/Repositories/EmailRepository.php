@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Repositories;
+
 use App\Models\EmailConfigure;
 use App\Http\Response\CustomApiResponse;
 use Illuminate\Support\Facades\Mail;
@@ -59,11 +60,5 @@ class EmailRepository
             // Return a response indicating failure
             return $this->apiResponse->handleAndResponseException($e);
         }
-       
     }
-
-   
-
-   
-
 }

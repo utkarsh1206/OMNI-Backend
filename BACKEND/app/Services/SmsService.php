@@ -24,26 +24,28 @@ class SmsService
     public function sendSMS(int $userId, string $templateName, string $message, string $toPhone)
     {
         $userGateway = UserSmsGateway::where('user_id', $userId)->first();
-        if (!$userGateway) {
-            throw new Exception('No SMS gateway selected for this user.');
-        }
+        // if (!$userGateway) {
+        //     throw new Exception('No SMS gateway selected for this user.');
+        // }
 
-        $providerId = $userGateway->provider_id;
-        // Based on the provider, call the respective API
-        switch ($userGateway->provider->name) {
-            case 'twilio':
-                $configArr = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value", "config_key");
-                return $this->sendWithTwilio($message, $toPhone, $configArr);
-            case 'custom':
-                $configArr = [];
-
-                $configurations = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value", "config_key");
-                if ($configurations->count()) {
-                    $configArr =  $configurations->toArray();
-                }
-                return $this->sendWithCustomProvider($templateName, $message, $toPhone, $configArr, $providerId);
-            default:
-                throw new Exception('Unsupported SMS provider selected.');
+        if ($userGateway->provider_id) {
+            $providerId = $userGateway->provider_id;
+            // Based on the provider, call the respective API
+            switch ($userGateway->provider->name) {
+                case 'twilio':
+                    $configArr = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value", "config_key");
+                    return $this->sendWithTwilio($message, $toPhone, $configArr);
+                case 'custom':
+                    $configArr = [];
+    
+                    $configurations = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value", "config_key");
+                    if ($configurations->count()) {
+                        $configArr =  $configurations->toArray();
+                    }
+                    return $this->sendWithCustomProvider($templateName, $message, $toPhone, $configArr, $providerId);
+                default:
+                    throw new Exception('Unsupported SMS provider selected.');
+            }
         }
     }
 
@@ -79,10 +81,10 @@ class SmsService
         
         switch ($templateName) {
             case 'Ticket Created':
-                $template_id = config('message.INCIDENT_CREATE');
+                $template_id = config('omni.INCIDENT_CREATE');
                 break;
             case 'Ticket Resolved':
-                $template_id = config('message.INCIDENT_RESOLUTION');
+                $template_id = config('omni.INCIDENT_RESOLUTION');
                 break;
         }
         try {

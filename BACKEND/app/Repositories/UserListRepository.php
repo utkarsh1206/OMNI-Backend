@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Repositories;
+
 use App\Models\EcdialUser;
 use App\Http\Response\CustomApiResponse;
-
 
 class UserListRepository
 {
@@ -24,7 +24,4 @@ class UserListRepository
                        ->get(['user']);
         return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.data_fetch'));
     }
-
-   
-
 }

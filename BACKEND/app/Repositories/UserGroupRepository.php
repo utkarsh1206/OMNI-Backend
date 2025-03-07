@@ -71,12 +71,11 @@ class UserGroupRepository
                 "campaign_id" => $request->campaign_id,
                 "description" => $request->description,
                 "status" => $request->status
-            ]);        
+            ]);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.user_group_create_msg'));
-
         } catch (Exception $ex) {
             Log::error('Error during authentication: ' . $ex->getMessage());
-            return response()->json(['error' => trans('message.wrong_with_query')],  ResponseHTTP::HTTP_UNAUTHORIZED);
+            return response()->json(['error' => trans('message.wrong_with_query')], ResponseHTTP::HTTP_UNAUTHORIZED);
         }
     }
 
@@ -98,5 +97,4 @@ class UserGroupRepository
         $usergroup->delete();
         return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.user_group_delete_msg'));
     }
-
 }
