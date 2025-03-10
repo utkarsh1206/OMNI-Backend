@@ -6,202 +6,272 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Chatbot;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Database\QueryException;
+use App\Http\Resources\ChatbotResource;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use App\Repositories\ChatbotRepository;
+use App\Http\Requests\ChatbotRequest;
+use App\Http\Response\CustomApiResponse;
 
 class ChatbotController extends Controller
 {
+
+    protected $ChatbotRepository;
+    private $apiResponse;
+
+    public function __construct(ChatbotRepository $ChatbotRepository, CustomApiResponse $customApiResponse)
+    {
+        $this->ChatbotRepository = $ChatbotRepository;
+        $this->apiResponse = $customApiResponse;
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/chatbots",
+     *      tags={"Chatbots"},
+     *      summary="Get a list of all chatbots",
+     *      description="Retrieve a paginated list of all chatbots.",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          required=false,
+     *          description="Page number",
+     *          @OA\Schema(type="integer", default=1)
+     *      ),
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          required=false,
+     *          description="Number of items per page",
+     *          @OA\Schema(type="integer", default=10)
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Data has been fetched successfully!"),
+     *              @OA\Property(
+     *                  property="data",
+     *                  type="array",
+     *                  @OA\Items(
+     *                      type="object",
+     *                      @OA\Property(property="id", type="integer", example=1),
+     *                      @OA\Property(property="question", type="string", example="How can I track my order?"),
+     *                      @OA\Property(property="answer", type="string", example="You can track your order using the tracking number."),
+     *                      @OA\Property(property="status", type="boolean", example=true),
+     *                      @OA\Property(property="created_at", type="string", format="date-time", example="2025-03-07T12:23:44.000000Z"),
+     *                      @OA\Property(property="updated_at", type="string", format="date-time", example="2025-03-07T12:23:44.000000Z")
+     *                  )
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized, invalid token"
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="No chatbots found"
+     *      )
+     * )
+     */
+
     public function index(Request $request)
     {
         try {
-            $searchTerm = $request->input('search', '');
-            $question = $request->input('question', '');
-            $answer = $request->input('answer', '');
-            $keywords = $request->input('keywords', '');
-            $status = $request->input('status', '');
-            $perPage = $request->input('per_page', 10);
-            $page = $request->input('page', 1);
-
-            $query = Chatbot::query();
-
-            if (!empty($searchTerm)) {
-                $query->where(function ($q) use ($searchTerm) {
-                    $q->where('question', 'like', "%{$searchTerm}%")
-                      ->orWhere('answer', 'like', "%{$searchTerm}%")
-                      ->orWhereJsonContains('keywords', $searchTerm);
-                });
-            }
-
-            if (!empty($question)) {
-                $query->where('question', 'like', "%{$question}%");
-            }
-
-            if (!empty($answer)) {
-                $query->where('answer', 'like', "%{$answer}%");
-            }
-
-            if (!empty($keywords)) {
-                $query->whereJsonContains('keywords', $keywords);
-            }
-
-            if ($status !== '') {
-                $query->where('status', $status === 'true');
-            }
-
-            if ($page === 'all') {
-                $chatbots = $query->get();
-                return response()->json([
-                    'data' => $chatbots,
-                ]);
-            }
-
-            $chatbots = $query->paginate($perPage);
-            return response()->json([
-                'meta' => [
-                    'current_page' => $chatbots->currentPage(),
-                    'last_page' => $chatbots->lastPage(),
-                    'per_page' => $chatbots->perPage(),
-                    'total' => $chatbots->total(),
-                ],
-                'data' => $chatbots->items(),
-            ]);
-
-        } catch (QueryException $e) {
-            return response()->json([
-                'message' => 'Error fetching chatbots: ' . $e->getMessage()
-            ], 500);
+            return $this->ChatbotRepository->list($request);
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
-    public function store(Request $request)
+/**
+ * @OA\Post(
+ *     path="/api/chatbots",
+ *     tags={"Chatbots"},
+ *     summary="Create a new chatbot",
+ *     @OA\Parameter(
+ *         name="question",
+ *         in="query",
+ *         required=true,
+ *         description="The question to be asked by the chatbot",
+ *         @OA\Schema(type="string", example="How can I return my product?")
+ *     ),
+ *     @OA\Parameter(
+ *         name="answer",
+ *         in="query",
+ *         required=true,
+ *         description="The answer the chatbot will provide",
+ *         @OA\Schema(type="string", example="You can return your product within 30 days.")
+ *     ),
+ *     @OA\Parameter(
+ *         name="status",
+ *         in="query",
+ *         required=true,
+ *         description="Status of the chatbot (active/inactive)",
+ *         @OA\Schema(type="boolean", example=true)
+ *     ),
+ *     @OA\Parameter(
+ *         name="Keywords",
+ *         in="query",
+ *         required=false,
+ *         description="Keywords",
+ *         @OA\Schema(
+ *           @OA\Property(
+ *               property="Keywords[]",
+ *               description="Keywords",
+ *               type="array",
+ *               collectionFormat="multi",
+ *              @OA\Items(type="string", format="id")
+ *           ))
+ *     ),
+ *     @OA\Response(
+ *         response=201,
+ *         description="Chatbot created successfully",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string", example="Chatbot created successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Invalid input data",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string", example="Invalid input data")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=401,
+ *         description="Unauthorized, invalid token",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="message", type="string", example="Unauthorized, invalid token")
+ *         )
+ *     )
+ * )
+ */
+
+    public function store(ChatbotRequest $request)
     {
         try {
-
-            $status = filter_var($request->input('status'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-
-            $request->merge(['status' => $status]);
-
-            $validator = Validator::make($request->all(), [
-                'question' => 'required|string|unique:chatbots,question',
-                'answer' => 'required|string',
-                'status' => 'required|boolean',
-                'keywords' => 'nullable|array|max:5',
-                'keywords.*' => 'string',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'message' => 'Validation failed.',
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-
-            $chatbot = Chatbot::create([
-                'question' => $request->question,
-                'answer' => $request->answer,
-                'status' => $request->status,
-                'keywords' => $request->keywords ?? [],
-            ]);
-
-            return response()->json([
-                'message' => 'Chatbot created successfully!',
-                'data' => $chatbot
-            ], 201);
-        } catch (QueryException $e) {
-            return response()->json([
-                'message' => 'Error creating chatbot: ' . $e->getMessage()
-            ], 500);
+            return $this->ChatbotRepository->create($request);
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
-    public function show($id)
+    
+
+    public function show($chatbot)
     {
         try {
-            $chatbot = Chatbot::find($id);
-
-            if (!$chatbot) {
-                return response()->json([
-                    'message' => 'Chatbot not found.'
-                ], 404);
-            }
-
-            return response()->json([
-                'data' => $chatbot
-            ]);
-        } catch (QueryException $e) {
-            return response()->json([
-                'message' => 'Error fetching chatbot: ' . $e->getMessage()
-            ], 500);
+            $data = Chatbot::findOrFail($chatbot);
+            return new ChatbotResource($data);
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);                
         }
     }
+
+    /**
+     * @OA\Put(
+     *      path="/api/chatbots/{chatbot}",
+     *      tags={"Chatbots"},
+     *      summary="Update an existing chatbot",
+     *      description="Update the details of an existing chatbot.",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="chatbot",
+     *          in="path",
+     *          required=true,
+     *          description="ID of the chatbot",
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Updated chatbot data",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              required={"question", "answer", "status"},
+     *              @OA\Property(property="question", type="string", example="Can I change my order?"),
+     *              @OA\Property(property="answer", type="string", example="Yes, you can change your order within 24 hours."),
+     *              @OA\Property(property="status", type="boolean", example=true)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Chatbot updated successfully",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Chatbot updated successfully"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Invalid request data"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized, invalid token"
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Chatbot not found"
+     *      )
+     * )
+     */
 
     public function update(Request $request, $id)
     {
         try {
-            $chatbot = Chatbot::find($id);
-
-            if (!$chatbot) {
-                return response()->json([
-                    'message' => 'Chatbot not found.'
-                ], 404);
-            }
-
-            $status = filter_var($request->input('status'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-
-            $request->merge(['status' => $status]);
-
-            $validator = Validator::make($request->all(), [
-                'question' => 'required|string|unique:chatbots,question,' . $chatbot->id,
-                'answer' => 'required|string',
-                'status' => 'required|boolean',
-                'keywords' => 'nullable|array|max:5',
-                'keywords.*' => 'string',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'message' => 'Validation failed.',
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-
-            $chatbot->update([
-                'question' => $request->question,
-                'answer' => $request->answer,
-                'status' => $request->status,
-                'keywords' => $request->keywords ?? [],
-            ]);
-
-            return response()->json([
-                'message' => 'Chatbot updated successfully!',
-                'data' => $chatbot
-            ]);
-        } catch (QueryException $e) {
-            return response()->json([
-                'message' => 'Error updating chatbot: ' . $e->getMessage()
-            ], 500);
+            return $this->ChatbotRepository->update($request, $id);
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
+
+    
+/**
+     * @OA\Delete(
+     *      path="/api/chatbots/{chatbot}",
+     *      tags={"Chatbots"},
+     *      summary="Delete a chatbot",
+     *      description="Delete a specific chatbot by ID.",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="chatbot",
+     *          in="path",
+     *          required=true,
+     *          description="ID of the chatbot",
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Chatbot deleted successfully",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="message", type="string", example="Chatbot deleted successfully")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized, invalid token"
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Chatbot not found"
+     *      )
+     * )
+     */
 
     public function destroy($id)
     {
         try {
-            $chatbot = Chatbot::find($id);
-
-            if (!$chatbot) {
-                return response()->json([
-                    'message' => 'Chatbot not found.'
-                ], 404);
-            }
-
-            $chatbot->delete();
-
-            return response()->json([
-                'message' => 'Chatbot deleted successfully',
-            ]);
-        } catch (QueryException $e) {
-            return response()->json([
-                'message' => 'Error deleting chatbot: ' . $e->getMessage()
-            ], 500);
+            return $this->ChatbotRepository->delete($id);
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 }
