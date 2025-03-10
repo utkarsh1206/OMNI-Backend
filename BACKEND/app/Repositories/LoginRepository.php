@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Api\LicenseController;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Response\CustomApiResponse;
+use App\Models\Phone;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 /**
@@ -122,7 +123,7 @@ class LoginRepository
 
     private function getPhoneData($request)
     {
-        return Phones::where('login', $request->input('phone'))
+        return Phone::where('login', $request->input('phone'))
             ->where('status', 'ACTIVE')
             ->first();
     }

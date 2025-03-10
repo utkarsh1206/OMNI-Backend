@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\LicenseController;
 use App\Services\AESService;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+use Illuminate\Support\Facades\Config;
 
 /**
  * Format price with a currency symbol.
@@ -87,9 +88,8 @@ if (! function_exists('authenticateUser')) {
       
         $credentialsKey = isset($credentials['email']) ? 'email' : 'username';
         $credentialsValue = $credentials[$credentialsKey];
-        
         $userData = $model::where($credentialsKey, $credentialsValue)->first();
-     
+       
         if (!$userData) {
             return response()->json(['error' => trans('message.invalid_credentials')], 401);
         }
@@ -100,5 +100,24 @@ if (! function_exists('authenticateUser')) {
             return response()->json(['error' => trans('message.invalid_credentials')], 401);
         }
        return $token;
+    }
+
+    if (! function_exists('establishDatabaseConnect')) {
+     function establishDatabaseConnect($newConnectionName,$databaseName)
+        {
+            Config::set("database.connections.$newConnectionName", [
+                'driver'    => 'mysql',
+                'host'      => env('DB_HOST', '127.0.0.1'),
+                'port'      => env('DB_PORT', '3306'),
+                'database'  => $databaseName,
+                'username'  => env('DB_USERNAME'),
+                'password'  => env('DB_PASSWORD'),
+                'charset'   => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
+                'prefix'    => '',
+                'strict'    => true,
+                'engine'    => null,
+            ]);
+        }
     }
 }

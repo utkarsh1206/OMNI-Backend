@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\OccupationController;
 use App\Http\Controllers\Api\NamePrefixController;
 use App\Http\Controllers\Api\StateController;
 use App\Http\Controllers\Api\CityController;
-use App\Http\Controllers\Api\UsersController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserGroupController;
 use App\Http\Controllers\Api\TenantRoleController;
 use App\Http\Controllers\Api\SupportticketController;
@@ -71,9 +71,6 @@ Route::get('/user', function (Request $request) {
 
 #Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
 Route::apiResource('sla-settings', SlaSettingController::class);
-Route::apiResource('users', UsersController::class);
-Route::put('update-tenantpassword', [UsersController::class, 'updatepassword']);
-Route::get('my-profile', [UsersController::class, 'myprofile']);
 Route::post('transfer', [SupporttickettransferController::class, 'store']);
 Route::post('merge', [SupportticketmergeController::class, 'store']);
 
@@ -153,14 +150,15 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
     Route::apiResource('incident-types', IncidentTypeController::class);
     Route::apiResource('phones', PhoneController::class);
+    Route::apiResource('users', UserController::class);
+    Route::put('update-tenantpassword', [UserController::class, 'updatepassword']);
+    Route::get('my-profile', [UserController::class, 'myprofile']);
+    Route::get('/branding', [UserController::class, 'getBranding']);
 });
 
 
 
 Route::apiResource('live-agents', LiveAgentController::class);
-
-Route::get('/branding', [UsersController::class, 'getBranding']);
-
 Route::apiResource('/lists_fields', EcdialListFieldController::class);
 
 Route::apiResource('chatbots', ChatbotController::class);

@@ -119,7 +119,16 @@ return [
     'phone_updated'=>'Phone updated successfully',
     'phone_deleted'=>'Phone deleted successfully',
     'phone_not_found'=>'Phone not found',
-
+    'users_created'=>'User Created Successfully',
+    'users_updated'=>'User Updated Successfully',
+    'users_deleted'=>'User Deleted Successfully',
+    'users_deleted'=>'User Deleted Successfully',
+    'user_limit_reached'=>'User limit reached. You cannot add more agents.',
+    'old_password_incorrect'=>'Old Password Is Incorrect.',
+    'password_not_match'=>'New Password And Confirm Not Matched.',
+    'password_updated'=>'Password Updated Successfully.',
+    'user_not_found'=>'User Not Found.',
+    'tenant_not_found'=>'Tenant not found',
 
 ]
 ?>
