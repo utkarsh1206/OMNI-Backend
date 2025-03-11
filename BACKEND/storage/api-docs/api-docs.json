@@ -848,6 +848,341 @@
                 }
             }
         },
+        "/api/chatbots": {
+            "get": {
+                "tags": [
+                    "Chatbots"
+                ],
+                "summary": "Get a list of all chatbots",
+                "description": "Retrieve a paginated list of all chatbots.",
+                "operationId": "4f42a96dbbcfda2c6b56016695783957",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data has been fetched successfully!"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "question": {
+                                                        "type": "string",
+                                                        "example": "How can I track my order?"
+                                                    },
+                                                    "answer": {
+                                                        "type": "string",
+                                                        "example": "You can track your order using the tracking number."
+                                                    },
+                                                    "status": {
+                                                        "type": "boolean",
+                                                        "example": true
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-03-07T12:23:44.000000Z"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-03-07T12:23:44.000000Z"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token"
+                    },
+                    "404": {
+                        "description": "No chatbots found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Chatbots"
+                ],
+                "summary": "Create a new chatbot",
+                "operationId": "fb7ab6ccdac620834a30776229ff438a",
+                "parameters": [
+                    {
+                        "name": "question",
+                        "in": "query",
+                        "description": "The question to be asked by the chatbot",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "How can I return my product?"
+                        }
+                    },
+                    {
+                        "name": "answer",
+                        "in": "query",
+                        "description": "The answer the chatbot will provide",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "You can return your product within 30 days."
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Status of the chatbot (active/inactive)",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    },
+                    {
+                        "name": "Keywords",
+                        "in": "query",
+                        "description": "Keywords",
+                        "required": false,
+                        "schema": {
+                            "properties": {
+                                "Keywords[]": {
+                                    "description": "Keywords",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "format": "id"
+                                    },
+                                    "collectionFormat": "multi"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Chatbot created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Chatbot created successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid input data"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized, invalid token"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chatbots/{chatbot}": {
+            "put": {
+                "tags": [
+                    "Chatbots"
+                ],
+                "summary": "Update an existing chatbot",
+                "description": "Update the details of an existing chatbot.",
+                "operationId": "9c99490ed8dc51ceab6e353ca7c2f5c9",
+                "parameters": [
+                    {
+                        "name": "chatbot",
+                        "in": "path",
+                        "description": "ID of the chatbot",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Updated chatbot data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "question",
+                                    "answer",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "question": {
+                                        "type": "string",
+                                        "example": "Can I change my order?"
+                                    },
+                                    "answer": {
+                                        "type": "string",
+                                        "example": "Yes, you can change your order within 24 hours."
+                                    },
+                                    "status": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Chatbot updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Chatbot updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data"
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token"
+                    },
+                    "404": {
+                        "description": "Chatbot not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Chatbots"
+                ],
+                "summary": "Delete a chatbot",
+                "description": "Delete a specific chatbot by ID.",
+                "operationId": "75fb6c1346d8e0414012daec1e1b304f",
+                "parameters": [
+                    {
+                        "name": "chatbot",
+                        "in": "path",
+                        "description": "ID of the chatbot",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Chatbot deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Chatbot deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token"
+                    },
+                    "404": {
+                        "description": "Chatbot not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/cities": {
             "get": {
                 "tags": [
@@ -3326,88 +3661,102 @@
                 "tags": [
                     "Email Logs"
                 ],
-                "summary": "Get all email logs with filters",
-                "description": "Retrieve email logs with optional filters such as search term, status, user id, and date",
-                "operationId": "getEmailLogs",
+                "summary": "Get list of email logs",
+                "description": "Returns list of email logs with filters, pagination, and search",
+                "operationId": "getEmailLogsList",
                 "parameters": [
                     {
-                        "name": "search",
+                        "name": "page",
                         "in": "query",
-                        "description": "Search term for email template subject or user details",
+                        "description": "Page number",
                         "required": false,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "description": "Filter by email log status (e.g., sent, failed)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "description": "Filter by user ID",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "date",
-                        "in": "query",
-                        "description": "Filter by creation date (format: yyyy-mm-dd)",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
+                            "type": "integer",
+                            "default": 1
                         }
                     },
                     {
                         "name": "per_page",
                         "in": "query",
-                        "description": "Number of results per page",
+                        "description": "Number of items per page",
                         "required": false,
                         "schema": {
                             "type": "integer",
                             "default": 10
                         }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "description": "Page number for pagination. Use 'all' to fetch all records without pagination.",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "default": "1"
-                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of email logs",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "meta": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data has been fetched successfully !"
+                                        },
+                                        "data": {
                                             "properties": {
                                                 "current_page": {
-                                                    "type": "integer"
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "example": "example@example.com"
+                                                            },
+                                                            "subject": {
+                                                                "type": "string",
+                                                                "example": "Email subject"
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "example": "sent"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2025-02-28T07:40:40.000000Z"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2025-02-28T07:40:40.000000Z"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "first_page_url": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/email-logs?page=1"
                                                 },
                                                 "last_page": {
-                                                    "type": "integer"
+                                                    "type": "integer",
+                                                    "example": 2
                                                 },
-                                                "per_page": {
-                                                    "type": "integer"
+                                                "next_page_url": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/email-logs?page=2"
+                                                },
+                                                "prev_page_url": {
+                                                    "type": "string",
+                                                    "example": null,
+                                                    "nullable": true
                                                 },
                                                 "total": {
-                                                    "type": "integer"
+                                                    "type": "integer",
+                                                    "example": 11
                                                 }
                                             },
                                             "type": "object"
@@ -3418,10 +3767,18 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Invalid input parameters"
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/email-logs/{id}": {
@@ -3429,14 +3786,14 @@
                 "tags": [
                     "Email Logs"
                 ],
-                "summary": "Get a specific email log",
-                "description": "Retrieve the details of a specific email log by ID",
+                "summary": "Get specific email log by ID",
+                "description": "Returns a single email log by its ID",
                 "operationId": "getEmailLogById",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID of the email log",
+                        "description": "Email log ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -3445,12 +3802,106 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Details of the email log"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "example@example.com"
+                                                },
+                                                "subject": {
+                                                    "type": "string",
+                                                    "example": "Email subject"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "sent"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-02-28T07:40:40.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-02-28T07:40:40.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     },
                     "404": {
                         "description": "Email log not found"
+                    },
+                    "500": {
+                        "description": "Server error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/email-logs/export": {
+            "post": {
+                "tags": [
+                    "Email Logs"
+                ],
+                "summary": "Export email logs to CSV",
+                "description": "Exports the email logs to a CSV file",
+                "operationId": "exportEmailLogsToCsv",
+                "responses": {
+                    "200": {
+                        "description": "Successful export",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email logs exported successfully"
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "example": "http://localhost:8000/path/to/csv"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/incident-types": {
@@ -5603,19 +6054,369 @@
                 }
             }
         },
+        "/api/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get list of products",
+                "description": "Returns list of products",
+                "operationId": "getProductsList",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data has been fetched successfully !"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "p1"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "p3"
+                                                            },
+                                                            "status": {
+                                                                "type": "boolean",
+                                                                "example": true
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2025-02-28T07:40:40.000000Z"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2025-02-28T07:40:40.000000Z"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "first_page_url": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/products?page=1"
+                                                },
+                                                "from": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "last_page_url": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/products?page=2"
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": "string",
+                                                                "example": null,
+                                                                "nullable": true
+                                                            },
+                                                            "label": {
+                                                                "type": "string",
+                                                                "example": "&laquo; Previous"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean",
+                                                                "example": false
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "next_page_url": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/products?page=2"
+                                                },
+                                                "path": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/products"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "prev_page_url": {
+                                                    "type": "string",
+                                                    "example": null,
+                                                    "nullable": true
+                                                },
+                                                "to": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 11
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Store new product",
+                "description": "Creates a new product",
+                "operationId": "storeProduct",
+                "requestBody": {
+                    "description": "Product data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "description",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Product Name"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Product Description"
+                                    },
+                                    "status": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Product created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product created successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Product Name"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Product Description"
+                                                },
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-02-28T07:40:40.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-02-28T07:40:40.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/products/{product}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get product information",
+                "description": "Returns product data",
+                "operationId": "getProductById",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "Product id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Product Name"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Product Description"
+                                                },
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-02-28T07:40:40.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-02-28T07:40:40.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/products/{id}": {
             "put": {
                 "tags": [
                     "Products"
                 ],
-                "summary": "Update a product",
-                "description": "Update the details of a specific product.",
-                "operationId": "416e4959a3919547eb609d87e3db9135",
+                "summary": "Update existing product",
+                "description": "Updates a product and returns updated data",
+                "operationId": "updateProduct",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID of the product to update",
+                        "description": "Product id",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -5623,14 +6424,11 @@
                     }
                 ],
                 "requestBody": {
+                    "description": "Product data",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "name",
-                                    "status"
-                                ],
                                 "properties": {
                                     "name": {
                                         "type": "string",
@@ -5638,11 +6436,11 @@
                                     },
                                     "description": {
                                         "type": "string",
-                                        "example": "Updated product description"
+                                        "example": "Updated Product Description"
                                     },
                                     "status": {
                                         "type": "boolean",
-                                        "example": true
+                                        "example": false
                                     }
                                 },
                                 "type": "object"
@@ -5659,41 +6457,37 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Product updated successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Product not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Product not found."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation failed."
+                                            "example": "Product updated successfully"
                                         },
-                                        "errors": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Updated Product Name"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Updated Product Description"
+                                                },
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-02-28T07:40:40.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-03-01T10:22:15.000000Z"
+                                                }
+                                            },
                                             "type": "object"
                                         }
                                     },
@@ -5702,36 +6496,40 @@
                             }
                         }
                     },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    },
                     "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Error updating product"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "delete": {
                 "tags": [
                     "Products"
                 ],
-                "summary": "Delete a product",
-                "description": "Delete a product by its ID.",
-                "operationId": "b49ce9f3cb168b233245548fb4ef36d3",
+                "summary": "Delete existing product",
+                "description": "Deletes a product and returns success message",
+                "operationId": "deleteProduct",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID of the product to delete",
+                        "description": "Product id",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -5755,39 +6553,21 @@
                             }
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
                     "404": {
-                        "description": "Product not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Product not found."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Product not found"
                     },
                     "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Error deleting product"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/sms-provider-configurations": {
@@ -8338,6 +9118,10 @@
         {
             "name": "Categories",
             "description": "Categories"
+        },
+        {
+            "name": "Chatbots",
+            "description": "Chatbots"
         },
         {
             "name": "City",
