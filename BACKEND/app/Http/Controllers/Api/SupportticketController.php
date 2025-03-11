@@ -37,6 +37,15 @@ class SupportticketController extends Controller
         // Get the search term from the request
         $searchTerm = $request->input('search', '');
 
+        $ticket_id = $request->input('ticket_id', '');
+        $product_id = $request->input('product_id', '');
+        $subject = $request->input('subject', '');
+        $default_type = $request->input('default$default_type', '');
+        $default_status = $request->input('default_status', '');
+        $default_priority = $request->input('default_priority', '');
+        $assign_to_id = $request->input('assign_to_id', '');
+        $contact_id = $request->input('contact_id', '');
+
         $token = $request->bearerToken();
         if ($token != "") {
             $payload = JWTAuth::setToken($token)->getPayload();
@@ -63,6 +72,31 @@ class SupportticketController extends Controller
         $perPage = $request->input('per_page', 10);
         $supportticket = $query->paginate($perPage);
         $page = $request->input('page', 1);
+
+        if (!empty($ticket_id)) {
+            $query->where('ticket_id', $ticket_id);
+        }
+        if (!empty($product_id)) {
+            $query->where('product_id', $product_id);
+        }
+        if (!empty($subject)) {
+            $query->where('subject', $subject);
+        }
+        if (!empty($default_type)) {
+            $query->where('default_type', $default_type);
+        }
+        if (!empty($default_status)) {
+            $query->where('default_status', $default_status);
+        }
+        if (!empty($default_priority)) {
+            $query->where('default_priority', $default_priority);
+        }
+        if (!empty($assign_to_id)) {
+            $query->where('assign_to_id', $assign_to_id);
+        }
+        if (!empty($contact_id)) {
+            $query->where('contact_id', $contact_id);
+        }
 
         if ($page === 'all') {
             // If 'page' is 'all', retrieve all records without pagination
@@ -350,9 +384,9 @@ class SupportticketController extends Controller
 
 
         $supportticket->update($updateData);
-        $this->createTicket($supportticket, $type, $comment, $apiUser, $statusInfo);
+        $ticketResponse = $this->createTicket($supportticket, $type, $comment, $apiUser, $statusInfo);
         if ($request->default_status == "Resolved") {
-            $this->sendSms($apiUser, "Ticket Resolved", $apiUser->mobile, $supportticket);
+            // $this->sendSms($apiUser, "Ticket Resolved", $apiUser->mobile, $supportticket);
             $toEmails = $supportticket->assignedUser->email ?? '';
             setEmailConfig();
             $mailTemplate = MailTemplate::where("type", "agent_solve_the_ticket")->first();
@@ -366,7 +400,11 @@ class SupportticketController extends Controller
 
         return response()->json([
             'message' => 'Support Ticket Status Updated Successfully',
-            'data' => new TenantsResource($supportticket)
+            // 'data' => new TenantsResource($supportticket),
+            'data' => array_merge(
+                (new TenantsResource($supportticket))->toArray($request),
+                $ticketResponse
+            ),
         ]);
     }
     public function destroy(Supportticket $supportticket)
@@ -389,6 +427,19 @@ class SupportticketController extends Controller
             'icon' =>  $statusChange ? $this->getIconforNotification($statusChange) : $this->getIconforNotification($type),
             'color' =>  $statusChange ? $this->getColorforNotification($statusChange) : $this->getColorforNotification($type),
         ]);
+
+        return [
+            'type' => $statusChange,
+            'status' => $notification->status,
+            'comment' => $notification->comment,
+            'support_ticket_id' => $notification->support_ticket_id,
+            'created_by' => $notification->created_by,
+            'icon' => $notification->icon,
+            'color' => $notification->color,
+            'date' => $notification->date,
+            'created_at' => $notification->created_at,
+            'updated_at' => $notification->updated_at,
+        ];
     }
 
     public function getColorforNotification($type)

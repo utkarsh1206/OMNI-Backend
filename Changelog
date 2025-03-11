@@ -1,3 +1,25 @@
+2025-03-06 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 
+	* Version : Dev
+	* Laravel : added status update response in ticket update respone
+	added comment, created_by, icon, color, date
+
+2025-03-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID : Neox-4114
+	* Previous Commit ID : 3166be62
+	* Version : Dev
+	* Laravel : Added Search Filters in Support Ticket
+
+2025-03-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : e9f9f53c
+	* Version : Dev
+	* Laravel : Solved Issue of Dashboard Loading.
+
 2025-03-05 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :
