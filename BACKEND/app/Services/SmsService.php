@@ -8,8 +8,9 @@ use App\Models\SmsProviderConfiguration;
 use GuzzleHttp\Client as GuzzleClient;
 use Exception;
 use App\Models\SmsProviderLog;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SmsService
+class SmsService implements ShouldQueue 
 {
     /**
      * Send SMS based on the selected provider for the given user.

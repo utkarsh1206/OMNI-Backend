@@ -94,7 +94,6 @@ if (! function_exists('authenticateUser')) {
             return response()->json(['error' => trans('message.invalid_credentials')], 401);
         }
         
-       
         // Attempt to authenticate the user
         if (!$token = auth($authGuard)->attempt($credentials)) {
             return response()->json(['error' => trans('message.invalid_credentials')], 401);
