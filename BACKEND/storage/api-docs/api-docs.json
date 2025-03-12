@@ -5,6 +5,864 @@
         "version": "0.1"
     },
     "paths": {
+        "/accounts": {
+            "get": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "List Accounts",
+                "description": "Fetch a list of accounts with optional filters like search, product_id, campaign_id, and owner_id.",
+                "operationId": "96daed062b209799ebd8c7e84dc97aed",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "The number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The page number, use 'all' to fetch all records",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "1",
+                            "enum": [
+                                "all",
+                                "1",
+                                "2",
+                                "3"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search term to filter accounts by name, mobile, or owner username",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "product_id",
+                        "in": "query",
+                        "description": "Filter by product ID",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "campaign_id",
+                        "in": "query",
+                        "description": "Filter by campaign ID",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "owner_id",
+                        "in": "query",
+                        "description": "Filter by owner ID",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched accounts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "mobile": {
+                                                        "type": "string"
+                                                    },
+                                                    "product_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "campaign_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "owner_id": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Create a new account",
+                "description": "Creates a new account after validating that the account with the same product_id and name does not exist.",
+                "operationId": "b3234b57f04a5c23b5d70ac83678df8c",
+                "requestBody": {
+                    "description": "Account data to be created",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_id",
+                                    "name",
+                                    "owner_id"
+                                ],
+                                "properties": {
+                                    "product_id": {
+                                        "description": "The product ID associated with the account",
+                                        "type": "string"
+                                    },
+                                    "campaign_id": {
+                                        "description": "The campaign ID associated with the account",
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "description": "The name of the account",
+                                        "type": "string"
+                                    },
+                                    "mobile": {
+                                        "description": "The mobile number of the account",
+                                        "type": "string"
+                                    },
+                                    "website": {
+                                        "description": "The website URL of the account",
+                                        "type": "string"
+                                    },
+                                    "industry_id": {
+                                        "description": "Industry ID of the account",
+                                        "type": "string"
+                                    },
+                                    "business_type_id": {
+                                        "description": "Business type ID of the account",
+                                        "type": "string"
+                                    },
+                                    "tax_number": {
+                                        "description": "The tax number associated with the account",
+                                        "type": "string"
+                                    },
+                                    "country_id": {
+                                        "description": "Country ID of the account",
+                                        "type": "string"
+                                    },
+                                    "state_id": {
+                                        "description": "State ID of the account",
+                                        "type": "string"
+                                    },
+                                    "city_id": {
+                                        "description": "City ID of the account",
+                                        "type": "string"
+                                    },
+                                    "pincode": {
+                                        "description": "Pincode of the account",
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "description": "The address of the account",
+                                        "type": "string"
+                                    },
+                                    "owner_id": {
+                                        "description": "Owner ID of the account",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "Description of the account",
+                                        "type": "string"
+                                    },
+                                    "company_name": {
+                                        "description": "The company name associated with the account",
+                                        "type": "string"
+                                    },
+                                    "contact_person_first_name": {
+                                        "description": "First name of the contact person",
+                                        "type": "string"
+                                    },
+                                    "contact_person_last_name": {
+                                        "description": "Last name of the contact person",
+                                        "type": "string"
+                                    },
+                                    "contact_no": {
+                                        "description": "Contact number of the contact person",
+                                        "type": "string"
+                                    },
+                                    "landline_no": {
+                                        "description": "Landline number of the account",
+                                        "type": "string"
+                                    },
+                                    "company_email": {
+                                        "description": "The email address of the company",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Account successfully created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Account successfully created"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "product_id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "mobile": {
+                                                    "type": "string"
+                                                },
+                                                "website": {
+                                                    "type": "string"
+                                                },
+                                                "industry_id": {
+                                                    "type": "string"
+                                                },
+                                                "business_type_id": {
+                                                    "type": "string"
+                                                },
+                                                "tax_number": {
+                                                    "type": "string"
+                                                },
+                                                "country_id": {
+                                                    "type": "string"
+                                                },
+                                                "state_id": {
+                                                    "type": "string"
+                                                },
+                                                "city_id": {
+                                                    "type": "string"
+                                                },
+                                                "pincode": {
+                                                    "type": "string"
+                                                },
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "owner_id": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "company_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_person_first_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_person_last_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_no": {
+                                                    "type": "string"
+                                                },
+                                                "landline_no": {
+                                                    "type": "string"
+                                                },
+                                                "company_email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity - Account with the same product_id and name already exists",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The account with the same product_id and name already exists."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/accounts/{account}": {
+            "get": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Get Account by ID",
+                "description": "Fetches the details of a specific account by its ID.",
+                "operationId": "fa80b13ea2ab503138c7faf25fcf984f",
+                "parameters": [
+                    {
+                        "name": "account",
+                        "in": "path",
+                        "description": "The ID of the account to fetch",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched the account details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "product_id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "mobile": {
+                                                    "type": "string"
+                                                },
+                                                "website": {
+                                                    "type": "string"
+                                                },
+                                                "industry_id": {
+                                                    "type": "string"
+                                                },
+                                                "business_type_id": {
+                                                    "type": "string"
+                                                },
+                                                "tax_number": {
+                                                    "type": "string"
+                                                },
+                                                "country_id": {
+                                                    "type": "string"
+                                                },
+                                                "state_id": {
+                                                    "type": "string"
+                                                },
+                                                "city_id": {
+                                                    "type": "string"
+                                                },
+                                                "pincode": {
+                                                    "type": "string"
+                                                },
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "owner_id": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "company_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_person_first_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_person_last_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_no": {
+                                                    "type": "string"
+                                                },
+                                                "landline_no": {
+                                                    "type": "string"
+                                                },
+                                                "company_email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Account not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/accounts/{id}": {
+            "put": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Update an existing account",
+                "description": "Updates an account's details by its ID. The request will check if another account with the same product_id and name exists, excluding the current account.",
+                "operationId": "f0a94d0d1e9d6f4d58fcd33b60baf45a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the account to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Account data to update",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_id",
+                                    "name",
+                                    "owner_id"
+                                ],
+                                "properties": {
+                                    "product_id": {
+                                        "description": "The product ID associated with the account",
+                                        "type": "string"
+                                    },
+                                    "campaign_id": {
+                                        "description": "The campaign ID associated with the account",
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "description": "The name of the account",
+                                        "type": "string"
+                                    },
+                                    "mobile": {
+                                        "description": "The mobile number of the account",
+                                        "type": "string"
+                                    },
+                                    "website": {
+                                        "description": "The website URL of the account",
+                                        "type": "string"
+                                    },
+                                    "industry_id": {
+                                        "description": "Industry ID of the account",
+                                        "type": "string"
+                                    },
+                                    "business_type_id": {
+                                        "description": "Business type ID of the account",
+                                        "type": "string"
+                                    },
+                                    "tax_number": {
+                                        "description": "The tax number associated with the account",
+                                        "type": "string"
+                                    },
+                                    "country_id": {
+                                        "description": "Country ID of the account",
+                                        "type": "string"
+                                    },
+                                    "state_id": {
+                                        "description": "State ID of the account",
+                                        "type": "string"
+                                    },
+                                    "city_id": {
+                                        "description": "City ID of the account",
+                                        "type": "string"
+                                    },
+                                    "pincode": {
+                                        "description": "Pincode of the account",
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "description": "The address of the account",
+                                        "type": "string"
+                                    },
+                                    "owner_id": {
+                                        "description": "Owner ID of the account",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "Description of the account",
+                                        "type": "string"
+                                    },
+                                    "company_name": {
+                                        "description": "The company name associated with the account",
+                                        "type": "string"
+                                    },
+                                    "contact_person_first_name": {
+                                        "description": "First name of the contact person",
+                                        "type": "string"
+                                    },
+                                    "contact_person_last_name": {
+                                        "description": "Last name of the contact person",
+                                        "type": "string"
+                                    },
+                                    "contact_no": {
+                                        "description": "Contact number of the contact person",
+                                        "type": "string"
+                                    },
+                                    "landline_no": {
+                                        "description": "Landline number of the account",
+                                        "type": "string"
+                                    },
+                                    "company_email": {
+                                        "description": "The email address of the company",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated the account",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Account successfully updated"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "product_id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "mobile": {
+                                                    "type": "string"
+                                                },
+                                                "website": {
+                                                    "type": "string"
+                                                },
+                                                "industry_id": {
+                                                    "type": "string"
+                                                },
+                                                "business_type_id": {
+                                                    "type": "string"
+                                                },
+                                                "tax_number": {
+                                                    "type": "string"
+                                                },
+                                                "country_id": {
+                                                    "type": "string"
+                                                },
+                                                "state_id": {
+                                                    "type": "string"
+                                                },
+                                                "city_id": {
+                                                    "type": "string"
+                                                },
+                                                "pincode": {
+                                                    "type": "string"
+                                                },
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "owner_id": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "company_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_person_first_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_person_last_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_no": {
+                                                    "type": "string"
+                                                },
+                                                "landline_no": {
+                                                    "type": "string"
+                                                },
+                                                "company_email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity - Account with the same product_id and name already exists",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The account with the same product_id and name already exists."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Account not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Delete an Account by ID",
+                "description": "Deletes the specified account by its ID. Returns an error if the account is not found.",
+                "operationId": "ef1e151477fc1ebb2938b30e27606342",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the account to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted the account",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Account successfully deleted"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "product_id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "mobile": {
+                                                    "type": "string"
+                                                },
+                                                "website": {
+                                                    "type": "string"
+                                                },
+                                                "industry_id": {
+                                                    "type": "string"
+                                                },
+                                                "business_type_id": {
+                                                    "type": "string"
+                                                },
+                                                "tax_number": {
+                                                    "type": "string"
+                                                },
+                                                "country_id": {
+                                                    "type": "string"
+                                                },
+                                                "state_id": {
+                                                    "type": "string"
+                                                },
+                                                "city_id": {
+                                                    "type": "string"
+                                                },
+                                                "pincode": {
+                                                    "type": "string"
+                                                },
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "owner_id": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "company_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_person_first_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_person_last_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact_no": {
+                                                    "type": "string"
+                                                },
+                                                "landline_no": {
+                                                    "type": "string"
+                                                },
+                                                "company_email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Account not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/agent-activity": {
             "get": {
                 "tags": [
@@ -9102,6 +9960,10 @@
         {
             "name": "SupportTicketNotifications",
             "description": "Operations related to Support Ticket Notifications"
+        },
+        {
+            "name": "Accounts",
+            "description": "Accounts"
         },
         {
             "name": "Agent Activity",
