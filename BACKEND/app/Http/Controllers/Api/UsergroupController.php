@@ -10,7 +10,7 @@ use App\Http\Resources\TenantsResource;
 use Illuminate\Support\Facades\Validator;
 use App\Repositories\UserGroupRepository;
 
-class UsergroupController extends Controller
+class UserGroupController extends Controller
 {
 
     private $userGroupRepository;
