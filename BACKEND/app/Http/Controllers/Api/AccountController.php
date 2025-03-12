@@ -6,9 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountRequest;
 use Illuminate\Http\Request;
 use App\Models\Account;
-use App\Models\User;
-use Illuminate\Support\Facades\Validator;
-use App\Http\Resources\AccountResource;
 use App\Repositories\AccountRepository;
 
 class AccountController extends Controller

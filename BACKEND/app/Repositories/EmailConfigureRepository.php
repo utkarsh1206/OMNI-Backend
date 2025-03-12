@@ -61,26 +61,7 @@ class EmailConfigureRepository
     {
         
         try {
-            $emailConfig = EmailConfigure::create([
-                'type' => $request->type,
-                'product_id' => $request->product_id,
-                'campaign_id' => $request->campaign_id,
-                'inbound_id' => $request->inbound_id,
-                'smtp_host' => $request->smtp_host,
-                'smtp_port' => $request->smtp_port,
-                'smtp_user' => $request->smtp_user,
-                'smtp_password' => $request->smtp_password,
-                'default_type' => $request->default_type,
-                'default_status' => $request->default_status,
-                'imap_host' => $request->imap_host,
-                'imap_port' => $request->imap_port,
-                'imap_user' => $request->imap_user,
-                'imap_password' => $request->imap_password,
-                'sender_name' => $request->sender_name,
-                'sender_email' => $request->sender_email,
-                'assign_method' => $request->assign_method,
-                'signature' => $request->signature,
-            ]);
+            $emailConfig = EmailConfigure::create($request->validated());
             return $this->apiResponse->getResponseStructure(trans('message.success'), $emailConfig, trans('message.email_configure_created'), ResponseHTTP::HTTP_CREATED);
         } catch (QueryException $e) {
             return $this->apiResponse->handleAndResponseException($e);
@@ -91,26 +72,7 @@ class EmailConfigureRepository
     public function update(Request $request, $email_configure)
     {
         try {
-            $email_configure->update([
-                'type' => $request->type,
-                'product_id' => $request->product_id,
-                'campaign_id' => $request->campaign_id,
-                'inbound_id' => $request->inbound_id,
-                'smtp_host' => $request->smtp_host,
-                'smtp_port' => $request->smtp_port,
-                'smtp_user' => $request->smtp_user,
-                'smtp_password' => $request->smtp_password,
-                'default_type' => $request->default_type,
-                'default_status' => $request->default_status,
-                'imap_host' => $request->imap_host,
-                'imap_port' => $request->imap_port,
-                'imap_user' => $request->imap_user,
-                'imap_password' => $request->imap_password,
-                'sender_name' => $request->sender_name,
-                'sender_email' => $request->sender_email,
-                'assign_method' => $request->assign_method,
-                'signature' => $request->signature,
-            ]);
+            $email_configure->update($request->validated());
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.email_configure_updated'));
         } catch (QueryException $e) {
             return $this->apiResponse->handleAndResponseException($e);

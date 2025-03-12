@@ -33,36 +33,40 @@ class MailDetailRepository
 
     public function store(Request $request)
     {
-        $attachment_urls = [];
-        $mail_attachment_urls = [];
-        if ($request->hasFile('attachment')) {
-            $files = $request->file('attachment');
-            
-            if (is_array($files)) {
-                foreach ($files as $attachment) {
-                    $filename = now()->format('Y_m_d_H_i_s') . '_' . uniqid() . '.' . $attachment->getClientOriginalExtension();
-                    $path = $attachment->storeAs('support_ticket', $filename, 'public');
-                    $attachment_urls[] = url('storage/' . $path);
-                    $mail_attachment_urls[] = [
-                        'path' => storage_path('app/public/' . $path),
-                        'name' => $filename,
-                        'mime' => $attachment->getMimeType()
-                    ];
-                }
-            } else {
-                $filename = now()->format('Y_m_d_H_i_s') . '_' . uniqid() . '.' . $files->getClientOriginalExtension();
-                $path = $files->storeAs('support_ticket', $filename, 'public');
-                $attachment_urls[] = url('storage/' . $path);
-                $mail_attachment_urls[] = [
+        // Helper function to handle file upload and return attachment URLs
+        $handleAttachments = function ($files) {
+            $attachmentUrls = [];
+            $mailAttachmentUrls = [];
+
+            // Handle multiple files
+            foreach ($files as $attachment) {
+                $filename = now()->format('Y_m_d_H_i_s') . '_' . uniqid() . '.' . $attachment->getClientOriginalExtension();
+                $path = $attachment->storeAs('support_ticket', $filename, 'public');
+                $attachmentUrls[] = url('storage/' . $path);
+                $mailAttachmentUrls[] = [
                     'path' => storage_path('app/public/' . $path),
                     'name' => $filename,
-                    'mime' => $files->getMimeType()
+                    'mime' => $attachment->getMimeType(),
                 ];
             }
+
+            return [$attachmentUrls, $mailAttachmentUrls];
+        };
+
+        // If 'attachment' exists in the request, handle it
+        $attachmentUrls = [];
+        $mailAttachmentUrls = [];
+        if ($request->hasFile('attachment')) {
+            $files = $request->file('attachment');
+            // Ensure files is an array, whether single or multiple files
+            $files = is_array($files) ? $files : [$files];
+            [$attachmentUrls, $mailAttachmentUrls] = $handleAttachments($files);
         }
+
+        // Store the mail detail
         $mailDetail = MailDetail::create([
-            'supportticket_id'=>$request->supportticket_id,
-            'date' =>gmdate('Y-m-d H:i:s'),
+            'supportticket_id' => $request->supportticket_id,
+            'date' => gmdate('Y-m-d H:i:s'),
             'user_id' => $request->user_id,
             'type' => $request->default_type,
             'priority' => $request->default_priority,
@@ -71,44 +75,50 @@ class MailDetailRepository
             'cc' => $request->cc,
             'bcc' => $request->bcc,
             'body' => $request->body,
-            'attachment' => json_encode($attachment_urls),
+            'attachment' => json_encode($attachmentUrls),
         ]);
-        $notification = SupportTicketNotification::create([
-            'type' => isset($request->default_status) ? $request->default_status : "",
+
+        // Store the notification for the support ticket
+        SupportTicketNotification::create([
+            'type' => $request->default_status ?? "",
             'comment' => "",
             'support_ticket_id' => $request->supportticket_id,
-            'date' =>gmdate('Y-m-d H:i:s'),
+            'date' => gmdate('Y-m-d H:i:s'),
         ]);
+
+        // Get email configuration settings
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
-        $smtpHost = $emailConfig->smtp_host;
-        $smtpPort = $emailConfig->smtp_port;
-        $smtpUser = $emailConfig->smtp_user;
-        $smtpPassword = $emailConfig->smtp_password;
-        $sender_name = $emailConfig->sender_name;
-        $sender_email = $emailConfig->sender_email;
-  
+
+        // Update mail configuration dynamically based on the stored settings
         config([
-            'mail.mailers.smtp.host' => $smtpHost,
-            'mail.mailers.smtp.port' => $smtpPort,
-            'mail.mailers.smtp.username' => $smtpUser,
-            'mail.mailers.smtp.password' =>$smtpPassword,
-            'mail.mailers.smtp.encryption' => ($smtpPort==587)?'TLS':'SSL',
-            'mail.from.address' =>  $sender_email,
-            'mail.from.name' => $sender_name,
+            'mail.mailers.smtp.host' => $emailConfig->smtp_host,
+            'mail.mailers.smtp.port' => $emailConfig->smtp_port,
+            'mail.mailers.smtp.username' => $emailConfig->smtp_user,
+            'mail.mailers.smtp.password' => $emailConfig->smtp_password,
+            'mail.mailers.smtp.encryption' => $emailConfig->smtp_port == 587 ? 'TLS' : 'SSL',
+            'mail.from.address' => $emailConfig->sender_email,
+            'mail.from.name' => $emailConfig->sender_name,
         ]);
+
         // Attempt to send the email
         try {
-            Mail::to($request->to)->send(new SendEmail("Test support mail sent", $request->body, $mail_attachment_urls));
+            Mail::to($request->to)->send(new SendEmail("Test support mail sent", $request->body, $mailAttachmentUrls));
         } catch (Exception $e) {
-            // Log the error message if email fails to send
+            // Log the error if the email fails
             Log::error('Failed to send email', [
                 'error' => $e->getMessage(),
-                'recipient' =>$request->to_emails,
+                'recipient' => $request->to,
                 'subject' => $request->subject,
             ]);
             return $this->apiResponse->handleAndResponseException($e);
         }
 
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $mailDetail, trans('message.email_sent_success'), ResponseHTTP::HTTP_CREATED);
+        // Return a successful response
+        return $this->apiResponse->getResponseStructure(
+            trans('message.success'),
+            $mailDetail,
+            trans('message.email_sent_success'),
+            ResponseHTTP::HTTP_CREATED
+        );
     }
 }
