@@ -59,5 +59,12 @@ return [
     'no_changes_made' => 'No changes made.',
     'lead_delete_success' => 'Lead deleted successfully.',
     'lead_delete_failed' => 'Lead deletion failed.',
+    //Neox Configuration
+    'configuration_create_success' => 'Configuration created successfully.',
+    'neox_config_update_success' => 'Neox configuration updated successfully.',
+    'configuration_delete_success' => 'Configuration deleted successfully.',
+    'neox_token_exists' => 'Neox token already exists.',
+    'neox_local_ip_exists' => 'Neox local IP already exists.',
+    'local_ip_not_found' => 'Local IP not configured.',
 ]
 ?>

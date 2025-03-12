@@ -1,3 +1,80 @@
+2025-03-12 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : d178667
+	* Version : Dev
+	* Laravel : 
+	NEOX Configuration : 
+	Create CRUD operations for NeoxConfiguration resources. This repository includes 
+	methods to list, create, update, and delete configurations, as well as handle search 
+	functionality for configurations based on neox_token and neox_local_ip. The controller 
+	handles the interaction between the HTTP request and the model.
+	Key Features:
+		Listing Configurations (list method):
+		- Fetches a list of configurations with support for pagination and search functionality.
+		- Allows filtering by neox_token and neox_local_ip.
+		- If the page is set to all, it fetches all configurations without pagination.
+
+		Creating a Configuration (create method):
+		- Validates that the neox_token and neox_local_ip are unique before creating a new configuration.
+		- If either neox_token or neox_local_ip already exists, an error message is returned.
+
+		Updating a Configuration (update method):
+		- Updates an existing configuration based on its id.
+		- Ensures the new neox_token and neox_local_ip are unique, taking into account 
+		the current record’s id to prevent conflicts.
+		Deleting a Configuration (delete method):
+		- Deletes a configuration by its id after verifying its existence.
+
+	Error Handling:
+	- Exceptions are handled by the handleAndResponseException method from the 
+	CustomApiResponse service, ensuring consistent error responses.
+	- In the case of a failed operation, appropriate messages are returned based on 
+	the operation type (create, update, delete).
+
+	Response Structure:
+	All methods utilize the CustomApiResponse to format the API responses consistently, 
+	ensuring clear success or error messages, along with appropriate HTTP status codes.
+
+
+	Campaign API
+	The CampaignApi is responsible for interacting with an external API to fetch a list of 
+	campaigns. The API URL is dynamically constructed using the neox_local_ip retrieved 
+	from the NeoxConfiguration model, allowing for communication with a local API endpoint. 
+	This repository handles both SSL and non-SSL API calls, retrying the request without 
+	SSL verification if the first attempt fails.
+	Key Features:
+
+	Fetching Campaign List:
+		- Retrieves the neox_local_ip from the first NeoxConfiguration record to 
+		construct the API URL.
+		- Makes a POST request to the campaign list API endpoint located at 
+		https://<neox_local_ip>/api/admin/actions/v2/campaign_list.php.
+		- If the first attempt (with SSL verification) fails, the request is 
+		retried without SSL verification.
+
+	Making API Requests:
+	- Handles the actual HTTP POST request to the API using Laravel’s HTTP client.
+	- Supports both SSL and non-SSL requests.
+	- Returns the raw HTTP response to be processed later.
+
+	Response Formatting:
+	- Checks if the API response is successful and formats it accordingly using 
+	a consistent response structure.
+	- Returns either the campaign data or an error message if the request fails or the data is missing.
+
+	Error Handling:
+	- Exception Handling is implemented using try-catch blocks. If any exception occurs 
+	during the API request or while fetching the local IP, it is caught, and an 
+	appropriate error response is returned.
+	- A custom response structure is returned using the CustomApiResponse service 
+	to ensure uniformity in error and success messages.
+
+	Response Structure:
+	- Success responses return the campaign data in a structured format.
+	- Failure responses return a generic error message along with null data to 
+	indicate that the fetch operation failed.
+
 2025-03-06 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

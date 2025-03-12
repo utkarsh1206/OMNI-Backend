@@ -63,6 +63,8 @@ use App\Http\Controllers\Api\EcdialListFieldController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\ImportLeadController;
 use App\Http\Controllers\Api\CustomLeadController;
+use App\Http\Controllers\Api\CampaignApiController;
+use App\Http\Controllers\Api\NeoxConfigurationController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -197,3 +199,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'update']);
     Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
 });
+
+Route::post('/camp_list', [CampaignApiController::class, 'campaignList']);
+
+Route::apiResource('neox-configurations', NeoxConfigurationController::class);
