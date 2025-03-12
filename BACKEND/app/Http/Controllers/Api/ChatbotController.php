@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Repositories\ChatbotRepository;
 use App\Http\Requests\ChatbotRequest;
 use App\Http\Response\CustomApiResponse;
+use Exception;
 
 class ChatbotController extends Controller
 {
