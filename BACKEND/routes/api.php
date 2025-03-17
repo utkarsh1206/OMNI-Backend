@@ -80,9 +80,6 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
 });
 
-Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
-Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
-
 Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
 Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);
 Route::get('/ticket/summary/category', [TicketReportController::class, 'categorySummary']);
@@ -103,6 +100,8 @@ Route::post('transfer', [SupporttickettransferController::class, 'store']);
 Route::post('merge', [SupportticketmergeController::class, 'store']);
 
 Route::middleware(['jwt.auth'])->group(function () {
+    Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
+    Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
     Route::apiResource('audit-logs', AuditController::class);
     Route::post('save-user-provider', [SmsProviderController::class, 'saveUserProvider']);
     Route::post('logout', [LoginController::class, 'logout']);
@@ -157,7 +156,6 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('update-tenantpassword', [UserController::class, 'updatepassword']);
     Route::get('my-profile', [UserController::class, 'myprofile']);
     Route::get('/branding', [UserController::class, 'getBranding']);
-
     Route::apiResource('live-agents', LiveAgentController::class);
     Route::apiResource('/lists_fields', EcdialListFieldController::class);
     Route::apiResource('chatbots', ChatbotController::class);

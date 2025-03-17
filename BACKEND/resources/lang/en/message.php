@@ -136,6 +136,7 @@ return [
     'license_key_not_found'=>'License key not found',
     'invalid_license_format'=>'Invalid license format',
     'decryption_failed'=>'Decryption failed',
+    'invalid_license_data'=>'Invalid license data',
 ]   
 ?>
 
