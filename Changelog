@@ -1,9 +1,9 @@
-2025-03-12 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+2025-03-17 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : Neox-4114
-	* Previous Commit ID : c511adc8
+	* Previous Commit ID : d3db7c2b
 	* Version : Dev
-	* Laravel : In the contacts form, city_id was accepting "state_id", resolved that issue so that city id is proper.
+	* Laravel : Removed the character limit from Neox_token
 
 2025-03-12 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS

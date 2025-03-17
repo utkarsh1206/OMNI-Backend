@@ -22,7 +22,7 @@ class NeoxConfigurationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'neox_token' => 'required|string|max:255',
+            'neox_token' => 'required|string',
             'neox_local_ip' => 'required|ip',
         ];
     }
