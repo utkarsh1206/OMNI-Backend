@@ -129,7 +129,13 @@ return [
     'password_updated'=>'Password Updated Successfully.',
     'user_not_found'=>'User Not Found.',
     'tenant_not_found'=>'Tenant not found',
-
-]
+    // License
+    'license_updated'=>'License updated successfully',
+    'license_key_encoded'=>'License key encoded successfully',
+    'encryption_failed'=>'Encryption failed',
+    'license_key_not_found'=>'License key not found',
+    'invalid_license_format'=>'Invalid license format',
+    'decryption_failed'=>'Decryption failed',
+]   
 ?>
 

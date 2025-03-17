@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class LicenseController extends Controller
 {
@@ -42,9 +43,9 @@ class LicenseController extends Controller
             $separator = '##$@@$##';
             $licenseKey = $EvalidityDate . $separator . $EnumberOfAgents . $separator . $EnumberOfLiveAgents . $separator . $EnumberOfAclUsers;
 
-            return response()->json(['message' => 'License key encoded successfully', 'license_key' => $licenseKey]);
+            return response()->json(['message' => trans('message.license_key_encoded'), 'license_key' => $licenseKey]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Encryption failed: ' . $e->getMessage()], 500);
+            return response()->json(['error' => trans('message.encryption_failed') . $e->getMessage()], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -56,8 +57,7 @@ class LicenseController extends Controller
         if ($token != "") {
             $payload = JWTAuth::setToken($token)->getPayload();
 
-            if ($payload['role_id'] > 0)
-            {
+            if ($payload['role_id'] > 0) {
                 $isTenant = true;
             }
         }
@@ -67,11 +67,11 @@ class LicenseController extends Controller
             $adminFlag = 1;
         } else {
             $licenseKey = DB::table('licenses')->value('license_key');
-            $adminFlag=0;
+            $adminFlag = 0;
         }
 
         if (!$licenseKey) {
-            return response()->json(['error' => 'License key not found', 'adminFlag'=> $adminFlag], 404);
+            return response()->json(['error' => trans('message.license_key_not_found'), 'adminFlag' => $adminFlag], ResponseHTTP::HTTP_NOT_FOUND);
         }
         // if (!$licenseKey) {
         //     return response()->json(['error' => 'License key not found'], 404);
@@ -83,7 +83,7 @@ class LicenseController extends Controller
         $param = explode($seprator, $licenseKey);
 
         if (count($param) < 4) {
-            return response()->json(['error' => 'Invalid license format'], 400);
+            return response()->json(['error' => trans('message.invalid_license_format')], ResponseHTTP::HTTP_BAD_REQUEST);
         }
 
         if (!$isTenant) {
@@ -113,8 +113,7 @@ class LicenseController extends Controller
                 $decodedData['number_of_enterprise'] = $this->aesService->decryptData($EnumberOfEnterprise, $inputKey);
             }
 
-            if ($isTenant)
-            {
+            if ($isTenant) {
                 $decodedData['validity_date'] =  Carbon::createFromTimestamp($decodedData['validity_date'])->format('Y-m-d');
             }
 
@@ -124,7 +123,7 @@ class LicenseController extends Controller
 
             return response()->json($decodedData);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Decryption failed: ' . $e->getMessage()], 500);
+            return response()->json(['error' => trans('message.decryption_failed') . $e->getMessage()], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

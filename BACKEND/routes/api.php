@@ -67,18 +67,18 @@ Route::get('/user', function (Request $request) {
 //Route::get('login', [AuthController::class, 'login'])->name('login');
 
 #Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
-Route::middleware('auth:api')->post('license_update', [LicenseUpdateController::class, 'updateLicense']);
+#Route::middleware('auth:api')->post('license_update', [LicenseUpdateController::class, 'updateLicense']);
 
-Route::apiResource('sla-settings', SlaSettingController::class);
-Route::post('transfer', [SupporttickettransferController::class, 'store']);
-Route::post('merge', [SupportticketmergeController::class, 'store']);
-
+#This APIs are not used into current. In future it will be used.
 Route::get('callCDR', [CallCDRListController::class, 'getCallCDRList']);
 Route::get('custome-field/header', [CustomFieldController::class, 'custumFieldHeader']);
 Route::get('custome-field/value', [CustomFieldController::class, 'custumFieldvalue']);
 
-Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
-Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
+Route::middleware(['auth:api'])->group(function () {
+    Route::post('license_update', [LicenseUpdateController::class, 'updateLicense']);
+    Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
+    Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
+});
 
 Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
 Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
@@ -89,16 +89,20 @@ Route::get('/ticket/summary/category', [TicketReportController::class, 'category
 Route::get('/ticket/summary/priority', [TicketReportController::class, 'prioritySummary']);
 Route::get('/ticket/summary/status', [TicketReportController::class, 'statusSummary']);
 Route::get('/ticket/summary/weekday', [TicketReportController::class, 'weekdaySummary']);
+
+Route::apiResource('sla-settings', SlaSettingController::class);
 Route::get('slareport', [SLAReportController::class, 'generateReport']);
 Route::get('slareport/csv', [SLAReportController::class, 'exportCsv']);
 Route::get('sla-priority', [SLAReportController::class, 'prioritySLA']);
 Route::get('sla-category', [SLAReportController::class, 'categorySLA']);
 Route::get('sla-incident', [SLAReportController::class, 'incidentSLA']);
 
+Route::apiResource('supportticket', SupportticketController::class);
+Route::post('updateticketstatus/{supportticket}', [SupportticketController::class, 'statusupdate']);
+Route::post('transfer', [SupporttickettransferController::class, 'store']);
+Route::post('merge', [SupportticketmergeController::class, 'store']);
 
 Route::middleware(['jwt.auth'])->group(function () {
-    Route::apiResource('supportticket', SupportticketController::class);
-    Route::post('updateticketstatus/{supportticket}', [SupportticketController::class, 'statusupdate']);
     Route::apiResource('audit-logs', AuditController::class);
     Route::post('save-user-provider', [SmsProviderController::class, 'saveUserProvider']);
     Route::post('logout', [LoginController::class, 'logout']);
