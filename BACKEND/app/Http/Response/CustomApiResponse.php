@@ -29,6 +29,7 @@ class CustomApiResponse
 
         return response()->json($data, $statusCode);
     }
+    
     /**
      * Generate API Response
      *

@@ -39,10 +39,10 @@ class ProductRepository
 
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
-    
+
         $perPage = (int)$perPage;
 
-        
+
         $query = Product::query();
 
         if (!empty($inputs['searchTerm'])) {
@@ -72,7 +72,7 @@ class ProductRepository
             $products = $query->paginate($perPage);
         }
 
-        
+
         return $this->apiResponse->getResponseStructure(
             trans('message.success'),
             $products,

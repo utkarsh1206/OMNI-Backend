@@ -59,7 +59,7 @@ class UpdateCustomFieldRepository
             try {
                 $insertedId = DB::table("custom_cdr_{$list_id}")
                     ->insertGetId($custom_query);
-                
+
                 return response()->json([
                     'message' =>  trans("message.record_created"),
                     'inserted_id' => $insertedId

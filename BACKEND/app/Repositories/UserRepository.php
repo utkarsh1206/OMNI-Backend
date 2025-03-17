@@ -240,24 +240,22 @@ class UserRepository
         $token = $request->bearerToken();
 
         if (!$token) {
-            return response()->json(['error' => trans("message.invalid_credentials")], ResponseHTTP::HTTP_UNAUTHORIZED); 
-            }
+            return response()->json(['error' => trans("message.invalid_credentials")], ResponseHTTP::HTTP_UNAUTHORIZED);
+        }
 
-            try {
-                $payload = JWTAuth::setToken($token)->getPayload();
-                $domain = $payload['domain'];
-                $tenant =Tenant::select('title', 'footer_content', 'footer_url', 'tenant_logo')
-                    ->where('domain_name', $domain)
-                    ->first();  
-    
-                if (!$tenant) {
-                    return response()->json(['error' => trans("message.tenant_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
-                }
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.fetch_data'));
-    
-            } catch (\Exception $e) {
-                return $this->apiResponse->handleAndResponseException($e);
-            }
+        try {
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $domain = $payload['domain'];
+            $tenant = Tenant::select('title', 'footer_content', 'footer_url', 'tenant_logo')
+                ->where('domain_name', $domain)
+                ->first();
 
-          }
+            if (!$tenant) {
+                return response()->json(['error' => trans("message.tenant_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
+            }
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.fetch_data'));
+        } catch (\Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
 }

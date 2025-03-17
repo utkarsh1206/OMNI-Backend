@@ -30,7 +30,6 @@ class TenantController extends Controller
         $this->tenantRepository = $tenantRepository;
     }
 
-
     /**
      * @SWG\Get(
      *     path="/tenants",

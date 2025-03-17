@@ -245,10 +245,12 @@ class SupportticketController extends Controller
             'data' => new TenantsResource($supportticket)
         ]);
     }
+    
     public function show(Supportticket $supportticket)
     {
         return new TenantsResource($supportticket);
     }
+
     public function update(Request $request, Supportticket $supportticket)
     {
         $apiUser = auth()->user();
@@ -350,6 +352,7 @@ class SupportticketController extends Controller
             'data' => new TenantsResource($supportticket)
         ]);
     }
+
     public function statusupdate(Request $request, Supportticket $supportticket)
     {
         $apiUser = auth()->user();
@@ -407,6 +410,7 @@ class SupportticketController extends Controller
             ),
         ]);
     }
+
     public function destroy(Supportticket $supportticket)
     {
         $supportticket->delete();

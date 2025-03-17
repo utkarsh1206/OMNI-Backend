@@ -34,7 +34,6 @@ use App\Http\Controllers\Api\BusinessTypeController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\LicenseUpdateController;
 use App\Http\Controllers\Api\LicenseController;
-use App\Http\Controllers\Api\TenantLicenseUpdateController;
 use App\Http\Controllers\Api\TenantLicenseController;
 use App\Http\Controllers\Api\PhoneController;
 use App\Http\Controllers\Api\MailTemplateController;
@@ -65,11 +64,11 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-
-
 //Route::get('login', [AuthController::class, 'login'])->name('login');
 
 #Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
+Route::middleware('auth:api')->post('license_update', [LicenseUpdateController::class, 'updateLicense']);
+
 Route::apiResource('sla-settings', SlaSettingController::class);
 Route::post('transfer', [SupporttickettransferController::class, 'store']);
 Route::post('merge', [SupportticketmergeController::class, 'store']);
@@ -77,7 +76,7 @@ Route::post('merge', [SupportticketmergeController::class, 'store']);
 Route::get('callCDR', [CallCDRListController::class, 'getCallCDRList']);
 Route::get('custome-field/header', [CustomFieldController::class, 'custumFieldHeader']);
 Route::get('custome-field/value', [CustomFieldController::class, 'custumFieldvalue']);
-Route::middleware('auth:api')->post('license_update', [LicenseUpdateController::class, 'updateLicense']);
+
 Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
 Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
 
@@ -154,19 +153,12 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('update-tenantpassword', [UserController::class, 'updatepassword']);
     Route::get('my-profile', [UserController::class, 'myprofile']);
     Route::get('/branding', [UserController::class, 'getBranding']);
-});
 
-
-
-Route::apiResource('live-agents', LiveAgentController::class);
-Route::apiResource('/lists_fields', EcdialListFieldController::class);
-
-Route::apiResource('chatbots', ChatbotController::class);
-
-Route::get('/download-sample/{list_id}', [ImportLeadController::class, 'downloadSampleCsv']);
-Route::post('/upload-lead-csv/{list_id}', [ImportLeadController::class, 'uploadLeadCsv']);
-
-Route::middleware(['jwt.auth'])->group(function () {
+    Route::apiResource('live-agents', LiveAgentController::class);
+    Route::apiResource('/lists_fields', EcdialListFieldController::class);
+    Route::apiResource('chatbots', ChatbotController::class);
+    Route::get('/download-sample/{list_id}', [ImportLeadController::class, 'downloadSampleCsv']);
+    Route::post('/upload-lead-csv/{list_id}', [ImportLeadController::class, 'uploadLeadCsv']);
     Route::get('/custom-leads/{list_id}', [CustomLeadController::class, 'index']);  // Get all leads for a list
     Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']); // Get a single lead by ID
     Route::put('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'update']);

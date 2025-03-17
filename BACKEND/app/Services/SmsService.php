@@ -10,7 +10,7 @@ use Exception;
 use App\Models\SmsProviderLog;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SmsService implements ShouldQueue 
+class SmsService implements ShouldQueue
 {
     /**
      * Send SMS based on the selected provider for the given user.

@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use App\Models\Users;
 
-
 class TenantObserver
 {
   
@@ -65,8 +64,5 @@ class TenantObserver
             '--class' => 'TenantSeeder',
             '--force' => true, // Run seeders in production if necessary
         ]);
-
     }
-
-    
 }

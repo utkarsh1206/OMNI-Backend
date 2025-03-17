@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Config;
  * @return string
  */
 if (! function_exists('logEmail')) {
-    function logEmail($data, $newConnectionName = NULL)
+    function logEmail($data, $newConnectionName = null)
     {
         $emailLog = new EmailLog;
         if ($newConnectionName) {
@@ -98,11 +98,11 @@ if (! function_exists('authenticateUser')) {
         if (!$token = auth($authGuard)->attempt($credentials)) {
             return response()->json(['error' => trans('message.invalid_credentials')], 401);
         }
-       return $token;
+        return $token;
     }
 
     if (! function_exists('establishDatabaseConnect')) {
-     function establishDatabaseConnect($newConnectionName,$databaseName)
+        function establishDatabaseConnect($newConnectionName, $databaseName)
         {
             Config::set("database.connections.$newConnectionName", [
                 'driver'    => 'mysql',

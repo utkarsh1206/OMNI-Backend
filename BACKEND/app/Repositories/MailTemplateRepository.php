@@ -76,7 +76,7 @@ class MailTemplateRepository
         }
     }
 
-   
+
     public function delete($id)
     {
         // Find the mail template by ID

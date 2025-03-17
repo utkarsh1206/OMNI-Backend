@@ -59,7 +59,7 @@ class EmailConfigureRepository
 
     public function store(Request $request)
     {
-        
+
         try {
             $emailConfig = EmailConfigure::create($request->validated());
             return $this->apiResponse->getResponseStructure(trans('message.success'), $emailConfig, trans('message.email_configure_created'), ResponseHTTP::HTTP_CREATED);

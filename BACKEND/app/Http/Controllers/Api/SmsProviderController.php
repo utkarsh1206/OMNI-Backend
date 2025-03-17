@@ -16,9 +16,7 @@ class SmsProviderController extends Controller
         $this->smsProviderRepository = $smsProviderRepository;
     }
 
-
-    
-     /**
+    /**
      * @OA\Get(
      *     path="api/sms-providers",
      *     summary="Get list of name prefixes",
@@ -77,51 +75,47 @@ class SmsProviderController extends Controller
      *     )
      * )
      */
-
-
     public function index()
     {
         return $this->smsProviderRepository->list();
     }
 
-
     /**
- * @OA\Post(
- *     path="/api/user-sms-provider",
- *     operationId="saveUserProvider",
- *     tags={"Sms Providers"},
- *     summary="Save or update a user's SMS provider configuration",
- *     description="Creates or updates the SMS provider configuration for the authenticated user.",
- *     @OA\RequestBody(
- *         required=true,
- *         description="Request body to save or update the user's SMS provider configuration",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="provider_id", type="integer", example=1, description="ID of the SMS provider")
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Successfully saved or updated the user SMS provider configuration",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="status", type="string", example="success", description="Response status"),
- *             @OA\Property(property="message", type="string", example="Provider configurations created successfully", description="Response message")
- *         )
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Internal server error",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="message", type="string", example="Internal Server Error"),
- *             @OA\Property(property="error", type="string", example="Error message from the exception")
- *         )
- *     )
- * )
- */
+     * @OA\Post(
+     *     path="/api/user-sms-provider",
+     *     operationId="saveUserProvider",
+     *     tags={"Sms Providers"},
+     *     summary="Save or update a user's SMS provider configuration",
+     *     description="Creates or updates the SMS provider configuration for the authenticated user.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Request body to save or update the user's SMS provider configuration",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="provider_id", type="integer", example=1, description="ID of the SMS provider")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successfully saved or updated the user SMS provider configuration",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success", description="Response status"),
+     *             @OA\Property(property="message", type="string", example="Provider configurations created successfully", description="Response message")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Internal Server Error"),
+     *             @OA\Property(property="error", type="string", example="Error message from the exception")
+     *         )
+     *     )
+     * )
+     */
 
-   
     public function saveUserProvider(UserSmsProviderRequest $request)
     {
         return $this->smsProviderRepository->saveUserProvider($request);

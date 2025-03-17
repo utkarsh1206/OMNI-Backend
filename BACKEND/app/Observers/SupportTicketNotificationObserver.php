@@ -41,12 +41,12 @@ class SupportTicketNotificationObserver
             $updateData['alert_before_response_notification_time'] = $supportticket->alert_before_response_notification_time;
             $updateData['resolved_time'] = null;
             $updateData['alert_before_resolve_notification_time'] = null;
-        } else if ($supportticket->first_response_time != null && $supportticket->alert_before_response_notification_time != null && $supportticket->default_status == 'Open') {
+        } elseif ($supportticket->first_response_time != null && $supportticket->alert_before_response_notification_time != null && $supportticket->default_status == 'Open') {
             $updateData['first_response_time'] =  $supportticket->first_response_time;
             $updateData['alert_before_response_notification_time'] = $supportticket->alert_before_response_notification_time;
             $updateData['resolved_time'] = $openTicketData['resolved_time'];
             $updateData['alert_before_resolve_notification_time'] = $openTicketData['alert_before_resolve_notification_time'];
-        } 
+        }
         // else if ($supportticket->default_status == 'Resolved' || $supportticket->default_status == 'Closed') {
         //     // $updateData['actual_resolved_time'] =  $openTicketData['actual_resolved_time'];
         // }

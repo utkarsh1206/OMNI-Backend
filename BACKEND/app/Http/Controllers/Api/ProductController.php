@@ -238,7 +238,7 @@ class ProductController extends Controller
             $data = Product::findOrFail($product);
             return new ProductResource($data);
         } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);                
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 

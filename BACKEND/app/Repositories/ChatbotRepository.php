@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Config;
 
 class ChatbotRepository
 {
-    private $apiResponce;
+    private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
     {
@@ -38,9 +38,9 @@ class ChatbotRepository
             $inputs[$variable] = $request->input($key, '');
         }
 
-        $perPage = $request->input('per_page', 10); 
-        $page = $request->input('page', 1);         
-    
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+
         $perPage = (int)$perPage;
 
         $query = Chatbot::query();
@@ -57,30 +57,29 @@ class ChatbotRepository
         foreach ($filters as $key => $variable) {
             if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
                 if ($variable === 'status') {
-
                     $status = filter_var($inputs[$variable], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                     if (!is_null($status)) {
                         $query->where($variable, $status);
                     }
-                } elseif ($variable === 'keywords'){
+                } elseif ($variable === 'keywords') {
                     if (!is_null($inputs['keywords'])) {
                         $query->whereJsonContains('keywords', $inputs['keywords']);
                     }
                 } else {
                     $query->where($variable, 'like', "%{$inputs[$variable]}%");
-                }                
+                }
             }
         }
 
         if ($page === 'all') {
             $chatbots = $query->get();
         } else {
-            $chatbots = $query->paginate($perPage); 
+            $chatbots = $query->paginate($perPage);
         }
 
         return $this->apiResponse->getResponseStructure(
             trans('message.success'),
-            $chatbots, 
+            $chatbots,
             trans('message.data_fetch')
         );
     }
@@ -110,7 +109,6 @@ class ChatbotRepository
     public function update(Request $request, $id)
     {
         try {
-
             $status = filter_var($request->input('status'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
             $chatbot = Chatbot::findOrFail($id);
@@ -124,8 +122,7 @@ class ChatbotRepository
 
             $data = new ChatbotResource($chatbot);
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.chatbot_update_success'));        
-
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.chatbot_update_success'));
         } catch (Exception $ex) {
             return $this->apiResponse->handleAndResponseException($ex);
         }
@@ -139,7 +136,6 @@ class ChatbotRepository
             $chatbot->delete();
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $id, trans('message.chatbot_delete_success'));
-
         } catch (Exception $ex) {
             return $this->apiResponse->handleAndResponseException($ex);
         }
