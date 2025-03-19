@@ -138,29 +138,20 @@ class TenantLicenseController extends Controller
             ], ResponseHTTP::HTTP_NOT_FOUND);
         }
 
-        $license = TenantLicense::where('tenant_id', $id)->first();
         $currentDateEpoch = Carbon::now()->timestamp;
 
-        if ($license) {
-            $license->update([
+        TenantLicense::updateOrCreate(
+            ['tenant_id' => $id],
+            [
                 'start_date' => $currentDateEpoch,
                 'expire_date' => $validatedData['expire_date'],
                 'agent_ct' => $validatedData['agent_ct'],
                 'live_agent_ct' => $validatedData['live_agent_ct'],
                 'manager_ct' => $validatedData['manager_ct'],
-                'updated_at' => $currentDateEpoch
-            ]);
-        } else {
-            TenantLicense::create([
-                'tenant_id' => $id,
-                'start_date' => $currentDateEpoch,
-                'expire_date' => $validatedData['expire_date'],
-                'agent_ct' => $validatedData['agent_ct'],
-                'live_agent_ct' => $validatedData['live_agent_ct'],
-                'manager_ct' => $validatedData['manager_ct'],
-                'created_at' => $currentDateEpoch
-            ]);
-        }
+                'updated_at' => $currentDateEpoch,
+                'created_at' => $currentDateEpoch, 
+            ]
+        );
 
         $encryptedLicense = $this->generateLicenseData($validatedData);
 

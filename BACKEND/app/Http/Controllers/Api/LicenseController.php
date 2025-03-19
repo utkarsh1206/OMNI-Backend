@@ -177,7 +177,7 @@ class LicenseController extends Controller
      */
     public function decodeLicense(Request $request)
     {
-        $isTenant = $request->has('is_tanant') ? $request->input('is_tanant') : false;
+        $isTenant = $request->input('is_tanant', false);
 
         $token = $request->bearerToken();
         if ($token != "") {
@@ -188,23 +188,24 @@ class LicenseController extends Controller
             }
         }
 
-        if (!$isTenant) {
-            $licenseKey = DB::table('admins')->value('license_key');
-            $adminFlag = 1;
-        } else {
-            $licenseKey = DB::table('licenses')->value('license_key');
-            $adminFlag = 0;
+        $licenseKey = $isTenant
+        ? DB::table('licenses')->value('license_key')
+        : DB::table('admins')->value('license_key');
+
+        $adminFlag = $isTenant ? 0 : 1;
+        
+        if (!$licenseKey) {
+            return response()->json([
+                'error' => trans('message.license_key_not_found'),
+                'adminFlag' => $adminFlag
+            ], ResponseHTTP::HTTP_NOT_FOUND);
         }
 
-        if (!$licenseKey) {
-            return response()->json(['error' => trans('message.license_key_not_found'), 'adminFlag' => $adminFlag], ResponseHTTP::HTTP_NOT_FOUND);
-        }
         // if (!$licenseKey) {
         //     return response()->json(['error' => 'License key not found'], 404);
         // }
 
         $inputKey = exec('/usr/bin/hostid');
-        $blockSize = 256;
         $seprator = '##$@@$##';
         $param = explode($seprator, $licenseKey);
 

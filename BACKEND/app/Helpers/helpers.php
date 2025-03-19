@@ -8,6 +8,7 @@ use App\Services\AESService;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
 
 /**
  * Format price with a currency symbol.
@@ -119,4 +120,68 @@ if (! function_exists('authenticateUser')) {
             ]);
         }
     }
+
+
+
+    if (!function_exists('sendHttpRequest')) {
+        /**
+         * Send an HTTP request using Laravel's HTTP client
+         *
+         * @param string $url The API URL.
+         * @param string $method The HTTP method (GET, POST, PUT, DELETE, etc.).
+         * @param array $data The data to send with the request (optional).
+         * @param array $headers Custom headers (optional).
+         * @param bool $verifySSL Whether to verify SSL certificate (default: false).
+         * @return array The response body and status code or error message.
+         * @throws \Exception if any error occurs during the HTTP request.
+         */
+        function sendHttpRequest($url, $method = 'POST', $data = [], $headers = [], $verifySSL = false)
+        {
+            try {
+                // Set headers and prepare the request
+                $defaultHeaders = [
+                    'Content-Type' => 'application/json',
+                ];
+    
+                if (!empty($headers)) {
+                    $defaultHeaders = array_merge($defaultHeaders, $headers);
+                }
+    
+                // Send the HTTP request using Laravel's Http facade
+                $response = Http::withHeaders($defaultHeaders)
+                    ->withOptions(['verify' => $verifySSL])  // Set SSL verification option
+                    ->$method($url, $data);  // Use dynamic HTTP method (GET, POST, etc.)
+    
+                // Check if the request was successful
+                if ($response->successful()) {
+                    // If the response contains a code, handle it
+                    $responseData = $response->json();
+                    if (isset($responseData['code'])) {
+                        return response()->json([
+                            'message' => $responseData['message'],
+                            'data' => $responseData['data'],
+                        ]);
+                    }
+    
+                    return response()->json([
+                        'message' => $responseData["message"] ?? 'No code in the response.',
+                        'data' => $responseData,
+                    ], $response->status());
+                } else {
+                    // Handle errors by getting the response message and code
+                    $responseData = $response->json();
+                    return response()->json([
+                        'message' => $responseData["message"] ?? 'Error communicating with the API.',
+                        'code' => $responseData['data']['code'] ?? $response->status(),
+                    ], $response->status());
+                }
+            } catch (\Exception $e) {
+                return [
+                    'status_code' => 500,
+                    'message' => $e->getMessage(),
+                ];
+            }
+        }
+}
+
 }
