@@ -1,6 +1,15 @@
 2025-03-20 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
+	* Previous Commit ID : 82a98f6 
+	* Version : Dev
+	* Laravel : Removed JWT authentication for CapaignAPI, IngroupAPI,
+	AgentLoginAPI as these all are use before login. Also added campaign
+	in JWT token. 
+
+2025-03-20 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
 	* Previous Commit ID : 65df319 
 	* Version : Dev
 	* Laravel : Call Dialcenter API for campaign, ingroup and disposion

@@ -5,7 +5,8 @@ use App\Models\EmailConfigure;
 use Illuminate\Support\Facades\Http;
 use App\Models\NeoxConfiguration;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 
 if (! function_exists('logEmail')) {
     /**
@@ -50,15 +51,71 @@ if (! function_exists('setEmailConfig')) {
         ]);
     }
 
+    if (!function_exists('getDbConnection')) {
+        /**
+         * Set up a dynamic database connection based on the domain name.
+         *
+         * @param string|null $domainName The domain name to find the database connection details.
+         * @return \Illuminate\Database\Connection|null The database connection instance or null if no domain is provided.
+         */
+        function getDbConnection($domainName = null)
+        {
+            // If no domain name is provided, return the default connection
+            if (!$domainName) {
+                return null; // Return null to use the default connection
+            }
+
+            // Get the database name associated with the domain from 'details' table
+            $details = DB::table('details')->where('domain', $domainName)->first();
+
+            if ($details) {
+                $connectionDetails = [
+                    'database' => $details->db,
+                    'username' => $details->username,
+                    'password' => $details->password,
+                ];
+
+                $newConnectionName = str_replace(".", "_", $domainName);
+
+                // Set the dynamic connection for this domain
+                Config::set("database.connections.$newConnectionName", [
+                    'driver' => 'mysql',
+                    'host' => env('DB_HOST', '127.0.0.1'),
+                    'database' => $connectionDetails['database'],
+                    'username' => $connectionDetails['username'],
+                    'password' => $connectionDetails['password'],
+                    'charset' => 'utf8mb4',
+                    'collation' => 'utf8mb4_unicode_ci',
+                    'prefix' => '',
+                    'strict' => true,
+                    'engine' => null,
+                ]);
+
+                return DB::connection($newConnectionName);
+            }
+            return null;
+        }
+    }
+
     if (!function_exists('getNeoxLocalIp')) {
         /**
          * Retrieve the Neox local IP from the database.
          *
          * @return string|array The IP address or an error response if not found.
          */
-        function getNeoxLocalIp()
+        function getNeoxLocalIp($domainName = null)
         {
-            $ip = NeoxConfiguration::first()->neox_local_ip ?? null;
+            // Get the database connection (returns null if no domain is provided)
+            $connection = getDbConnection($domainName);
+
+            // If no connection is established, use the default configuration
+            if (!$connection) {
+                $ip = NeoxConfiguration::first()->neox_local_ip ?? null;
+            } else {
+                // If a custom connection is set up, get the 'neox_local_ip'
+                $ip = $connection->table('neox_configuration')->value('neox_local_ip') ?? null;
+            }
+
             if (!$ip) {
                 return [
                     'status' => 'error',
@@ -76,9 +133,18 @@ if (! function_exists('setEmailConfig')) {
          * @param string $token The API token to validate.
          * @return mixed Null if valid, otherwise an error response.
          */
-        function validateSecretKey($token)
+        function validateSecretKey($token, $domainName = null)
         {
-            $secretKeyFromDb = NeoxConfiguration::first()->neox_token ?? null;
+            // Get the database connection (returns null if no domain is provided)
+            $connection = getDbConnection($domainName);
+
+            // If no connection is established, use the default configuration
+            if (!$connection) {
+                $secretKeyFromDb = NeoxConfiguration::first()->neox_token ?? null;
+            } else {
+                // If a custom connection is set up, get the 'neox_token'
+                $secretKeyFromDb = $connection->table('neox_configuration')->value('neox_token') ?? null;
+            }
 
             if (!$secretKeyFromDb || $token !== $secretKeyFromDb) {
                 return response()->json([

@@ -10,7 +10,12 @@ class CampaignApiController extends Controller
 {
     public function campaignListApi(CampaignApiRequest $request)
     {
-        $ip = getNeoxLocalIp();
+        $domainName = $request->domain_name;
+        if (!$domainName){
+            return response()->json(['error' => 'Domain name is required']);
+        }
+        
+        $ip = getNeoxLocalIp($domainName);
         if (is_array($ip) && isset($ip['status']) && $ip['status'] === 'error') {
             return $ip;
         }
