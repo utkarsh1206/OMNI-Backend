@@ -4,27 +4,22 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Repositories\CampaignApiRepository;
+use App\Http\Requests\CampaignApiRequest;
 
 class CampaignApiController extends Controller
 {
-    protected $campaignRepository;
-
-    public function __construct(CampaignApiRepository $campaignRepository)
+    public function campaignListApi(CampaignApiRequest $request)
     {
-        $this->campaignRepository = $campaignRepository;
-    }
+        $ip = getNeoxLocalIp();
+        if (is_array($ip) && isset($ip['status']) && $ip['status'] === 'error') {
+            return $ip;
+        }
 
-    public function campaignList(Request $request)
-    {
-        $rules = [
-            'user' => 'required|string',
-        ];
+        $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
+        $validatedData = $request->validated();
 
-        $validatedData = $request->validate($rules);
+        $response = sendHttpRequest($url, 'POST', $validatedData);
 
-        $responseData = $this->campaignRepository->getCampaignList($validatedData);
-
-        return $responseData;
+        return $response;
     }
 }

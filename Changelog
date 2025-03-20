@@ -1,3 +1,17 @@
+2025-03-20 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 65df319 
+	* Version : Dev
+	* Laravel : Call Dialcenter API for campaign, ingroup and disposion
+	list.
+	Also make calling method to call dialcenter other Agent API like Agent
+	login, Dial call, Pasue resume, Logout.
+	The  method sends a POST request to the Neox local server.
+	If the IP or secret key is invalid, the system responds with appropriate error messages.
+	Implemented helper functions for retrieving the local IP (getNeoxLocalIp), 
+	validating the secret key (validateSecretKey),
+
 2025-03-17 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID : Neox-4114

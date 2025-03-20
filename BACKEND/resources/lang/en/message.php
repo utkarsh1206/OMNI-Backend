@@ -32,7 +32,7 @@ return [
     'tenant_update_msg'=>'Tenant Updated Successfully',
     'tenant_create_msg'=>'Tenant Created Successfully',
     //Lead Upload
-    'error' => 'Error ',
+    'error' => 'Error.',
     'no_data_inserted' => 'No data inserted.',
     'table_not_exist' => 'Table does not exist.',
     'error_inserting_data' => 'Error while inserting data.',

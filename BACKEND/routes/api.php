@@ -64,7 +64,13 @@ use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\ImportLeadController;
 use App\Http\Controllers\Api\CustomLeadController;
 use App\Http\Controllers\Api\CampaignApiController;
+use App\Http\Controllers\Api\DialCallApiController;
 use App\Http\Controllers\Api\NeoxConfigurationController;
+use App\Http\Controllers\Api\IngroupApiController;
+use App\Http\Controllers\Api\DispositionApiController;
+use App\Http\Controllers\Api\LoginApiController;
+use App\Http\Controllers\Api\LogoutApiController;
+use App\Http\Controllers\Api\PauseResumeApiController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -200,6 +206,12 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
 });
 
-Route::post('/camp_list', [CampaignApiController::class, 'campaignList']);
+Route::get('/camp_list', [CampaignApiController::class, 'campaignListApi']);
 
 Route::apiResource('neox-configurations', NeoxConfigurationController::class);
+Route::get('/ingroup_list', [IngroupApiController::class, 'ingroupListApi']);
+Route::get('/dispo_list', [DispositionApiController::class, 'dispositionListApi']);
+Route::get('/api_login', [LoginApiController::class, 'agentLoginApi']);
+Route::get('/api_pause_resume', [PauseResumeApiController::class, 'pauseResumeApi']);
+Route::get('/api_dial_call', [DialCallApiController::class, 'dialCallApi']);
+Route::get('/api_logout', [LogoutApiController::class, 'agentLogoutApi']);
