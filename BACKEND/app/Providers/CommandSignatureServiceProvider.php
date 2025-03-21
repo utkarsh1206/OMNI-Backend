@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Providers;
 
 use Illuminate\Console\Events\CommandFinished;
@@ -6,7 +7,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use App\Models\CronCommand;
 use File;
-use Log;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
@@ -57,7 +58,7 @@ class CommandSignatureServiceProvider extends ServiceProvider
                         'updated_at' => Carbon::now(),
                     ]
                 );
-                $this->updateSeederFile($signature,$type);
+                $this->updateSeederFile($signature, $type);
                 Log::info("Command '$commandName' created with signature '$signature' and stored in the database.");
             } else {
                 Log::error("Could not extract signature from the generated command: '$commandName'.");
@@ -68,10 +69,10 @@ class CommandSignatureServiceProvider extends ServiceProvider
     }
 
 
-    public function updateSeederFile(string $signature,$type)
+    public function updateSeederFile(string $signature, $type)
     {
         $seederFilePath = database_path('seeders/CronCommandsSeeder.php');
-        
+
         if (File::exists($seederFilePath)) {
             // Read the existing seeder file content
             $fileContents = File::get($seederFilePath);
@@ -88,7 +89,7 @@ class CommandSignatureServiceProvider extends ServiceProvider
                 File::put($seederFilePath, $newContents);
 
                 Log::info("CronCommandsSeeder file has been updated with signature: '$signature'.");
-            } else {    
+            } else {
                 Log::info("Command signature '$signature' already exists in the seeder file.");
             }
         } else {

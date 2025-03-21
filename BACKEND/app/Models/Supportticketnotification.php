@@ -25,12 +25,12 @@ class SupportTicketNotification extends Model
 
     // public function getCreatedAtAttribute($value)
     // {
-    //     return Carbon::parse($value)->format('Y-m-d H:i:s'); 
+    //     return Carbon::parse($value)->format('Y-m-d H:i:s');
     // }
 
     // public function getUpdatedAtAttribute($value)
     // {
-    //     return Carbon::parse($value)->format('Y-m-d H:i:s'); 
+    //     return Carbon::parse($value)->format('Y-m-d H:i:s');
     // }
 
     public function ticket()

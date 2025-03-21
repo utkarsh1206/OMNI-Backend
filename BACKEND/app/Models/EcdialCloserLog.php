@@ -45,4 +45,3 @@ class EcdialCloserLog extends Model
         return $this->belongsTo(EcdialUser::class, 'user', 'user');
     }
 }
-

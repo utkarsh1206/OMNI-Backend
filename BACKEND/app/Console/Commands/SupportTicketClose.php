@@ -53,18 +53,17 @@ class SupportTicketClose extends Command
                     foreach ($supportTickets as $ticket) {
                         $ticket->default_status = 'Closed';
                         $ticket->save();
-                        $this->notifyViaEmail($newConnectionName,$ticket);
-                     }
+                        $this->notifyViaEmail($newConnectionName, $ticket);
+                    }
                     
                     $this->info("Tenant: {$tenant->domain_name} - Updated " . $supportTickets->count() . " tickets to 'Closed'.");
                 }
             }
         });
-        
     }
 
 
-    public function notifyViaEmail($newConnectionName,$tickets)
+    public function notifyViaEmail($newConnectionName, $tickets)
     {
         $emailConfig = EmailConfigure::on($newConnectionName)->where('type', 'custom')->first();
         $smtpHost = $emailConfig->smtp_host;
@@ -82,30 +81,30 @@ class SupportTicketClose extends Command
                     'mail.from.address' =>  $sender_email,
                     'mail.from.name' => $sender_name,
             ]);
-            try {
-                $toEmails = "khanjan.kukadiya@stltech.in";
-                $mailTemplate = MailTemplate::on($newConnectionName)->where("type","closed_ticket")->first();
-                $subject =  $mailTemplate->subject ?? '';
-                $body =  $mailTemplate->body ?? '';
-                $subject = str_replace("{ticket_number}",$tickets->support_ticket_id,$subject);
-                $body = str_replace("{ticket_number}",$tickets->support_ticket_id,$body);
-                Mail::to($toEmails)->send(new SendEmail($subject, $body));
+        try {
+            $toEmails = "khanjan.kukadiya@stltech.in";
+            $mailTemplate = MailTemplate::on($newConnectionName)->where("type", "closed_ticket")->first();
+            $subject =  $mailTemplate->subject ?? '';
+            $body =  $mailTemplate->body ?? '';
+            $subject = str_replace("{ticket_number}", $tickets->support_ticket_id, $subject);
+            $body = str_replace("{ticket_number}", $tickets->support_ticket_id, $body);
+            Mail::to($toEmails)->send(new SendEmail($subject, $body));
 
-                logEmail([
-                    "user_id"=>$tickets->assign_to_id,
-                    "email_template_id"=> $mailTemplate->id, 
-                    "from_email"=> $sender_email,
-                    "module_name"=> "Support Ticket",
-                    "entity_id"=> $tickets->id,
-                    "status" =>"sent",
-                ],$newConnectionName);
-            } catch (Exception $e) {
-                echo  $e->getMessage();
-                exit;
-            }
+            logEmail([
+                "user_id"=>$tickets->assign_to_id,
+                "email_template_id"=> $mailTemplate->id,
+                "from_email"=> $sender_email,
+                "module_name"=> "Support Ticket",
+                "entity_id"=> $tickets->id,
+                "status" =>"sent",
+            ], $newConnectionName);
+        } catch (Exception $e) {
+            echo  $e->getMessage();
+            exit;
+        }
     }
 
-    public function establishDatabaseConnect($newConnectionName,$databaseName)
+    public function establishDatabaseConnect($newConnectionName, $databaseName)
     {
         Config::set("database.connections.$newConnectionName", [
             'driver'    => 'mysql',

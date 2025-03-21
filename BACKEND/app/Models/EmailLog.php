@@ -20,6 +20,4 @@ class EmailLog extends Model
     {
         return $this->belongsTo(MailTemplate::class, 'email_template_id');
     }
-
-
 }

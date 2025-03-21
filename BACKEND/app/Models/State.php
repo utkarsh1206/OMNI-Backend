@@ -18,4 +18,5 @@ class State extends Model
         "status",
         "created_at",
         "updated_at"
-    ];}
+    ];
+}

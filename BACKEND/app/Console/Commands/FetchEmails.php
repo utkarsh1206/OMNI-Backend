@@ -10,6 +10,7 @@ use App\Mail\SupportTicketMail;
 use Illuminate\Support\Facades\Mail;
 //use Webklex\IMAP\Facades\IMAP;
 use Webklex\IMAP\Flag;
+
 ini_set('memory_limit', '1024M'); // or another value like '2048M'
 
 class FetchEmails extends Command
@@ -63,7 +64,7 @@ class FetchEmails extends Command
         $client->connect();
 
         // Get the inbox folder
-        $folder = $client->getFolder('INBOX','UNSEEN');
+        $folder = $client->getFolder('INBOX', 'UNSEEN');
 
         // Fetch only unread emails
         //$messages = $folder->messages()->whereSeen(false)->get();
@@ -101,11 +102,11 @@ class FetchEmails extends Command
             if ($message->hasAttachments()) {
                 // Loop through attachments
                 foreach ($message->getAttachments() as $attachment) {
-                    $filename1 = $attachment->getName(); 
+                    $filename1 = $attachment->getName();
                     $filename = now()->format('Y_m_d_H_i_s') . '_' . $filename1;
                     $fileContent = $attachment->getContent();
                     $path = 'support_ticket/' . $filename;
-                    $attachment_urls[] = $path;            
+                    $attachment_urls[] = $path;
                     // Use Storage facade to save the file in the public disk
                     Storage::disk('public')->put($path, $fileContent);
                 }
@@ -129,7 +130,7 @@ class FetchEmails extends Command
                 'attachment' => json_encode($attachment_urls),
                 'created_at' => now(), // Optional if using timestamps
                 'updated_at' => now(), // Optional if using timestamps
-            ]); 
+            ]);
             $datePrefix = now()->format('dmy'); // Get the current date in ddmmyy format
             $supportTicketId = $datePrefix . $lastInsertId;
 
@@ -137,7 +138,7 @@ class FetchEmails extends Command
             DB::table('ha11.supportticket')
                 ->where('id', $lastInsertId)
                 ->update(['support_ticket_id' => $supportTicketId]);
-            $message->setFlag('\\Seen'); 
+            $message->setFlag('\\Seen');
             //$message->markAsRead();
 
             $ticket = (object) [
@@ -146,7 +147,7 @@ class FetchEmails extends Command
                 'status' => $default_status,
                 'subject' =>  $subject_final,
                 'body' => $messageTextBody
-            ];    
+            ];
             // Send the email using the Mailable
             Mail::to($emailAddress)->send(new SupportTicketMail($ticket));
             // Set SEEN flag

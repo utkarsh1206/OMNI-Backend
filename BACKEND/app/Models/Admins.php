@@ -8,8 +8,6 @@ use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Request;
 
-
-
 class Admins extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;

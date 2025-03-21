@@ -37,16 +37,15 @@ class ExistingTenantSeeder extends Command
                 $this->establishDatabaseConnect($newConnectionName, $databaseName);
                 DB::reconnect($newConnectionName);
                 Artisan::call('db:seed', [
-                    '--database' => $newConnectionName, 
+                    '--database' => $newConnectionName,
                     '--class'=>'TenantSeeder',
                     '--force' => true, // Run seeders in production if necessary
                 ]);
-               
             }
         });
     }
 
-    public function establishDatabaseConnect($newConnectionName,$databaseName)
+    public function establishDatabaseConnect($newConnectionName, $databaseName)
     {
         Config::set("database.connections.$newConnectionName", [
             'driver'    => 'mysql',

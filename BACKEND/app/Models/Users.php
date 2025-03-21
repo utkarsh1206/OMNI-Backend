@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Tenantrole;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-
-
 class Users extends Authenticatable implements JWTSubject
 {
     use HasFactory,Notifiable;
@@ -63,8 +61,8 @@ class Users extends Authenticatable implements JWTSubject
         $postData = Request::all(); // Accessing all post data
 
         $tenantRoleId = DB::table('omnichannel.tenants')
-    ->where('domain_name', $postData['domain'])
-    ->value('tenant_role_id');
+        ->where('domain_name', $postData['domain'])
+        ->value('tenant_role_id');
         $permission = "";
         if ($tenantRoleId) {
             $permission = DB::table('omnichannel.tenant_role')
@@ -72,14 +70,12 @@ class Users extends Authenticatable implements JWTSubject
             ->value('permission');
         }
         $permission_array = [];
-        if(!empty(json_decode($permission,true))){
-            foreach(json_decode($permission,true) as $permission_key=>$permission_value){
-
-                if($permission_value['view'] ==1){
-
+        if (!empty(json_decode($permission, true))) {
+            foreach (json_decode($permission, true) as $permission_key => $permission_value) {
+                if ($permission_value['view'] ==1) {
                     $view_name = DB::table('omnichannel.menu_permissions')
                     ->where('module_name', $permission_key)
-                    ->value('view_name');            
+                    ->value('view_name');
                     $permission_array[] = $view_name;
                 }
             }
