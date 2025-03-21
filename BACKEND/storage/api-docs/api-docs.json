@@ -5447,6 +5447,332 @@
                 }
             }
         },
+        "/api/encode-license": {
+            "get": {
+                "tags": [
+                    "License"
+                ],
+                "summary": "Encode License Data",
+                "description": "This endpoint is used to encode license data such as validity date, number of agents, number of live agents, and number of ACL users.",
+                "operationId": "encodeLicense",
+                "requestBody": [
+                    {
+                        "mediaType": "application/json",
+                        "schema": {
+                            "required": [
+                                "validity_date",
+                                "number_of_agents",
+                                "number_of_live_agents"
+                            ],
+                            "properties": {
+                                "validity_date": {
+                                    "description": "The validity date of the license",
+                                    "type": "string",
+                                    "format": "date"
+                                },
+                                "number_of_agents": {
+                                    "description": "The total number of agents",
+                                    "type": "integer"
+                                },
+                                "number_of_live_agents": {
+                                    "description": "The total number of live agents",
+                                    "type": "integer"
+                                },
+                                "number_of_acl_users": {
+                                    "description": "The number of ACL users (default to 0 if not provided)",
+                                    "type": "integer",
+                                    "default": 0
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully encoded the license key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "License key encoded successfully"
+                                        },
+                                        "license_key": {
+                                            "type": "string",
+                                            "example": "encrypted_license_key"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Encryption failed: <error_message>"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/decode-license": {
+            "get": {
+                "tags": [
+                    "License"
+                ],
+                "summary": "Decode License Data",
+                "description": "This endpoint is used to decode license data, returning the details of the license such as validity date, number of agents, number of live agents, and number of ACL users. The license key is decrypted using the host ID.",
+                "operationId": "decodeLicense",
+                "requestBody": [
+                    {
+                        "mediaType": "application/json",
+                        "schema": {
+                            "required": [
+                                "token"
+                            ],
+                            "properties": {
+                                "token": {
+                                    "description": "Bearer token used for JWT authentication",
+                                    "type": "string"
+                                },
+                                "is_tanant": {
+                                    "description": "Flag to indicate whether the user is a tenant (optional, default is false)",
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully decoded the license key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "license_key": {
+                                            "type": "string",
+                                            "example": "encoded_license_key"
+                                        },
+                                        "validity_date": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "example": "2025-12-31"
+                                        },
+                                        "number_of_agents": {
+                                            "type": "integer",
+                                            "example": 100
+                                        },
+                                        "number_of_live_agents": {
+                                            "type": "integer",
+                                            "example": 80
+                                        },
+                                        "number_of_acl_users": {
+                                            "type": "integer",
+                                            "example": 50
+                                        },
+                                        "number_of_enterprise": {
+                                            "type": "integer",
+                                            "example": 1,
+                                            "nullable": true
+                                        },
+                                        "is_tanant": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid license format",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid license format"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "License key not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "License key not found"
+                                        },
+                                        "adminFlag": {
+                                            "type": "integer",
+                                            "example": 1
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Decryption failed: <error_message>"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/license_update": {
+            "post": {
+                "tags": [
+                    "License"
+                ],
+                "summary": "Update User License Key",
+                "description": "Update the license key for the authenticated user",
+                "operationId": "updateLicense",
+                "parameters": [
+                    {
+                        "name": "license_key",
+                        "in": "query",
+                        "description": "The new license key",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "License key updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "License updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid data or missing parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Authentication failed or user not authorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 401
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 500
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred while processing the request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        },
         "/api/login": {
             "post": {
                 "tags": [
@@ -8089,6 +8415,395 @@
                 }
             }
         },
+        "/api/supportticket/transfer": {
+            "post": {
+                "tags": [
+                    "Support Ticket"
+                ],
+                "summary": "Transfer a Support Ticket",
+                "description": "Transfer a support ticket to a new user and create a notification for the transfer.",
+                "operationId": "27764f9056109a181387600504e301b4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "supportticket_id",
+                                    "user_id",
+                                    "comment"
+                                ],
+                                "properties": {
+                                    "supportticket_id": {
+                                        "description": "The ID of the support ticket to transfer",
+                                        "type": "integer"
+                                    },
+                                    "user_id": {
+                                        "description": "The ID of the user to whom the ticket is being assigned",
+                                        "type": "integer"
+                                    },
+                                    "comment": {
+                                        "description": "The comment to be added for the transfer notification",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ticket transferred successfully"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid input or missing required fields"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred while processing the request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tenant-license/{id}": {
+            "put": {
+                "tags": [
+                    "Tenant License"
+                ],
+                "summary": "Update Tenant License",
+                "description": "This endpoint is used to update the tenant's license information, including expiration date, agent count, live agent count, and manager count.",
+                "operationId": "updateTenantLicense",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the tenant whose license information is to be updated",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": [
+                    {
+                        "mediaType": "application/json",
+                        "schema": {
+                            "required": [
+                                "expire_date",
+                                "agent_ct",
+                                "live_agent_ct",
+                                "manager_ct"
+                            ],
+                            "properties": {
+                                "expire_date": {
+                                    "description": "The expiration date of the tenant's license",
+                                    "type": "string",
+                                    "format": "date"
+                                },
+                                "agent_ct": {
+                                    "description": "The total number of agents allowed under the tenant's license",
+                                    "type": "integer"
+                                },
+                                "live_agent_ct": {
+                                    "description": "The total number of live agents allowed under the tenant's license",
+                                    "type": "integer"
+                                },
+                                "manager_ct": {
+                                    "description": "The total number of managers allowed under the tenant's license",
+                                    "type": "integer"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated the tenant's license",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tenant license updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid data provided for the license update",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "License update failed due to invalid data"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Tenant not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tenant not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred while updating the tenant's license"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tenant/{id}/license": {
+            "get": {
+                "tags": [
+                    "Tenant License"
+                ],
+                "summary": "Get Tenant License",
+                "description": "This endpoint retrieves the tenant's license details, including the number of available agents, live agents, ACL users, and license validity.",
+                "operationId": "getTenantLicense",
+                "parameters": [
+                    {
+                        "name": "tenantId",
+                        "in": "path",
+                        "description": "The ID of the tenant whose license information is to be retrieved",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the tenant's license data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "tenant_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "start_date": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2025-03-17"
+                                                },
+                                                "expire_date": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2025-12-31"
+                                                },
+                                                "agent_ct": {
+                                                    "type": "integer",
+                                                    "example": 100
+                                                },
+                                                "live_agent_ct": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                },
+                                                "manager_ct": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-03-17T10:00:00Z"
+                                                },
+                                                "license_key": {
+                                                    "type": "string",
+                                                    "example": "abc123xyz"
+                                                },
+                                                "available_agents": {
+                                                    "type": "integer",
+                                                    "example": 200
+                                                },
+                                                "available_live_agents": {
+                                                    "type": "integer",
+                                                    "example": 100
+                                                },
+                                                "available_acl_users": {
+                                                    "type": "integer",
+                                                    "example": 20
+                                                },
+                                                "license_validity": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2025-12-31"
+                                                },
+                                                "database_enterprises": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "license_expiration_in_days": {
+                                                    "type": "integer",
+                                                    "example": 150
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid license data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid license data"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Tenant not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tenant not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred while retrieving the tenant's license"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/update-custom-field": {
             "put": {
                 "tags": [
@@ -10038,6 +10753,10 @@
             "description": "Inbound Groups"
         },
         {
+            "name": "License",
+            "description": "License"
+        },
+        {
             "name": "Authentication",
             "description": "Authentication"
         },
@@ -10076,6 +10795,14 @@
         {
             "name": "State",
             "description": "State"
+        },
+        {
+            "name": "Support Ticket",
+            "description": "Support Ticket"
+        },
+        {
+            "name": "Tenant License",
+            "description": "Tenant License"
         },
         {
             "name": "Custom Fields",
