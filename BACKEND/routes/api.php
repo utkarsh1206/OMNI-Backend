@@ -12,14 +12,14 @@ use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserGroupController;
 use App\Http\Controllers\Api\TenantRoleController;
-use App\Http\Controllers\Api\SupportticketController;
+use App\Http\Controllers\Api\SupportTicketController;
 use App\Http\Controllers\Api\EmailConfigureController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\MailDetailController;
 use App\Http\Controllers\Api\NoteController;
 use App\Http\Controllers\Api\SupportTicketNotificationController;
-use App\Http\Controllers\Api\SupporttickettransferController;
-use App\Http\Controllers\Api\SupportticketmergeController;
+use App\Http\Controllers\Api\SupportTicketTransferController;
+use App\Http\Controllers\Api\SupportTicketMergeController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Api\CallCDRListController;
 use App\Http\Controllers\Api\IngroupListController;
@@ -94,10 +94,8 @@ Route::get('sla-priority', [SLAReportController::class, 'prioritySLA']);
 Route::get('sla-category', [SLAReportController::class, 'categorySLA']);
 Route::get('sla-incident', [SLAReportController::class, 'incidentSLA']);
 
-Route::apiResource('supportticket', SupportticketController::class);
-Route::post('updateticketstatus/{supportticket}', [SupportticketController::class, 'statusupdate']);
-Route::post('transfer', [SupporttickettransferController::class, 'store']);
-Route::post('merge', [SupportticketmergeController::class, 'store']);
+Route::apiResource('supportticket', SupportTicketController::class);
+Route::post('updateticketstatus/{supportticket}', [SupportTicketController::class, 'statusupdate']);
 
 Route::middleware(['jwt.auth'])->group(function () {
     Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
@@ -165,4 +163,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']); // Get a single lead by ID
     Route::put('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'update']);
     Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
+    
+    // Support Ticket Controller
+    Route::post('transfer', [SupportTicketTransferController::class, 'store']);
+    Route::post('merge', [SupportTicketMergeController::class, 'store']);
 });

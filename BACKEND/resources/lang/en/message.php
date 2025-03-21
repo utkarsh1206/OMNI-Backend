@@ -137,6 +137,9 @@ return [
     'invalid_license_format'=>'Invalid license format',
     'decryption_failed'=>'Decryption failed',
     'invalid_license_data'=>'Invalid license data',
+    // Support Ticket
+    'transfer_ticket' => 'Transfer ticket successfully',
+    'ticket_merge' => 'Tickets Merge Successfully',
 ]   
 ?>
 

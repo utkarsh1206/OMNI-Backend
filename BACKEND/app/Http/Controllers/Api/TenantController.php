@@ -2,17 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\TenantsResource;
-use App\Http\Resources\UsersResource;
 use App\Models\Tenant;
-use App\Models\Users;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Api\LicenseController;
-use Illuminate\Support\Facades\Cache;
 use App\Repositories\TenantRepository;
 use App\Http\Requests\TenantRequest;
 use Swagger\Annotations as SWG;
@@ -22,7 +15,6 @@ class TenantController extends Controller
     protected $licenseController;
 
     private $tenantRepository;
-
 
     public function __construct(LicenseController $licenseController, TenantRepository $tenantRepository)
     {

@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use App\Models\MailTemplate;
 
-class SupportticketController extends Controller
+class SupportTicketController extends Controller
 {
     protected $slaService;
 

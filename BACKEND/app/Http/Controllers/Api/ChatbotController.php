@@ -5,10 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Chatbot;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\ChatbotResource;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Cache;
 use App\Repositories\ChatbotRepository;
 use App\Http\Requests\ChatbotRequest;
 use App\Http\Response\CustomApiResponse;
@@ -18,6 +15,7 @@ class ChatbotController extends Controller
 {
 
     protected $ChatbotRepository;
+    
     private $apiResponse;
 
     public function __construct(ChatbotRepository $ChatbotRepository, CustomApiResponse $customApiResponse)
