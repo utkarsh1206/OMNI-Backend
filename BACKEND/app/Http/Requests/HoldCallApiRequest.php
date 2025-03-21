@@ -27,10 +27,17 @@ class HoldCallApiRequest extends FormRequest
             'token' => 'required|string',
             'user_id' => 'required|string',
             'number' => 'nullable|string',
-            "action" => 'required|string',
+            "action" => 'required|string|in:Park,UnPark',
         ];
     }
 
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(
