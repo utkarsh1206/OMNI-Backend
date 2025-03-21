@@ -3,16 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\SupportTicketNotification;
 use App\Repositories\SupportTicketNotificationRepository;
 use Illuminate\Http\Request;
 
-/**
- * @OA\Tag(
- *     name="SupportTicketNotifications",
- *     description="Operations related to Support Ticket Notifications"
- * )
- */
 class SupportTicketNotificationController extends Controller
 {
 
@@ -25,7 +18,7 @@ class SupportTicketNotificationController extends Controller
     /**
      * @OA\Get(
      *     path="/api/notification",
-     *     tags={"SupportTicketNotifications"},
+     *     tags={"Support Ticket"},
      *     summary="Get support ticket notifications",
      *     description="Retrieve a list of support ticket notifications, filtered by support ticket ID.",
      *     @OA\Parameter(

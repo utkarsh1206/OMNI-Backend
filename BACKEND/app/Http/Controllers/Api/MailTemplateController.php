@@ -28,7 +28,7 @@ class MailTemplateController extends Controller
      *     summary="List Mail Templates with optional search and pagination",
      *     description="Fetches a list of mail templates with optional search filters and pagination.",
      *     operationId="listMailTemplates",
-     *     tags={"MailTemplates"},
+     *     tags={"Mail Templates"},
      *     @OA\Parameter(
      *         name="search",
      *         in="query",
@@ -99,7 +99,7 @@ class MailTemplateController extends Controller
      *     summary="Create a new Mail Template",
      *     description="Creates a new mail template by receiving the template details in the request body.",
      *     operationId="storeMailTemplate",
-     *     tags={"MailTemplates"},
+     *     tags={"Mail Templates"},
      *     @OA\RequestBody(
      *         required=true,
      *         description="Mail template data to be created",
@@ -165,7 +165,7 @@ class MailTemplateController extends Controller
      *     summary="Get a Mail Template by ID",
      *     description="Fetch a specific mail template by its ID.",
      *     operationId="showMailTemplate",
-     *     tags={"MailTemplates"},
+     *     tags={"Mail Templates"},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -215,7 +215,7 @@ class MailTemplateController extends Controller
      *     summary="Update a Mail Template",
      *     description="Update the details of a specific mail template by its ID.",
      *     operationId="updateMailTemplate",
-     *     tags={"MailTemplates"},
+     *     tags={"Mail Templates"},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -286,7 +286,7 @@ class MailTemplateController extends Controller
      *     summary="Delete a Mail Template by ID",
      *     description="Delete a specific mail template by its ID. If the template is not found or cannot be deleted, an appropriate error is returned.",
      *     operationId="deleteMailTemplate",
-     *     tags={"MailTemplates"},
+     *     tags={"Mail Templates"},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",

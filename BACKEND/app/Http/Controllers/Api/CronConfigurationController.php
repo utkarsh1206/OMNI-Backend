@@ -9,12 +9,6 @@ use App\Models\CronConfiguration;
 use App\Repositories\CronConfigurationRepository;
 use App\Http\Requests\CronConfigurationRequest;
 
-/**
- * @OA\Tag(
- *     name="CronConfigurations",
- *     description="Operations related to Cron Configurations"
- * )
- */
 class CronConfigurationController extends Controller
 {
 
@@ -24,10 +18,11 @@ class CronConfigurationController extends Controller
     {
         $this->cronConfigurationRepository = $cronConfigurationRepository;
     }
+
     /**
      * @OA\Get(
      *     path="/api/cron-configurations",
-     *     tags={"CronConfigurations"},
+     *     tags={"Cron Configurations"},
      *     summary="List Cron Configurations",
      *     description="Retrieve a list of cron configurations with optional search and pagination.",
      *     @OA\Parameter(
@@ -90,7 +85,7 @@ class CronConfigurationController extends Controller
     /**
      * @OA\Post(
      *     path="/api/cron-configurations",
-     *     tags={"CronConfigurations"},
+     *     tags={"Cron Configurations"},
      *     summary="Create a new Cron Configuration",
      *     description="Create a new cron configuration.",
      *     @OA\RequestBody(
@@ -133,7 +128,7 @@ class CronConfigurationController extends Controller
     /**
      * @OA\Get(
      *     path="/api/cron-configurations/{id}",
-     *     tags={"CronConfigurations"},
+     *     tags={"Cron Configurations"},
      *     summary="Get a single Cron Configuration",
      *     description="Retrieve a single cron configuration by ID.",
      *     @OA\Parameter(
@@ -164,7 +159,7 @@ class CronConfigurationController extends Controller
     /**
      * @OA\Put(
      *     path="/api/cron-configurations/{id}",
-     *     tags={"CronConfigurations"},
+     *     tags={"Cron Configurations"},
      *     summary="Update a Cron Configuration",
      *     description="Update an existing cron configuration.",
      *     @OA\Parameter(
@@ -207,10 +202,11 @@ class CronConfigurationController extends Controller
         return $this->cronConfigurationRepository->update($request,$id);
      }
 
-    /**
+   
+     /**
      * @OA\Delete(
      *     path="/api/cron-configurations/{id}",
-     *     tags={"CronConfigurations"},
+     *     tags={"Cron Configurations"},
      *     summary="Delete a Cron Configuration",
      *     description="Delete a cron configuration by ID.",
      *     @OA\Parameter(

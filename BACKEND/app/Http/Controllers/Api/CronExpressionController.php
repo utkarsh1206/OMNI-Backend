@@ -18,7 +18,7 @@ class CronExpressionController extends Controller
     /**
      * @OA\Get(
      *     path="/api/cron-expressions",
-     *     tags={"CronExpressions"},
+     *     tags={"Cron Expressions"},
      *     summary="List Cron Expressions",
      *     description="Retrieve a list of cron expressions with optional search and pagination.",
      *     @OA\Parameter(

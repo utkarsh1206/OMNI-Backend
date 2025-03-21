@@ -23,7 +23,7 @@ class MailDetailController extends Controller
      *     summary="Get Mail Details by Support Ticket ID",
      *     description="Fetches the mail details associated with a specific support ticket ID.",
      *     operationId="getMailDetailsBySupportTicketId",
-     *     tags={"MailDetails"},
+     *     tags={"Mail Details"},
      *     @OA\Parameter(
      *         name="supportticket_id",
      *         in="query",
@@ -78,7 +78,7 @@ class MailDetailController extends Controller
  *     summary="Send Mail and Store Mail Detail",
  *     description="Sends an email with attachments and stores mail details for a support ticket.",
  *     operationId="storeMailDetail",
- *     tags={"MailDetails"},
+ *     tags={"Mail Details"},
  *     @OA\RequestBody(
  *         required=true,
  *         description="Mail details to be sent and stored",

@@ -5,8 +5,6 @@ namespace App\Repositories;
 use Illuminate\Http\Request;
 use App\Models\SupportTicketNotification;
 use App\Http\Response\CustomApiResponse;
-use Exception;
-use Illuminate\Support\Facades\Log;
 
 class SupportTicketNotificationRepository
 {

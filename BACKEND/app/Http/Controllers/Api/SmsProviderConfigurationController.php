@@ -13,12 +13,7 @@ use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
-/**
- * @OA\Tag(
- *     name="SmsProviderConfigurations",
- *     description="Operations related to SMS Provider Configurations"
- * )
- */
+
 class SmsProviderConfigurationController extends Controller
 {
 
@@ -32,7 +27,7 @@ class SmsProviderConfigurationController extends Controller
     /**
      * @OA\Get(
      *     path="/api/sms-provider-configurations",
-     *     tags={"SmsProviderConfigurations"},
+     *     tags={"Sms Provider Configurations"},
      *     summary="List SMS Provider Configurations",
      *     description="Retrieve a list of SMS provider configurations with optional search filters.",
      *     @OA\Parameter(
@@ -103,7 +98,7 @@ class SmsProviderConfigurationController extends Controller
      /**
      * @OA\Post(
      *     path="/api/sms-provider-configurations",
-     *     tags={"SmsProviderConfigurations"},
+     *     tags={"Sms Provider Configurations"},
      *     summary="Create SMS Provider Configuration",
      *     description="Create a new SMS provider and its configurations.",
      *     @OA\RequestBody(
@@ -153,7 +148,7 @@ class SmsProviderConfigurationController extends Controller
     /**
      * @OA\Get(
      *     path="/api/sms-provider-configurations/{providerId}",
-     *     tags={"SmsProviderConfigurations"},
+     *     tags={"Sms Provider Configurations"},
      *     summary="Show SMS Provider Configuration",
      *     description="Retrieve the details of a specific SMS provider configuration.",
      *     @OA\Parameter(
@@ -189,7 +184,7 @@ class SmsProviderConfigurationController extends Controller
     /**
      * @OA\Put(
      *     path="/api/sms-provider-configurations/{providerId}",
-     *     tags={"SmsProviderConfigurations"},
+     *     tags={"Sms Provider Configurations"},
      *     summary="Update SMS Provider Configuration",
      *     description="Update the configurations of a specific SMS provider.",
      *     @OA\Parameter(
@@ -241,7 +236,7 @@ class SmsProviderConfigurationController extends Controller
     /**
      * @OA\Delete(
      *     path="/api/sms-provider-configurations/{providerId}",
-     *     tags={"SmsProviderConfigurations"},
+     *     tags={"Sms Provider Configurations"},
      *     summary="Delete SMS Provider Configuration",
      *     description="Delete a specific SMS provider configuration.",
      *     @OA\Parameter(
@@ -273,5 +268,4 @@ class SmsProviderConfigurationController extends Controller
     {
         return $this->smsProviderConfigurationRepository->delete($providerId);
     }
-
 }
