@@ -331,8 +331,6 @@ class MailTemplateController extends Controller
      *     )
      * )
      */
-
-
     public function destroy($id)
     {
         return $this->mailTemplateRepository->delete($id);
