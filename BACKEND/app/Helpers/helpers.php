@@ -5,10 +5,12 @@ use App\Models\EmailConfigure;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\LicenseController;
 use App\Services\AESService;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use App\Models\NeoxConfiguration;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Format price with a currency symbol.
@@ -86,15 +88,15 @@ if (! function_exists('authenticateUser')) {
 
     function authenticateUser($credentials, $model, $authGuard = 'api')
     {
-      
+
         $credentialsKey = isset($credentials['email']) ? 'email' : 'username';
         $credentialsValue = $credentials[$credentialsKey];
         $userData = $model::where($credentialsKey, $credentialsValue)->first();
-       
+
         if (!$userData) {
             return response()->json(['error' => trans('message.invalid_credentials')], 401);
         }
-        
+
         // Attempt to authenticate the user
         if (!$token = auth($authGuard)->attempt($credentials)) {
             return response()->json(['error' => trans('message.invalid_credentials')], 401);
@@ -118,6 +120,180 @@ if (! function_exists('authenticateUser')) {
                 'strict'    => true,
                 'engine'    => null,
             ]);
+        }
+    }
+}
+
+if (!function_exists('getDbConnection')) {
+    /**
+     * Set up a dynamic database connection based on the domain name.
+     *
+     * @param string|null $domainName The domain name to find the database connection details.
+     * @return \Illuminate\Database\Connection|null The database connection instance or null if no domain is provided.
+     */
+    function getDbConnection($domainName = null)
+    {
+        // If no domain name is provided, return the default connection
+        if (!$domainName) {
+            return null; // Return null to use the default connection
+        }
+
+        // Get the database name associated with the domain from 'details' table
+        $details = DB::table('details')->where('domain', $domainName)->first();
+
+        if ($details) {
+            $connectionDetails = [
+                'database' => $details->db,
+                'username' => $details->username,
+                'password' => $details->password,
+            ];
+
+            $newConnectionName = str_replace(".", "_", $domainName);
+
+            // Set the dynamic connection for this domain
+            Config::set("database.connections.$newConnectionName", [
+                'driver' => 'mysql',
+                'host' => env('DB_HOST', '127.0.0.1'),
+                'database' => $connectionDetails['database'],
+                'username' => $connectionDetails['username'],
+                'password' => $connectionDetails['password'],
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
+                'prefix' => '',
+                'strict' => true,
+                'engine' => null,
+            ]);
+
+            return DB::connection($newConnectionName);
+        }
+        return null;
+    }
+}
+
+if (!function_exists('getNeoxLocalIp')) {
+    /**
+     * Retrieve the Neox local IP from the database.
+     *
+     * @return string|array The IP address or an error response if not found.
+     */
+    function getNeoxLocalIp($domainName = null)
+    {
+        // Get the database connection (returns null if no domain is provided)
+        $connection = getDbConnection($domainName);
+
+        // If no connection is established, use the default configuration
+        if (!$connection) {
+            $ip = NeoxConfiguration::first()->neox_local_ip ?? null;
+        } else {
+            // If a custom connection is set up, get the 'neox_local_ip'
+            $ip = $connection->table('neox_configuration')->value('neox_local_ip') ?? null;
+        }
+
+        if (!$ip) {
+            return [
+                'status' => 'error',
+                'message' => trans('message.local_ip_not_found'),
+            ];
+        }
+        return $ip;
+    }
+}
+
+if (!function_exists('validateSecretKey')) {
+    /**
+     * Validate the provided API token against the stored token.
+     *
+     * @param string $token The API token to validate.
+     * @return mixed Null if valid, otherwise an error response.
+     */
+    function validateSecretKey($token, $domainName = null)
+    {
+        // Get the database connection (returns null if no domain is provided)
+        $connection = getDbConnection($domainName);
+
+        // If no connection is established, use the default configuration
+        if (!$connection) {
+            $secretKeyFromDb = NeoxConfiguration::first()->neox_token ?? null;
+        } else {
+            // If a custom connection is set up, get the 'neox_token'
+            $secretKeyFromDb = $connection->table('neox_configuration')->value('neox_token') ?? null;
+        }
+
+        if (!$secretKeyFromDb || $token !== $secretKeyFromDb) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'The provided token is invalid.',
+            ]);
+        }
+
+        return null; // Return null if validation passes
+    }
+}
+
+if (!function_exists('sendHttpRequest')) {
+    /**
+     * Send an HTTP request using Laravel's HTTP client
+     *
+     * @param string $url The API URL.
+     * @param string $method The HTTP method (GET, POST, PUT, DELETE, etc.).
+     * @param array $data The data to send with the request (optional).
+     * @param array $headers Custom headers (optional).
+     * @param bool $verifySSL Whether to verify SSL certificate (default: false).
+     * @return array The response body and status code or error message.
+     * @throws \Exception if any error occurs during the HTTP request.
+     */
+    function sendHttpRequest($url, $method = 'POST', $data = [], $headers = [], $verifySSL = false)
+    {
+        try {
+            // Set headers and prepare the request
+            $defaultHeaders = [
+                'Content-Type' => 'application/json',
+            ];
+
+            if (!empty($headers)) {
+                $defaultHeaders = array_merge($defaultHeaders, $headers);
+            }
+
+            // Send the HTTP request using Laravel's Http facade
+            $response = Http::withHeaders($defaultHeaders)
+                ->withOptions(['verify' => $verifySSL])  // Set SSL verification option
+                ->$method($url, $data);  // Use dynamic HTTP method (GET, POST, etc.)
+
+
+            // Check if the request was successful
+            if ($response->successful()) {
+                // If the response contains a code, handle it
+                $responseData = $response->json();
+                if (isset($responseData['code'])) {
+                    $formattedResponse = [
+                        'code' => $responseData['code'],
+                        'message' => $responseData['message'],
+                    ];
+
+                    if (!empty($responseData['data'])) {
+                        $formattedResponse['data'] = $responseData['data'];
+                    }
+
+                    return response()->json($formattedResponse, $response->status());
+                }
+
+                return response()->json([
+                    'message' => $responseData["message"] ?? 'No code in the response.',
+                    'data' => $responseData,
+                ], $response->status());
+            } else {
+                // Handle errors by getting the response message and code
+                $responseData = $response->json();
+                return response()->json([
+                    'message' => $responseData["message"] ?? 'Error communicating with the API.',
+                    'code' => $responseData['code'] ?? $response->status(),
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return [
+                'status_code' => 500,
+                'message' => $e->getMessage(),
+            ];
         }
     }
 }

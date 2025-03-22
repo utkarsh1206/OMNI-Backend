@@ -56,6 +56,18 @@ use App\Http\Controllers\Api\EcdialListFieldController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\ImportLeadController;
 use App\Http\Controllers\Api\CustomLeadController;
+use App\Http\Controllers\Api\CampaignApiController;
+use App\Http\Controllers\Api\DialCallApiController;
+use App\Http\Controllers\Api\DialNextCallApiController;
+use App\Http\Controllers\Api\DisposCallApiController;
+use App\Http\Controllers\Api\NeoxConfigurationController;
+use App\Http\Controllers\Api\IngroupApiController;
+use App\Http\Controllers\Api\DispositionApiController;
+use App\Http\Controllers\Api\HangupApiController;
+use App\Http\Controllers\Api\HoldCallApiController;
+use App\Http\Controllers\Api\LoginApiController;
+use App\Http\Controllers\Api\LogoutApiController;
+use App\Http\Controllers\Api\PauseResumeApiController;
 use App\Http\Controllers\Api\LiveAgentController;
 
 Route::post('login', [LoginController::class, 'login']);
@@ -167,4 +179,18 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Support Ticket Controller
     Route::post('transfer', [SupportTicketTransferController::class, 'store']);
     Route::post('merge', [SupportTicketMergeController::class, 'store']);
+    
+    Route::apiResource('neox-configurations', NeoxConfigurationController::class);
+    Route::post('/dispo_list', [DispositionApiController::class, 'dispositionListApi']);
+    Route::post('/api_pause_resume', [PauseResumeApiController::class, 'pauseResumeApi']);
+    Route::post('/api_dial_call', [DialCallApiController::class, 'dialCallApi']);
+    Route::post('/api_logout', [LogoutApiController::class, 'agentLogoutApi']);
+    Route::post('/api_hangup', [HangupApiController::class, 'hangupApi']);
+    Route::post('/api_dispos_call', [DisposCallApiController::class, 'disposCallApi']);
+    Route::post('/api_hold_call', [HoldCallApiController::class, 'holdCallApi']);
+    Route::post('/api_dial_next', [DialNextCallApiController::class, 'dialNextCallApi']);
 });
+
+Route::post('/camp_list', [CampaignApiController::class, 'campaignListApi']);
+Route::post('/ingroup_list', [IngroupApiController::class, 'ingroupListApi']);
+Route::post('/api_login', [LoginApiController::class, 'agentLoginApi']);
