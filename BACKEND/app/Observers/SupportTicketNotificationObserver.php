@@ -3,7 +3,6 @@
 namespace App\Observers;
 
 use App\Models\Supportticketnotification;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use App\Services\SlaService;
 use App\Models\Supportticket;

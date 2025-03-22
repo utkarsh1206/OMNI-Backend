@@ -10,7 +10,7 @@ use App\Models\Users;
 
 class TenantObserver
 {
-  
+
     public function created(Tenant $tenants): void
     {
         $lastInsertedId = $tenants->id;
@@ -49,7 +49,7 @@ class TenantObserver
             'tenant_id'  => $lastInsertedId,
             'type' => 0,
             'first_name' => request()->first_name,
-            'last_name'  =>request()->last_name,
+            'last_name'  => request()->last_name,
             'password'   => bcrypt(request()->password),
             'email'      => request()->email,
             'username'   => request()->username,

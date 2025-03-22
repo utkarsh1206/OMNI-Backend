@@ -39,7 +39,7 @@ class DatabaseServiceProvider extends ServiceProvider
             }
         }
         $details = Detail::where('domain', $domain)->first();
-       
+
         if ($details) {
             $connectionDetails = [
                 'database' => $details->db,

@@ -38,7 +38,7 @@ class SmsService implements ShouldQueue
                     return $this->sendWithTwilio($message, $toPhone, $configArr);
                 case 'custom':
                     $configArr = [];
-    
+
                     $configurations = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value", "config_key");
                     if ($configurations->count()) {
                         $configArr =  $configurations->toArray();
@@ -72,14 +72,14 @@ class SmsService implements ShouldQueue
 
     private function sendWithCustomProvider(string $templateName, string $message, string $toPhone, array $configArr, $providerId)
     {
-       // dd($templateName);
+        // dd($templateName);
         $client = new GuzzleClient();
         $apiName = $configArr['api_name'] ?? '';
         $queryParams = $configArr['query_params'] ?? '';
         $phoneNumber = $configArr['phone_number'] ?? '';
         $apiUrl = $configArr['api_url'] ?? '';
         $method = $configArr['method'] ?? 'POST';
-        
+
         switch ($templateName) {
             case 'Ticket Created':
                 $template_id = config('omni.INCIDENT_CREATE');
@@ -91,7 +91,7 @@ class SmsService implements ShouldQueue
         try {
             $queryParams = str_replace("[PHONE_NUMBER]", $phoneNumber, $queryParams);
             $queryParams = str_replace("[TEMPLATE_ID]", $template_id, $queryParams);
-            $queryParams .="&message=".rawurldecode($message);
+            $queryParams .= "&message=" . rawurldecode($message);
             $urlWithParams = $apiUrl . $apiName . $queryParams;
             $response = $client->request($method, $urlWithParams);
             $responseBody = json_decode($response->getBody(), true);

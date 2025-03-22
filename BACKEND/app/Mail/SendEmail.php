@@ -27,10 +27,10 @@ class SendEmail extends Mailable implements ShouldQueue
     public function build()
     {
         $email = $this->view('emails.send')
-        ->with([
-            'content' => $this->content,
-        ])
-        ->subject($this->subject);
+            ->with([
+                'content' => $this->content,
+            ])
+            ->subject($this->subject);
         // Add attachments
         if (count($this->attach) > 0) {
             foreach ($this->attach as $attachment) {
@@ -42,7 +42,7 @@ class SendEmail extends Mailable implements ShouldQueue
                 }
             }
         }
-       
+
 
         return $email;
     }
