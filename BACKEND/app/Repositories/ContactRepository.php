@@ -3,11 +3,9 @@
 namespace App\Repositories;
 
 use Illuminate\Http\Request;
-use App\Models\UserGroup;
 use App\Models\Contact;
 use App\Models\Account;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use App\Http\Response\CustomApiResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
