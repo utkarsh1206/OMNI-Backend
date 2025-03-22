@@ -10,6 +10,7 @@ use App\Http\Requests\TenantRoleRequest;
 use App\Repositories\TenantRoleRepository;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
+
 class TenantRoleController extends Controller
 {
 
@@ -73,5 +74,4 @@ class TenantRoleController extends Controller
             return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-  
 }

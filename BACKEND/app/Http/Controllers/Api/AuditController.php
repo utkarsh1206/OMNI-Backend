@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -91,7 +91,7 @@ class AuditController extends Controller
      */
     public function index(Request $request)
     {
-     return $this->auditRepostory->list($request);  
+        return $this->auditRepostory->list($request);
     }
 
     /**
@@ -136,6 +136,6 @@ class AuditController extends Controller
     public function show($id)
     {
         $info = ActivityLog::find($id);
-        return $this->auditRepostory->view($info);  
+        return $this->auditRepostory->view($info);
     }
 }

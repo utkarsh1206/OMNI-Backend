@@ -25,11 +25,11 @@ class PhoneRequest extends FormRequest
         $phoneId = $this->route('phone');
 
         return [
-            'extension' => $this->isMethod('post') 
+            'extension' => $this->isMethod('post')
                 ? 'required|unique:phones,extension' // Add: check uniqueness when adding
                 : "required|unique:phones,extension,{$phoneId}", // Update: ignore unique check for current record
             
-            'login' => $this->isMethod('post') 
+            'login' => $this->isMethod('post')
                 ? 'required|unique:phones,login|alpha_num|between:2,320' // Add: check uniqueness when adding
                 : "required|unique:phones,login,{$phoneId}|alpha_num|between:2,320", // Update: ignore unique check for current record
             

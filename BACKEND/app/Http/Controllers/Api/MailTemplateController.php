@@ -56,13 +56,13 @@ class MailTemplateController extends Controller
      *         @OA\JsonContent(
      *             type="object",
      *             properties={
-     *                 @OA\Property(property="meta", type="object", 
+     *                 @OA\Property(property="meta", type="object",
      *                     @OA\Property(property="current_page", type="integer"),
      *                     @OA\Property(property="last_page", type="integer"),
      *                     @OA\Property(property="per_page", type="integer"),
      *                     @OA\Property(property="total", type="integer")
      *                 ),
-     *                 @OA\Property(property="data", type="array", 
+     *                 @OA\Property(property="data", type="array",
      *                     @OA\Items(
      *                         type="object",
      *                         properties={

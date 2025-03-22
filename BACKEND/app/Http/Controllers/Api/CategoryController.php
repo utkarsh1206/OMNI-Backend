@@ -65,13 +65,13 @@ class CategoryController extends Controller
      *         response=200,
      *         description="A list of categories",
      *         @OA\JsonContent(
-     *             @OA\Property(property="meta", type="object", 
+     *             @OA\Property(property="meta", type="object",
      *                 @OA\Property(property="current_page", type="integer"),
      *                 @OA\Property(property="last_page", type="integer"),
      *                 @OA\Property(property="per_page", type="integer"),
      *                 @OA\Property(property="total", type="integer")
      *             ),
-     *             @OA\Property(property="data", type="array", 
+     *             @OA\Property(property="data", type="array",
      *                 @OA\Items(type="object")
      *             )
      *         )
@@ -84,7 +84,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-       return $this->categoryRepository->list($request);
+        return $this->categoryRepository->list($request);
     }
 
 
@@ -192,7 +192,7 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-       return $this->categoryRepository->show($id);
+        return $this->categoryRepository->show($id);
     }
 
 
@@ -265,7 +265,7 @@ class CategoryController extends Controller
 
     public function update(CategoryRequest $request, $id)
     {
-        return $this->categoryRepository->update($request,$id);
+        return $this->categoryRepository->update($request, $id);
     }
 
     /**
@@ -306,6 +306,6 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-       return $this->categoryRepository->delete($id);
+        return $this->categoryRepository->delete($id);
     }
 }

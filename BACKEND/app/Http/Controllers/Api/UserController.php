@@ -9,7 +9,6 @@ use App\Http\Requests\UserRequest;
 
 use App\Repositories\UserRepository;
 
-
 class UserController extends Controller
 {
     protected $userRepository;
@@ -190,7 +189,7 @@ class UserController extends Controller
  */
     public function index(Request $request)
     {
-       return $this->userRepository->list($request);
+        return $this->userRepository->list($request);
     }
 
     /**
@@ -238,7 +237,7 @@ class UserController extends Controller
  *             type="object",
  *             @OA\Property(property="status", type="string", example="success"),
  *             @OA\Property(property="message", type="string", example="User created successfully."),
- *             @OA\Property(property="data", type="object", 
+ *             @OA\Property(property="data", type="object",
  *                 @OA\Property(property="id", type="integer", example=1),
  *                 @OA\Property(property="username", type="string", example="johndoe"),
  *                 @OA\Property(property="first_name", type="string", example="John"),
@@ -320,7 +319,7 @@ class UserController extends Controller
  *             type="object",
  *             @OA\Property(property="status", type="string", example="success"),
  *             @OA\Property(property="message", type="string", example="Data fetched successfully."),
- *             @OA\Property(property="data", type="object", 
+ *             @OA\Property(property="data", type="object",
  *                 @OA\Property(property="id", type="integer", example=1),
  *                 @OA\Property(property="username", type="string", example="johndoe"),
  *                 @OA\Property(property="first_name", type="string", example="John"),
@@ -442,7 +441,7 @@ class UserController extends Controller
  *             type="object",
  *             @OA\Property(property="status", type="string", example="success"),
  *             @OA\Property(property="message", type="string", example="User updated successfully."),
- *             @OA\Property(property="data", type="object", 
+ *             @OA\Property(property="data", type="object",
  *                 @OA\Property(property="id", type="integer", example=1),
  *                 @OA\Property(property="username", type="string", example="johndoe"),
  *                 @OA\Property(property="first_name", type="string", example="John"),
@@ -505,7 +504,7 @@ class UserController extends Controller
  */
     public function update(Request $request, Users $user)
     {
-        return $this->userRepository->update($request,$user);
+        return $this->userRepository->update($request, $user);
     }
 
     /**
@@ -533,7 +532,7 @@ class UserController extends Controller
  *             type="object",
  *             @OA\Property(property="status", type="string", example="success"),
  *             @OA\Property(property="message", type="string", example="User deleted successfully."),
- *             @OA\Property(property="data", type="object", 
+ *             @OA\Property(property="data", type="object",
  *                 @OA\Property(property="id", type="integer", example=1),
  *                 @OA\Property(property="username", type="string", example="johndoe"),
  *                 @OA\Property(property="first_name", type="string", example="John"),
@@ -734,7 +733,7 @@ class UserController extends Controller
  */
     public function myprofile(Request $request)
     {
-       return $this->userRepository->myprofile($request);
+        return $this->userRepository->myprofile($request);
     }
 
     /**
@@ -788,6 +787,6 @@ class UserController extends Controller
  */
     public function getBranding(Request $request)
     {
-       return $this->userRepository->getBranding($request);
+        return $this->userRepository->getBranding($request);
     }
 }

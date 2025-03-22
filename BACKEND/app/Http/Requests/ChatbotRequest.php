@@ -35,4 +35,3 @@ class ChatbotRequest extends FormRequest
         ];
     }
 }
-

@@ -5,7 +5,6 @@ use App\Http\Controllers\Controller;
 use App\Repositories\UpdateCustomFieldRepository;
 use Illuminate\Http\Request;
 
-
 class UpdateCustomFieldController extends Controller
 {
 

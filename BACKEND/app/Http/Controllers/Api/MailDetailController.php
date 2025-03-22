@@ -7,7 +7,6 @@ use App\Http\Requests\MailDetailIndexRequest;
 use App\Http\Requests\MailDetailRequest;
 use App\Repositories\MailDetailRepository;
 
-
 class MailDetailController extends Controller
 {
 

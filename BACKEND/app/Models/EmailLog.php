@@ -16,7 +16,7 @@ class EmailLog extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function email_template()
+    public function emailTemplate()
     {
         return $this->belongsTo(MailTemplate::class, 'email_template_id');
     }

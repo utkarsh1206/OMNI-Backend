@@ -26,7 +26,7 @@ class SupportTicketMergeRepository
             $Supportticket = Supportticket::where('id', $request->merge_supportticket_id)->get();
 
             MailDetail::where('supportticket_id', $request->merge_supportticket_id)
-            ->update(['supportticket_id' => $request->supportticket_id]);         
+            ->update(['supportticket_id' => $request->supportticket_id]);
             SupportTicketNotification::create([
                 'type' => "Merged",
                 'comment' => "Ticket merged with ".$Supportticket->first()->support_ticket_id,

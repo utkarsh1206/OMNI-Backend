@@ -13,7 +13,6 @@ use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
-
 class SmsProviderConfigurationController extends Controller
 {
 
@@ -92,7 +91,7 @@ class SmsProviderConfigurationController extends Controller
      */
     public function index(Request $request)
     {
-       return $this->smsProviderConfigurationRepository->list($request);
+        return $this->smsProviderConfigurationRepository->list($request);
     }
 
      /**
@@ -230,7 +229,7 @@ class SmsProviderConfigurationController extends Controller
      */
     public function update(SmsProviderConfigurationRequest $request, $providerId)
     {
-       return $this->smsProviderConfigurationRepository->update($request,$providerId);
+        return $this->smsProviderConfigurationRepository->update($request, $providerId);
     }
 
     /**

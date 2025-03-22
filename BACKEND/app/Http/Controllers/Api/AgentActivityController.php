@@ -10,11 +10,11 @@ use App\Repositories\AgentActivityRepository;
 class AgentActivityController extends Controller
 {
   
-  private $agentActivityRepository;
-  public function __construct(AgentActivityRepository $agentActivityRepository)
-  {
-    $this->agentActivityRepository = $agentActivityRepository;
-  }
+    private $agentActivityRepository;
+    public function __construct(AgentActivityRepository $agentActivityRepository)
+    {
+        $this->agentActivityRepository = $agentActivityRepository;
+    }
 
     /**
  * @OA\Get(
@@ -118,5 +118,4 @@ class AgentActivityController extends Controller
     {
         return $this->agentActivityRepository->index($request);
     }
-
-  }
+}

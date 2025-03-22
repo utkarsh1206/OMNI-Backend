@@ -168,7 +168,7 @@ class CallCDRListController extends Controller
         $ingroup = $request->input('ingroup');
         $search_list = $request->input('search_list');
 
-        // if ($search_list !== null && 
+        // if ($search_list !== null &&
         // !in_array($campaign, ['none', 'empty', 'all']))
         // {
 

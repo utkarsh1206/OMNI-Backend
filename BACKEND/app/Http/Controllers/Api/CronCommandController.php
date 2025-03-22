@@ -79,6 +79,6 @@ class CronCommandController extends Controller
 
     public function index(Request $request)
     {
-        return $this->cronCommandRepository->list($request);  
+        return $this->cronCommandRepository->list($request);
     }
 }

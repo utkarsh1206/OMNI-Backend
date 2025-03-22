@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 
-
 class EmailConfigureController extends Controller
 {
 
@@ -47,7 +46,7 @@ class EmailConfigureController extends Controller
      *         response=200,
      *         description="List of email configurations",
      *         @OA\JsonContent(
-     *             @OA\Property(property="meta", type="object", 
+     *             @OA\Property(property="meta", type="object",
      *                 @OA\Property(property="current_page", type="integer"),
      *                 @OA\Property(property="last_page", type="integer"),
      *                 @OA\Property(property="per_page", type="integer"),
@@ -66,7 +65,7 @@ class EmailConfigureController extends Controller
      */
     public function index(Request $request)
     {
-       return $this->emailConfigureRepository->list($request);
+        return $this->emailConfigureRepository->list($request);
     }
 
 
@@ -123,7 +122,7 @@ class EmailConfigureController extends Controller
      */
     public function store(EmailConfigureRequest $request)
     {
-       return $this->emailConfigureRepository->store($request);
+        return $this->emailConfigureRepository->store($request);
     }
 
      /**
@@ -161,7 +160,7 @@ class EmailConfigureController extends Controller
      */
     public function show(EmailConfigure $email_configure)
     {
-       return $this->emailConfigureRepository->show($email_configure);
+        return $this->emailConfigureRepository->show($email_configure);
     }
 
 
@@ -223,7 +222,7 @@ class EmailConfigureController extends Controller
      */
     public function update(Request $request, EmailConfigure $email_configure)
     {
-        return $this->emailConfigureRepository->update($request,$email_configure);
+        return $this->emailConfigureRepository->update($request, $email_configure);
     }
 
      /**
@@ -264,6 +263,6 @@ class EmailConfigureController extends Controller
      */
     public function destroy(EmailConfigure $email_configure)
     {
-      return $this->emailConfigureRepository->delete($email_configure);
+        return $this->emailConfigureRepository->delete($email_configure);
     }
 }

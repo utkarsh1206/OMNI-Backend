@@ -26,7 +26,7 @@ class TenantLicenseController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/tenant-license/{id}", 
+     *     path="/api/tenant-license/{id}",
      *     tags={"Tenant License"},
      *     security={{"bearerAuth": {}}},
      *     summary="Update Tenant License",
@@ -149,7 +149,7 @@ class TenantLicenseController extends Controller
                 'live_agent_ct' => $validatedData['live_agent_ct'],
                 'manager_ct' => $validatedData['manager_ct'],
                 'updated_at' => $currentDateEpoch,
-                'created_at' => $currentDateEpoch, 
+                'created_at' => $currentDateEpoch,
             ]
         );
 
@@ -163,7 +163,7 @@ class TenantLicenseController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/tenant/{id}/license", 
+     *     path="/api/tenant/{id}/license",
      *     tags={"Tenant License"},
      *  security={{"bearerAuth": {}}},
      *     summary="Get Tenant License",

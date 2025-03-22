@@ -55,6 +55,6 @@ class SupportTicketNotificationController extends Controller
      */
     public function index(Request $request)
     {
-     return $this->supportTicketNotificationRepository->list($request);
+        return $this->supportTicketNotificationRepository->list($request);
     }
 }

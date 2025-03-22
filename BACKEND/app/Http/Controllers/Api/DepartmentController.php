@@ -7,7 +7,6 @@ use App\Http\Requests\DepartmentRequest;
 use Illuminate\Http\Request;
 use App\Repositories\DepartmentRepository;
 
-
 class DepartmentController extends Controller
 {
 
@@ -55,7 +54,7 @@ class DepartmentController extends Controller
      *         response=200,
      *         description="A list of departments",
      *         @OA\JsonContent(
-     *             @OA\Property(property="meta", type="object", 
+     *             @OA\Property(property="meta", type="object",
      *                 @OA\Property(property="current_page", type="integer"),
      *                 @OA\Property(property="last_page", type="integer"),
      *                 @OA\Property(property="per_page", type="integer"),
@@ -74,7 +73,7 @@ class DepartmentController extends Controller
      */
     public function index(Request $request)
     {
-       return $this->departmentRepository->list($request);
+        return $this->departmentRepository->list($request);
     }
 
      /**
@@ -117,7 +116,7 @@ class DepartmentController extends Controller
      */
     public function store(DepartmentRequest $request)
     {
-       $this->departmentRepository->store($request);
+        $this->departmentRepository->store($request);
     }
 
 
@@ -156,7 +155,7 @@ class DepartmentController extends Controller
      */
     public function show($id)
     {
-       return $this->departmentRepository->show($id);
+        return $this->departmentRepository->show($id);
     }
 
     /**
@@ -213,7 +212,7 @@ class DepartmentController extends Controller
      */
     public function update(DepartmentRequest $request, $id)
     {
-      return $this->departmentRepository->update($request,$id);
+        return $this->departmentRepository->update($request, $id);
     }
 
       /**

@@ -325,7 +325,6 @@ class SupportTicketController extends Controller
         ]);
         // Attempt to send the email
         try {
-
             Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
             logEmail([
                 "user_id" => $request->assign_to_id,
@@ -419,7 +418,7 @@ class SupportTicketController extends Controller
         ]);
     }
 
-    public function createTicket($supportticket, $type, $comment, $apiUser, $statusChange = NULL)
+    public function createTicket($supportticket, $type, $comment, $apiUser, $statusChange = null)
     {
         $notification = SupportTicketNotification::create([
             'type' => $statusChange ?? $type,

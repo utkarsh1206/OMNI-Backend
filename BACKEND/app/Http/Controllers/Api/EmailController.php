@@ -23,7 +23,7 @@ class EmailController extends Controller
      *     description="Sends an email to a specified recipient using SMTP settings from the database.",
      *     operationId="sendEmail",
      *     tags={"Email"},
-     * 
+     *
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -34,7 +34,7 @@ class EmailController extends Controller
      *             @OA\Property(property="to", type="string", format="email", example="user@example.com", description="Recipient's email address")
      *         )
      *     ),
-     * 
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Email sent successfully",
@@ -43,7 +43,7 @@ class EmailController extends Controller
      *             @OA\Property(property="message", type="string", example="Email sent successfully")
      *         )
      *     ),
-     * 
+     *
      *     @OA\Response(
      *         response=500,
      *         description="Failed to send email",

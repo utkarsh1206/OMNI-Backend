@@ -20,14 +20,14 @@ class CategoryRequest extends FormRequest
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
   
-     public function rules(): array
+    public function rules(): array
     {
         $categoryId = $this->route('category');
 
         $rules = [
-            'name' => 'required|string|unique:categories,name',
-            'description' => 'nullable|string',
-            'department_id' => 'required|exists:departments,id',
+           'name' => 'required|string|unique:categories,name',
+           'description' => 'nullable|string',
+           'department_id' => 'required|exists:departments,id',
         ];
 
         // If this is an update request, we need to exclude the current category from the unique validation
@@ -37,5 +37,4 @@ class CategoryRequest extends FormRequest
 
         return $rules;
     }
-
 }

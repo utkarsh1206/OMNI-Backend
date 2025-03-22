@@ -23,7 +23,7 @@ class UserListController extends Controller
      *     description="Fetches a list of users with a user level less than 8, ordered by username.",
      *     operationId="getUsers",
      *     tags={"Users"},
-     * 
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -35,7 +35,7 @@ class UserListController extends Controller
      *             )
      *         )
      *     ),
-     * 
+     *
      *     @OA\Response(
      *         response=400,
      *         description="Bad Request"
@@ -44,6 +44,6 @@ class UserListController extends Controller
      */
     public function index()
     {
-       return $this->userListRepository->list();
+        return $this->userListRepository->list();
     }
 }

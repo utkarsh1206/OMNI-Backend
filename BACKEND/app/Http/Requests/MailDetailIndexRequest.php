@@ -22,7 +22,7 @@ class MailDetailIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'supportticket_id' => 'required', 
+            'supportticket_id' => 'required',
         ];
     }
 }

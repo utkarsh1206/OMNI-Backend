@@ -22,7 +22,7 @@ class NoteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'supportticket_id' => 'required|integer', 
+            'supportticket_id' => 'required|integer',
         ];
     }
 }

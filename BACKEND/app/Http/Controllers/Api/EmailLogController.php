@@ -9,7 +9,6 @@ use App\Http\Resources\EmailLogResource;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-
 class EmailLogController extends Controller
 {
     protected $emailLogRepository;

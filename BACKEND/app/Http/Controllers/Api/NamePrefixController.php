@@ -81,6 +81,4 @@ class NamePrefixController extends Controller
     {
         return $this->nameSpacePrefix->list($request);
     }
-
-
 }

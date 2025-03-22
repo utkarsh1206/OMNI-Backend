@@ -18,7 +18,7 @@ class Users extends Authenticatable implements JWTSubject
     protected $table = 'users';
 
     protected $fillable = [
-        //"tenant_id",
+        // "tenant_id",
         "type",
         "first_name",
         "last_name",
@@ -43,6 +43,7 @@ class Users extends Authenticatable implements JWTSubject
     ];
 
     protected $addPhoneToJWT = false;
+
     // Method to toggle the addition of phone
     public function setAddPhoneToJWT($flag)
     {
@@ -58,56 +59,58 @@ class Users extends Authenticatable implements JWTSubject
 
     public function getJWTCustomClaims()
     {
+        $permission = "";
+        $permission_array = [];
+
         $postData = Request::all(); // Accessing all post data
 
         $tenantRoleId = DB::table('omnichannel.tenants')
-                ->where('domain_name', $postData['domain'])
-                ->value('tenant_role_id');
-        $permission = "";
+            ->where('domain_name', $postData['domain'])
+            ->value('tenant_role_id');
+
         if ($tenantRoleId) {
             $permission = DB::table('omnichannel.tenant_role')
                 ->where('id', $tenantRoleId)
                 ->value('permission');
         }
-        $permission_array = [];
-        if (!empty(json_decode($permission, true))) {
-            foreach (json_decode($permission, true) as $permission_key => $permission_value) {
-                if ($permission_value['view'] ==1) {
-        if (!empty(json_decode($permission, true))) {
-            foreach (json_decode($permission, true) as $permission_key => $permission_value) {
 
+        if (!empty(json_decode($permission, true))) {
+            foreach (json_decode($permission, true) as $permission_key => $permission_value) {
                 if ($permission_value['view'] == 1) {
+                    if (!empty(json_decode($permission, true))) {
+                        foreach (json_decode($permission, true) as $permission_key => $permission_value) {
+                            if ($permission_value['view'] == 1) {
+                                $view_name = DB::table('omnichannel.menu_permissions')
+                                    ->where('module_name', $permission_key)
+                                    ->value('view_name');
+                                $permission_array[] = $view_name;
+                            }
+                        }
+                    }
 
-                    $view_name = DB::table('omnichannel.menu_permissions')
-                    ->where('module_name', $permission_key)
-                    ->value('view_name');
-                        ->where('module_name', $permission_key)
-                        ->value('view_name');
-                    $permission_array[] = $view_name;
+                    $campaign = isset($postData['campaign']) ? $postData['campaign'] : null;
+
+                    $claims = [
+                        'id' => $this->id,
+                        'username' => $this->username,
+                        'email' => $this->email,
+                        'role_id' => $this->role_id,
+                        'domain' =>  $postData['domain'],
+                        'permission' => json_encode($permission_array),
+                    ];
+
+                    if ($postData['flag'] == 2) {
+                        $claims['campaign'] = $campaign;
+                    }
+
+                    // Conditionally add phone to JWT claims if flag == 2
+                    if ($this->addPhoneToJWT) {
+                        $claims['phone'] = $this->phone;
+                    }
+
+                    return $claims;
                 }
             }
         }
-
-        $campaign = isset($postData['campaign']) ? $postData['campaign'] : null;
-
-        $claims = [
-            'id' => $this->id,
-            'username' => $this->username,
-            'email' => $this->email,
-            'role_id' => $this->role_id,
-            'domain' =>  $postData['domain'],
-            'permission' => json_encode($permission_array),
-        ];
-
-        if($postData['flag'] == 2){
-            $claims['campaign'] = $campaign;
-        }
-
-        // Conditionally add phone to JWT claims if flag == 2
-        if ($this->addPhoneToJWT) {
-            $claims['phone'] = $this->phone;
-        }
-
-        return $claims;
     }
 }

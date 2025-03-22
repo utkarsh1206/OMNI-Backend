@@ -54,10 +54,10 @@ class IncidentTypeRepository
             }
 
             if ($page === 'all') {
-                $incidentType = $query->with('category.department', 'sla_settings')->get();
+                $incidentType = $query->with('category.department', 'slaSettings')->get();
                 return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.fetch_data'));
             } else {
-                $incidentType = $query->with('category.department', 'sla_settings')->paginate($perPage);
+                $incidentType = $query->with('category.department', 'slaSettings')->paginate($perPage);
                 return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.fetch_data'));
             }
         } catch (QueryException $e) {
@@ -132,7 +132,7 @@ class IncidentTypeRepository
     public function show($id)
     {
         try {
-            $incidentType = IncidentType::with('category.department', 'sla_settings')->find($id);
+            $incidentType = IncidentType::with('category.department', 'slaSettings')->find($id);
 
             if (!$incidentType) {
                 return response()->json([

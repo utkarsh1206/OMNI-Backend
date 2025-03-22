@@ -11,7 +11,7 @@ class IngroupApiController extends Controller
     public function ingroupListApi(IngroupListRequest $request)
     {
         $domainName = $request->domain_name;
-        if (!$domainName){
+        if (!$domainName) {
             return response()->json(['error' => 'Domain name is required']);
         }
         

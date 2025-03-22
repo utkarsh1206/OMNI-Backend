@@ -23,7 +23,7 @@ class CampaignListController extends Controller
      *     description="Fetches a list of campaigns excluding those with a 'VOICE_BLASTER' dial method.",
      *     operationId="getCampaigns",
      *     tags={"Campaigns"},
-     * 
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -36,7 +36,7 @@ class CampaignListController extends Controller
      *             )
      *         )
      *     ),
-     * 
+     *
      *     @OA\Response(
      *         response=400,
      *         description="Bad Request"

@@ -57,7 +57,7 @@ class OccupationController extends Controller
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="occupation_name", type="string", example="Software Developer"),
      *                     @OA\Property(property="status", type="string", example="active"),
-     *                    
+     *
      *                 )
      *             ),
      *             @OA\Property(
@@ -86,6 +86,4 @@ class OccupationController extends Controller
     {
         return  $this->occupationRepository->list($request);
     }
-
-
 }

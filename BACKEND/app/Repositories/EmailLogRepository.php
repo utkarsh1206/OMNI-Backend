@@ -14,11 +14,11 @@ class EmailLogRepository
      */
     public function list($request)
     {
-        $query = EmailLog::with('user', 'email_template');
+        $query = EmailLog::with('user', 'emailTemplate');
 
         if ($searchTerm = $request->input('search')) {
             $query->where(function ($q) use ($searchTerm) {
-                $q->whereHas('email_template', fn($query) => $query->where('subject', 'like', "%$searchTerm%"))
+                $q->whereHas('emailTemplate', fn($query) => $query->where('subject', 'like', "%$searchTerm%"))
                   ->orWhereHas('user', fn($query) => $query->where('username', 'like', "%$searchTerm%")
                                                             ->orWhere('email', 'like', "%$searchTerm%"));
             });

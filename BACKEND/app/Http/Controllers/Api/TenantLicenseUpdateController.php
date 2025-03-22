@@ -35,7 +35,6 @@ class TenantLicenseUpdateController extends Controller
         $this->updateOrInsertLicense($databaseName, $domianName, $id, $licenseKey);
 
         return response()->json(['message' => 'License updated successfully.'], 200);
-            
     }
 
     private function updateOrInsertLicense($databaseName, $domianName, $tenantId, $licenseKey)

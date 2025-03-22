@@ -22,7 +22,7 @@ class IncidentType extends Model
         return $this->category->belongsTo(Department::class);
     }
 
-    public function sla_settings()
+    public function slaSettings()
     {
         return $this->belongsTo(SlaSetting::class, 'sla_id');
     }

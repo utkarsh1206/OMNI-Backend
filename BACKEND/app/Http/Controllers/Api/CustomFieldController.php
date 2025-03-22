@@ -87,7 +87,7 @@ class CustomFieldController extends Controller
             ->get();
             Log::info('Fetched raw fields', ['fields' => $fields]);
 
-        $mappedFields = $fields->map(function($field) {
+        $mappedFields = $fields->map(function ($field) {
             return [
                 'label' => $field->field_label,
                 'type' => $field->field_type,

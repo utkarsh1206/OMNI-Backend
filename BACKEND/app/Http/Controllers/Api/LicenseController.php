@@ -23,9 +23,9 @@ class LicenseController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/encode-license", 
+     *     path="/api/encode-license",
      *     tags={"License"},
-     *     security={{"apiAuth": {}}}, 
+     *     security={{"apiAuth": {}}},
      *     summary="Encode License Data",
      *     description="This endpoint is used to encode license data such as validity date, number of agents, number of live agents, and number of ACL users.",
      *     operationId="encodeLicense",
@@ -109,9 +109,9 @@ class LicenseController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/decode-license", 
+     *      path="/api/decode-license",
      *     tags={"License"},
-     *     security={{"apiAuth": {}}}, 
+     *     security={{"apiAuth": {}}},
      *     summary="Decode License Data",
      *     description="This endpoint is used to decode license data, returning the details of the license such as validity date, number of agents, number of live agents, and number of ACL users. The license key is decrypted using the host ID.",
      *     operationId="decodeLicense",

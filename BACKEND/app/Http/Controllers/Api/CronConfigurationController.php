@@ -79,7 +79,7 @@ class CronConfigurationController extends Controller
      */
     public function index(Request $request)
     {
-       return $this->cronConfigurationRepository->list($request);
+        return $this->cronConfigurationRepository->list($request);
     }
 
     /**
@@ -122,7 +122,7 @@ class CronConfigurationController extends Controller
      */
     public function store(CronConfigurationRequest $request)
     {
-       return $this->cronConfigurationRepository->store($request);
+        return $this->cronConfigurationRepository->store($request);
     }
 
     /**
@@ -197,10 +197,10 @@ class CronConfigurationController extends Controller
      * )
      */
     
-     public function update(CronConfigurationRequest $request, $id)
-     {
-        return $this->cronConfigurationRepository->update($request,$id);
-     }
+    public function update(CronConfigurationRequest $request, $id)
+    {
+        return $this->cronConfigurationRepository->update($request, $id);
+    }
 
    
      /**

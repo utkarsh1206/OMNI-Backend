@@ -22,12 +22,12 @@ class IncidentTypeRequest extends FormRequest
     public function rules(): array
     {
         $id = $this->route('incidentType');
-       $rules = [
+        $rules = [
             'name' => 'required|string|unique:incident_types,name',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
             'priority' => 'required|in:Normal,Low,Medium,High,Critical',
-            'sla_id' => 'nullable|exists:sla_settings,id',
+            'sla_id' => 'nullable|exists:slaSettings,id',
         ];
 
         if ($id) {

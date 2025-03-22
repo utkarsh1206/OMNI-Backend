@@ -24,7 +24,7 @@ class UserGroupController extends Controller
 
     public function index(Request $request)
     {
-       $this->userGroupRepository->list($request);
+        $this->userGroupRepository->list($request);
     }
     public function store(UserGroupRequest $request)
     {
@@ -36,11 +36,11 @@ class UserGroupController extends Controller
     }
     public function update(Request $request, Usergroup $usergroup)
     {
-        return $this->userGroupRepository->update($request,$usergroup);
+        return $this->userGroupRepository->update($request, $usergroup);
     }
     
     public function destroy(Usergroup $usergroup)
     {
-       return $this->userGroupRepository->delete($usergroup);
+        return $this->userGroupRepository->delete($usergroup);
     }
 }

@@ -22,7 +22,7 @@ class IngroupListController extends Controller
      *     description="Fetches a list of inbound groups ordered by group_id.",
      *     operationId="getInboundGroups",
      *     tags={"Inbound Groups"},
-     * 
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -35,7 +35,7 @@ class IngroupListController extends Controller
      *             )
      *         )
      *     ),
-     * 
+     *
      *     @OA\Response(
      *         response=400,
      *         description="Bad Request"

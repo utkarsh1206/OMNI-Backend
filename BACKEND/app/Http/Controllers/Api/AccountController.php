@@ -10,12 +10,12 @@ use App\Repositories\AccountRepository;
 
 class AccountController extends Controller
 {
-  private $accountRepository;
+    private $accountRepository;
 
-  public function __construct(AccountRepository $accountRepository)
-  {
-    $this->accountRepository = $accountRepository;
-  }
+    public function __construct(AccountRepository $accountRepository)
+    {
+        $this->accountRepository = $accountRepository;
+    }
 
 
   /**
@@ -130,10 +130,10 @@ class AccountController extends Controller
    *     )
    * )
    */
-  public function index(Request $request)
-  {
-    return $this->accountRepository->list($request);
-  }
+    public function index(Request $request)
+    {
+        return $this->accountRepository->list($request);
+    }
 
 
   /**
@@ -314,10 +314,10 @@ class AccountController extends Controller
    *     )
    * )
    */
-  public function store(AccountRequest $request)
-  {
-    return $this->accountRepository->store($request);
-  }
+    public function store(AccountRequest $request)
+    {
+        return $this->accountRepository->store($request);
+    }
 
 
   /**
@@ -392,10 +392,10 @@ class AccountController extends Controller
    *     )
    * )
    */
-  public function show(Account $account)
-  {
-    return $this->accountRepository->show($account);
-  }
+    public function show(Account $account)
+    {
+        return $this->accountRepository->show($account);
+    }
 
 
   /**
@@ -598,10 +598,10 @@ class AccountController extends Controller
    *     )
    * )
    */
-  public function update(AccountRequest $request, string $id)
-  {
-    return $this->accountRepository->update($request, $id);
-  }
+    public function update(AccountRequest $request, string $id)
+    {
+        return $this->accountRepository->update($request, $id);
+    }
 
   /**
    * @OA\Delete(
@@ -675,8 +675,8 @@ class AccountController extends Controller
    *     )
    * )
    */
-  public function destroy(string $id)
-  {
-    return $this->accountRepository->delete($id);
-  }
+    public function destroy(string $id)
+    {
+        return $this->accountRepository->delete($id);
+    }
 }

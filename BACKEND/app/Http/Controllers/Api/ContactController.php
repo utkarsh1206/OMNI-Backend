@@ -11,12 +11,12 @@ use App\Repositories\ContactRepository;
 class ContactController extends Controller
 {
 
-  private $contactRepository;
+    private $contactRepository;
 
-  public function __construct(ContactRepository $contactRepository)
-  {
-    $this->contactRepository = $contactRepository;
-  }
+    public function __construct(ContactRepository $contactRepository)
+    {
+        $this->contactRepository = $contactRepository;
+    }
   
   /**
    * @OA\Get(
@@ -81,10 +81,10 @@ class ContactController extends Controller
    *     )
    * )
    */
-  public function index(Request $request)
-  {
-    return $this->contactRepository->list($request);
-  }
+    public function index(Request $request)
+    {
+        return $this->contactRepository->list($request);
+    }
 
   /**
    * @OA\Post(
@@ -131,10 +131,10 @@ class ContactController extends Controller
    *     )
    * )
    */
-  public function store(ContactRequest $request)
-  {
-    return $this->contactRepository->store($request);
-  }
+    public function store(ContactRequest $request)
+    {
+        return $this->contactRepository->store($request);
+    }
 
   /**
    * @OA\Get(
@@ -163,10 +163,10 @@ class ContactController extends Controller
    *     )
    * )
    */
-  public function show(Contact $contact)
-  {
-    return $this->contactRepository->show($contact);
-  }
+    public function show(Contact $contact)
+    {
+        return $this->contactRepository->show($contact);
+    }
 
   /**
    * @OA\Put(
@@ -228,10 +228,10 @@ class ContactController extends Controller
    *     )
    * )
    */
-  public function update(ContactRequest $request, string $id)
-  {
-    return $this->contactRepository->update($request, $id);
-  }
+    public function update(ContactRequest $request, string $id)
+    {
+        return $this->contactRepository->update($request, $id);
+    }
 
   /**
    * @OA\Delete(
@@ -264,8 +264,8 @@ class ContactController extends Controller
    *     )
    * )
    */
-  public function destroy(string $id)
-  {
-    return $this->contactRepository->delete($id);
-  }
+    public function destroy(string $id)
+    {
+        return $this->contactRepository->delete($id);
+    }
 }

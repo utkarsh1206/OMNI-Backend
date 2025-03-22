@@ -24,7 +24,7 @@ class IndustryTypeController extends Controller
      *     description="Fetches a list of industry types with optional search and pagination.",
      *     operationId="getIndustryTypes",
      *     tags={"Industry Types"},
-     * 
+     *
      *     @OA\Parameter(
      *         name="search",
      *         in="query",
@@ -32,7 +32,7 @@ class IndustryTypeController extends Controller
      *         required=false,
      *         @OA\Schema(type="string")
      *     ),
-     * 
+     *
      *     @OA\Parameter(
      *         name="per_page",
      *         in="query",
@@ -40,7 +40,7 @@ class IndustryTypeController extends Controller
      *         required=false,
      *         @OA\Schema(type="integer", default=10)
      *     ),
-     * 
+     *
      *     @OA\Parameter(
      *         name="page",
      *         in="query",
@@ -48,7 +48,7 @@ class IndustryTypeController extends Controller
      *         required=false,
      *         @OA\Schema(type="string", default="1")
      *     ),
-     * 
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -70,7 +70,7 @@ class IndustryTypeController extends Controller
      *             )
      *         )
      *     ),
-     * 
+     *
      *     @OA\Response(
      *         response=400,
      *         description="Bad Request"
