@@ -1,15 +1,15 @@
 <?php
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Webklex\IMAP\Facades\Client;
-use App\Models\EmailConfigure;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Mail\SupportTicketMail;
 use Illuminate\Support\Facades\Mail;
+
 //use Webklex\IMAP\Facades\IMAP;
-use Webklex\IMAP\Flag;
 
 ini_set('memory_limit', '1024M'); // or another value like '2048M'
 
@@ -28,15 +28,15 @@ class FetchEmails extends Command
         ini_set('memory_limit', '1024M'); // or another value like '2048M'
 
         // Fetch IMAP settings from the .env file
-        
+
         $emailConfig = DB::table('ha11.email_configures')
-        ->where('type', 'gmail')
-        ->first();
-        $host =$emailConfig->imap_host;
-        $port =$emailConfig->imap_port;
-        $username =$emailConfig->imap_user;
+            ->where('type', 'gmail')
+            ->first();
+        $host = $emailConfig->imap_host;
+        $port = $emailConfig->imap_port;
+        $username = $emailConfig->imap_user;
         $password = $emailConfig->imap_password;
-        $default_type =$emailConfig->default_type;
+        $default_type = $emailConfig->default_type;
         $default_status = $emailConfig->default_status;
         $encryption = 'ssl';
         $smtpHost = $emailConfig->smtp_host;
@@ -79,8 +79,8 @@ class FetchEmails extends Command
             'mail.mailers.smtp.host' => $smtpHost,
             'mail.mailers.smtp.port' => $smtpPort,
             'mail.mailers.smtp.username' => $smtpUser,
-            'mail.mailers.smtp.password' =>$smtpPassword,
-            'mail.mailers.smtp.encryption' => ($smtpPort==587)?'TLS':'SSL',
+            'mail.mailers.smtp.password' => $smtpPassword,
+            'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
             'mail.from.address' =>  $sender_email,
             'mail.from.name' => $sender_name,
         ]);
@@ -90,14 +90,7 @@ class FetchEmails extends Command
             $emailAddress = $from[0]->mail;
             $subject = $message->getSubject();
             $subject_final =  $subject[0];
-            /*
-            echo "<pre>FROM:::";
-            print_r($emailAddress);
-            echo "<br/>\n================<pre>getSubject:::";
-            print_r($subject_final);
-            echo "<br/>\n================<pre>getTextBody:::";
-            print_r($message->getTextBody());
-            */
+           
             $attachment_urls = [];
             if ($message->hasAttachments()) {
                 // Loop through attachments
@@ -122,11 +115,11 @@ class FetchEmails extends Command
                 'assign_to_id' => 0,
                 'default_type' => $default_type,
                 'default_priority' => 'High',
-                'default_status' =>$default_status,
+                'default_status' => $default_status,
                 'subject' => $subject_final,
                 'departments' => '',
                 'to_emails' => $emailAddress,
-                'description' => ($messageTextBody)?$messageTextBody:"",
+                'description' => ($messageTextBody) ? $messageTextBody : "",
                 'attachment' => json_encode($attachment_urls),
                 'created_at' => now(), // Optional if using timestamps
                 'updated_at' => now(), // Optional if using timestamps
@@ -169,7 +162,7 @@ class FetchEmails extends Command
                 'status' => 'Active'
             ]);
             */
-         /*   Email::create([
+            /*   Email::create([
                 'subject' => $message->getSubject(),
                 'from' => $message->getFrom(),
                 'body' => $message->getTextBody(),
@@ -178,7 +171,7 @@ class FetchEmails extends Command
             */
 
             // Optionally mark the email as read after fetching it
-           // $message->markAsRead();
+            // $message->markAsRead();
         }
 
         $this->info('Unread emails have been fetched and saved to the database.');

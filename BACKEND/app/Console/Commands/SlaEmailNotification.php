@@ -38,45 +38,45 @@ class SlaEmailNotification extends Command
      */
     public function handle()
     {
-     
+
         $allTenants = Tenant::orderBy('id')
-        ->chunkById(100, function ($tenants) {
-            foreach ($tenants as $tenant) {
-                $newConnectionName = str_replace(".", "_", $tenant->domain_name);
-                $databaseName = str_replace(".", "_", $tenant->domain_name);
-                $this->establishDatabaseConnect($newConnectionName, $databaseName);
-                DB::reconnect($newConnectionName);
-                // Fetch support tickets for each tenant
-                $supportTickets = Supportticket::on($newConnectionName)
-                    ->get();
-                if ($supportTickets->count()) {
-                    foreach ($supportTickets as $ticket) {
-                        $currentTime = Carbon::now();
-                        if ($ticket->default_status == "Open") {
-                            if ($currentTime->diffInSeconds($ticket->first_response_time) >= 0) {
-                                $this->notifyViaEmail($newConnectionName, $ticket, "first_response_email");
-                            }
-                            if ($currentTime->diffInSeconds($ticket->alert_before_response_notification_time) == 0) {
-                                $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_response_email");
-                            }
-                            if ($currentTime->diffInSeconds($ticket->alert_before_resolve_notification_time) == 0) {
-                                $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_resolve_email");
-                            }
-                            if ($currentTime->diffInSeconds($ticket->resolved_time) == 0) {
-                                $this->notifyViaEmail($newConnectionName, $ticket, "resolve_time_email");
-                                $adminUsers = User::on($newConnectionName)
-                                ->where("type", "=", 0)->first();
-                                $ticket->is_escalated = "Yes";
-                                $ticket->save();
-                                $this->notifyAdminViaEmail($newConnectionName, $ticket, $adminUsers, "resolve_time_email");
+            ->chunkById(100, function ($tenants) {
+                foreach ($tenants as $tenant) {
+                    $newConnectionName = str_replace(".", "_", $tenant->domain_name);
+                    $databaseName = str_replace(".", "_", $tenant->domain_name);
+                    $this->establishDatabaseConnect($newConnectionName, $databaseName);
+                    DB::reconnect($newConnectionName);
+                    // Fetch support tickets for each tenant
+                    $supportTickets = Supportticket::on($newConnectionName)
+                        ->get();
+                    if ($supportTickets->count()) {
+                        foreach ($supportTickets as $ticket) {
+                            $currentTime = Carbon::now();
+                            if ($ticket->default_status == "Open") {
+                                if ($currentTime->diffInSeconds($ticket->first_response_time) >= 0) {
+                                    $this->notifyViaEmail($newConnectionName, $ticket, "first_response_email");
+                                }
+                                if ($currentTime->diffInSeconds($ticket->alert_before_response_notification_time) == 0) {
+                                    $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_response_email");
+                                }
+                                if ($currentTime->diffInSeconds($ticket->alert_before_resolve_notification_time) == 0) {
+                                    $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_resolve_email");
+                                }
+                                if ($currentTime->diffInSeconds($ticket->resolved_time) == 0) {
+                                    $this->notifyViaEmail($newConnectionName, $ticket, "resolve_time_email");
+                                    $adminUsers = User::on($newConnectionName)
+                                        ->where("type", "=", 0)->first();
+                                    $ticket->is_escalated = "Yes";
+                                    $ticket->save();
+                                    $this->notifyAdminViaEmail($newConnectionName, $ticket, $adminUsers, "resolve_time_email");
+                                }
                             }
                         }
+
+                        $this->info("Tenant: {$tenant->domain_name} - Notified " . $supportTickets->count());
                     }
-                    
-                    $this->info("Tenant: {$tenant->domain_name} - Notified " . $supportTickets->count());
                 }
-            }
-        });
+            });
     }
 
     public function notifyViaEmail($newConnectionName, $tickets, $type)
@@ -89,14 +89,14 @@ class SlaEmailNotification extends Command
         $sender_name = $emailConfig->sender_name ?? '';
         $sender_email = $emailConfig->sender_email ?? '';
         config([
-                    'mail.mailers.smtp.host' => $smtpHost,
-                    'mail.mailers.smtp.port' => $smtpPort,
-                    'mail.mailers.smtp.username' => $smtpUser,
-                    'mail.mailers.smtp.password' => $smtpPassword,
-                    'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
-                    'mail.from.address' =>  $sender_email,
-                    'mail.from.name' => $sender_name,
-            ]);
+            'mail.mailers.smtp.host' => $smtpHost,
+            'mail.mailers.smtp.port' => $smtpPort,
+            'mail.mailers.smtp.username' => $smtpUser,
+            'mail.mailers.smtp.password' => $smtpPassword,
+            'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
+            'mail.from.address' =>  $sender_email,
+            'mail.from.name' => $sender_name,
+        ]);
         try {
             $toEmails = $tickets->assignedUser->email ?? '';
             $mailTemplate = MailTemplate::on($newConnectionName)->where("type", "sla_email")->first();
@@ -109,19 +109,19 @@ class SlaEmailNotification extends Command
             $notification = new EmailNotification();
             $notification->setConnection($newConnectionName);
             $notification->fill([
-                "type"=>$type,
-                "ticket_id"=>$tickets->id
+                "type" => $type,
+                "ticket_id" => $tickets->id
             ]);
 
             $notification->save();
 
             logEmail([
-                "user_id"=>$tickets->assignedUser->id,
-                "email_template_id"=> $mailTemplate->id,
-                "from_email"=> $sender_email,
-                "module_name"=> "Support Ticket",
-                "entity_id"=> $tickets->id,
-                "status" =>"sent",
+                "user_id" => $tickets->assignedUser->id,
+                "email_template_id" => $mailTemplate->id,
+                "from_email" => $sender_email,
+                "module_name" => "Support Ticket",
+                "entity_id" => $tickets->id,
+                "status" => "sent",
             ], $newConnectionName);
         } catch (Exception $e) {
             echo  $e->getMessage();
@@ -139,14 +139,14 @@ class SlaEmailNotification extends Command
         $sender_name = $emailConfig->sender_name ?? '';
         $sender_email = $emailConfig->sender_email ?? '';
         config([
-                    'mail.mailers.smtp.host' => $smtpHost,
-                    'mail.mailers.smtp.port' => $smtpPort,
-                    'mail.mailers.smtp.username' => $smtpUser,
-                    'mail.mailers.smtp.password' => $smtpPassword,
-                    'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
-                    'mail.from.address' =>  $sender_email,
-                    'mail.from.name' => $sender_name,
-            ]);
+            'mail.mailers.smtp.host' => $smtpHost,
+            'mail.mailers.smtp.port' => $smtpPort,
+            'mail.mailers.smtp.username' => $smtpUser,
+            'mail.mailers.smtp.password' => $smtpPassword,
+            'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
+            'mail.from.address' =>  $sender_email,
+            'mail.from.name' => $sender_name,
+        ]);
         try {
             $toEmails = $adminUser->email ?? '';
             $mailTemplate = MailTemplate::on($newConnectionName)->where("type", "sla_email")->first();
@@ -159,17 +159,17 @@ class SlaEmailNotification extends Command
             $notification = new EmailNotification();
             $notification->setConnection($newConnectionName);
             $notification->fill([
-                "type"=>$type,
-                "ticket_id"=>$tickets->id
+                "type" => $type,
+                "ticket_id" => $tickets->id
             ]);
             $notification->save();
             logEmail([
-                "user_id"=>$adminUser->id,
-                "email_template_id"=> $mailTemplate->id,
-                "from_email"=> $sender_email,
-                "module_name"=> "Support Ticket",
-                "entity_id"=> $tickets->id,
-                "status" =>"sent",
+                "user_id" => $adminUser->id,
+                "email_template_id" => $mailTemplate->id,
+                "from_email" => $sender_email,
+                "module_name" => "Support Ticket",
+                "entity_id" => $tickets->id,
+                "status" => "sent",
             ], $newConnectionName);
         } catch (Exception $e) {
             echo  $e->getMessage();

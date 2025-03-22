@@ -36,30 +36,30 @@ class SupportTicketClose extends Command
      */
     public function handle()
     {
-    
+
         $allTenants = Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
-        ->chunkById(100, function ($tenants) {
-            foreach ($tenants as $tenant) {
-                $newConnectionName = str_replace(".", "_", $tenant->domain_name);
-                $databaseName = str_replace(".", "_", $tenant->domain_name);
-                $this->establishDatabaseConnect($newConnectionName, $databaseName);
-                DB::reconnect($newConnectionName);
-                // Fetch support tickets for each tenant
-                $supportTickets = Supportticket::on($newConnectionName)
-                    ->where("default_status", "Resolved")
-                    ->whereDate('updated_at', '<=', Carbon::now()->subDays(7))
-                    ->get();
-                if ($supportTickets->count()) {
-                    foreach ($supportTickets as $ticket) {
-                        $ticket->default_status = 'Closed';
-                        $ticket->save();
-                        $this->notifyViaEmail($newConnectionName, $ticket);
+            ->chunkById(100, function ($tenants) {
+                foreach ($tenants as $tenant) {
+                    $newConnectionName = str_replace(".", "_", $tenant->domain_name);
+                    $databaseName = str_replace(".", "_", $tenant->domain_name);
+                    $this->establishDatabaseConnect($newConnectionName, $databaseName);
+                    DB::reconnect($newConnectionName);
+                    // Fetch support tickets for each tenant
+                    $supportTickets = Supportticket::on($newConnectionName)
+                        ->where("default_status", "Resolved")
+                        ->whereDate('updated_at', '<=', Carbon::now()->subDays(7))
+                        ->get();
+                    if ($supportTickets->count()) {
+                        foreach ($supportTickets as $ticket) {
+                            $ticket->default_status = 'Closed';
+                            $ticket->save();
+                            $this->notifyViaEmail($newConnectionName, $ticket);
+                        }
+
+                        $this->info("Tenant: {$tenant->domain_name} - Updated " . $supportTickets->count() . " tickets to 'Closed'.");
                     }
-                    
-                    $this->info("Tenant: {$tenant->domain_name} - Updated " . $supportTickets->count() . " tickets to 'Closed'.");
                 }
-            }
-        });
+            });
     }
 
 
@@ -73,14 +73,14 @@ class SupportTicketClose extends Command
         $sender_name = $emailConfig->sender_name;
         $sender_email = $emailConfig->sender_email;
         config([
-                    'mail.mailers.smtp.host' => $smtpHost,
-                    'mail.mailers.smtp.port' => $smtpPort,
-                    'mail.mailers.smtp.username' => $smtpUser,
-                    'mail.mailers.smtp.password' => $smtpPassword,
-                    'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
-                    'mail.from.address' =>  $sender_email,
-                    'mail.from.name' => $sender_name,
-            ]);
+            'mail.mailers.smtp.host' => $smtpHost,
+            'mail.mailers.smtp.port' => $smtpPort,
+            'mail.mailers.smtp.username' => $smtpUser,
+            'mail.mailers.smtp.password' => $smtpPassword,
+            'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
+            'mail.from.address' =>  $sender_email,
+            'mail.from.name' => $sender_name,
+        ]);
         try {
             $toEmails = "khanjan.kukadiya@stltech.in";
             $mailTemplate = MailTemplate::on($newConnectionName)->where("type", "closed_ticket")->first();
@@ -91,12 +91,12 @@ class SupportTicketClose extends Command
             Mail::to($toEmails)->send(new SendEmail($subject, $body));
 
             logEmail([
-                "user_id"=>$tickets->assign_to_id,
-                "email_template_id"=> $mailTemplate->id,
-                "from_email"=> $sender_email,
-                "module_name"=> "Support Ticket",
-                "entity_id"=> $tickets->id,
-                "status" =>"sent",
+                "user_id" => $tickets->assign_to_id,
+                "email_template_id" => $mailTemplate->id,
+                "from_email" => $sender_email,
+                "module_name" => "Support Ticket",
+                "entity_id" => $tickets->id,
+                "status" => "sent",
             ], $newConnectionName);
         } catch (Exception $e) {
             echo  $e->getMessage();
