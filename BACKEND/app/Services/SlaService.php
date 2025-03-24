@@ -8,7 +8,7 @@ use App\Models\SlaOffDay;
 use App\Models\SlaHoliday;
 use App\Models\IncidentType;
 use App\Models\Supportticket;
-use App\Models\Supportticketnotification;
+use App\Models\SupportTicketNotification;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;

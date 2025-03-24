@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\Supportticketnotification;
+use App\Models\SupportTicketNotification;
 use Illuminate\Support\Facades\Log;
 use App\Services\SlaService;
 use App\Models\Supportticket;
@@ -10,9 +10,9 @@ use App\Models\Supportticket;
 class SupportTicketNotificationObserver
 {
     /**
-     * Handle the Supportticketnotification "created" event.
+     * Handle the SupportTicketNotification "created" event.
      */
-    public function created(Supportticketnotification $supportticketnotification): void
+    public function created(SupportTicketNotification $supportticketnotification): void
     {
         $support_ticket_id = $supportticketnotification->support_ticket_id;
         $supportticket = Supportticket::find($support_ticket_id);
@@ -62,31 +62,31 @@ class SupportTicketNotificationObserver
     /**
      * Handle the Suppoirtticketnotification "updated" event.
      */
-    public function updated(Supportticketnotification $supportticketnotification): void
+    public function updated(SupportTicketNotification $supportticketnotification): void
     {
         //
     }
 
     /**
-     * Handle the Supportticketnotification "deleted" event.
+     * Handle the SupportTicketNotification "deleted" event.
      */
-    public function deleted(Supportticketnotification $supportticketnotification): void
+    public function deleted(SupportTicketNotification $supportticketnotification): void
     {
         //
     }
 
     /**
-     * Handle the Supportticketnotification "restored" event.
+     * Handle the SupportTicketNotification "restored" event.
      */
-    public function restored(Supportticketnotification $supportticketnotification): void
+    public function restored(SupportTicketNotification $supportticketnotification): void
     {
         //
     }
 
     /**
-     * Handle the Supportticketnotification "force deleted" event.
+     * Handle the SupportTicketNotification "force deleted" event.
      */
-    public function forceDeleted(Supportticketnotification $supportticketnotification): void
+    public function forceDeleted(SupportTicketNotification $supportticketnotification): void
     {
         //
     }
