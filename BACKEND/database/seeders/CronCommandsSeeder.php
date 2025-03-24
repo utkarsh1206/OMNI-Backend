@@ -22,6 +22,8 @@ class CronCommandsSeeder extends Seeder
 	        ['command_signature' => 'app:existing-tenant-seeder', 'type' => 'other'],
 	    
 		['command_signature' => 'app:tenant-queue-listen', 'type' => 'other'],
+	
+		['command_signature' => 'app:sonar-qube-analyze', 'type' => 'other'],
 	];
         foreach ($cronCommands as $cronCommand) {
             CronCommand::updateOrCreate(
