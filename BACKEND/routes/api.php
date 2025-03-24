@@ -34,8 +34,10 @@ use App\Http\Controllers\Api\CustomFieldController;
 use App\Http\Controllers\Api\UpdateCustomFieldsController;
 use App\Http\Controllers\Api\AgentActivityController;
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\AddPartyApiController;
 use App\Http\Controllers\Api\IndustryTypeController;
 use App\Http\Controllers\Api\BusinessTypeController;
+use App\Http\Controllers\Api\CallTransferApiController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\LicenseUpdateController;
 use App\Http\Controllers\Api\LicenseController;
@@ -66,15 +68,20 @@ use App\Http\Controllers\Api\CustomLeadController;
 use App\Http\Controllers\Api\CampaignApiController;
 use App\Http\Controllers\Api\DialCallApiController;
 use App\Http\Controllers\Api\DialNextCallApiController;
+use App\Http\Controllers\Api\DisconnectConfApiController;
 use App\Http\Controllers\Api\DisposCallApiController;
 use App\Http\Controllers\Api\NeoxConfigurationController;
 use App\Http\Controllers\Api\IngroupApiController;
 use App\Http\Controllers\Api\DispositionApiController;
 use App\Http\Controllers\Api\HangupApiController;
 use App\Http\Controllers\Api\HoldCallApiController;
+use App\Http\Controllers\Api\LeaveConfApiController;
 use App\Http\Controllers\Api\LoginApiController;
 use App\Http\Controllers\Api\LogoutApiController;
 use App\Http\Controllers\Api\PauseResumeApiController;
+use App\Http\Controllers\Api\RecordApiController;
+use App\Http\Controllers\Api\RemovePartyApiController;
+use App\Http\Controllers\Api\StartConfApiController;
 
 Route::post('login', [LoginController::class, 'login_action']);
 
@@ -218,6 +225,14 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('/api_dispos_call', [DisposCallApiController::class, 'disposCallApi']);
     Route::post('/api_hold_call', [HoldCallApiController::class, 'holdCallApi']);
     Route::post('/api_dial_next', [DialNextCallApiController::class, 'dialNextCallApi']);
+    Route::post('/api_add_party', [AddPartyApiController::class, 'addPartyApi']);
+    Route::post('/api_call_tansfer', [CallTransferApiController::class, 'callTransferApi']);
+    Route::post('/api_disconnect_conf', [DisconnectConfApiController::class, 'disconnectConfApi']);
+    Route::post('/api_leave_conf', [LeaveConfApiController::class, 'leaveConfApi']);
+    Route::post('/api_record_call', [RecordApiController::class, 'callRecordingApi']);
+    Route::post('/api_remove_party', [RemovePartyApiController::class, 'removePartyApi']);
+    Route::post('/api_start_conf', [StartConfApiController::class, 'startConfApi']);
+
 });
 
 Route::post('/camp_list', [CampaignApiController::class, 'campaignListApi']);

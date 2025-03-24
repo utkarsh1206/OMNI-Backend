@@ -1,3 +1,25 @@
+2025-03-24 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : b2b1574 
+	* Version : Dev
+	* Laravel : 
+	Wroked on to call DC API for conference ie. agent_addparty.php, agent_disconnectconf.php, agent_leaveconf.php, agent_startconf.php, agent_removeparty.php and for call recording ie. agent_record.php and also for transfer call ie. agent_call_transfer.php
+	Implemented a controller and request validation for handling API functionality.
+	Created the class to validate the incoming request parameters, ensuring 
+	required fields are properly validated.
+	Developed a method  to handle the API call logic.
+	The method validates the secret key using a custom validateSecretKey function.
+	If the secret key is valid, it proceeds to make an API request to a 
+	local Neox server.
+	Error handling has been implemented in case the local IP is not 
+	found or there are issues with the API request.
+	Controller to manage the logic for the API.
+	Implemented helper functions for retrieving the local IP (getNeoxLocalIp), 
+	validating the secret key (validateSecretKey), and sending the HTTP request (sendHttpRequest).
+	The  method sends a POST request to the Neox local server to initiate the action.
+	If the IP or secret key is invalid, the system responds with appropriate error messages.
+
 2025-03-21 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
