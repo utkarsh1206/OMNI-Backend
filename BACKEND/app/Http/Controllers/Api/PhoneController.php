@@ -3,117 +3,238 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PhoneRequest;
 use Illuminate\Http\Request;
-use App\Models\Phones;
-use App\Http\Resources\PhoneResource;
+use App\Repositories\PhoneRepository;
 
 class PhoneController extends Controller
 {
+    private $phoneRepository;
+
+    public function __construct(PhoneRepository $phoneRepository)
+    {
+        $this->phoneRepository = $phoneRepository;
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/phones",
+     *     summary="Get list of phones",
+     *     description="Retrieve a list of phones with search and pagination support.",
+     *     operationId="indexPhones",
+     *     tags={"Phones"},
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search term to filter by extension, login, or status",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="extension",
+     *         in="query",
+     *         description="Filter by phone extension",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="login",
+     *         in="query",
+     *         description="Filter by phone login",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Number of items per page for pagination",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number for pagination, use 'all' to fetch all records",
+     *         required=false,
+     *         @OA\Schema(type="string", example="1")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of phones",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="meta",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="last_page", type="integer"),
+     *                 @OA\Property(property="per_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             ),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="data")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid parameters",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Invalid parameters")
+     *         )
+     *     )
+     * )
+     */
     public function index(Request $request)
     {
-        $searchTerm = $request->input('search', '');
-        $extension = $request->input('extension', '');
-        $login = $request->input('login', '');
-        $perPage = $request->input('per_page', 10);
-        $page = $request->input('page', 1);
-
-        $query = Phones::query();
-
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('extension', 'like', "%$searchTerm%")
-                    ->orWhere('login', 'like', "%$searchTerm%")
-                    ->orWhere('status', 'like', "%$searchTerm%");
-            });
-        }
-
-        if (!empty($extension)) {
-            $query->where('extension', $extension);
-        }
-        if (!empty($login)) {
-            $query->where('login', $login);
-        }
-        if ($page === 'all') {
-            $phones = $query->get();
-            return response()->json([
-                'data' => $phones,
-            ]);
-        } else {
-            $phones = $query->paginate($perPage);
-            return response()->json([
-                'meta' => [
-                    'current_page' => $phones->currentPage(),
-                    'last_page' => $phones->lastPage(),
-                    'per_page' => $phones->perPage(),
-                    'total' => $phones->total(),
-                ],
-                'data' => $phones->items(),
-            ]);
-        }
+        return $this->phoneRepository->list($request);
     }
 
-    public function store(Request $request)
+    /**
+     * @OA\Post(
+     *     path="/phones",
+     *     summary="Create a new phone",
+     *     description="Create a new phone record.",
+     *     operationId="storePhone",
+     *     tags={"Phones"},
+     *     @OA\RequestBody(
+     *         required=true
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Phone created successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Phone created successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid input data",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Invalid input data")
+     *         )
+     *     )
+     * )
+     */
+    public function store(PhoneRequest $request)
     {
-        $validatedData = $request->validate([
-            'extension' => 'required|unique:phones,extension',
-            'login' => 'required||unique:phones,login|alpha_num|between:2,320',
-            'pass' => 'required|alpha_num|between:2,320',
-            'status' => 'required',
-            'local_gmt' => 'nullable|numeric',
-        ]);
-
-        $validatedData['local_gmt'] = $validatedData['local_gmt'] ?? '5.50';
-        $validatedData['dialplan_number'] = $validatedData['extension'];
-        $validatedData['voicemail_id'] = $validatedData['extension'];
-        $validatedData['active'] = "Y";
-
-        $phone = Phones::create($validatedData);
-        return response()->json([
-            'message' => 'Phone created successfully',
-            'data' => new PhoneResource($phone)
-        ], 201);
+        $validatedData = $request->validated();
+        return $this->phoneRepository->store($validatedData);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/phones/{id}",
+     *     summary="Get a specific phone",
+     *     description="Retrieve details of a phone by its ID.",
+     *     operationId="showPhone",
+     *     tags={"Phones"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the phone to retrieve",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Phone details"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Phone not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Phone not found")
+     *         )
+     *     )
+     * )
+     */
     public function show($id)
     {
-        $phone = Phones::findOrFail($id);
-        return new PhoneResource($phone);
+        return $this->phoneRepository->show($id);
     }
 
-    public function update(Request $request, $extension)
+    /**
+     * @OA\Put(
+     *     path="/phones/{extension}",
+     *     summary="Update a phone",
+     *     description="Update the details of an existing phone.",
+     *     operationId="updatePhone",
+     *     tags={"Phones"},
+     *     @OA\Parameter(
+     *         name="extension",
+     *         in="path",
+     *         description="Extension of the phone to update",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Phone updated successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Phone updated successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Phone not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Phone not found")
+     *         )
+     *     )
+     * )
+     */
+    public function update(PhoneRequest $request, $extension)
     {
-        $phone = Phones::where('extension', $extension)->first();
-
-        if (!$phone) {
-            return response()->json(['message' => 'Phone not found'], 404);
-        }
-
-        $validatedData = $request->validate([
-            'extension' => 'required|unique:phones,extension,' . $extension . ',extension', // Key change
-            'login' => 'required|unique:phones,login,' . $extension . ',extension|alpha_num|between:2,320', // Key change
-            'pass' => 'required|alpha_num|between:2,320',
-            'status' => 'required',
-            'local_gmt' => 'nullable|numeric',
-        ]);
-
-        $validatedData['local_gmt'] = $validatedData['local_gmt'] ?? '5.50';
-
-        $phone->update($validatedData);
-        return response()->json([
-            'message' => 'Phone updated successfully',
-            'data' => new PhoneResource($phone)
-        ], 200);
+        $validatedData = $request->validated();
+        return $this->phoneRepository->update($validatedData, $extension);
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/phones/{extension}",
+     *     summary="Delete a phone",
+     *     description="Delete a phone record by its extension.",
+     *     operationId="destroyPhone",
+     *     tags={"Phones"},
+     *     @OA\Parameter(
+     *         name="extension",
+     *         in="path",
+     *         description="Extension of the phone to delete",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Phone deleted successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Phone deleted successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Phone not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Phone not found")
+     *         )
+     *     )
+     * )
+     */
     public function destroy($extension)
     {
-        $phone = Phones::where('extension', $extension)->first();
-
-        if (!$phone) {
-            return response()->json(['message' => 'Phone not found'], 404);
-        }
-
-        $phone->delete();
-        return response()->json(['message' => 'Phone deleted successfully'], 200);
+        return $this->phoneRepository->delete($extension);
     }
 }

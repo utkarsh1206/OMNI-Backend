@@ -4,26 +4,46 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\EcdialInboundGroup;
-use Illuminate\Http\Request;
+use App\Repositories\InGroupListRepository;
 
 class IngroupListController extends Controller
 {
-    public function index(Request $request)
+
+    private $inGroupListRepository;
+
+    public function __construct(InGroupListRepository $inGroupListRepository)
     {
-        $acl_ingroup_qstring = '';
-
-        $query = EcdialInboundGroup::query();
-
-        // Apply ACL logic if needed (this is a placeholder)
-        if ($acl_ingroup_qstring) {
-            // Assuming it needs to be a where clause
-            $query->whereRaw($acl_ingroup_qstring);
-        }
-
-        // Fetch the results
-        $groups = $query->orderBy('group_id')->get(['group_id', 'group_name']);
-
-        // Return the response
-        return response()->json($groups);
+        $this->inGroupListRepository = $inGroupListRepository;
+    }
+    /**
+     * @OA\Get(
+     *     path="/api/ingroups",
+     *     summary="Get a list of inbound groups",
+     *     description="Fetches a list of inbound groups ordered by group_id.",
+     *     operationId="getInboundGroups",
+     *     tags={"Inbound Groups"},
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 type="object",
+     *                 @OA\Property(property="group_id", type="string", example="IG123"),
+     *                 @OA\Property(property="group_name", type="string", example="Support Group")
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request"
+     *     )
+     * )
+     */
+    public function index()
+    {
+        return $this->inGroupListRepository->list();
     }
 }

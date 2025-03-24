@@ -20,6 +20,6 @@ class SupportTicketMail extends Mailable
     public function build()
     {
         return $this->subject('New Support Ticket Created')
-                    ->view('emails.support_ticket'); // Blade view file
+            ->view('emails.support_ticket'); // Blade view file
     }
 }

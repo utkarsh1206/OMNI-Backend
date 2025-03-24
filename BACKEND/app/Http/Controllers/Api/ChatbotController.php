@@ -5,18 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Chatbot;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\ChatbotResource;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Cache;
 use App\Repositories\ChatbotRepository;
 use App\Http\Requests\ChatbotRequest;
 use App\Http\Response\CustomApiResponse;
+use Exception;
 
 class ChatbotController extends Controller
 {
 
     protected $ChatbotRepository;
+    
     private $apiResponse;
 
     public function __construct(ChatbotRepository $ChatbotRepository, CustomApiResponse $customApiResponse)
@@ -87,72 +86,72 @@ class ChatbotController extends Controller
         }
     }
 
-/**
- * @OA\Post(
- *     path="/api/chatbots",
- *     tags={"Chatbots"},
- *     summary="Create a new chatbot",
- *     @OA\Parameter(
- *         name="question",
- *         in="query",
- *         required=true,
- *         description="The question to be asked by the chatbot",
- *         @OA\Schema(type="string", example="How can I return my product?")
- *     ),
- *     @OA\Parameter(
- *         name="answer",
- *         in="query",
- *         required=true,
- *         description="The answer the chatbot will provide",
- *         @OA\Schema(type="string", example="You can return your product within 30 days.")
- *     ),
- *     @OA\Parameter(
- *         name="status",
- *         in="query",
- *         required=true,
- *         description="Status of the chatbot (active/inactive)",
- *         @OA\Schema(type="boolean", example=true)
- *     ),
- *     @OA\Parameter(
- *         name="Keywords",
- *         in="query",
- *         required=false,
- *         description="Keywords",
- *         @OA\Schema(
- *           @OA\Property(
- *               property="Keywords[]",
- *               description="Keywords",
- *               type="array",
- *               collectionFormat="multi",
- *              @OA\Items(type="string", format="id")
- *           ))
- *     ),
- *     @OA\Response(
- *         response=201,
- *         description="Chatbot created successfully",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="message", type="string", example="Chatbot created successfully")
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Invalid input data",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="message", type="string", example="Invalid input data")
- *         )
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthorized, invalid token",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="message", type="string", example="Unauthorized, invalid token")
- *         )
- *     )
- * )
- */
+    /**
+     * @OA\Post(
+     *     path="/api/chatbots",
+     *     tags={"Chatbots"},
+     *     summary="Create a new chatbot",
+     *     @OA\Parameter(
+     *         name="question",
+     *         in="query",
+     *         required=true,
+     *         description="The question to be asked by the chatbot",
+     *         @OA\Schema(type="string", example="How can I return my product?")
+     *     ),
+     *     @OA\Parameter(
+     *         name="answer",
+     *         in="query",
+     *         required=true,
+     *         description="The answer the chatbot will provide",
+     *         @OA\Schema(type="string", example="You can return your product within 30 days.")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         required=true,
+     *         description="Status of the chatbot (active/inactive)",
+     *         @OA\Schema(type="boolean", example=true)
+     *     ),
+     *     @OA\Parameter(
+     *         name="Keywords",
+     *         in="query",
+     *         required=false,
+     *         description="Keywords",
+     *         @OA\Schema(
+     *           @OA\Property(
+     *               property="Keywords[]",
+     *               description="Keywords",
+     *               type="array",
+     *               collectionFormat="multi",
+     *              @OA\Items(type="string", format="id")
+     *           ))
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Chatbot created successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Chatbot created successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid input data",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Invalid input data")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized, invalid token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Unauthorized, invalid token")
+     *         )
+     *     )
+     * )
+     */
 
     public function store(ChatbotRequest $request)
     {
@@ -163,7 +162,7 @@ class ChatbotController extends Controller
         }
     }
 
-    
+
 
     public function show($chatbot)
     {
@@ -171,7 +170,7 @@ class ChatbotController extends Controller
             $data = Chatbot::findOrFail($chatbot);
             return new ChatbotResource($data);
         } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);                
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
@@ -232,8 +231,8 @@ class ChatbotController extends Controller
         }
     }
 
-    
-/**
+
+    /**
      * @OA\Delete(
      *      path="/api/chatbots/{chatbot}",
      *      tags={"Chatbots"},

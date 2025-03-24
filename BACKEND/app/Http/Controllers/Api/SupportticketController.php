@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use App\Models\MailTemplate;
 
-class SupportticketController extends Controller
+class SupportTicketController extends Controller
 {
     protected $slaService;
 
@@ -245,10 +245,12 @@ class SupportticketController extends Controller
             'data' => new TenantsResource($supportticket)
         ]);
     }
+    
     public function show(Supportticket $supportticket)
     {
         return new TenantsResource($supportticket);
     }
+
     public function update(Request $request, Supportticket $supportticket)
     {
         $apiUser = auth()->user();
@@ -323,7 +325,6 @@ class SupportticketController extends Controller
         ]);
         // Attempt to send the email
         try {
-
             Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
             logEmail([
                 "user_id" => $request->assign_to_id,
@@ -350,6 +351,7 @@ class SupportticketController extends Controller
             'data' => new TenantsResource($supportticket)
         ]);
     }
+
     public function statusupdate(Request $request, Supportticket $supportticket)
     {
         $apiUser = auth()->user();
@@ -407,16 +409,16 @@ class SupportticketController extends Controller
             ),
         ]);
     }
+
     public function destroy(Supportticket $supportticket)
     {
-        $supportticket->is_delete = 'Yes';
-        $supportticket->save();
+        $supportticket->delete();
         return response()->json([
             'message' => 'Support Ticket Deleted Successfully',
         ]);
     }
 
-    public function createTicket($supportticket, $type, $comment, $apiUser, $statusChange = NULL)
+    public function createTicket($supportticket, $type, $comment, $apiUser, $statusChange = null)
     {
         $notification = SupportTicketNotification::create([
             'type' => $statusChange ?? $type,

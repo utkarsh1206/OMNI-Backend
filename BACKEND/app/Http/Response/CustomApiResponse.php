@@ -8,7 +8,7 @@ class CustomApiResponse
 {
 
 
-    public function getResponseStructure($status , $payload = null, $message = '')
+    public function getResponseStructure($status, $payload = null, $message = '', $statusCode = 200)
     {
         if (! empty($status) && ! empty($payload)) {
             $data = [
@@ -27,9 +27,9 @@ class CustomApiResponse
             ];
         }
 
-        return $data;
-        //json_encode($data);
+        return response()->json($data, $statusCode);
     }
+
     /**
      * Generate API Response
      *

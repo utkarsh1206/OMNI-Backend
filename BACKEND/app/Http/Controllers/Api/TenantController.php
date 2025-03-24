@@ -2,360 +2,814 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\TenantsResource;
-use App\Http\Resources\UsersResource;
-use App\Models\Tenants;
-use App\Models\Users;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Tenant;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Api\LicenseController;
-use Illuminate\Support\Facades\Cache;
+use App\Repositories\TenantRepository;
+use App\Http\Requests\TenantRequest;
+use Swagger\Annotations as SWG;
 
 class TenantController extends Controller
 {
     protected $licenseController;
 
-    public function __construct(LicenseController $licenseController)
+    private $tenantRepository;
+
+    public function __construct(LicenseController $licenseController, TenantRepository $tenantRepository)
     {
         $this->licenseController = $licenseController;  // Inject LicenseController
+        $this->tenantRepository = $tenantRepository;
     }
 
+    /**
+     * @SWG\Get(
+     *     path="/tenants",
+     *     summary="List tenants with filters and pagination",
+     *     description="Retrieve a list of tenants based on optional filters and pagination.",
+     *     operationId="listTenants",
+     *     tags={"Tenants"},
+     *     @SWG\Parameter(
+     *         name="searchTerm",
+     *         in="query",
+     *         description="Search term to filter tenants by various fields (e.g., username, email, company name, etc.)",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="companyName",
+     *         in="query",
+     *         description="Filter tenants by company name",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="email",
+     *         in="query",
+     *         description="Filter tenants by email",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="mobile",
+     *         in="query",
+     *         description="Filter tenants by mobile number",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="domainName",
+     *         in="query",
+     *         description="Filter tenants by domain name",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="companyCode",
+     *         in="query",
+     *         description="Filter tenants by company code",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Number of results per page",
+     *         required=false,
+     *         type="integer",
+     *         default="10"
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Success"
+     *             ),
+     *             @SWG\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @SWG\Items(
+     *                     ref="#/definitions/Tenant"
+     *                 )
+     *             ),
+     *             @SWG\Property(
+     *                 property="status",
+     *                 type="string",
+     *                 example="success"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=400,
+     *         description="Bad Request",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Invalid parameters"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Something went wrong"
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function index(Request $request)
     {
-
-        // $cacheKey = 'tenants_index:' . md5(json_encode($request->all())); // Unique key based on request parameters
-
-        // $tenants = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($request) { // Cache for 60 minutes
-        //     $searchTerm = $request->input('search', '');
-        //     $companyName = $request->input('company_name', '');
-        //     $email = $request->input('email', '');
-        //     $mobile = $request->input('mobile', '');
-        //     $domainName = $request->input('domain_name', '');
-        //     $companyCode = $request->input('company_code', '');
-    
-        //     $query = Tenants::query()->where('is_delete', 'No');
-    
-        //     // If there's a search term, apply it to the query
-        // if (!empty($searchTerm)) {
-        //     $query->where(function ($q) use ($searchTerm) {
-        //         $q->where('username', 'like', '%' . $searchTerm . '%')
-        //             ->orwhere('first_name', 'like', '%' . $searchTerm . '%')
-        //             ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
-        //             ->orWhere('email', 'like', '%' . $searchTerm . '%')
-        //             ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
-        //             ->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
-        //             ->orWhere('company_code', 'like', '%' . $searchTerm . '%')
-        //             ->orWhere('company_name', 'like', '%' . $searchTerm . '%')
-        //             ->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
-        //             ->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
-        //             ->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
-        //             ->orWhere('domain_url', 'like', '%' . $searchTerm . '%');
-        //         // ->orWhere('status', 'like', '%' . $searchTerm . '%'); // Add any additional fields as needed
-        //     });
-        // }
-
-        // if (!empty($companyName)) {
-        //     $query->where('company_name', $companyName);
-        // }
-        // if (!empty($email)) {
-        //     $query->where('email', $email);
-        // }
-        // if (!empty($mobile)) {
-        //     $query->where('mobile', $mobile);
-        // }
-        // if (!empty($domainName)) {
-        //     $query->where('domain_name', $domainName);
-        // }
-        // if (!empty($companyCode)) {
-        //     $query->where('company_code', $companyCode);
-        // }
-    
-        //    // Paginate the results
-        // $perPage = $request->input('per_page', 10);
-        // return $query->paginate($perPage);
-        // // $tenants = $query->paginate($perPage);
-        // });
-    
-        // return response()->json([
-        //     'data' => $tenants->items(),
-        //     'meta' => [
-        //         'current_page' => $tenants->currentPage(),
-        //         'last_page' => $tenants->lastPage(),
-        //         'per_page' => $tenants->perPage(),
-        //         'total' => $tenants->total(),
-        //     ],
-        // ]);
-
-
-        // Get the search term from the request
-        $searchTerm = $request->input('search', '');
-        $companyName = $request->input('company_name', '');
-        $email = $request->input('email', '');
-        $mobile = $request->input('mobile', '');
-        $domainName = $request->input('domain_name', '');
-        $companyCode = $request->input('company_code', '');
-
-        // Start the query for tenants
-        $query = Tenants::query()->where('is_delete', 'No');
-
-        // If there's a search term, apply it to the query
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('username', 'like', '%' . $searchTerm . '%')
-                    ->orwhere('first_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('email', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_code', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_url', 'like', '%' . $searchTerm . '%');
-                // ->orWhere('status', 'like', '%' . $searchTerm . '%'); // Add any additional fields as needed
-            });
-        }
-
-        if (!empty($companyName)) {
-            $query->where('company_name', $companyName);
-        }
-        if (!empty($email)) {
-            $query->where('email', $email);
-        }
-        if (!empty($mobile)) {
-            $query->where('mobile', $mobile);
-        }
-        if (!empty($domainName)) {
-            $query->where('domain_name', $domainName);
-        }
-        if (!empty($companyCode)) {
-            $query->where('company_code', $companyCode);
-        }
-
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $tenants = $query->paginate($perPage);
-
-        // Return the response
-        return response()->json([
-            'data' => $tenants->items(),
-            'meta' => [
-                'current_page' => $tenants->currentPage(),
-                'last_page' => $tenants->lastPage(),
-                'per_page' => $tenants->perPage(),
-                'total' => $tenants->total(),
-            ],
-        ]);
+        return $this->tenantRepository->list($request);
     }
 
-    public function store(Request $request)
+    /**
+     * @SWG\Post(
+     *     path="/tenants",
+     *     summary="Create a new tenant",
+     *     description="Create a new tenant with the provided details, including uploading an optional tenant logo image.",
+     *     operationId="createTenant",
+     *     tags={"Tenants"},
+     *     @SWG\Parameter(
+     *         name="username",
+     *         in="formData",
+     *         description="Username of the tenant (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="first_name",
+     *         in="formData",
+     *         description="First name of the tenant (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="last_name",
+     *         in="formData",
+     *         description="Last name of the tenant (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="email",
+     *         in="formData",
+     *         description="Email of the tenant (required)",
+     *         required=true,
+     *         type="string",
+     *         format="email"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="password",
+     *         in="formData",
+     *         description="Password for the tenant account (required)",
+     *         required=true,
+     *         type="string",
+     *         format="password"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="mobile",
+     *         in="formData",
+     *         description="Mobile number of the tenant (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="domain_name",
+     *         in="formData",
+     *         description="Domain name of the tenant (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="company_code",
+     *         in="formData",
+     *         description="Company code of the tenant (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="company_name",
+     *         in="formData",
+     *         description="Company name of the tenant (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="server_serialnumber",
+     *         in="formData",
+     *         description="Server serial number (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="server_ip",
+     *         in="formData",
+     *         description="Server IP address (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="server_mac",
+     *         in="formData",
+     *         description="Server MAC address (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="domain_url",
+     *         in="formData",
+     *         description="URL of the domain (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="status",
+     *         in="formData",
+     *         description="Status of the tenant (required)",
+     *         required=true,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="tenant_role_id",
+     *         in="formData",
+     *         description="Tenant role ID (required)",
+     *         required=true,
+     *         type="integer"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="title",
+     *         in="formData",
+     *         description="Title of the tenant (optional)",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="footer_content",
+     *         in="formData",
+     *         description="Footer content of the tenant (optional)",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="footer_url",
+     *         in="formData",
+     *         description="Footer URL for the tenant (optional)",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="tenant_logo",
+     *         in="formData",
+     *         description="Tenant logo image file (optional)",
+     *         required=false,
+     *         type="file"
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Tenant successfully created",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Success"
+     *             ),
+     *             @SWG\Property(
+     *                 property="data",
+     *                 ref="#/definitions/Tenant"
+     *             ),
+     *             @SWG\Property(
+     *                 property="status",
+     *                 type="string",
+     *                 example="success"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=400,
+     *         description="Invalid input parameters",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Invalid parameters"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Something went wrong"
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function store(TenantRequest $request)
     {
         $licenseResponse = $this->licenseController->decodeLicense($request);
         $licenseData = $licenseResponse->getData(true);
 
         if (isset($licenseData['number_of_enterprise'])) {
-            $currentTenantsCount = Tenants::query()->where('is_delete', 'No')->count();
+            $currentTenantsCount = Tenant::query()->count();
             $maxTenantsAllowed = $licenseData['number_of_enterprise'];
 
             if ($currentTenantsCount >= $maxTenantsAllowed) {
                 return response()->json([
-                    'error' => 'Tenant creation limit exceeded. Max number of tenants allowed is ' . $maxTenantsAllowed
+                    'error' => trans("message.max_tenant_allow") . $maxTenantsAllowed
                 ], 400);
             }
         } else {
-            return response()->json(['error' => 'License data invalid'], 400);
+            return response()->json(['error' => trans("message.license_invalid")], 400);
         }
-
-        $validator = Validator::make($request->all(), [
-            'username' => 'required|unique:tenants',
-            'domain_name' => 'required|unique:tenants',
-            'domain_url' => 'required|unique:tenants',
-            'email' => 'required|unique:tenants',
-            'tenant_logo' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            // other validation rules...
-        ]);
-        $tenant_logo_url = "";
-        if ($request->hasFile('tenant_logo')) {
-            $tenant_logo = $request->file('tenant_logo');
-            $filename = now()->format('Y_m_d_H_i_s') . '.' . $tenant_logo->getClientOriginalExtension();
-            // Store the image in the 'public' disk (storage/app/public)
-            $path = $tenant_logo->storeAs('tenant_logo', $filename, 'public');
-
-            // Return the URL to access the uploaded image
-            $tenant_logo_url = url('storage/' . $path);;
-        }
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $tenants = Tenants::create([
-            'username' => $request->username,
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password), // Ensure to hash the password
-            'mobile' => $request->mobile,
-            'domain_name' => $request->domain_name,
-            'company_code' => $request->company_code,
-            'company_name' => $request->company_name,
-            'server_serialnumber' => $request->server_serialnumber,
-            'server_ip' => $request->server_ip,
-            'server_mac' => $request->server_mac,
-            'domain_url' => $request->domain_url,
-            'status' => $request->status,
-            'tenant_role_id' => $request->tenant_role_id,
-            'title' => $request->title,
-            'footer_content' => $request->footer_content,
-            'footer_url' => $request->footer_url,
-            'tenant_logo' => $tenant_logo_url
-        ]);
-        $lastInsertedId = $tenants->id;
-
-        $databaseName = str_replace(".", "_", $request->domain_name);
-
-        DB::statement("CREATE DATABASE $databaseName");
-        $details_array = [
-            'db' => str_replace(".", "_", $request->domain_name),
-            'domain' => $request->domain_name,
-            'username'  => env('DB_USERNAME', 'root'),
-            'password'  => env('DB_PASSWORD', 'Sterlite@2025'),
-        ];
-        DB::table('details')->insert($details_array);
-        $newConnectionName = str_replace(".", "_", $request->domain_name);
-
-        Config::set("database.connections.$newConnectionName", [
-            'driver'    => 'mysql',
-            'host'      => env('DB_HOST', '127.0.0.1'),
-            'port'      => env('DB_PORT', '3306'),
-            'database'  => $databaseName,
-            'username'  => env('DB_USERNAME', 'root'),
-            'password'  => env('DB_PASSWORD', 'Sterlite@2025'),
-            'charset'   => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix'    => '',
-            'strict'    => true,
-            'engine'    => null,
-        ]);
-        Artisan::call('migrate', [
-            '--database' => $newConnectionName,
-            '--path'     => '/database/migrations/user', // Adjust the path as needed
-            '--force'    => true,
-        ]);
-        Users::on($newConnectionName)->create([
-            'tenant_id'  => $lastInsertedId,
-            'type' => 0,
-            'first_name' => $request->first_name,
-            'last_name'  => $request->last_name,
-            'password'   => bcrypt($request->password),
-            'email'      => $request->email,
-            'username'   => $request->username,
-            'domain'     => $request->domain_url,
-            'mobile'     => $request->mobile,
-            'status' => 'Active',
-            'role_id' => 1
-        ]);
-
-        Artisan::call('db:seed', [
-            '--database' => $newConnectionName, 
-            '--class'=>'TenantSeeder',
-            '--force' => true, // Run seeders in production if necessary
-        ]);
-        return response()->json([
-            'message' => 'Tenant Created Successfully',
-            'data' => new TenantsResource($tenants)
-        ]);
+        return $this->tenantRepository->store($request);
     }
-    public function show(Tenants $tenant)
+
+    /**
+     * @SWG\Get(
+     *     path="/tenants/{tenant}",
+     *     summary="Get tenant details",
+     *     description="Retrieve the details of a specific tenant by ID.",
+     *     operationId="getTenantDetails",
+     *     tags={"Tenants"},
+     *     @SWG\Parameter(
+     *         name="tenant",
+     *         in="path",
+     *         description="ID of the tenant to retrieve",
+     *         required=true,
+     *         type="integer"
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Tenant details retrieved successfully",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Success"
+     *             ),
+     *             @SWG\Property(
+     *                 property="data",
+     *                 ref="#/definitions/Tenant"
+     *             ),
+     *             @SWG\Property(
+     *                 property="status",
+     *                 type="string",
+     *                 example="success"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=404,
+     *         description="Tenant not found",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Tenant not found"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Something went wrong"
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function show(Tenant $tenant)
     {
-        return new TenantsResource($tenant);
+        return $this->tenantRepository->show($tenant);
     }
-    public function update(Request $request, Tenants $tenant)
+
+    /**
+     * @SWG\Put(
+     *     path="/tenants/{tenant}",
+     *     summary="Update an existing tenant",
+     *     description="Update the details of an existing tenant. Optionally, upload a new tenant logo image.",
+     *     operationId="updateTenant",
+     *     tags={"Tenants"},
+     *     @SWG\Parameter(
+     *         name="tenant",
+     *         in="path",
+     *         description="ID of the tenant to update",
+     *         required=true,
+     *         type="integer"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="first_name",
+     *         in="formData",
+     *         description="First name of the tenant",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="last_name",
+     *         in="formData",
+     *         description="Last name of the tenant",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="password",
+     *         in="formData",
+     *         description="Password for the tenant account (required to hash the password)",
+     *         required=false,
+     *         type="string",
+     *         format="password"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="email",
+     *         in="formData",
+     *         description="Email of the tenant",
+     *         required=false,
+     *         type="string",
+     *         format="email"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="mobile",
+     *         in="formData",
+     *         description="Mobile number of the tenant",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="company_code",
+     *         in="formData",
+     *         description="Company code of the tenant",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="company_name",
+     *         in="formData",
+     *         description="Company name of the tenant",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="server_serialnumber",
+     *         in="formData",
+     *         description="Server serial number",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="server_ip",
+     *         in="formData",
+     *         description="Server IP address",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="server_mac",
+     *         in="formData",
+     *         description="Server MAC address",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="status",
+     *         in="formData",
+     *         description="Status of the tenant",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="tenant_role_id",
+     *         in="formData",
+     *         description="Tenant role ID",
+     *         required=false,
+     *         type="integer"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="title",
+     *         in="formData",
+     *         description="Title of the tenant",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="footer_content",
+     *         in="formData",
+     *         description="Footer content of the tenant",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="footer_url",
+     *         in="formData",
+     *         description="Footer URL for the tenant",
+     *         required=false,
+     *         type="string"
+     *     ),
+     *     @SWG\Parameter(
+     *         name="tenant_logo",
+     *         in="formData",
+     *         description="Tenant logo image file (optional)",
+     *         required=false,
+     *         type="file"
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Tenant successfully updated",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Success"
+     *             ),
+     *             @SWG\Property(
+     *                 property="data",
+     *                 ref="#/definitions/Tenant"
+     *             ),
+     *             @SWG\Property(
+     *                 property="status",
+     *                 type="string",
+     *                 example="success"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=400,
+     *         description="Invalid input parameters",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Invalid parameters"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=404,
+     *         description="Tenant not found",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Tenant not found"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Something went wrong"
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function update(Request $request, Tenant $tenant)
     {
-        $validator = Validator::make($request->all(), [
-            'username' => 'unique:tenants',
-            'domain_name' => 'unique:tenants',
-            'domain_url' => 'unique:tenants',
-            'email' => 'unique:tenants',
-            'tenant_logo' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            // other validation rules...
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $tenant_logo_url = "";
-        if ($request->hasFile('tenant_logo')) {
-            $tenant_logo = $request->file('tenant_logo');
-            $filename = now()->format('Y_m_d_H_i_s') . '.' . $tenant_logo->getClientOriginalExtension();
-            // Store the image in the 'public' disk (storage/app/public)
-            $path = $tenant_logo->storeAs('tenant_logo', $filename, 'public');
-
-            // Return the URL to access the uploaded image
-            $tenant_logo_url = url('storage/' . $path);;
-        }
-        $updateData = [
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'password' => bcrypt($request->password),
-            'email' => $request->email,
-            'mobile' => $request->mobile,
-            'company_code' => $request->company_code,
-            'company_name' => $request->company_name,
-            'server_serialnumber' => $request->server_serialnumber,
-            'server_ip' => $request->server_ip,
-            'server_mac' => $request->server_mac,
-            'status' => $request->status,
-            'tenant_role_id' => $request->tenant_role_id,
-            'title' => $request->title,
-            'footer_content' => $request->footer_content,
-            'footer_url' => $request->footer_url,
-        ];
-
-        // Add tenant_logo to the array only if it is not empty or null
-        if (!empty($tenant_logo_url)) {
-            $updateData['tenant_logo'] = $tenant_logo_url;
-        }
-
-        // Now update the tenant with the filtered data
-        $tenant->update($updateData);
-
-        // Cache::forget('tenants_index:' . md5(json_encode($request->all()))); // Clear the tenants index cache (adapt the key if needed)
-
-        return response()->json([
-            'message' => 'Tenant Updated Successfully',
-            'data' => new TenantsResource($tenant)
-        ]);
+        return $this->tenantRepository->update($request, $tenant);
     }
-    public function destroy(Tenants $tenant)
+
+    /**
+     * @SWG\Delete(
+     *     path="/tenants/{tenant}",
+     *     summary="Delete a tenant",
+     *     description="Delete a specific tenant by ID.",
+     *     operationId="deleteTenant",
+     *     tags={"Tenants"},
+     *     @SWG\Parameter(
+     *         name="tenant",
+     *         in="path",
+     *         description="ID of the tenant to delete",
+     *         required=true,
+     *         type="integer"
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Tenant successfully deleted",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Success"
+     *             ),
+     *             @SWG\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 example={"id": 1, "message": "Tenant deleted"}
+     *             ),
+     *             @SWG\Property(
+     *                 property="status",
+     *                 type="string",
+     *                 example="success"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=404,
+     *         description="Tenant not found",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Tenant not found"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Something went wrong"
+     *             )
+     *         )
+     *     )
+     * )
+     */
+
+    public function destroy(Tenant $tenant)
     {
-        $tenant->is_delete = 'Yes';
-        $tenant->save();
-
-        // Cache::forget('tenants_index:*'); // Invalidate all tenants index caches (using wildcard)
-
-        return response()->json([
-            'message' => 'Tenant deleted Successfully',
-        ]);
+        return $this->tenantRepository->delete($tenant);
     }
+
+    
+    /**
+     * @SWG\Get(
+     *     path="/dashboard",
+     *     summary="Retrieve dashboard statistics",
+     *     description="Fetches various statistics like ticket types, priorities, agent status, and call counts for the dashboard.",
+     *     operationId="getDashboardStats",
+     *     tags={"Dashboard"},
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Dashboard statistics fetched successfully",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Success"
+     *             ),
+     *             @SWG\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @SWG\Property(
+     *                     property="type_wise_ticket",
+     *                     type="object",
+     *                     additionalProperties={
+     *                         @SWG\Property(
+     *                             property="type",
+     *                             type="string",
+     *                             example="Problem"
+     *                         ),
+     *                         @SWG\Property(
+     *                             property="count",
+     *                             type="integer",
+     *                             example=1
+     *                         )
+     *                     }
+     *                 ),
+     *                 @SWG\Property(
+     *                     property="priority_wise_ticket",
+     *                     type="object",
+     *                     additionalProperties={
+     *                         @SWG\Property(
+     *                             property="priority",
+     *                             type="string",
+     *                             example="High"
+     *                         ),
+     *                         @SWG\Property(
+     *                             property="count",
+     *                             type="integer",
+     *                             example=5
+     *                         )
+     *                     }
+     *                 ),
+     *                 @SWG\Property(
+     *                     property="agent_status",
+     *                     type="object",
+     *                     additionalProperties={
+     *                         @SWG\Property(
+     *                             property="agent_id",
+     *                             type="string",
+     *                             example="ABC 101"
+     *                         ),
+     *                         @SWG\Property(
+     *                             property="status",
+     *                             type="array",
+     *                             items={
+     *                                 @SWG\Property(
+     *                                     property="status",
+     *                                     type="string",
+     *                                     example="Login"
+     *                                 ),
+     *                                 @SWG\Property(
+     *                                     property="ip_address",
+     *                                     type="string",
+     *                                     example="192.168.1.110"
+     *                                 )
+     *                             }
+     *                         )
+     *                     }
+     *                 ),
+     *                 @SWG\Property(
+     *                     property="lead_status",
+     *                     type="object",
+     *                     additionalProperties={
+     *                         @SWG\Property(
+     *                             property="status",
+     *                             type="string",
+     *                             example="Open"
+     *                         ),
+     *                         @SWG\Property(
+     *                             property="count",
+     *                             type="integer",
+     *                             example=100
+     *                         )
+     *                     }
+     *                 ),
+     *                 @SWG\Property(
+     *                     property="call_count_status",
+     *                     type="object",
+     *                     additionalProperties={
+     *                         @SWG\Property(
+     *                             property="status",
+     *                             type="string",
+     *                             example="Success"
+     *                         ),
+     *                         @SWG\Property(
+     *                             property="count",
+     *                             type="integer",
+     *                             example=200
+     *                         )
+     *                     }
+     *                 ),
+     *                 @SWG\Property(
+     *                     property="agent_count",
+     *                     type="integer",
+     *                     example=10
+     *                 )
+     *             ),
+     *             @SWG\Property(
+     *                 property="status",
+     *                 type="string",
+     *                 example="success"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Something went wrong"
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function dashboard()
     {
-        $type_wise_ticket = array("Problem" => "1", "Help" => "0", "Incident" => "2", "Questions" => "5", "Feature Request" => "0", "Other" => 10);
-        $priority_wise_ticket = array("High" => "5", "Medium" => "2", "Low" => "0", "Urgent" => "10");
-        $agent_status = array("ABC 101" => array("Login", "Pause", "192.168.1.110"), "BCD 201" => array("Login", "Resume", "192.168.1.111"), "XYZ 301" => array("Logout", "Pause", "192.168.1.112"));
-        $lead_status = array("Unassigned" => "0", "Open" => "100", "Waiting On Customer" => "5", "Waiting On Third party" => "5", "Resolved" => "50", "Closed" => "200");
-        $call_count_status = array("Success" => "200", "Failed" => "30");
-        $agent_count =  Users::query()->where('is_delete', 'No')->where('type', '3')->count();
-        $final_array = array("type_wise_ticket" => $type_wise_ticket, "priority_wise_ticket" => $priority_wise_ticket, "agent_status" => $agent_status, "lead_status" => $lead_status, "call_count_status" => $call_count_status, "agent_count" => $agent_count);
-        return response()->json([
-            'data' => new TenantsResource($final_array)
-        ]);
+        return $this->tenantRepository->dashboard();
     }
 }

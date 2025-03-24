@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use App\Models\Tenants;
+use App\Models\Tenant;
 use Illuminate\Support\Facades\Artisan;
 
 class ExistingTenantSeeder extends Command
@@ -29,25 +29,23 @@ class ExistingTenantSeeder extends Command
      */
     public function handle()
     {
-        $allTenants = Tenants::where("is_delete", "No")
-        ->orderBy('id')  // Ensures consistent ordering by the ID column
-        ->chunkById(100, function ($tenants) {
-            foreach ($tenants as $tenant) {
-                $newConnectionName = str_replace(".", "_", $tenant->domain_name);
-                $databaseName = str_replace(".", "_", $tenant->domain_name);
-                $this->establishDatabaseConnect($newConnectionName, $databaseName);
-                DB::reconnect($newConnectionName);
-                Artisan::call('db:seed', [
-                    '--database' => $newConnectionName, 
-                    '--class'=>'TenantSeeder',
-                    '--force' => true, // Run seeders in production if necessary
-                ]);
-               
-            }
-        });
+        $allTenants = Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
+            ->chunkById(100, function ($tenants) {
+                foreach ($tenants as $tenant) {
+                    $newConnectionName = str_replace(".", "_", $tenant->domain_name);
+                    $databaseName = str_replace(".", "_", $tenant->domain_name);
+                    $this->establishDatabaseConnect($newConnectionName, $databaseName);
+                    DB::reconnect($newConnectionName);
+                    Artisan::call('db:seed', [
+                        '--database' => $newConnectionName,
+                        '--class' => 'TenantSeeder',
+                        '--force' => true, // Run seeders in production if necessary
+                    ]);
+                }
+            });
     }
 
-    public function establishDatabaseConnect($newConnectionName,$databaseName)
+    public function establishDatabaseConnect($newConnectionName, $databaseName)
     {
         Config::set("database.connections.$newConnectionName", [
             'driver'    => 'mysql',

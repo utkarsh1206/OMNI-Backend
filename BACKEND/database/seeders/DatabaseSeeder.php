@@ -9,7 +9,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            Role_ID::class,
+            RoleSeeder::class,
             CronExpressionsSeeder::class,
             CronCommandsSeeder::class,
             ModuleSeeder::class,
@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             AdminsSeeder::class,
             CountriesSeeder::class,
             StatesSeeder::class,
-            CitiesSeeder::class,
+            CitySeeder::class,
         ]);
     }
 }

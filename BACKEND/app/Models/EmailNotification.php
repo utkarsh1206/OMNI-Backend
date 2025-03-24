@@ -10,6 +10,4 @@ class EmailNotification extends Model
     use HasFactory;
 
     protected $fillable = ['type', 'ticket_id'];
-
-
 }

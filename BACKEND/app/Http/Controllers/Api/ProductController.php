@@ -6,13 +6,14 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Repositories\ProductRepository;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
-use App\Repositories\ProductRepository;
 use App\Http\Requests\ProductRequest;
 use App\Http\Response\CustomApiResponse;
+use Exception;
 
 // use Illuminate\Database\QueryException;
 
@@ -237,7 +238,7 @@ class ProductController extends Controller
             $data = Product::findOrFail($product);
             return new ProductResource($data);
         } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);                
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 

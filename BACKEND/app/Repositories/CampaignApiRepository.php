@@ -64,6 +64,6 @@ class CampaignApiRepository
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_fetch'));
         }
 
-        return $this->apiResponse->getResponseStructure(trans('message.error'),null,trans('message.failed_to_fetch_data'));
+        return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.failed_to_fetch_data'));
     }
 }

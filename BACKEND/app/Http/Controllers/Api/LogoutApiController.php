@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class LogoutApiController extends Controller
 {
-    public function agentLogoutApi(LogoutApiRequest $request) 
+    public function agentLogoutApi(LogoutApiRequest $request)
     {
         $ip = getNeoxLocalIp();
         if (is_array($ip) && isset($ip['status']) && $ip['status'] === 'error') {

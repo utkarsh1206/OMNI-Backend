@@ -3,24 +3,58 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\SupportTicketnotification;
+use App\Repositories\SupportTicketNotificationRepository;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 
-class SupportticketnotificationController extends Controller
+class SupportTicketNotificationController extends Controller
 {
+
+    private $supportTicketNotificationRepository;
+
+    public function __construct(SupportTicketNotificationRepository $supportTicketNotificationRepository)
+    {
+        $this->supportTicketNotificationRepository = $supportTicketNotificationRepository;
+    }
+    /**
+     * @OA\Get(
+     *     path="/api/notification",
+     *     tags={"Support Ticket"},
+     *     summary="Get support ticket notifications",
+     *     description="Retrieve a list of support ticket notifications, filtered by support ticket ID.",
+     *     @OA\Parameter(
+     *         name="supportticket_id",
+     *         in="query",
+     *         required=false,
+     *         description="Filter notifications by support ticket ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of support ticket notifications",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="support_ticket_id", type="integer"),
+     *                     @OA\Property(property="notification_message", type="string"),
+     *                     @OA\Property(property="created_at", type="string", format="date-time"),
+     *                     @OA\Property(property="updated_at", type="string", format="date-time")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error"
+     *     )
+     * )
+     */
     public function index(Request $request)
     {
-        // Get the support_ticket_id from the query string (optional, default to null if not provided)
-        $supportTicketId = $request->query('supportticket_id');
-        // Fetch notifications based on the support_ticket_id and order by date in descending order
-        $notifications = SupportTicketnotification::where('support_ticket_id', $supportTicketId)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // Return the response in JSON format
-        return response()->json([
-            'data' => $notifications
-        ], 200); // Status code 200 for success
+        return $this->supportTicketNotificationRepository->list($request);
     }
 }

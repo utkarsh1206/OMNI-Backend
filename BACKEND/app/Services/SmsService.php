@@ -8,8 +8,9 @@ use App\Models\SmsProviderConfiguration;
 use GuzzleHttp\Client as GuzzleClient;
 use Exception;
 use App\Models\SmsProviderLog;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SmsService
+class SmsService implements ShouldQueue
 {
     /**
      * Send SMS based on the selected provider for the given user.
@@ -24,26 +25,28 @@ class SmsService
     public function sendSMS(int $userId, string $templateName, string $message, string $toPhone)
     {
         $userGateway = UserSmsGateway::where('user_id', $userId)->first();
-        if (!$userGateway) {
-            throw new Exception('No SMS gateway selected for this user.');
-        }
+        // if (!$userGateway) {
+        //     throw new Exception('No SMS gateway selected for this user.');
+        // }
 
-        $providerId = $userGateway->provider_id;
-        // Based on the provider, call the respective API
-        switch ($userGateway->provider->name) {
-            case 'twilio':
-                $configArr = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value", "config_key");
-                return $this->sendWithTwilio($message, $toPhone, $configArr);
-            case 'custom':
-                $configArr = [];
+        if ($userGateway->provider_id) {
+            $providerId = $userGateway->provider_id;
+            // Based on the provider, call the respective API
+            switch ($userGateway->provider->name) {
+                case 'twilio':
+                    $configArr = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value", "config_key");
+                    return $this->sendWithTwilio($message, $toPhone, $configArr);
+                case 'custom':
+                    $configArr = [];
 
-                $configurations = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value", "config_key");
-                if ($configurations->count()) {
-                    $configArr =  $configurations->toArray();
-                }
-                return $this->sendWithCustomProvider($templateName, $message, $toPhone, $configArr, $providerId);
-            default:
-                throw new Exception('Unsupported SMS provider selected.');
+                    $configurations = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value", "config_key");
+                    if ($configurations->count()) {
+                        $configArr =  $configurations->toArray();
+                    }
+                    return $this->sendWithCustomProvider($templateName, $message, $toPhone, $configArr, $providerId);
+                default:
+                    throw new Exception('Unsupported SMS provider selected.');
+            }
         }
     }
 
@@ -69,26 +72,26 @@ class SmsService
 
     private function sendWithCustomProvider(string $templateName, string $message, string $toPhone, array $configArr, $providerId)
     {
-       // dd($templateName);
+        // dd($templateName);
         $client = new GuzzleClient();
         $apiName = $configArr['api_name'] ?? '';
         $queryParams = $configArr['query_params'] ?? '';
         $phoneNumber = $configArr['phone_number'] ?? '';
         $apiUrl = $configArr['api_url'] ?? '';
         $method = $configArr['method'] ?? 'POST';
-        
+
         switch ($templateName) {
             case 'Ticket Created':
-                $template_id = config('message.INCIDENT_CREATE');
+                $template_id = config('omni.INCIDENT_CREATE');
                 break;
             case 'Ticket Resolved':
-                $template_id = config('message.INCIDENT_RESOLUTION');
+                $template_id = config('omni.INCIDENT_RESOLUTION');
                 break;
         }
         try {
             $queryParams = str_replace("[PHONE_NUMBER]", $phoneNumber, $queryParams);
             $queryParams = str_replace("[TEMPLATE_ID]", $template_id, $queryParams);
-            $queryParams .="&message=".rawurldecode($message);
+            $queryParams .= "&message=" . rawurldecode($message);
             $urlWithParams = $apiUrl . $apiName . $queryParams;
             $response = $client->request($method, $urlWithParams);
             $responseBody = json_decode($response->getBody(), true);

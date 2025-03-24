@@ -4,9 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
-class Supportticketnotification extends Model
+class SupportTicketNotification extends Model
 {
     use HasFactory;
     protected $table = 'support_ticket_notification';
@@ -25,12 +24,12 @@ class Supportticketnotification extends Model
 
     // public function getCreatedAtAttribute($value)
     // {
-    //     return Carbon::parse($value)->format('Y-m-d H:i:s'); 
+    //     return Carbon::parse($value)->format('Y-m-d H:i:s');
     // }
 
     // public function getUpdatedAtAttribute($value)
     // {
-    //     return Carbon::parse($value)->format('Y-m-d H:i:s'); 
+    //     return Carbon::parse($value)->format('Y-m-d H:i:s');
     // }
 
     public function ticket()

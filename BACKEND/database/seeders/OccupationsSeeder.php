@@ -32,7 +32,6 @@ class OccupationsSeeder extends Seeder
                 'title' => $occupation['title'],
                 'user_id' => 0,
                 'status' => 'Active',
-                'is_delete' => 'No',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);

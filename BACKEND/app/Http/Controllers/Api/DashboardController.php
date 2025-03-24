@@ -10,153 +10,116 @@ use App\Models\Account;
 use App\Models\Contact;
 use App\Models\Department;
 use App\Models\IncidentType;
+use App\Repositories\DashboardRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class DashboardController extends Controller
 {
-    private function extractPayload(Request $request)
+
+    private $dashboardRepository;
+
+    public function __construct(DashboardRepository $dashboardRepository)
     {
-        $token = $request->bearerToken();
-        return $token ? JWTAuth::setToken($token)->getPayload() : null;
+        $this->dashboardRepository = $dashboardRepository;
     }
+  
+
+    /**
+ * @OA\Get(
+ *     path="/api/dashboard/ticket_details",
+ *     summary="Get dashboard statistics",
+ *     description="Fetches various statistics including total users, accounts, tickets, departments, and detailed ticket breakdowns.",
+ *     operationId="getDashboardData",
+ *     tags={"Dashboard"},
+ *
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successful response",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="total_users", type="integer", example=150),
+ *             @OA\Property(property="total_accounts", type="integer", example=50),
+ *             @OA\Property(property="total_pending_tickets", type="integer", example=20),
+ *             @OA\Property(property="total_departments", type="integer", example=5),
+ *             @OA\Property(property="total_contacts", type="integer", example=200),
+ *             @OA\Property(property="total_ticket_count", type="integer", example=500),
+ *
+ *             @OA\Property(property="tickets_by_status", type="object",
+ *                 @OA\AdditionalProperties(
+ *                     type="object",
+ *                     @OA\Property(property="count", type="integer", example=120)
+ *                 )
+ *             ),
+ *
+ *             @OA\Property(property="tickets_by_priority", type="object",
+ *                 @OA\AdditionalProperties(
+ *                     type="object",
+ *                     @OA\Property(property="count", type="integer", example=50)
+ *                 )
+ *             ),
+ *
+ *             @OA\Property(property="tickets_by_department", type="object",
+ *                 @OA\AdditionalProperties(
+ *                     type="object",
+ *                     @OA\Property(property="count", type="integer", example=30)
+ *                 )
+ *             ),
+ *
+ *             @OA\Property(property="pending_tickets_by_agent", type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="assign_to_id", type="integer", example=12),
+ *                     @OA\Property(property="count", type="integer", example=5),
+ *                     @OA\Property(property="agent_name", type="string", example="John Doe")
+ *                 )
+ *             ),
+ *
+ *             @OA\Property(property="tickets_by_incident_type", type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="incident_id", type="integer", example=3),
+ *                     @OA\Property(property="count", type="integer", example=40),
+ *                     @OA\Property(property="incident_name", type="string", example="Server Downtime")
+ *                 )
+ *             ),
+ *
+ *             @OA\Property(property="tickets_by_product", type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="product_id", type="integer", example=7),
+ *                     @OA\Property(property="count", type="integer", example=25)
+ *                 )
+ *             ),
+ *
+ *             @OA\Property(property="tickets_by_type", type="object",
+ *                 @OA\AdditionalProperties(
+ *                     type="object",
+ *                     @OA\Property(property="count", type="integer", example=100)
+ *                 )
+ *             ),
+ *
+ *             @OA\Property(property="activity_summary", type="object",
+ *                 @OA\Property(property="today", type="integer", example=10),
+ *                 @OA\Property(property="last_7_days", type="integer", example=60),
+ *                 @OA\Property(property="last_30_days", type="integer", example=200)
+ *             ),
+ *
+ *             @OA\Property(property="deleted_ticket_count", type="integer", example=5)
+ *         )
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request"
+ *     )
+ * )
+ */
+
 
     public function index(Request $request)
     {
-        // Extract payload from the token
-        $payload = $this->extractPayload($request);
-        $applyAgentFilter = $payload && $payload['role_id'] == 3;
-        $userId = $payload ? $payload['id'] : null;
-
-        // Helper function to apply filter conditionally
-        $conditionalFilter = function ($query) use ($applyAgentFilter, $userId) {
-            if ($applyAgentFilter) {
-                $query->where('assign_to_id', $userId);
-            }
-        };
-
-        $totalUsers = User::where('type', '!=', 0)->count();
-
-        //Total Accounts
-        $totalAccounts = Account::where('is_delete', 'No')->count();
-
-        // // Total Ticket Count
-        // $totalTicketCount = SupportTicket::count();
-        // Total Ticket Count
-        $totalTicketCount = SupportTicket::where($conditionalFilter)->count();
-
-        // Total Pending Tickets
-        $totalPendingTickets = SupportTicket::where($conditionalFilter)->whereNotIn('default_status', ['Resolved', 'Closed'])->count();
-
-        // Total Departments
-        $totalDepartments = Department::count();
-
-        // Total Contacts
-        $totalContacts = Contact::count();
-
-        // Tickets by status
-        $ticketsByStatus = SupportTicket::where($conditionalFilter)->select(DB::raw('default_status, COUNT(*) as count'))
-            ->groupBy('default_status')
-            ->get()
-            ->keyBy('default_status');
-
-        // Tickets by priority
-        $ticketsByPriority = SupportTicket::where($conditionalFilter)->select(DB::raw('default_priority, COUNT(*) as count'))
-            ->groupBy('default_priority')
-            ->get()
-            ->keyBy('default_priority');
-
-        $ticketsByDepartment = SupportTicket::where($conditionalFilter)
-            ->join('departments', 'supportticket.department_id', '=', 'departments.id')
-            ->select('departments.name as department_name', DB::raw('COUNT(*) as count'))
-            ->groupBy('departments.name')
-            ->get()
-            ->keyBy('department_name');
-
-        // // Pending tickets by agent (assign_to_id represents agent)
-        // $pendingTicketsByAgent = SupportTicket::whereNotIn('default_status', ['Resolved', 'Closed'])
-        //     ->select('assign_to_id', DB::raw('COUNT(*) as count'))
-        //     ->groupBy('assign_to_id')
-        //     ->get();
-
-        // // Get agent names (from users table)
-        // $agents = User::whereIn('id', $pendingTicketsByAgent->pluck('assign_to_id'))->get()->keyBy('id');
-
-        // Pending tickets by agent (assign_to_id represents agent)
-        $pendingTicketsByAgent = SupportTicket::where($conditionalFilter)->whereNotIn('default_status', ['Resolved', 'Closed'])
-            ->select('assign_to_id', DB::raw('COUNT(*) as count'))
-            ->groupBy('assign_to_id')
-            ->orderByDesc(DB::raw('COUNT(*)'))  // Order by count descending
-            ->take(5)  // Take only top 5 agents
-            ->get();
-
-        // Get agent names (from users table)
-        $agents = User::whereIn('id', $pendingTicketsByAgent->pluck('assign_to_id'))
-            ->get()
-            ->keyBy('id');
-
-        // Tickets by incident type (incident_id is a reference to incident_types table)
-        $ticketsByIncidentType = SupportTicket::where($conditionalFilter)->select('incident_id', DB::raw('COUNT(*) as count'))
-            ->groupBy('incident_id')
-            ->get();
-
-        // Get incident names
-        $incidentTypes = IncidentType::whereIn('id', $ticketsByIncidentType->pluck('incident_id'))->get()->keyBy('id');
-
-        // Tickets by product type (product_id is a reference to product_types table)
-        $ticketsByProductType = SupportTicket::where($conditionalFilter)->select('product_id', DB::raw('COUNT(*) as count'))
-            ->groupBy('product_id')
-            ->get();
-
-        // Get product names
-        // $productTypes = Product::whereIn('id', $ticketsByProductType->pluck('product_id'))->get()->keyBy('id');
-
-        // Tickets by type
-        $ticketsByType = SupportTicket::where($conditionalFilter)->select('default_type', DB::raw('COUNT(*) as count'))
-            ->groupBy('default_type')
-            ->get()
-            ->keyBy('default_type');
-
-        // Activity summary (Tickets created today, last 7 days, last 30 days, and updated vs. created)
-        $activitySummary = [
-            'today' => SupportTicket::where($conditionalFilter)->whereDate('created_at', now()->toDateString())->count(),
-            'last_7_days' => SupportTicket::where($conditionalFilter)->where('created_at', '>=', now()->subDays(7))->count(),
-            'last_30_days' => SupportTicket::where($conditionalFilter)->where('created_at', '>=', now()->subDays(30))->count(),
-        ];
-
-        // Deleted ticket count
-        $deletedTicketCount = SupportTicket::where('is_delete', 'Yes')->count();
-
-        // Combine all the data into a single response
-        $dashboardData = [
-            'total_users' => $totalUsers,
-            'total_accounts' => $totalAccounts,
-            'total_pending_tickets' => $totalPendingTickets,
-            'total_departments' => $totalDepartments,
-            'total_contacts' => $totalContacts,
-            'total_ticket_count' => $totalTicketCount,
-            'tickets_by_status' => $ticketsByStatus,
-            'tickets_by_priority' => $ticketsByPriority,
-            'tickets_by_department' => $ticketsByDepartment,
-            'pending_tickets_by_agent' => $pendingTicketsByAgent->map(function ($ticket) use ($agents) {
-                $ticket->agent_name = $agents->get($ticket->assign_to_id)->first_name ?? 'Unknown Agent';
-                return $ticket;
-            }),
-            'tickets_by_incident_type' => $ticketsByIncidentType->map(function ($ticket) use ($incidentTypes) {
-                $ticket->incident_name = $incidentTypes->get($ticket->incident_id)->name ?? 'Unknown Incident Type';
-                return $ticket;
-            }),
-            // 'tickets_by_product' => $ticketsByProductType->map(function ($ticket) use ($productTypes) {
-            //     $ticket->product_name = $productTypes->get($ticket->product_id)->name ?? 'Unknown Product';
-            //     return $ticket;
-            // }),
-            'tickets_by_product' => $ticketsByProductType,
-            'tickets_by_type' => $ticketsByType,
-            'activity_summary' => $activitySummary,
-            'deleted_ticket_count' => $deletedTicketCount
-        ];
-
-        return response()->json($dashboardData);
+        return $this->dashboardRepository->index($request);
     }
 }

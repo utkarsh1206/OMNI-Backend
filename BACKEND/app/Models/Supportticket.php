@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Supportticket extends Model
 {
+    use SoftDeletes;
     protected $table = 'supportticket';
-
+    
     protected $fillable = [
         //"tenant_id",
         "id",
@@ -31,7 +33,6 @@ class Supportticket extends Model
         "attachment",
         //"status",
         "incident_id",
-        "is_delete",
         "support_ticket_id",
         "first_response_time",
         "alert_before_response_notification_time",

@@ -11,7 +11,7 @@ class CampaignApiController extends Controller
     public function campaignListApi(CampaignApiRequest $request)
     {
         $domainName = $request->domain_name;
-        if (!$domainName){
+        if (!$domainName) {
             return response()->json(['error' => 'Domain name is required']);
         }
         

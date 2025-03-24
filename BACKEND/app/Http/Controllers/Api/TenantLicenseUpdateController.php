@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Tenants;
+use App\Models\Tenant;
 use App\Models\Detail;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +19,7 @@ class TenantLicenseUpdateController extends Controller
 
         $licenseKey = $validated['license_key'];
 
-        $tenant = Tenants::find($id);
+        $tenant = Tenant::find($id);
         $tenant->license_key = $licenseKey;
         $tenant->save();
 
@@ -35,7 +35,6 @@ class TenantLicenseUpdateController extends Controller
         $this->updateOrInsertLicense($databaseName, $domianName, $id, $licenseKey);
 
         return response()->json(['message' => 'License updated successfully.'], 200);
-            
     }
 
     private function updateOrInsertLicense($databaseName, $domianName, $tenantId, $licenseKey)
@@ -44,20 +43,7 @@ class TenantLicenseUpdateController extends Controller
         DB::purge('omnichannel'); // Purge any existing database connection
 
         $newConnectionName = str_replace(".", "_", $domianName);
-
-        Config::set("database.connections.$newConnectionName", [
-            'driver'    => 'mysql',
-            'host'      => env('DB_HOST', '127.0.0.1'),
-            'port'      => env('DB_PORT', '3306'),
-            'database'  => $databaseName,
-            'username'  => env('DB_USERNAME'),
-            'password'  => env('DB_PASSWORD'),
-            'charset'   => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix'    => '',
-            'strict'    => true,
-            'engine'    => null,
-        ]);
+        establishDatabaseConnect($newConnectionName, $databaseName);
 
         $connection = DB::connection($newConnectionName);
 

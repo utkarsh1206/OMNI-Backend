@@ -2,215 +2,126 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
-use App\Models\Admins;
-use App\Models\Users;
-use App\Models\Phones;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
+use App\Http\Requests\LoginRequest;
+use App\Repositories\LoginRepository;
+use Exception;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Api\LicenseController;
-use App\Models\LiveAgents;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
 class LoginController extends Controller
 {
-    protected $licenseController;
+    private $loginRepository;
 
-    public function __construct(LicenseController $licenseController)
+    public function __construct(LoginRepository $loginRepository)
     {
-        $this->licenseController = $licenseController;  // Inject LicenseController
+        $this->loginRepository = $loginRepository;
     }
 
-    public function login_action(Request $request)
+    /**
+     * @OA\Post(
+     *     path="/api/login",
+     *     tags={"Authentication"},
+     *     summary="User Login",
+     *     description="User logs in with either username or email and password. Depending on the flag, it can also verify domain and phone credentials.",
+     *     operationId="login",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             required={"username", "password", "flag"},
+     *             @OA\Property(property="username", type="string", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="password123"),
+     *             @OA\Property(property="flag", type="integer", example=0, description="Flag to indicate the type of login. 0 for admin, 1 for user, 2 for phone login"),
+     *             @OA\Property(property="domain", type="string", example="example.com", description="Optional domain input, required for flag 1 or 2"),
+     *             @OA\Property(property="phone", type="string", example="1234567890", description="Optional phone input, required for flag 2"),
+     *             @OA\Property(property="phone_password", type="string", format="password", example="phonepassword", description="Optional phone password, required for flag 2")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login successful",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="string", example="success"),
+     *             @OA\Property(property="token", type="string", example="jwt.token.here"),
+     *             @OA\Property(property="message", type="string", example="User Login successful")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request (e.g. missing domain or invalid input)",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Domain is required")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized: Invalid credentials",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Unauthorized: Invalid credentials")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden: License expired",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="License expired")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Database error")
+     *         )
+     *     )
+     * )
+     */
+    public function login(LoginRequest $request)
     {
-        $validator = $request->validate([
-            'username' => 'required',
-            'password' => 'required',
-            'flag' => 'required|in:0,1,2',
-            'phone' => 'required_if:flag,2', // Phone is required if flag is 2
-            'phone_password' => 'required_if:flag,2' // Phonepassword is required if flag is 2
-        ]);
-
-        $credentials = request(['password']);
-        // Determine whether the input is an email or username
-        $loginInput = $request->input('username');
-
-        if (filter_var($loginInput, FILTER_VALIDATE_EMAIL)) {
-            $credentials['email'] = $loginInput;
-        } else {
-            $credentials['username'] = $loginInput;
+        try {
+            $validator = $request->validated();
+            return $this->loginRepository->login($request, $validator);
+        } catch (Exception $e) {
+            return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
         }
-
-        $userData = null;
-        if ($validator['flag'] == 0) {
-            try {
-                if (isset($credentials['email'])) {
-                    $userData = Admins::where('email', $credentials['email'])
-                        ->where('is_delete', 'No')
-                        ->first();
-                } else {
-                    $userData = Admins::where('username', $credentials['username'])
-                        ->where('is_delete', 'No')
-                        ->first();
-                }
-
-                if (!$userData) {
-                    return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
-                }
-
-                if (!$token = auth('api')->attempt($credentials)) {
-                    return response()->json(['error' => 'Unauthorized'], 401);
-                }
-            } catch (\Illuminate\Database\QueryException $ex) {
-                Log::error('Database error: ' . $ex->getMessage());
-                return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
-            }
-        } elseif ($validator['flag'] == 1) {
-            try {
-                $domain = $request->input('domain');
-                if ($domain) {
-                    if (isset($credentials['email'])) {
-                        $userData = Users::where('email', $credentials['email'])
-                            ->where('is_delete', 'No')
-                            ->first();
-                    } else {
-                        $userData = Users::where('username', $credentials['username'])
-                            ->where('is_delete', 'No')
-                            ->first();
-                    }
-
-                    if (!$userData) {
-                        return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
-                    }
-                } else {
-                    return response()->json(['error' => 'Domain is required'], 400);
-                }
-
-                // Check if the license is expired for this user
-                if ($this->isLicenseExpired($request)) {
-                    return response()->json(['error' => 'License expired'], 403);
-                }
-
-                if (!$token = auth('api_users')->attempt($credentials)) {
-                    return response()->json(['error' => 'Unauthorized'], 401);
-                }
-            } catch (\Illuminate\Database\QueryException $ex) {
-                Log::error('Database error: ' . $ex->getMessage());
-                return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
-            }
-        } elseif ($validator['flag'] == 2) {
-            try {
-                $domain = $request->input('domain');
-                if ($domain) {
-                    if (isset($credentials['email'])) {
-                        $userData = Users::where('email', $credentials['email'])
-                            ->where('is_delete', 'No')
-                            ->where('role_id', 3)
-                            ->first();
-                    } else {
-                        $userData = Users::where('username', $credentials['username'])
-                            ->where('is_delete', 'No')
-                            ->where('role_id', 3)
-                            ->first();
-                    }
-
-                    $phoneData = Phones::where('login', $request->input('phone'))
-                        ->where('status', 'ACTIVE')
-                        ->first();
-
-                    if (!$userData) {
-                        Log::error('User not found or deleted', ['credentials' => $credentials]);
-                        return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
-                    }
-
-                    if (!$phoneData) {
-                        Log::error('Phone not found or inactive', ['phone' => $request->input('phone')]);
-                        return response()->json(['error' => 'Unauthorized: Invalid phone credentials'], 401);
-                    }
-
-                    Log::info('Phone data retrieved:', ['phoneData' => $phoneData]);
-
-                    // If the user is found, check both password and phone_password
-                    // if ($userData && Hash::check($credentials['password'], $userData->password) && Hash::check($request->input('phone_password'), $userData->phone_password)) {
-                    if ($userData && Hash::check($credentials['password'], $userData->password) && $request->input('phone_password') == $phoneData->pass) {
-
-                        Log::info('Both password and phone password checks passed');
-                        // Set the flag to include phone in JWT
-                        $userData->setAddPhoneToJWT($validator['flag']);
-                       // $token = auth('api_users')->login($userData);
-                        $token = JWTAuth::attempt($credentials);
-                    } else {
-                        Log::error('Unauthorized: Invalid credentials', ['userData' => $userData]);
-                        return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
-                    }
-                } else {
-                    return response()->json(['error' => 'Domain is required'], 400);
-                }
-
-                // Check if the license is expired for this user
-                if ($this->isLicenseExpired($request)) {
-                    return response()->json(['error' => 'License expired'], 403);
-                }
-            } catch (\Illuminate\Database\QueryException $ex) {
-                Log::error('Database error: ' . $ex->getMessage());
-                return response()->json(['error' => 'Unauthorized: Invalid credentials'], 401);
-            }
-        }
-
-        if ($userData && Hash::check($credentials['password'], $userData->password)) {
-            Log::info('Passwords match, proceed with token generation');
-            
-            if ($validator['flag'] != 0){
-                // LiveAgents::updateOrCreate(
-                LiveAgents::Create(
-                    ['user_id' => $userData->id], // Find by user_id
-                    [
-                        'status' => 'online',
-                        'extension' => $userData->extension ?? 'N/A',
-                        'status_last_updated_at' => now(),
-                        'login_time' => now(),
-                        // 'ready_hr' => now(),
-                        // 'total_calls' => 0,
-                        // 'campaign_id' => $userData->campaign_id ?? null,
-                        // 'ingroup_id' => $userData->ingroup_id ?? null,
-                        // 'talk_hr' => null,
-                        // 'talk_avg' => 0,
-                        // 'ingroup' => null,
-                        // 'lagged_duration' => 0,
-                        // 'rank' => 1,
-                    ]
-                );
-            }
-    
-        } else {
-            Log::error('Invalid credentials');
-        }
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'User Login successful',
-            'token' => $token
-        ], 200);
     }
 
-    private function isLicenseExpired(Request $request)
+    /**
+     * @OA\Post(
+     *     path="/logout",
+     *     summary="Logout user",
+     *     description="Logs the user out by invalidating the JWT token.",
+     *     operationId="logout",
+     *     tags={"Authentication"},
+     *     security={{
+     *         "bearerAuth": {}
+     *     }},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successfully logged out",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Successfully logged out"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized - Token invalid or expired",
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *     )
+     * )
+     */
+    public function logout(Request $request)
     {
-        $is_tanant = true;
-        $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant' => $is_tanant]));
-        $licenseInfo = $licenseResponse->getData(true);
-
-        if (isset($licenseInfo['validity_date'])) {
-            if ($licenseInfo['validity_date'] <= time()) {
-                Log::info('License expired');
-                return true;
-            }
-        } else {
-            return response()->json(['error' => 'License data invalid'], 400);
-        }
-
-        return false;
+        $this->loginRepository->logout($request);
+        return response()->json(['message' => 'Successfully logged out']);
     }
 }

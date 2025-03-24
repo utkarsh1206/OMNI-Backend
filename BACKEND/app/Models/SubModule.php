@@ -15,5 +15,4 @@ class SubModule extends Model
     {
         return $this->belongsTo(Module::class, 'module_id');
     }
-
 }

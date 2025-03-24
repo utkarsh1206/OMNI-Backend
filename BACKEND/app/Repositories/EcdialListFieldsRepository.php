@@ -80,13 +80,13 @@ class EcdialListFieldsRepository
 
             $listId = $validatedData['list_id'];
             $fieldLabel = $validatedData['field_label'];
-    
+
             // Sanitize and create column name dynamically
             $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $fieldLabel));
-    
+
             // Define table name
             $tableName = "custom_lead_{$listId}";
-    
+
             if (!Schema::hasColumn($tableName, $columnName)) {
                 Schema::table($tableName, function (Blueprint $table) use ($columnName) {
                     $table->string($columnName)->nullable()->after('updated_at');

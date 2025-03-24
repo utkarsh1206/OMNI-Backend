@@ -9,7 +9,6 @@ use App\Models\Detail;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-
 class DatabaseServiceProvider extends ServiceProvider
 {
     /**
@@ -28,21 +27,19 @@ class DatabaseServiceProvider extends ServiceProvider
         $domain = $request->input('domain');
         $fullUrl = $request->fullUrl();
         $lastSegment = $request->segment($request->segments() ? count($request->segments()) : 0);
-        if($domain =='' && $lastSegment != 'login'){
+        if ($domain == '' && $lastSegment != 'login') {
             $token = $request->bearerToken();
-            if($token != ""){
+            if ($token != "") {
                 $payload = JWTAuth::setToken($token)->getPayload();
-                if($payload['admin_type'] != 'Super'){
+                if ($payload['admin_type'] != 'Super') {
                     $domain = $payload['domain'];
-                    $domain =str_replace("https://","",$domain);
-                    $domain = str_replace("http://","",$domain);
+                    $domain = str_replace("https://", "", $domain);
+                    $domain = str_replace("http://", "", $domain);
                 }
             }
         }
         $details = Detail::where('domain', $domain)->first();
-//        echo "<pre>111";
- //       print_r($domain);
-   //     exit;
+
         if ($details) {
             $connectionDetails = [
                 'database' => $details->db,
