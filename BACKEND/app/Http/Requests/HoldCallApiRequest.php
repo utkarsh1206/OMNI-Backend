@@ -24,7 +24,6 @@ class HoldCallApiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => 'required|string',
             'user_id' => 'required|string',
             'number' => 'nullable|string',
             "action" => 'required|string|in:Park,UnPark',

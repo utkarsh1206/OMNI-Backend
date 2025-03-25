@@ -22,7 +22,6 @@ class DialCallApiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => 'required|string',
             'user_id' => 'required|string',
             'dialed_phone_number' => 'required|string',
         ];

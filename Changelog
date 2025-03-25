@@ -1,3 +1,18 @@
+2025-03-25 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 2017126 
+	* Version : Dev
+	* Laravel :
+	Created Middleware for JWT Data Extraction
+    	- Implemented ModifyRequestMiddleware to handle JWT token extraction from incoming requests.
+    	- The middleware decodes the JWT token using Tymon\JWTAuth\Facades\JWTAuth, retrieves user-related data from the payload (such as username and campaign), and injects this data into the request for use in subsequent processing.
+    	- The middleware is applied globally or to specific routes to ensure the availability of JWT-based user information across requests.
+
+	Use in Controller:
+    	- The controller now leverages this middleware to ensure that JWT-based user information is available when making API calls.
+    	- Extracted data like username and campaign are passed along with the API request to ensure the proper context for the API operation.
+
 2025-03-25 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :

@@ -7,6 +7,7 @@ use App\Http\Requests\HoldCallApiRequest;
 use Illuminate\Http\Request;
 use Exception;
 use App\Http\Response\CustomApiResponse;
+use Illuminate\Support\Facades\Validator;
 
 class HoldCallApiController extends Controller
 {
@@ -17,21 +18,31 @@ class HoldCallApiController extends Controller
         $this->apiResponse = $customApiResponse;
     }
 
-    public function holdCallApi(HoldCallApiRequest $request)
+    public function holdCallApi(Request $request)
     {
         try {
-            $ip = getNeoxLocalIp();
-            if (is_array($ip) && isset($ip['status']) && $ip['status'] === 'error') {
-                return $ip;
+            $config = getNeoxConfig();
+            // Check configuration status and handle error centrally
+            if (isset($config['status']) && $config['status'] === 'error') {
+                return response()->json($config);
             }
+
+            $ip = $config['neox_local_ip'];
+            $neoxToken = $config['neox_token'];
 
             $url = "https://{$ip}/api/agent/actions/v2/agent_hold.php";
 
-            if ($response = validateSecretKey($request->input('token'))) {
-                return $response;
+            // Get validation rules from FormRequest
+            $rules = (new HoldCallApiRequest())->rules();
+
+            // Validate request using extracted rules
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()]);
             }
 
-            $validatedData = $request->validated();
+            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
+
             return sendHttpRequest($url, 'POST', $validatedData);
         } catch (Exception $e) {
             return $this->apiResponse->handleAndResponseException($e);

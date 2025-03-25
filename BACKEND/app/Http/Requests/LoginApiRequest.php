@@ -22,7 +22,6 @@ class LoginApiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => 'required|string',
             'user_id' => 'required|string',
             'password' => 'required|string',
             'campaign_id' => 'required|string',

@@ -22,7 +22,6 @@ class PauseResumeApiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => 'required|string',
             'user_id' => 'required|string',
             'action' => 'required|in:Pause,Resume',
             'pause_code' => 'nullable|string',

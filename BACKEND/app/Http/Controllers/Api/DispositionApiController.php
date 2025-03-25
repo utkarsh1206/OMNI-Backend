@@ -4,21 +4,46 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DispositionListRequest;
+use App\Http\Response\CustomApiResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class DispositionApiController extends Controller
 {
-    public function dispositionListApi(DispositionListRequest $request)
+    private $apiResponse;
+
+    public function __construct(CustomApiResponse $customApiResponse)
     {
-        $ip = getNeoxLocalIp();
-        if (is_array($ip) && isset($ip['status']) && $ip['status'] === 'error') {
-            return $ip;
+        $this->apiResponse = $customApiResponse;
+    }
+
+    public function dispositionListApi(Request $request)
+    {
+        $config = getNeoxConfig();
+        // Check configuration status and handle error centrally
+        if (isset($config['status']) && $config['status'] === 'error') {
+            return response()->json($config);
         }
 
-        $url = "https://{$ip}/api/agent/actions/v2/disposition_list.php";
+        $ip = $config['neox_local_ip'];
+        if (!$ip) {
+            return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.local_ip_not_found'));
+        }
 
-        $validatedData = $request->validated();
-        $response = sendHttpRequest($url, 'POST', $validatedData);
+        $url = "https://{$ip}/api/admin/actions/v2/disposition_list.php";
 
-        return $response;
+        // Get validation rules from FormRequest
+        $rules = (new DispositionListRequest())->rules();
+
+        // Validate request using extracted rules
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()]);
+        }
+
+        $validatedData = $validator->validated();
+
+        return sendHttpRequest($url, 'POST', $validatedData);
     }
 }

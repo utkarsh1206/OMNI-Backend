@@ -24,7 +24,6 @@ class DisposCallApiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => 'required|string',
             'user_id' => 'required|string',
             'disposition_status' => 'required|string',
             'comment' => 'nullable|string'

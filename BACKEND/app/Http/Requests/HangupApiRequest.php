@@ -24,7 +24,6 @@ class HangupApiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => 'required|string',
             'user_id' => 'required|string',
             'number' => 'nullable|string',
         ];

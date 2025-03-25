@@ -15,11 +15,12 @@ class IngroupApiController extends Controller
             return response()->json(['error' => 'Domain name is required']);
         }
         
-        $ip = getNeoxLocalIp($domainName);
-        if (is_array($ip) && isset($ip['status']) && $ip['status'] === 'error') {
-            return $ip;
+        $config = getNeoxConfig($domainName);
+        if (isset($config['status']) && $config['status'] === 'error') {
+            return response()->json($config);
         }
 
+        $ip = $config['neox_local_ip'];
         $url = "https://{$ip}/api/admin/actions/v2/ingroup_list.php";
         $validatedData = $request->validated();
 

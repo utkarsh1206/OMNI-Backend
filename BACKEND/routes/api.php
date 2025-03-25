@@ -76,6 +76,7 @@ use App\Http\Controllers\Api\RecordApiController;
 use App\Http\Controllers\Api\RemovePartyApiController;
 use App\Http\Controllers\Api\StartConfApiController;
 use App\Http\Controllers\Api\LiveAgentController;
+use App\Http\Middleware\ModifyRequestMiddleware;
 
 Route::post('login', [LoginController::class, 'login']);
 
@@ -188,13 +189,15 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('merge', [SupportTicketMergeController::class, 'store']);
     
     Route::apiResource('neox-configurations', NeoxConfigurationController::class);
-    Route::post('/dispo_list', [DispositionApiController::class, 'dispositionListApi']);
-    Route::post('/api_pause_resume', [PauseResumeApiController::class, 'pauseResumeApi']);
-    Route::post('/api_dial_call', [DialCallApiController::class, 'dialCallApi']);
-    Route::post('/api_logout', [LogoutApiController::class, 'agentLogoutApi']);
-    Route::post('/api_hangup', [HangupApiController::class, 'hangupApi']);
-    Route::post('/api_dispos_call', [DisposCallApiController::class, 'disposCallApi']);
-    Route::post('/api_hold_call', [HoldCallApiController::class, 'holdCallApi']);
+    Route::middleware([ModifyRequestMiddleware::class])->group(function () {
+        Route::post('/dispo_list', [DispositionApiController::class, 'dispositionListApi']);
+        Route::post('/api_hold_call', [HoldCallApiController::class, 'holdCallApi']);
+        Route::post('/api_logout', [LogoutApiController::class, 'agentLogoutApi']);
+        Route::post('/api_dial_call', [DialCallApiController::class, 'dialCallApi']);
+        Route::post('/api_pause_resume', [PauseResumeApiController::class, 'pauseResumeApi']);
+        Route::post('/api_hangup', [HangupApiController::class, 'hangupApi']);
+        Route::post('/api_dispos_call', [DisposCallApiController::class, 'disposCallApi']);
+    });
     Route::post('/api_dial_next', [DialNextCallApiController::class, 'dialNextCallApi']);
     Route::post('/api_add_party', [AddPartyApiController::class, 'addPartyApi']);
     Route::post('/api_call_tansfer', [CallTransferApiController::class, 'callTransferApi']);

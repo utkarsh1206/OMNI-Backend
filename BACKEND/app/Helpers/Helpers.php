@@ -170,63 +170,39 @@ if (!function_exists('getDbConnection')) {
     }
 }
 
-if (!function_exists('getNeoxLocalIp')) {
+if (!function_exists('getNeoxConfig')) {
     /**
-     * Retrieve the Neox local IP from the database.
+     * Retrieve the Neox local IP and token from the database.
      *
-     * @return string|array The IP address or an error response if not found.
+     * @return array|array The IP and token or an error response if not found.
      */
-    function getNeoxLocalIp($domainName = null)
+    function getNeoxConfig($domainName = null)
     {
         // Get the database connection (returns null if no domain is provided)
         $connection = getDbConnection($domainName);
 
-        // If no connection is established, use the default configuration
+        // Get the 'neox_local_ip' and 'neox_token' from the database
         if (!$connection) {
-            $ip = NeoxConfiguration::first()->neox_local_ip ?? null;
+            $config = NeoxConfiguration::first(['neox_local_ip', 'neox_token']);
         } else {
-            // If a custom connection is set up, get the 'neox_local_ip'
-            $ip = $connection->table('neox_configuration')->value('neox_local_ip') ?? null;
+            // If a custom connection is set up, retrieve the values
+            $config = $connection->table('neox_configuration')
+                ->select('neox_local_ip', 'neox_token')
+                ->first();
         }
 
-        if (!$ip) {
+        // If either IP or token is missing, return an error response
+        if (!$config || !$config->neox_local_ip || !$config->neox_token) {
             return [
                 'status' => 'error',
-                'message' => trans('message.local_ip_not_found'),
+                'message' => trans('message.config_not_found'), // You can customize this message
             ];
         }
-        return $ip;
-    }
-}
 
-if (!function_exists('validateSecretKey')) {
-    /**
-     * Validate the provided API token against the stored token.
-     *
-     * @param string $token The API token to validate.
-     * @return mixed Null if valid, otherwise an error response.
-     */
-    function validateSecretKey($token, $domainName = null)
-    {
-        // Get the database connection (returns null if no domain is provided)
-        $connection = getDbConnection($domainName);
-
-        // If no connection is established, use the default configuration
-        if (!$connection) {
-            $secretKeyFromDb = NeoxConfiguration::first()->neox_token ?? null;
-        } else {
-            // If a custom connection is set up, get the 'neox_token'
-            $secretKeyFromDb = $connection->table('neox_configuration')->value('neox_token') ?? null;
-        }
-
-        if (!$secretKeyFromDb || $token !== $secretKeyFromDb) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'The provided token is invalid.',
-            ]);
-        }
-
-        return null; // Return null if validation passes
+        return [
+            'neox_local_ip' => $config->neox_local_ip,
+            'neox_token' => $config->neox_token,
+        ];
     }
 }
 

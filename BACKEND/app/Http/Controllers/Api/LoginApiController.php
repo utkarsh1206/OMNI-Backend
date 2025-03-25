@@ -15,20 +15,18 @@ class LoginApiController extends Controller
             return response()->json(['error' => 'Domain name is required']);
         }
         
-        $ip = getNeoxLocalIp($domainName);
-        if (is_array($ip) && isset($ip['status']) && $ip['status'] === 'error') {
-            return $ip;
+        $config = getNeoxConfig($domainName);
+        if (isset($config['status']) && $config['status'] === 'error') {
+            return response()->json($config);
         }
+
+        $ip = $config['neox_local_ip'] ?? null;
+        $neoxToken = $config['neox_token'] ?? null;
 
         $url = "https://{$ip}/api/agent/actions/v2/agent_login.php";
-
-        if ($response = validateSecretKey($request->input('token'), $domainName)) {
-            return $response;
-        }
         
-        $validatedData = $request->validated();
-        $response = sendHttpRequest($url, 'POST', $validatedData);
+        $requestData = array_merge($request->validated(), ['token' => $neoxToken]);
 
-        return $response;
+        return sendHttpRequest($url, 'POST', $requestData);
     }
 }

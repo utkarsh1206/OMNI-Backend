@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use App\Http\Response\CustomApiResponse;
+use Illuminate\Support\Facades\Validator;
 
 class DisposCallApiController extends Controller
 {
@@ -18,21 +19,29 @@ class DisposCallApiController extends Controller
         $this->apiResponse = $customApiResponse;
     }
 
-    public function disposCallApi(DisposCallApiRequest $request)
+    public function disposCallApi(Request $request)
     {
         try {
-            $ip = getNeoxLocalIp();
-            if (is_array($ip) && isset($ip['status']) && $ip['status'] === 'error') {
-                return $ip;
+            $config = getNeoxConfig();
+            // Check configuration status and handle error centrally
+            if (isset($config['status']) && $config['status'] === 'error') {
+                return response()->json($config);
             }
+
+            $ip = $config['neox_local_ip'];
+            $neoxToken = $config['neox_token'];
 
             $url = "https://{$ip}/api/agent/actions/v2/agent_dispo_call.php";
+            // Get validation rules from FormRequest
+            $rules = (new DisposCallApiRequest())->rules();
 
-            if ($response = validateSecretKey($request->input('token'))) {
-                return $response;
+            // Validate request using extracted rules
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()]);
             }
 
-            $validatedData = $request->validated();
+            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
             return sendHttpRequest($url, 'POST', $validatedData);
         } catch (Exception $e) {
             return $this->apiResponse->handleAndResponseException($e);

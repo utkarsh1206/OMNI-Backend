@@ -15,7 +15,8 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         // Global middleware here
-        'jwt.auth' => \App\Http\Middleware\JwtAuthMiddleware::class
+        'jwt.auth' => \App\Http\Middleware\JwtAuthMiddleware::class,
+        'modify.request' => \App\Http\Middleware\ModifyRequestMiddleware::class,
     ];
 
     /**

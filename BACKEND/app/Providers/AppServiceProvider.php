@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Supportticket::observe(SupportTicketObserver::class);
-        SupportTicketNotification::observe(SupportTicketNotificationObserver::class);
+        // SupportTicketNotification::observe(SupportTicketNotificationObserver::class);
         Tenant::observe(TenantObserver::class);
     }
 }
