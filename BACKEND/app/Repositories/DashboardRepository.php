@@ -78,10 +78,10 @@ class DashboardRepository
                 ->keyBy('default_priority');
 
             // Tickets by department
-            $ticketsByDepartment = SupportTicket::where($conditionalFilter)->select(DB::raw('departments, COUNT(*) as count'))
-                ->groupBy('departments')
+            $ticketsByDepartment = SupportTicket::where($conditionalFilter)->select(DB::raw('department_id, COUNT(*) as count'))
+                ->groupBy('department_id')
                 ->get()
-                ->keyBy('departments');
+                ->keyBy('department_id');
 
             // // Pending tickets by agent (assign_to_id represents agent)
             // $pendingTicketsByAgent = SupportTicket::whereNotIn('default_status', ['Resolved', 'Closed'])
@@ -135,7 +135,8 @@ class DashboardRepository
             ];
 
             // Deleted ticket count
-            $deletedTicketCount = SupportTicket::count();
+            // $deletedTicketCount = SupportTicket::count();
+            // 
 
             // Combine all the data into a single response
             $dashboardData = [
@@ -163,7 +164,7 @@ class DashboardRepository
                 'tickets_by_product' => $ticketsByProductType,
                 'tickets_by_type' => $ticketsByType,
                 'activity_summary' => $activitySummary,
-                'deleted_ticket_count' => $deletedTicketCount
+                // 'deleted_ticket_count' => $deletedTicketCount
             ];
             return $this->apiResponse->getResponseStructure(trans('message.success'), $dashboardData, trans('message.data_fetch'));
         } catch (Exception $e) {

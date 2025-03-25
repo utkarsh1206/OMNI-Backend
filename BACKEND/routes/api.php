@@ -161,7 +161,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('email-configure', EmailConfigureController::class);
     Route::apiResource('products', ProductController::class);
-    Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
+    // Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
     Route::apiResource('email-logs', EmailLogController::class);
     Route::apiResource('sms-configurations', SmsProviderConfigurationController::class);
     Route::apiResource('sms-providers', SmsProviderController::class);
