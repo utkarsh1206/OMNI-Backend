@@ -68,6 +68,7 @@ class UserGroupRepository
         try {
             $usergroup = usergroup::create([
                 'name' => $request->name,
+                "department_id" => $request->department_id,
                 "campaign_id" => $request->campaign_id,
                 "description" => $request->description,
                 "status" => $request->status
@@ -86,7 +87,8 @@ class UserGroupRepository
             'name' => $request->name,
             "campaign_id" => $request->campaign_id,
             "description" => $request->description,
-            //"tenant_id"=>1,//Make it dynamic
+            "department_id" => $request->department_id,
+            // "tenant_id"=>1,//Make it dynamic
             "status" => $request->status
         ]);
         return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.user_group_update_msg'));

@@ -6,8 +6,6 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class CustomApiResponse
 {
-
-
     public function getResponseStructure($status, $payload = null, $message = '', $statusCode = 200)
     {
         if (! empty($status) && ! empty($payload)) {
@@ -56,7 +54,7 @@ class CustomApiResponse
     public function handleAndResponseException(\Exception $ex)
     {
         $response = '';
-        switch (true) {
+        switch ($ex) {
             case $ex instanceof \Illuminate\Database\Eloquent\ModelNotFoundException:
                 $response = response()->json(['message' => trans('message.record_not_found')], ResponseHTTP::HTTP_NOT_FOUND);
                 break;
