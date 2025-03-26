@@ -141,7 +141,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('countries', [CountryController::class, 'index']);
     Route::get('nameprefixes', [NamePrefixController::class, 'index']);
     Route::get('occupations', [OccupationController::class, 'index']);
-    Route::get('states', [StateController::class, 'index']);    
+    Route::get('states', [StateController::class, 'index']);
     Route::get('cities', [CityController::class, 'index']);
     Route::apiResource('email-logs', EmailLogController::class);
     Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
@@ -183,11 +183,11 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']); // Get a single lead by ID
     Route::put('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'update']);
     Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
-    
+
     // Support Ticket Controller
     Route::post('transfer', [SupportTicketTransferController::class, 'store']);
     Route::post('merge', [SupportTicketMergeController::class, 'store']);
-    
+
     Route::apiResource('neox-configurations', NeoxConfigurationController::class);
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::post('/dispo_list', [DispositionApiController::class, 'dispositionListApi']);
@@ -197,16 +197,15 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('/api_pause_resume', [PauseResumeApiController::class, 'pauseResumeApi']);
         Route::post('/api_hangup', [HangupApiController::class, 'hangupApi']);
         Route::post('/api_dispos_call', [DisposCallApiController::class, 'disposCallApi']);
+        Route::post('/api_dial_next', [DialNextCallApiController::class, 'dialNextCallApi']);
+        Route::post('/api_add_party', [AddPartyApiController::class, 'addPartyApi']);
+        Route::post('/api_call_tansfer', [CallTransferApiController::class, 'callTransferApi']);
+        Route::post('/api_disconnect_conf', [DisconnectConfApiController::class, 'disconnectConfApi']);
+        Route::post('/api_leave_conf', [LeaveConfApiController::class, 'leaveConfApi']);
+        Route::post('/api_record_call', [RecordApiController::class, 'callRecordingApi']);
+        Route::post('/api_remove_party', [RemovePartyApiController::class, 'removePartyApi']);
+        Route::post('/api_start_conf', [StartConfApiController::class, 'startConfApi']);
     });
-    Route::post('/api_dial_next', [DialNextCallApiController::class, 'dialNextCallApi']);
-    Route::post('/api_add_party', [AddPartyApiController::class, 'addPartyApi']);
-    Route::post('/api_call_tansfer', [CallTransferApiController::class, 'callTransferApi']);
-    Route::post('/api_disconnect_conf', [DisconnectConfApiController::class, 'disconnectConfApi']);
-    Route::post('/api_leave_conf', [LeaveConfApiController::class, 'leaveConfApi']);
-    Route::post('/api_record_call', [RecordApiController::class, 'callRecordingApi']);
-    Route::post('/api_remove_party', [RemovePartyApiController::class, 'removePartyApi']);
-    Route::post('/api_start_conf', [StartConfApiController::class, 'startConfApi']);
-
 });
 
 Route::post('/camp_list', [CampaignApiController::class, 'campaignListApi']);

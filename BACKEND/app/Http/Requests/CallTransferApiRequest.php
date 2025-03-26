@@ -24,7 +24,6 @@ class CallTransferApiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => 'required|string',
             'user_id' => 'required|string',
             'callroute' => 'required|string',
             'callroutedata' => 'required|string',

@@ -24,7 +24,6 @@ class AddPartyApiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => 'required|string',
             'user_id' => 'required|string',
             'participant' => 'required|string',
             'conf_type' => 'required|string|in:INTERNAL,EXTERNAL',

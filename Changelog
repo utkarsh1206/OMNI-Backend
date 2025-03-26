@@ -1,3 +1,15 @@
+2025-03-26 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 8c0ba0f 
+	* Version : Dev
+	* Laravel :
+	Use in Controller:
+    	- The controller now leverages this middleware to ensure that JWT-based user information is available when making API calls.
+    	- Extracted data like username and campaign are passed along with the API request to ensure the proper context for the API operation.
+
+	Worked on API for All conference API ie. addparty, startconf, remove party, diconnect conf, leave conf and transfer API and call recoding API and dial next API.
+
 2025-03-25 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
