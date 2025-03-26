@@ -48,7 +48,7 @@ use App\Http\Controllers\Api\CronExpressionController;
 use App\Http\Controllers\Api\CronConfigurationController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\TicketReportController;
-use App\Http\Controllers\Api\SLAReportController;
+use App\Http\Controllers\Api\SlaReportController;
 use App\Http\Controllers\Api\EmailLogController;
 use App\Http\Controllers\Api\SmsProviderConfigurationController;
 use App\Http\Controllers\Api\SmsProviderController;
@@ -84,8 +84,6 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-//Route::get('login', [AuthController::class, 'login'])->name('login');
-
 #Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
 #Route::middleware('auth:api')->post('license_update', [LicenseUpdateController::class, 'updateLicense']);
 
@@ -99,23 +97,6 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
     Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
 });
-
-Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
-Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);
-Route::get('/ticket/summary/category', [TicketReportController::class, 'categorySummary']);
-Route::get('/ticket/summary/priority', [TicketReportController::class, 'prioritySummary']);
-Route::get('/ticket/summary/status', [TicketReportController::class, 'statusSummary']);
-Route::get('/ticket/summary/weekday', [TicketReportController::class, 'weekdaySummary']);
-
-Route::apiResource('sla-settings', SlaSettingController::class);
-Route::get('slareport', [SLAReportController::class, 'generateReport']);
-Route::get('slareport/csv', [SLAReportController::class, 'exportCsv']);
-Route::get('sla-priority', [SLAReportController::class, 'prioritySLA']);
-Route::get('sla-category', [SLAReportController::class, 'categorySLA']);
-Route::get('sla-incident', [SLAReportController::class, 'incidentSLA']);
-
-Route::apiResource('supportticket', SupportTicketController::class);
-Route::post('updateticketstatus/{supportticket}', [SupportTicketController::class, 'statusupdate']);
 
 Route::middleware(['jwt.auth'])->group(function () {
     Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
@@ -184,9 +165,27 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'update']);
     Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
 
-    // Support Ticket Controller
+    // Support Ticket
+    Route::apiResource('supportticket', SupportTicketController::class);
+    Route::post('updateticketstatus/{supportticket}', [SupportTicketController::class, 'statusupdate']);
     Route::post('transfer', [SupportTicketTransferController::class, 'store']);
     Route::post('merge', [SupportTicketMergeController::class, 'store']);
+
+    // Ticket Report
+    Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
+    Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);
+    Route::get('/ticket/summary/category', [TicketReportController::class, 'categorySummary']);
+    Route::get('/ticket/summary/priority', [TicketReportController::class, 'prioritySummary']);
+    Route::get('/ticket/summary/status', [TicketReportController::class, 'statusSummary']);
+    Route::get('/ticket/summary/weekday', [TicketReportController::class, 'weekdaySummary']);
+
+    // SLA
+    Route::apiResource('sla-settings', SlaSettingController::class);
+    Route::get('slareport', [SlaReportController::class, 'generateReport']);
+    Route::get('slareport/csv', [SlaReportController::class, 'exportCsv']);
+    Route::get('sla-priority', [SlaReportController::class, 'prioritySLA']);
+    Route::get('sla-category', [SlaReportController::class, 'categorySLA']);
+    Route::get('sla-incident', [SlaReportController::class, 'incidentSLA']);
 
     Route::apiResource('neox-configurations', NeoxConfigurationController::class);
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {

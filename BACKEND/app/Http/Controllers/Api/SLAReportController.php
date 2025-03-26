@@ -11,9 +11,17 @@ use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Repositories\SlaReportRepository;
 
-class SLAReportController extends Controller
+class SlaReportController extends Controller
 {
+    private $slaReportRepository;
+
+    public function __construct(SlaReportRepository $slaReportRepository)
+    {
+        $this->slaReportRepository = $slaReportRepository;
+    }
+
     private function applyFilters($query, Request $request, $payload = null)
     {
         if ($request->has('startDate') && $request->has('endDate')) {

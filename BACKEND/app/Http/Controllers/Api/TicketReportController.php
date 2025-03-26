@@ -5,14 +5,21 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SupportTicket;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Repositories\TicketReportRepository;
 
 class TicketReportController extends Controller
 {
+    private $ticketReportRepository;
+
+    public function __construct(TicketReportRepository $ticketReportRepository)
+    {
+        $this->ticketReportRepository = $ticketReportRepository;
+    }
+
     private function applyFilters($query, Request $request, $payload = null)
     {
         if ($request->has('startDate') && $request->has('endDate')) {

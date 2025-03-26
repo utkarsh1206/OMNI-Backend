@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\SlaSettingResource;
 use Illuminate\Http\Request;
 use App\Models\SlaSetting;
 use App\Models\SlaOffDay;
@@ -12,9 +11,17 @@ use App\Models\SlaTarget;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use App\Repositories\SlaSettingRepository;
 
 class SlaSettingController extends Controller
 {
+    private $slaSettingRepository;
+
+    public function __construct(SlaSettingRepository $slaSettingRepository)
+    {
+        $this->slaSettingRepository = $slaSettingRepository;
+    }
+
     public function index(Request $request)
     {
         try {

@@ -18,18 +18,20 @@ use App\Services\SlaService;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\SmsTemplate;
 use App\Services\SmsService;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
 use App\Models\MailTemplate;
+use App\Repositories\SupportTicketRepository;
 
 class SupportTicketController extends Controller
 {
     protected $slaService;
 
+    private $slaReportRepository;
+
     // Constructor to inject the SlaService
-    public function __construct(SlaService $slaService)
+    public function __construct(SlaService $slaService, SupportTicketRepository $slaReportRepository)
     {
         $this->slaService = $slaService;
+        $this->slaReportRepository = $slaReportRepository;
     }
 
     public function index(Request $request)
@@ -119,6 +121,7 @@ class SupportTicketController extends Controller
             ]);
         }
     }
+
     public function store(Request $request)
     {
         $apiUser = auth()->user();
