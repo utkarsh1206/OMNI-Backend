@@ -1146,6 +1146,104 @@
                 ]
             }
         },
+        "/api/business-types": {
+            "get": {
+                "tags": [
+                    "BusinessType"
+                ],
+                "summary": "Get a list of business types",
+                "description": "Retrieve a list of business types with optional search and pagination.",
+                "operationId": "4505fb818d65008be1376c111a050115",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search term to filter business types by title or status",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page for pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination, or 'all' for all records without pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of business types",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "title": {
+                                                        "type": "string",
+                                                        "example": "Retail"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "Active"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid pagination parameters"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
         "/api/campaigns": {
             "get": {
                 "tags": [
@@ -8452,6 +8550,69 @@
                 }
             }
         },
+        "/api/notification": {
+            "get": {
+                "tags": [
+                    "Support Ticket"
+                ],
+                "summary": "Get support ticket notifications",
+                "description": "Retrieve a list of support ticket notifications, filtered by support ticket ID.",
+                "operationId": "7b966b31fa8c59614322b5c1044cec3c",
+                "parameters": [
+                    {
+                        "name": "supportticket_id",
+                        "in": "query",
+                        "description": "Filter notifications by support ticket ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of support ticket notifications",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "support_ticket_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "notification_message": {
+                                                        "type": "string"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/api/transfer": {
             "post": {
                 "tags": [
@@ -8557,56 +8718,116 @@
                 }
             }
         },
-        "/api/notification": {
+        "/tenants": {
             "get": {
                 "tags": [
-                    "Support Ticket"
+                    "Tenants"
                 ],
-                "summary": "Get support ticket notifications",
-                "description": "Retrieve a list of support ticket notifications, filtered by support ticket ID.",
-                "operationId": "7b966b31fa8c59614322b5c1044cec3c",
+                "summary": "List tenants with filters and pagination",
+                "description": "Retrieve a list of tenants based on optional filters and pagination.",
+                "operationId": "listTenants",
                 "parameters": [
                     {
-                        "name": "supportticket_id",
+                        "name": "searchTerm",
                         "in": "query",
-                        "description": "Filter notifications by support ticket ID",
+                        "description": "Search term to filter tenants by various fields (e.g., username, email, company name, etc.)",
                         "required": false,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "companyName",
+                        "in": "query",
+                        "description": "Filter tenants by company name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "Filter tenants by email",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "mobile",
+                        "in": "query",
+                        "description": "Filter tenants by mobile number",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "domainName",
+                        "in": "query",
+                        "description": "Filter tenants by domain name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "companyCode",
+                        "in": "query",
+                        "description": "Filter tenants by company code",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of results per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of support ticket notifications",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "support_ticket_id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "notification_message": {
-                                                        "type": "string"
-                                                    },
-                                                    "created_at": {
-                                                        "type": "string",
-                                                        "format": "date-time"
-                                                    },
-                                                    "updated_at": {
-                                                        "type": "string",
-                                                        "format": "date-time"
-                                                    }
-                                                },
-                                                "type": "object"
+                                                "$ref": "#/components/schemas/Tenant"
                                             }
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
                                         }
                                     },
                                     "type": "object"
@@ -8615,7 +8836,655 @@
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Tenants"
+                ],
+                "summary": "Create a new tenant",
+                "description": "Create a new tenant with the provided details, including uploading an optional tenant logo image.",
+                "operationId": "createTenant",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "username",
+                                    "first_name",
+                                    "last_name",
+                                    "email",
+                                    "password",
+                                    "mobile",
+                                    "domain_name",
+                                    "company_code",
+                                    "company_name",
+                                    "server_serialnumber",
+                                    "server_ip",
+                                    "server_mac",
+                                    "domain_url",
+                                    "status",
+                                    "tenant_role_id"
+                                ],
+                                "properties": {
+                                    "username": {
+                                        "description": "Username of the tenant",
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "description": "First name of the tenant",
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "description": "Last name of the tenant",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "Email of the tenant",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "description": "Password for the tenant account",
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "mobile": {
+                                        "description": "Mobile number of the tenant",
+                                        "type": "string"
+                                    },
+                                    "domain_name": {
+                                        "description": "Domain name of the tenant",
+                                        "type": "string"
+                                    },
+                                    "company_code": {
+                                        "description": "Company code of the tenant",
+                                        "type": "string"
+                                    },
+                                    "company_name": {
+                                        "description": "Company name of the tenant",
+                                        "type": "string"
+                                    },
+                                    "server_serialnumber": {
+                                        "description": "Server serial number",
+                                        "type": "string"
+                                    },
+                                    "server_ip": {
+                                        "description": "Server IP address",
+                                        "type": "string"
+                                    },
+                                    "server_mac": {
+                                        "description": "Server MAC address",
+                                        "type": "string"
+                                    },
+                                    "domain_url": {
+                                        "description": "URL of the domain",
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "description": "Status of the tenant",
+                                        "type": "string"
+                                    },
+                                    "tenant_role_id": {
+                                        "description": "Tenant role ID",
+                                        "type": "integer"
+                                    },
+                                    "title": {
+                                        "description": "Title of the tenant (optional)",
+                                        "type": "string"
+                                    },
+                                    "footer_content": {
+                                        "description": "Footer content of the tenant (optional)",
+                                        "type": "string"
+                                    },
+                                    "footer_url": {
+                                        "description": "Footer URL for the tenant (optional)",
+                                        "type": "string"
+                                    },
+                                    "tenant_logo": {
+                                        "description": "Tenant logo image file (optional)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tenant successfully created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Tenant"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tenants/{tenant}": {
+            "get": {
+                "tags": [
+                    "Tenants"
+                ],
+                "summary": "Get tenant details",
+                "description": "Retrieve the details of a specific tenant by ID.",
+                "operationId": "getTenantDetails",
+                "parameters": [
+                    {
+                        "name": "tenant",
+                        "in": "path",
+                        "description": "ID of the tenant to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tenant details retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Tenant"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Tenant not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tenant not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Tenants"
+                ],
+                "summary": "Update an existing tenant",
+                "description": "Update the details of an existing tenant. Optionally, upload a new tenant logo image.",
+                "operationId": "updateTenant",
+                "parameters": [
+                    {
+                        "name": "tenant",
+                        "in": "path",
+                        "description": "ID of the tenant to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "mobile": {
+                                        "type": "string"
+                                    },
+                                    "company_code": {
+                                        "type": "string"
+                                    },
+                                    "company_name": {
+                                        "type": "string"
+                                    },
+                                    "server_serialnumber": {
+                                        "type": "string"
+                                    },
+                                    "server_ip": {
+                                        "type": "string"
+                                    },
+                                    "server_mac": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "tenant_role_id": {
+                                        "type": "integer"
+                                    },
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "footer_content": {
+                                        "type": "string"
+                                    },
+                                    "footer_url": {
+                                        "type": "string"
+                                    },
+                                    "tenant_logo": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tenant successfully updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Tenant"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Tenant not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tenant not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Tenants"
+                ],
+                "summary": "Delete a tenant",
+                "description": "Delete a specific tenant by ID.",
+                "operationId": "deleteTenant",
+                "parameters": [
+                    {
+                        "name": "tenant",
+                        "in": "path",
+                        "description": "ID of the tenant to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tenant successfully deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": {
+                                                "id": 1,
+                                                "message": "Tenant deleted"
+                                            }
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Tenant not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tenant not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dashboard": {
+            "get": {
+                "tags": [
+                    "Tenants"
+                ],
+                "summary": "Retrieve dashboard statistics",
+                "description": "Fetches various statistics like ticket types, priorities, agent status, and call counts for the dashboard.",
+                "operationId": "getDashboardStats",
+                "responses": {
+                    "200": {
+                        "description": "Dashboard statistics fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "type_wise_ticket": {
+                                                    "type": "object",
+                                                    "additionalProperties": [
+                                                        {
+                                                            "type": "string",
+                                                            "example": "Problem",
+                                                            "property": "type"
+                                                        },
+                                                        {
+                                                            "type": "integer",
+                                                            "example": 1,
+                                                            "property": "count"
+                                                        }
+                                                    ]
+                                                },
+                                                "priority_wise_ticket": {
+                                                    "type": "object",
+                                                    "additionalProperties": [
+                                                        {
+                                                            "type": "string",
+                                                            "example": "High",
+                                                            "property": "priority"
+                                                        },
+                                                        {
+                                                            "type": "integer",
+                                                            "example": 5,
+                                                            "property": "count"
+                                                        }
+                                                    ]
+                                                },
+                                                "agent_status": {
+                                                    "type": "object",
+                                                    "additionalProperties": [
+                                                        {
+                                                            "type": "string",
+                                                            "example": "ABC 101",
+                                                            "property": "agent_id"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "properties": {
+                                                                    "status": {
+                                                                        "type": "string",
+                                                                        "example": "Login"
+                                                                    },
+                                                                    "ip_address": {
+                                                                        "type": "string",
+                                                                        "example": "192.168.1.110"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            },
+                                                            "property": "status"
+                                                        }
+                                                    ]
+                                                },
+                                                "lead_status": {
+                                                    "type": "object",
+                                                    "additionalProperties": [
+                                                        {
+                                                            "type": "string",
+                                                            "example": "Open",
+                                                            "property": "status"
+                                                        },
+                                                        {
+                                                            "type": "integer",
+                                                            "example": 100,
+                                                            "property": "count"
+                                                        }
+                                                    ]
+                                                },
+                                                "call_count_status": {
+                                                    "type": "object",
+                                                    "additionalProperties": [
+                                                        {
+                                                            "type": "string",
+                                                            "example": "Success",
+                                                            "property": "status"
+                                                        },
+                                                        {
+                                                            "type": "integer",
+                                                            "example": 200,
+                                                            "property": "count"
+                                                        }
+                                                    ]
+                                                },
+                                                "agent_count": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -10721,6 +11590,34 @@
         }
     },
     "components": {
+        "schemas": {
+            "Tenant": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "company_name": {
+                        "type": "string"
+                    },
+                    "domain_name": {
+                        "type": "string"
+                    },
+                    "company_code": {
+                        "type": "string"
+                    },
+                    "mobile": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
+        },
         "responses": {
             "404": {
                 "description": "Incident type not found",
@@ -10775,6 +11672,10 @@
         {
             "name": "Audit Logs",
             "description": "Audit Logs"
+        },
+        {
+            "name": "BusinessType",
+            "description": "BusinessType"
         },
         {
             "name": "Campaigns",
@@ -10895,6 +11796,10 @@
         {
             "name": "Support Ticket",
             "description": "Support Ticket"
+        },
+        {
+            "name": "Tenants",
+            "description": "Tenants"
         },
         {
             "name": "Tenant License",
