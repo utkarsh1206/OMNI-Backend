@@ -7,12 +7,10 @@ use App\Models\Supportticket;
 use Carbon\Carbon;
 use App\Models\Tenant;
 use App\Models\User;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use App\Models\EmailConfigure;
 use App\Models\MailTemplate;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use App\Mail\SendEmail;
 use App\Models\EmailNotification;
@@ -39,12 +37,12 @@ class SlaEmailNotification extends Command
     public function handle()
     {
 
-        $allTenants = Tenant::orderBy('id')
+        Tenant::orderBy('id')
             ->chunkById(100, function ($tenants) {
                 foreach ($tenants as $tenant) {
                     $newConnectionName = str_replace(".", "_", $tenant->domain_name);
                     $databaseName = str_replace(".", "_", $tenant->domain_name);
-                    $this->establishDatabaseConnect($newConnectionName, $databaseName);
+                    establishDatabaseConnect($newConnectionName, $databaseName);
                     DB::reconnect($newConnectionName);
                     // Fetch support tickets for each tenant
                     $supportTickets = Supportticket::on($newConnectionName)
@@ -72,7 +70,6 @@ class SlaEmailNotification extends Command
                                 }
                             }
                         }
-
                         $this->info("Tenant: {$tenant->domain_name} - Notified " . $supportTickets->count());
                     }
                 }
@@ -175,22 +172,5 @@ class SlaEmailNotification extends Command
             echo  $e->getMessage();
             exit;
         }
-    }
-
-    public function establishDatabaseConnect($newConnectionName, $databaseName)
-    {
-        Config::set("database.connections.$newConnectionName", [
-            'driver'    => 'mysql',
-            'host'      => env('DB_HOST', '127.0.0.1'),
-            'port'      => env('DB_PORT', '3306'),
-            'database'  => $databaseName,
-            'username'  => env('DB_USERNAME'),
-            'password'  => env('DB_PASSWORD'),
-            'charset'   => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix'    => '',
-            'strict'    => true,
-            'engine'    => null,
-        ]);
     }
 }
