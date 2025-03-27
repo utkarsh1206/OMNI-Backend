@@ -25,7 +25,7 @@ class RecordApiRequest extends FormRequest
     {
         return [
             'user_id' => 'required|string',
-            'action' => 'required|string|in:Monitor,StopMonitor',
+            'action' => 'required|string|in:StartMonitor,StopMonitor',
         ];
     }
 
