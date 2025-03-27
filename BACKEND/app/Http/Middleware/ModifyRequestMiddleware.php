@@ -19,11 +19,20 @@ class ModifyRequestMiddleware
         $modifiedData = $request->all();
 
         $token = $request->bearerToken();
+        if (!$token) {
+            // If no token is provided, return an error response
+            $modifiedData['isJWT'] = 'No';
+            $request->merge($modifiedData);
+
+            return $next($request);
+        }
+
         $payload = $token ? JWTAuth::setToken($token)->getPayload() : null;
 
         $modifiedData['user_id'] = $payload['username'];
         $modifiedData['user'] = $payload['username'];
         $modifiedData['campaign_id'] = $payload['campaign'];
+        $modifiedData['domain_name'] = $payload['domain'];
 
         // Replace the original request with modified data
         $request->merge($modifiedData);
