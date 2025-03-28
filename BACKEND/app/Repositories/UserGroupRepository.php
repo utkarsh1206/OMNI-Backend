@@ -11,8 +11,6 @@ use Exception;
 
 class UserGroupRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
