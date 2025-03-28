@@ -1,3 +1,11 @@
+2025-03-27 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 67698f2
+	* Version : Dev
+	* Laravel : Make Ingroup Listing API condition based on JWT and Request.
+	If JWT found then use JWT extracted data as request and if JWT not found then use request data.
+
 2025-03-26 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

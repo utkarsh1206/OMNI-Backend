@@ -208,5 +208,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 });
 
 Route::post('/camp_list', [CampaignApiController::class, 'campaignListApi']);
-Route::post('/ingroup_list', [IngroupApiController::class, 'ingroupListApi']);
+Route::middleware([ModifyRequestMiddleware::class])->group(function () {
+    Route::post('/ingroup_list', [IngroupApiController::class, 'ingroupListApi']);
+});
 Route::post('/api_login', [LoginApiController::class, 'agentLoginApi']);
