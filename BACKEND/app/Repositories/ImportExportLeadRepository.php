@@ -66,7 +66,7 @@ class ImportExportLeadRepository
             $insertData = [];
 
             foreach ($fields as $field) {
-                $insertData[$field->field_name] = $row[$field->field_label] ?? null;
+                $insertData[$field->field_label] = $row[$field->field_label] ?? null;
             }
 
             $insertData['created_at'] = now();

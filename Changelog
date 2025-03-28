@@ -1,3 +1,10 @@
+2025-03-28 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : c0a5cf23
+	* Version : Dev
+	* Laravel : Creates a `LiveAgents` entry when an agent logs in and removes it upon logout to track presence. Adds the `User` relationship to the `LiveAgents` model and eager loads user data in the controller. Corrects field mapping key used during lead import.
+
 2025-03-27 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
