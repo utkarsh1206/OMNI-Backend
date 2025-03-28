@@ -36,6 +36,11 @@ class LiveAgents extends Model
         'talk_hr' => 'datetime',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function campaign()
     {
         return $this->belongsTo(EcdialCampaign::class);

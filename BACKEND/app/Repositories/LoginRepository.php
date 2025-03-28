@@ -12,7 +12,9 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Api\LicenseController;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Response\CustomApiResponse;
+use App\Models\LiveAgents;
 use App\Models\Phone;
+use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 /**
@@ -78,6 +80,18 @@ class LoginRepository
                     // Set the flag to include phone in JWT
                     $userData->setAddPhoneToJWT($validator['flag']);
                     $token = JWTAuth::attempt($credentials);
+                    if ($userData['role_id'] == 3) {
+                        $timeNow = Carbon::now();
+                        LiveAgents::create([
+                            'user_id' => $userData['id'],
+                            'extension' => $request->phone,
+                            'status' => 'online',
+                            'status_last_updated_at' => $timeNow,
+                            'login_time' => $timeNow,
+                            'ready_hr' => $timeNow,
+                            'campaign_id' => $request->campaign,
+                        ]);
+                    }
                 } else {
                     Log::error('Unauthorized: Invalid credentials', ['userData' => $userData]);
                     return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
@@ -100,6 +114,9 @@ class LoginRepository
         $token = $request->header('Authorization');
         $parseValue = JWTAuth::parseToken();
         $userId = $parseValue->authenticate()->id;
+
+        // Delete user from Live Agents Table
+        LiveAgents::where('user_id',$userId)->delete();
         $parseValue->invalidate($token);
         return true;
     }

@@ -18,7 +18,7 @@ class LiveAgentController extends Controller
         $campaign = $request->input('campaign', '');
         $ingroup = $request->input('ingroup', '');
         // Start the query for tenants
-        $query = LiveAgents::query()->with(['campaign', 'ingroup']);
+        $query = LiveAgents::query()->with(['user','campaign', 'ingroup']);
 
         // If there's a search term, apply it to the query
         if (!empty($searchTerm)) {
