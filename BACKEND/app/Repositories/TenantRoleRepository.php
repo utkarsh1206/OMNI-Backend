@@ -5,7 +5,6 @@ namespace App\Repositories;
 use Illuminate\Http\Request;
 use App\Models\TenantRole;
 use Illuminate\Support\Facades\Log;
-use App\Http\Resources\TenantsResource;
 use Illuminate\Support\Facades\DB;
 use App\Http\Response\CustomApiResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
@@ -13,8 +12,6 @@ use Exception;
 
 class TenantRoleRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
