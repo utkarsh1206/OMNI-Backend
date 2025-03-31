@@ -22,7 +22,7 @@ class UserGroupRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|unique:usergroup',
+            'name' => 'required|unique:user_groups',
         ];
     }
 }
