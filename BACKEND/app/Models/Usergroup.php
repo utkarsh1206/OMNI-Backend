@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class UserGroup extends Model
 {
     use SoftDeletes;
+
+    protected $table = 'user_groups';
    
     protected $fillable = [
         //"tenant_id",
