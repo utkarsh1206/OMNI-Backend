@@ -167,7 +167,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     // Support Ticket
     Route::apiResource('supportticket', SupportTicketController::class);
-    Route::post('updateticketstatus/{supportticket}', [SupportTicketController::class, 'statusupdate']);
+    Route::post('updateticketstatus/{supportticket}', [SupportTicketController::class, 'statusUpdate']);
     Route::post('transfer', [SupportTicketTransferController::class, 'store']);
     Route::post('merge', [SupportTicketMergeController::class, 'store']);
     Route::get('notification', [SupportTicketNotificationController::class, 'index']);

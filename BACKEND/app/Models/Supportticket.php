@@ -7,10 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Supportticket extends Model
+class SupportTicket extends Model
 {
     use SoftDeletes;
-    protected $table = 'supportticket';
     
     protected $fillable = [
         //"tenant_id",

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Resources\TenantsResource;
-use App\Models\Supportticket;
+use App\Models\SupportTicket;
 use App\Models\MailDetail;
 use App\Models\EmailConfigure;
 use Illuminate\Support\Facades\Validator;
@@ -36,90 +36,7 @@ class SupportTicketController extends Controller
 
     public function index(Request $request)
     {
-        // Get the search term from the request
-        $searchTerm = $request->input('search', '');
-
-        $ticket_id = $request->input('ticket_id', '');
-        $product_id = $request->input('product_id', '');
-        $subject = $request->input('subject', '');
-        $default_type = $request->input('default$default_type', '');
-        $default_status = $request->input('default_status', '');
-        $default_priority = $request->input('default_priority', '');
-        $assign_to_id = $request->input('assign_to_id', '');
-        $contact_id = $request->input('contact_id', '');
-
-        $token = $request->bearerToken();
-        if ($token != "") {
-            $payload = JWTAuth::setToken($token)->getPayload();
-            $roleId = $payload['role_id'];
-            $userId = $payload['id'];
-        }
-
-        // Start the query for tenants
-        $query = supportticket::query()->where('is_delete', 'No')->with('department');
-
-        if ($roleId == 3) {
-            $query->where('assign_to_id', $userId); // Filter by the logged-in user's ID
-        }
-
-        // If there's a search term, apply it to the query
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('to_emails', 'like', '%' . $searchTerm . '%')
-                    ->orwhere('subject', 'like', '%' . $searchTerm . '%')
-                    ->orwhere('description', 'like', '%' . $searchTerm . '%');
-            });
-        }
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $supportticket = $query->paginate($perPage);
-        $page = $request->input('page', 1);
-
-        if (!empty($ticket_id)) {
-            $query->where('ticket_id', $ticket_id);
-        }
-        if (!empty($product_id)) {
-            $query->where('product_id', $product_id);
-        }
-        if (!empty($subject)) {
-            $query->where('subject', $subject);
-        }
-        if (!empty($default_type)) {
-            $query->where('default_type', $default_type);
-        }
-        if (!empty($default_status)) {
-            $query->where('default_status', $default_status);
-        }
-        if (!empty($default_priority)) {
-            $query->where('default_priority', $default_priority);
-        }
-        if (!empty($assign_to_id)) {
-            $query->where('assign_to_id', $assign_to_id);
-        }
-        if (!empty($contact_id)) {
-            $query->where('contact_id', $contact_id);
-        }
-
-        if ($page === 'all') {
-            // If 'page' is 'all', retrieve all records without pagination
-            $supportticket = $query->get();
-            return response()->json([
-                'data' => $supportticket,
-            ]);
-        } else {
-            // Paginate the results
-            $supportticket = $query->paginate($perPage);
-            // Return the response with pagination meta
-            return response()->json([
-                'data' => $supportticket->items(),
-                'meta' => [
-                    'current_page' => $supportticket->currentPage(),
-                    'last_page' => $supportticket->lastPage(),
-                    'per_page' => $supportticket->perPage(),
-                    'total' => $supportticket->total(),
-                ],
-            ]);
-        }
+        return $this->slaReportRepository->list($request);
     }
 
     public function store(Request $request)
@@ -249,12 +166,12 @@ class SupportTicketController extends Controller
         ]);
     }
     
-    public function show(Supportticket $supportticket)
+    public function show(SupportTicket $supportticket)
     {
         return new TenantsResource($supportticket);
     }
 
-    public function update(Request $request, Supportticket $supportticket)
+    public function update(Request $request, SupportTicket $supportticket)
     {
         $apiUser = auth()->user();
         $attachment_urls = [];
@@ -355,72 +272,16 @@ class SupportTicketController extends Controller
         ]);
     }
 
-    public function statusupdate(Request $request, Supportticket $supportticket)
+    public function statusUpdate(Request $request, SupportTicket $supportTicket)
     {
-        $apiUser = auth()->user();
-        $type = "";
-        $comment = "";
-        $statusInfo = "";
-        if (isset($request->default_status)) {
-            $type = $request->default_status;
-            $comment = "Change ticket status to: " . $request->default_status;
-            $updateData = [
-                'default_status' => isset($request->default_status) ? $request->default_status : "",
-            ];
-            $statusInfo = "Status Changed";
-        }
-        if (isset($request->default_priority)) {
-            $type = $request->default_priority;
-            $comment = "Change ticket priority to: " . $request->default_priority;
-            $updateData = [
-                'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
-            ];
-            $statusInfo = "Priority Changed";
-        }
-        if (isset($request->default_type)) {
-            $type = $request->default_type;
-            $comment = "Change ticket type to: " . $request->default_type;
-            $updateData = [
-                'default_type' => isset($request->default_type) ? $request->default_type : "",
-            ];
-            $statusInfo = "Type Changed";
-        }
-
-
-
-        $supportticket->update($updateData);
-        $ticketResponse = $this->createTicket($supportticket, $type, $comment, $apiUser, $statusInfo);
-        if ($request->default_status == "Resolved") {
-            // $this->sendSms($apiUser, "Ticket Resolved", $apiUser->mobile, $supportticket);
-            $toEmails = $supportticket->assignedUser->email ?? '';
-            setEmailConfig();
-            $mailTemplate = MailTemplate::where("type", "agent_solve_the_ticket")->first();
-            $subject =  $mailTemplate->subject ?? '';
-            $body =  $mailTemplate->body ?? '';
-            $body = str_replace("{ticket_number}", $supportticket->support_ticket_id, $body);
-            $body = str_replace("{{customer_name}}", $supportticket->assignedUser->first_name, $body);
-            $subject = str_replace("{ticket_number}", $supportticket->support_ticket_id, $subject);
-            $res =  Mail::to($toEmails)->send(new SendEmail($subject, $body));
-        }
-
-        return response()->json([
-            'message' => 'Support Ticket Status Updated Successfully',
-            // 'data' => new TenantsResource($supportticket),
-            'data' => array_merge(
-                (new TenantsResource($supportticket))->toArray($request),
-                $ticketResponse
-            ),
-        ]);
+        return $this->slaReportRepository->statusUpdate($request, $supportTicket);
     }
 
-    public function destroy(Supportticket $supportticket)
+    public function destroy(SupportTicket $supportTicket)
     {
-        $supportticket->delete();
-        return response()->json([
-            'message' => 'Support Ticket Deleted Successfully',
-        ]);
+        return $this->slaReportRepository->delete($supportTicket);
     }
-
+    
     public function createTicket($supportticket, $type, $comment, $apiUser, $statusChange = null)
     {
         $notification = SupportTicketNotification::create([

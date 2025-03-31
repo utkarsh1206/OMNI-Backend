@@ -145,8 +145,12 @@ return [
     'decryption_failed'=>'Decryption failed',
     'invalid_license_data'=>'Invalid license data',
     // Support Ticket
+    'support_ticket_delete_msg','Support Ticket deleted Successfully',
+    'support_ticket_update_msg'=>'Support Ticket Updated Successfully',
+    'support_ticket_create_msg'=>'Support Ticket Created Successfully',
     'transfer_ticket' => 'Transfer ticket successfully',
     'ticket_merge' => 'Tickets Merge Successfully',
+    // SLA
     'sla_setting_delete_msg','SLA Setting deleted Successfully',
     'sla_setting_update_msg'=>'SLA Setting Updated Successfully',
     'sla_setting_create_msg'=>'SLA Setting Created Successfully',
