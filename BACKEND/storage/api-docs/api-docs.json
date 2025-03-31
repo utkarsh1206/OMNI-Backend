@@ -11587,6 +11587,530 @@
                     }
                 }
             }
+        },
+        "/api/call_initiate": {
+            "post": {
+                "tags": [
+                    "Webhook Calls"
+                ],
+                "summary": "Handle call initiation",
+                "description": "Logs the initiation of a call",
+                "operationId": "callInitiated",
+                "requestBody": {
+                    "description": "Logs the initiation of a call.",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "call_unique_id"
+                                ],
+                                "properties": {
+                                    "call_unique_id": {
+                                        "type": "string",
+                                        "example": "CI123456"
+                                    },
+                                    "campaign_id": {
+                                        "type": "string",
+                                        "example": "CMP001"
+                                    },
+                                    "caller_username": {
+                                        "type": "string",
+                                        "example": "agent1"
+                                    },
+                                    "caller_user_extension": {
+                                        "type": "intiger",
+                                        "example": "1001"
+                                    },
+                                    "user_group": {
+                                        "type": "string",
+                                        "example": "Sales"
+                                    },
+                                    "inbound_group_id": {
+                                        "type": "string",
+                                        "example": "IG001"
+                                    },
+                                    "called_phone_number": {
+                                        "type": "string",
+                                        "example": "567890"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Call initiated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Call data created successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access (invalid token).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/call_connected": {
+            "post": {
+                "tags": [
+                    "Webhook Calls"
+                ],
+                "summary": "Handle call connected",
+                "description": "Logs the connected of a call",
+                "operationId": "callConnected",
+                "requestBody": {
+                    "description": "Logs the connected of a call.",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "call_unique_id"
+                                ],
+                                "properties": {
+                                    "call_unique_id": {
+                                        "type": "string",
+                                        "example": "CI123456"
+                                    },
+                                    "campaign_id": {
+                                        "type": "string",
+                                        "example": "CMP001"
+                                    },
+                                    "caller_username": {
+                                        "type": "string",
+                                        "example": "agent1"
+                                    },
+                                    "caller_user_extension": {
+                                        "type": "intiger",
+                                        "example": "1001"
+                                    },
+                                    "user_group": {
+                                        "type": "string",
+                                        "example": "Sales"
+                                    },
+                                    "inbound_group_id": {
+                                        "type": "string",
+                                        "example": "IG001"
+                                    },
+                                    "called_phone_number": {
+                                        "type": "string",
+                                        "example": "567890"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Call initiated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Call data created successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access (invalid token).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/call_hangup": {
+            "post": {
+                "tags": [
+                    "Webhook Calls"
+                ],
+                "summary": "Handle call Hangup",
+                "description": "Logs the hangup of a call",
+                "operationId": "callHangup",
+                "requestBody": {
+                    "description": "Logs the hangup of a call.",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "call_unique_id"
+                                ],
+                                "properties": {
+                                    "call_unique_id": {
+                                        "type": "string",
+                                        "example": "CI123456"
+                                    },
+                                    "campaign_id": {
+                                        "type": "string",
+                                        "example": "CMP001"
+                                    },
+                                    "caller_username": {
+                                        "type": "string",
+                                        "example": "agent1"
+                                    },
+                                    "caller_user_extension": {
+                                        "type": "intiger",
+                                        "example": "1001"
+                                    },
+                                    "user_group": {
+                                        "type": "string",
+                                        "example": "Sales"
+                                    },
+                                    "inbound_group_id": {
+                                        "type": "string",
+                                        "example": "IG001"
+                                    },
+                                    "called_phone_number": {
+                                        "type": "string",
+                                        "example": "567890"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Call hangup successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Call data created successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access (invalid token).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/call_history": {
+            "post": {
+                "tags": [
+                    "Webhook Calls"
+                ],
+                "summary": "Handle call history",
+                "description": "Logs the history of a call",
+                "operationId": "callHistory",
+                "requestBody": {
+                    "description": "Logs the history of a call.",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "call_unique_id"
+                                ],
+                                "properties": {
+                                    "call_unique_id": {
+                                        "type": "string",
+                                        "example": "CI123456"
+                                    },
+                                    "campaign_id": {
+                                        "type": "string",
+                                        "example": "CMP001"
+                                    },
+                                    "caller_username": {
+                                        "type": "string",
+                                        "example": "agent1"
+                                    },
+                                    "caller_user_extension": {
+                                        "type": "integer",
+                                        "example": "1001"
+                                    },
+                                    "user_group": {
+                                        "type": "string",
+                                        "example": "Sales"
+                                    },
+                                    "inbound_group_id": {
+                                        "type": "string",
+                                        "example": "IG001"
+                                    },
+                                    "called_phone_number": {
+                                        "type": "string",
+                                        "example": "567890"
+                                    },
+                                    "call_total_duration": {
+                                        "type": "integer",
+                                        "example": 180
+                                    },
+                                    "call_talk_duration": {
+                                        "type": "integer",
+                                        "example": 150
+                                    },
+                                    "call_status": {
+                                        "type": "string",
+                                        "example": "Completed"
+                                    },
+                                    "call_dispo_status": {
+                                        "type": "string",
+                                        "example": "Answered"
+                                    },
+                                    "call_term_reason": {
+                                        "type": "string",
+                                        "example": "AGENT"
+                                    },
+                                    "comments": {
+                                        "type": "string",
+                                        "example": "Customer was satisfied"
+                                    },
+                                    "call_recording_url": {
+                                        "type": "string",
+                                        "example": "https://example.com/recordings/CI123456.mp3"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Call history logged successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Call data created successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access (invalid token).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -11816,6 +12340,10 @@
         {
             "name": "Branding",
             "description": "Branding"
+        },
+        {
+            "name": "Webhook Calls",
+            "description": "Webhook Calls"
         }
     ]
 }

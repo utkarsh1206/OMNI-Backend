@@ -76,6 +76,7 @@ use App\Http\Controllers\Api\RecordApiController;
 use App\Http\Controllers\Api\RemovePartyApiController;
 use App\Http\Controllers\Api\StartConfApiController;
 use App\Http\Controllers\Api\LiveAgentController;
+use App\Http\Controllers\Api\WebhookCallController;
 use App\Http\Middleware\ModifyRequestMiddleware;
 
 Route::post('login', [LoginController::class, 'login']);
@@ -205,6 +206,10 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('/api_remove_party', [RemovePartyApiController::class, 'removePartyApi']);
         Route::post('/api_start_conf', [StartConfApiController::class, 'startConfApi']);
     });
+    Route::post('/call_initiate', [WebhookCallController::class, 'callInitiated']);
+    Route::post('/call_connected', [WebhookCallController::class, 'callConnected']);
+    Route::post('/call_hangup', [WebhookCallController::class, 'callHangup']);
+    Route::post('/call_history', [WebhookCallController::class, 'callHistory']);
 });
 
 Route::post('/camp_list', [CampaignApiController::class, 'campaignListApi']);

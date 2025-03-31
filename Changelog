@@ -8,6 +8,13 @@
 2025-03-27 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
+	* Previous Commit ID : 1e959e2
+	* Version : Dev
+	* Laravel : Created API for incomming call that is Call intiated, call connected, call hangup and call history which is use in DC CRM.
+
+2025-03-27 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
 	* Previous Commit ID : 67698f2
 	* Version : Dev
 	* Laravel : Make Ingroup Listing API condition based on JWT and Request.

@@ -147,6 +147,9 @@ return [
     // Support Ticket
     'transfer_ticket' => 'Transfer ticket successfully',
     'ticket_merge' => 'Tickets Merge Successfully',
+    //Call Data
+    'call_data_created' => 'Call data created successfully',
+    'not_accessible' => 'Not accessible for outer source',
 ]   
 ?>
 
