@@ -9,8 +9,6 @@ class TenantRole extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'tenant_roles';
-    
     protected $fillable = [
         "name",
         "permission",

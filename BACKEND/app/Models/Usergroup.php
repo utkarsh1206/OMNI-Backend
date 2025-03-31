@@ -9,8 +9,6 @@ class UserGroup extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'user_groups';
-   
     protected $fillable = [
         //"tenant_id",
         "name",
