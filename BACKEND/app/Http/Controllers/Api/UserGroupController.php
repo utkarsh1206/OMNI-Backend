@@ -12,19 +12,16 @@ use App\Repositories\UserGroupRepository;
 
 class UserGroupController extends Controller
 {
-
     private $userGroupRepository;
-
 
     public function __construct(UserGroupRepository $userGroupRepository)
     {
         $this->userGroupRepository = $userGroupRepository;
     }
 
-
     public function index(Request $request)
     {
-        $this->userGroupRepository->list($request);
+        return $this->userGroupRepository->list($request);
     }
     public function store(UserGroupRequest $request)
     {
