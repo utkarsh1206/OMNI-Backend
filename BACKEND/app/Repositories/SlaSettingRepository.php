@@ -2,11 +2,16 @@
 
 namespace App\Repositories;
 
-use Illuminate\Http\Request;
-use App\Models\Tenant;
 use App\Http\Response\CustomApiResponse;
-use App\Models\Users;
-
+use Illuminate\Http\Request;
+use App\Models\SlaSetting;
+use App\Models\SlaOffDay;
+use App\Models\SlaHoliday;
+use App\Models\SlaTarget;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Exception;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 class SlaSettingRepository
 {
     private $apiResponse;
@@ -18,148 +23,216 @@ class SlaSettingRepository
 
     public function list(Request $request)
     {
-        $filters = [
-            'search' => 'searchTerm',
-            'company_name' => 'companyName',
-            'email' => 'email',
-            'mobile' => 'mobile',
-            'domain_name' => 'domainName',
-            'company_code' => 'companyCode',
-        ];
+        try {
+            $searchTerm = $request->input('search', '');
+            $query = SlaSetting::query()->with(['offDays', 'holidays', 'targets']);
 
-        // Retrieve input values
-        $inputs = [];
-        foreach ($filters as $key => $variable) {
-            $inputs[$variable] = $request->input($key, '');
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%$searchTerm%")
+                        ->orWhere('start_time', 'like', "%$searchTerm%")
+                        ->orWhere('end_time', 'like', "%$searchTerm%");
+                });
+            }
+
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
+            if ($page === config('omni.ALL_PAGE')) {
+                $slas = $query->get();
+                $slasFormatted = $slas->map(function ($sla) {
+                    return $this->formatSlaResponse($sla);
+                });
+            } else {
+                $slas = $query->paginate($perPage);
+                $slasFormatted = $slas->items();
+
+                $slasFormatted = collect($slasFormatted)->map(function ($sla) {
+                    return $this->formatSlaResponse($sla);
+                });
+            }
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $slasFormatted, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            Log::error("Error fetching SLA settings: " . $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
+    }
 
-        // Start the query for tenants
-        $query = Tenant::query();
+    public function store($slaData)
+    {
+        try {
+            // $validated = $this->validateRequest($request);
 
-        // Apply search term conditions if available
-        if (!empty($inputs['searchTerm'])) {
-            $query->where(function ($q) use ($inputs) {
-                $searchTerm = $inputs['searchTerm'];
-                $q->where('username', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('first_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('email', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_code', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_url', 'like', '%' . $searchTerm . '%');
-            });
+            DB::beginTransaction();
+
+            $sla = SlaSetting::create($slaData['sla']);
+            $this->saveRelatedData($sla, $slaData);
+
+            DB::commit();
+            
+            $response = $this->formatSlaResponse($sla->load(['offDays', 'holidays', 'targets']));
+            
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.sla_setting_create_msg'));
+        } catch (Exception $ex) {
+            DB::rollBack();
+            Log::error("Error occurred while creating SLA: " . $ex->getMessage());
+
+            if ($ex->getCode() === '23000' && strpos($ex->getMessage(), '1062') !== false) {
+                return response()->json(['message' => 'Error: SLA name must be unique.'], ResponseHTTP::HTTP_BAD_REQUEST);
+            }
+            return $this->apiResponse->handleAndResponseException($ex);
         }
+    }
 
-        // Apply other filters dynamically
-        foreach ($filters as $key => $variable) {
-            if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
-                $query->where($variable, $inputs[$variable]);
+    public function show(SlaSetting $slaSetting)
+    {
+        try {
+            $response = $this->formatSlaResponse($slaSetting->load(['offDays', 'holidays', 'targets']));
+        
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            Log::error("Error fetching SLA setting: " . $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            Log::info("SLA update request received for ID: {$id}");
+
+            $validated = $this->validateRequest($request);
+            Log::info("Validated data: ", $validated);
+
+            DB::beginTransaction();
+
+            // Find the SLA by ID
+            $slaSetting = SlaSetting::find($id);
+
+            // Check if SLA setting exists
+            if (!$slaSetting) {
+                Log::error("SLA not found for ID: {$id}");
+                return response()->json(['message' => 'SLA setting not found'], 404);
+            }
+
+            // Update the SLA setting
+            $slaSetting->update($validated['sla']);
+            Log::info("SLA updated successfully: ", $slaSetting->toArray());
+
+            // Remove existing related data and save new data
+            $slaSetting->offDays()->delete();
+            $slaSetting->holidays()->delete();
+            $slaSetting->targets()->delete();
+
+            $this->saveRelatedData($slaSetting, $validated);
+
+            DB::commit();
+
+            $response = $this->formatSlaResponse($slaSetting->load(['offDays', 'holidays', 'targets']));
+
+            return response()->json([
+                'message' => 'SLA updated successfully',
+                'data' => $response
+            ], 200);
+
+            Log::info("Transaction committed, SLA data after update: ", $slaSetting->load(['offDays', 'holidays', 'targets'])->toArray());
+
+            // return response()->json([
+            //     'message' => 'SLA updated successfully',
+            //     'data' => new SlaSettingResource($slaSetting->load(['offDays', 'holidays', 'targets']))
+            // ], 200);
+            // return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.sla_setting_update_msg'));
+        } catch (Exception $ex) {
+            DB::rollBack();
+            Log::error("Error during SLA update: " . $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function delete($slaSetting)
+    {
+        try {
+            $slaSetting->delete();
+       
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $slaSetting, trans('message.sla_setting_delete_msg'));
+        } catch (\Exception $ex) {
+            Log::error("Error deleting SLA setting: " . $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    private function saveRelatedData(SlaSetting $sla, $validated)
+    {
+        // Save Off-Days
+        if (isset($validated['off_days'])) {
+            foreach ($validated['off_days'] as $day) {
+                SlaOffDay::create([
+                    'sla_id' => $sla->id,
+                    'day' => $day,
+                ]);
             }
         }
 
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $tenants = $query->paginate($perPage);
-
-        // Return the response
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.data_fetch'));
-    }
-
-    public function store(Request $request)
-    {
-        $createData = $this->prepareTenantData($request);
-
-        if ($request->hasFile('tenant_logo')) {
-            $createData['tenant_logo'] = $this->uploadTenantLogo($request);
-        }
-        $tenants = Tenant::create($createData);
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.tenant_create_msg'));
-    }
-
-
-    public function update(Request $request, $tenant)
-    {
-        $updateData = $this->prepareTenantData($request);
-
-        if ($request->hasFile('tenant_logo')) {
-            $updateData['tenant_logo'] = $this->uploadTenantLogo($request);
-        }
-    
-        // Update the tenant record
-        $tenant->update($updateData);
-    
-        // Return response
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_update_msg'));
-    }
-
-    public function delete($tenant)
-    {
-        $tenant->delete();
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_delete_msg'));
-    }
-
-
-    public function show($tenant)
-    {
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.data_fetch'));
-    }
-
-    public function dashboard()
-    {
-        $type_wise_ticket = array("Problem" => "1", "Help" => "0", "Incident" => "2", "Questions" => "5", "Feature Request" => "0", "Other" => 10);
-        $priority_wise_ticket = array("High" => "5", "Medium" => "2", "Low" => "0", "Urgent" => "10");
-        $agent_status = array("ABC 101" => array("Login", "Pause", "192.168.1.110"), "BCD 201" => array("Login", "Resume", "192.168.1.111"), "XYZ 301" => array("Logout", "Pause", "192.168.1.112"));
-        $lead_status = array("Unassigned" => "0", "Open" => "100", "Waiting On Customer" => "5", "Waiting On Third party" => "5", "Resolved" => "50", "Closed" => "200");
-        $call_count_status = array("Success" => "200", "Failed" => "30");
-        $agent_count =  Users::query()->where('type', '3')->count();
-        $final_array = array("type_wise_ticket" => $type_wise_ticket, "priority_wise_ticket" => $priority_wise_ticket, "agent_status" => $agent_status, "lead_status" => $lead_status, "call_count_status" => $call_count_status, "agent_count" => $agent_count);
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $final_array, trans('message.data_fetch'));
-    }
-
-    protected function prepareTenantData(Request $request)
-    {
-        $data = $request->only([
-            'first_name',
-            'username',
-            'last_name',
-            'email',
-            'mobile',
-            'company_code',
-            'company_name',
-            'server_serialnumber',
-            'server_ip',
-            'server_mac',
-            'status',
-            'tenant_role_id',
-            'title',
-            'footer_content',
-            'footer_url'
-        ]);
-
-        // Hash the password only if it's present in the request
-        if ($request->has('password')) {
-            $data['password'] = bcrypt($request->password);
+        // Save Holidays
+        if (isset($validated['holidays'])) {
+            foreach ($validated['holidays'] as $holiday) {
+                SlaHoliday::create([
+                    'sla_id' => $sla->id,
+                    'holiday_date' => $holiday['holiday_date'],
+                    'description' => $holiday['description'] ?? null,
+                ]);
+            }
         }
 
-        return $data;
+        // Save Targets
+        if (isset($validated['targets'])) {
+            foreach ($validated['targets'] as $escalationLevel => $targetGroup) {
+                foreach ($targetGroup as $target) {
+                    SlaTarget::create([
+                        'sla_id' => $sla->id,
+                        'escalation_level' => $escalationLevel,
+                        'priority_type' => $target['priority_type'],
+                        'response_time_value' => $target['response_time_value'],
+                        'alert_before_response_value' => $target['alert_before_response_value'],
+                        'resolve_time_value' => $target['resolve_time_value'],
+                        'alert_before_resolve_value' => $target['alert_before_resolve_value'],
+                    ]);
+                }
+            }
+        }
     }
 
-    /**
-     * Handle tenant logo file upload
-     *
-     * @param Request $request
-     * @return string
-     */
-    protected function uploadTenantLogo(Request $request)
+    private function formatSlaResponse(SlaSetting $slaSetting)
     {
-        $tenant_logo = $request->file('tenant_logo');
-        $filename = now()->format('Y_m_d_H_i_s') . '.' . $tenant_logo->getClientOriginalExtension();
-        $path = $tenant_logo->storeAs('tenant_logo', $filename, 'public');
-        return $path;
+        $offDays = $slaSetting->offDays->pluck('day')->toArray();
+        $holidays = $slaSetting->holidays->map(function ($holiday) {
+            return [
+                'holiday_date' => $holiday->holiday_date,
+                'description' => $holiday->description
+            ];
+        })->toArray();
+
+        $targets = [];
+        foreach ($slaSetting->targets as $target) {
+            $targets[$target->escalation_level][] = [
+                'priority_type' => $target->priority_type,
+                'response_time_value' => $target->response_time_value,
+                'alert_before_response_value' => $target->alert_before_response_value,
+                'resolve_time_value' => $target->resolve_time_value,
+                'alert_before_resolve_value' => $target->alert_before_resolve_value,
+            ];
+        }
+
+        return [
+            'id' => $slaSetting->id,
+            'name' => $slaSetting->name,
+            'is_24_hours' => $slaSetting->is_24_hours,
+            'start_time' => $slaSetting->start_time,
+            'end_time' => $slaSetting->end_time,
+            'description' => $slaSetting->description,
+            'off_days' => $offDays,
+            'holidays' => $holidays,
+            'targets' => $targets,
+        ];
     }
 }

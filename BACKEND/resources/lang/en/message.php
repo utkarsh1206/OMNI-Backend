@@ -147,6 +147,9 @@ return [
     // Support Ticket
     'transfer_ticket' => 'Transfer ticket successfully',
     'ticket_merge' => 'Tickets Merge Successfully',
+    'sla_setting_delete_msg','SLA Setting deleted Successfully',
+    'sla_setting_update_msg'=>'SLA Setting Updated Successfully',
+    'sla_setting_create_msg'=>'SLA Setting Created Successfully',
     //Call Data
     'call_data_created' => 'Call data created successfully',
     'not_accessible' => 'Not accessible for outer source',
