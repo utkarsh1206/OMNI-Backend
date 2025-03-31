@@ -4,11 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\SupportTicket;
-use Carbon\Carbon;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Repositories\TicketReportRepository;
 
 class TicketReportController extends Controller
@@ -20,254 +15,623 @@ class TicketReportController extends Controller
         $this->ticketReportRepository = $ticketReportRepository;
     }
 
-    private function applyFilters($query, Request $request, $payload = null)
-    {
-        if ($request->has('startDate') && $request->has('endDate')) {
-            $startDate = Carbon::parse($request->input('startDate'));
-            $endDate = Carbon::parse($request->input('endDate'));
-            $query->whereBetween('created_at', [$startDate, $endDate]);
-        }
-
-        if ($request->has('ticket_id')) {
-            $query->where('support_ticket_id', $request->input('ticket_id'));
-        }
-
-        if ($request->has('priority')) {
-            $query->where('default_priority', $request->input('priority'));
-        }
-
-        if ($request->has('status')) {
-            $query->where('default_status', $request->input('status'));
-        }
-
-        if ($request->has('category')) {
-            $query->where('default_type', $request->input('category'));
-        }
-
-        if ($payload && $payload['role_id'] == 3) {
-            $query->whereHas('assignedAgent', function ($q) use ($payload) {
-                $q->where('id', $payload['id']);
-            });
-        }
-
-        return $query;
-    }
-
-    private function extractPayload(Request $request)
-    {
-        $token = $request->bearerToken();
-        return $token ? JWTAuth::setToken($token)->getPayload() : null;
-    }
-
-    private function formatTickets($tickets)
-    {
-        return collect($tickets)->map(function ($ticket) {
-            $resolveNotification = $ticket->notifications
-                ->where('status', 'Resolved')
-                ->sortByDesc('created_at')
-                ->first();
-
-            $resolveDateTime = $resolveNotification?->created_at->format('Y-m-d H:i:s') ?? '';
-
-            $customerName = $ticket->notifications->first()?->user->username ?? '';
-
-            return [
-                'id' => $ticket->id,
-                'ticketId' => $ticket->support_ticket_id,
-                'customerName' => $customerName,
-                'category' => $ticket->default_type,
-                'priority' => $ticket->default_priority,
-                'status' => $ticket->default_status,
-                'createdDate' => $ticket->created_at->format('Y-m-d H:i:s'),
-                'lastUpdated' => $ticket->updated_at->format('Y-m-d H:i:s'),
-                'assignedAgent' => $ticket->assignedAgent->username ?? '',
-                'resolutionTime' => $resolveDateTime,
-                'comments' => $ticket->description,
-                'escalation' => $ticket->is_escalated,
-            ];
-        });
-    }
-
+    /**
+     * @OA\Get(
+     *     path="/api/ticketReport",
+     *     summary="Fetch Support Ticket Reports",
+     *     description="Fetches a list of support tickets with optional filters and pagination. It also supports error handling for invalid requests.",
+     *     operationId="ticketReport",
+     *     tags={"Ticket Report"},
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by start date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by end date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="ticket_id",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by support ticket ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="priority",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by priority level",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by status",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="category",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by category type",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         required=false,
+     *         description="Number of tickets per page (default is 10)",
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         required=false,
+     *         description="Page number to retrieve (default is 1), or 'all' for all tickets",
+     *         @OA\Schema(type="string", default="1")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successfully retrieved ticket reports",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Data fetch successful"),
+     *             @OA\Property(property="data", type="array", 
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="ticket_id", type="integer"),
+     *                     @OA\Property(property="title", type="string"),
+     *                     @OA\Property(property="created_at", type="string", format="date-time"),
+     *                     @OA\Property(property="status", type="string"),
+     *                     @OA\Property(property="priority", type="string"),
+     *                     @OA\Property(property="assignedAgent", type="object", 
+     *                         @OA\Property(property="id", type="integer"),
+     *                         @OA\Property(property="name", type="string")
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request, invalid parameters or missing authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Bad request")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized, missing or invalid authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error, exception while processing request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="An error occurred while processing your request.")
+     *         )
+     *     ),
+     * )
+     */
     public function ticketReport(Request $request)
     {
-        $perPage = $request->input('perPage', 10);
-        $page = $request->input('page', 1);
-
-        $query = SupportTicket::with(['notifications', 'assignedAgent']);
-
-        $payload = $this->extractPayload($request);
-
-        $query = $this->applyFilters($query, $request, $payload);
-
-        if ($page === 'all') {
-            $tickets = $query->get();
-            $mappedTickets = $this->formatTickets($tickets->items());
-            return response()->json([
-                'data' => $mappedTickets,
-            ]);
-        } else {
-            $tickets = $query->paginate($perPage);
-
-            $mappedTickets = $this->formatTickets($tickets->items());
-
-            return response()->json([
-                'data' => $mappedTickets,
-                'meta' => [
-                    'current_page' => $tickets->currentPage(),
-                    'last_page' => $tickets->lastPage(),
-                    'per_page' => $tickets->perPage(),
-                    'total' => $tickets->total(),
-                ],
-            ]);
-        }
+        return $this->ticketReportRepository->ticketReport($request);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/ticket/summary/category",
+     *     summary="Fetch Category Summary for Support Tickets",
+     *     description="Fetches the summary of support tickets grouped by category, including the status breakdown for each category.",
+     *     operationId="categorySummary",
+     *     tags={"Ticket Report"},
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by start date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by end date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="ticket_id",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by support ticket ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="priority",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by priority level",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by status",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="category",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by category type",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successfully retrieved category summary data",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", 
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="Category", type="string"),
+     *                     @OA\Property(property="Total Tickets", type="integer"),
+     *                     @OA\Property(property="Open", type="integer"),
+     *                     @OA\Property(property="Resolved", type="integer"),
+     *                     @OA\Property(property="Pending", type="integer"),
+     *                     @OA\Property(property="Closed", type="integer")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request, invalid parameters or missing authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Bad request")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized, missing or invalid authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error, exception while processing request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="An error occurred while processing your request.")
+     *         )
+     *     ),
+     * )
+     */
     public function categorySummary(Request $request)
     {
-        $payload = $this->extractPayload($request);
-        $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
-
-        $categorySummary = $query->select(
-            'supportticket.default_type',
-            DB::raw('COUNT(*) AS total_tickets'),
-            DB::raw('SUM(CASE WHEN supportticket.default_status = "Resolved" THEN 1 ELSE 0 END) AS resolved'),
-            DB::raw('SUM(CASE WHEN supportticket.default_status = "Open" THEN 1 ELSE 0 END) AS open'),
-            DB::raw('SUM(CASE WHEN supportticket.default_status = "Closed" THEN 1 ELSE 0 END) AS closed'),
-            DB::raw('SUM(CASE WHEN supportticket.default_status NOT IN ("Resolved", "Open", "Closed") THEN 1 ELSE 0 END) AS pending')
-        )
-            ->groupBy('supportticket.default_type')
-            ->get();
-
-        $formattedCategorySummary = $categorySummary->map(function ($category) {
-            return [
-                'Category' => $category->default_type,
-                'Total Tickets' => $category->total_tickets,
-                'Open' => $category->open,
-                'Resolved' => $category->resolved,
-                'Pending' => $category->pending,
-                'Closed' => $category->closed,
-            ];
-        });
-
-        return response()->json([
-            'success' => 'Success',
-            'data' => $formattedCategorySummary,
-        ], 200);
+        return $this->ticketReportRepository->categorySummary($request);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/ticket/summary/priority",
+     *     summary="Fetch Summary of Support Tickets by Priority",
+     *     description="Fetches the summary of support tickets grouped by priority, with the total ticket count for each priority level.",
+     *     operationId="prioritySummary",
+     *     tags={"Ticket Report"},
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by start date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by end date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="ticket_id",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by support ticket ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="priority",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by priority level",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by status",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="category",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by category type",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successfully retrieved priority summary data",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", 
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="Priority", type="string"),
+     *                     @OA\Property(property="Total Tickets", type="integer")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request, invalid parameters or missing authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Bad request")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized, missing or invalid authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error, exception while processing request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="An error occurred while processing your request.")
+     *         )
+     *     ),
+     * )
+     */
     public function prioritySummary(Request $request)
     {
-        $payload = $this->extractPayload($request);
-        $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
-
-        $prioritySummary = $query->select(
-            'supportticket.default_priority',
-            DB::raw('COUNT(*) AS Total_Tickets')
-        )
-            ->groupBy('supportticket.default_priority')
-            ->get();
-
-        $formattedPrioritySummary = $prioritySummary->map(function ($priority) {
-            return [
-                'Priority' => ucfirst($priority->default_priority),
-                'Total Tickets' => $priority->Total_Tickets ?? 0,
-            ];
-        });
-
-        return response()->json([
-            'success' => 'Success',
-            'data' => $formattedPrioritySummary,
-        ], 200);
+        return $this->ticketReportRepository->prioritySummary($request);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/ticket/summary/status",
+     *     summary="Fetch Summary of Support Tickets by Status",
+     *     description="Fetches the summary of support tickets grouped by status, with the total ticket count for each status.",
+     *     operationId="statusSummary",
+     *     tags={"Support Tickets"},
+     *     security={{
+     *         "bearerAuth": {}
+     *     }},
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by start date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by end date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="ticket_id",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by support ticket ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="priority",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by priority level",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by status",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="category",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by category type",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successfully retrieved status summary data",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", 
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="Status", type="string"),
+     *                     @OA\Property(property="Total Tickets", type="integer")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request, invalid parameters or missing authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Bad request")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized, missing or invalid authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error, exception while processing request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="An error occurred while processing your request.")
+     *         )
+     *     ),
+     * )
+     */
     public function statusSummary(Request $request)
     {
-        $payload = $this->extractPayload($request);
-        $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
-
-        $statusSummary = $query->select(
-            'supportticket.default_status',
-            DB::raw('COUNT(*) AS total_tickets')
-        )
-            ->groupBy('supportticket.default_status')
-            ->get();
-
-        $formattedStatusSummary = $statusSummary->map(function ($status) {
-            return [
-                'Status' => $status->default_status,
-                'Total Tickets' => $status->total_tickets,
-            ];
-        });
-
-        return response()->json([
-            'success' => 'Success',
-            'data' => $formattedStatusSummary,
-        ], 200);
+        return $this->ticketReportRepository->statusSummary($request);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/ticket/summary/weekday",
+     *     summary="Fetch Summary of Support Tickets by Weekday",
+     *     description="Fetches the summary of support tickets grouped by the weekday they were created, showing the total number of tickets for each weekday of the current week.",
+     *     operationId="weekdaySummary",
+     *     tags={"Support Tickets"},
+     *     security={{
+     *         "bearerAuth": {}
+     *     }},
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by start date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by end date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="ticket_id",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by support ticket ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="priority",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by priority level",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by status",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="category",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by category type",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successfully retrieved weekday summary data",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", 
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="Weekday", type="string"),
+     *                     @OA\Property(property="Total Tickets", type="integer")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request, invalid parameters or missing authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Bad request")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized, missing or invalid authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error, exception while processing request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="An error occurred while processing your request.")
+     *         )
+     *     ),
+     * )
+     */
     public function weekdaySummary(Request $request)
     {
-        $payload = $this->extractPayload($request);
-        $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
-
-        $weekdaySummary = $query->select(
-            DB::raw('DAYOFWEEK(supportticket.created_at) AS weekday'),
-            DB::raw('COUNT(*) AS total_tickets')
-        )
-            ->whereRaw('WEEK(supportticket.created_at) = WEEK(CURRENT_DATE())')
-            ->whereRaw('YEAR(supportticket.created_at) = YEAR(CURRENT_DATE())')
-            ->groupBy(DB::raw('DAYOFWEEK(supportticket.created_at)'))
-            ->get();
-
-        $weekdayMapping = [
-            1 => 'Sunday',
-            2 => 'Monday',
-            3 => 'Tuesday',
-            4 => 'Wednesday',
-            5 => 'Thursday',
-            6 => 'Friday',
-            7 => 'Saturday',
-        ];
-
-        $formattedWeekdaySummary = $weekdaySummary->map(function ($day) use ($weekdayMapping) {
-            return [
-                'Weekday' => $weekdayMapping[$day->weekday] ?? 'Unknown',
-                'Total Tickets' => $day->total_tickets,
-            ];
-        });
-
-        return response()->json([
-            'success' => 'Success',
-            'data' => $formattedWeekdaySummary,
-        ], 200);
+        return $this->ticketReportRepository->weekdaySummary($request);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/ticketReport/csv",
+     *     summary="Download Ticket Report as CSV",
+     *     description="Generates a CSV report of support tickets filtered by various parameters and allows the user to download it.",
+     *     operationId="ticketReportDownload",
+     *     tags={"Support Tickets"},
+     *     security={{
+     *         "bearerAuth": {}
+     *     }},
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by start date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by end date (YYYY-MM-DD format)",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="ticket_id",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by support ticket ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="priority",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by priority level",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by status",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="category",
+     *         in="query",
+     *         required=false,
+     *         description="Filter tickets by category type",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="CSV file of ticket report is generated and ready for download",
+     *         @OA\MediaType(
+     *             mediaType="text/csv",
+     *             @OA\Schema(
+     *                 type="string",
+     *                 description="CSV file content",
+     *                 example="Ticket ID,Customer Name,Category,Priority,Status,Created Date,Last Updated,Assigned Agent,Resolution Time,Comments,Escalation\n1,John Doe,Technical,High,Open,2025-03-01,2025-03-02,Agent A,2 hours,No,No"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request, invalid parameters or missing authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Bad request")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized, missing or invalid authentication token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error, exception while processing request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="An error occurred while processing your request.")
+     *         )
+     *     ),
+     * )
+     */
     public function exportCsv(Request $request)
     {
-        $payload = $this->extractPayload($request);
-        $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
-
-        $tickets = $query->get();
-
-        $headers = ['Ticket ID', 'Customer Name', 'Category', 'Priority', 'Status', 'Created Date', 'Last Updated', 'Assigned Agent', 'Resolution Time', 'Comments', 'Escalation'];
-
-        $csvData = $this->formatTickets($tickets);
-
-        $callback = function () use ($headers, $csvData) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $headers); // Write the header row
-            foreach ($csvData as $row) {
-                fputcsv($file, $row); // Write data rows
-            }
-            fclose($file);
-        };
-
-        // Create a response to download the file
-        $response = new StreamedResponse($callback, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment;filename="ticket_report.csv"',
-        ]);
-
-        return $response;
+        return $this->ticketReportRepository->exportCsv($request);
     }
 }

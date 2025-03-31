@@ -3,9 +3,14 @@
 namespace App\Repositories;
 
 use Illuminate\Http\Request;
-use App\Models\Tenant;
 use App\Http\Response\CustomApiResponse;
-use App\Models\Users;
+use App\Models\SupportTicket;
+use Carbon\Carbon;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Exception;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class TicketReportRepository
 {
@@ -16,150 +21,255 @@ class TicketReportRepository
         $this->apiResponse = $customApiResponse;
     }
 
-    public function list(Request $request)
+    private function applyFilters($query, Request $request, $payload = null)
     {
-        $filters = [
-            'search' => 'searchTerm',
-            'company_name' => 'companyName',
-            'email' => 'email',
-            'mobile' => 'mobile',
-            'domain_name' => 'domainName',
-            'company_code' => 'companyCode',
-        ];
-
-        // Retrieve input values
-        $inputs = [];
-        foreach ($filters as $key => $variable) {
-            $inputs[$variable] = $request->input($key, '');
+        if ($request->has('startDate') && $request->has('endDate')) {
+            $startDate = Carbon::parse($request->input('startDate'));
+            $endDate = Carbon::parse($request->input('endDate'));
+            $query->whereBetween('created_at', [$startDate, $endDate]);
         }
 
-        // Start the query for tenants
-        $query = Tenant::query();
+        if ($request->has('ticket_id')) {
+            $query->where('support_ticket_id', $request->input('ticket_id'));
+        }
 
-        // Apply search term conditions if available
-        if (!empty($inputs['searchTerm'])) {
-            $query->where(function ($q) use ($inputs) {
-                $searchTerm = $inputs['searchTerm'];
-                $q->where('username', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('first_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('email', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_code', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_url', 'like', '%' . $searchTerm . '%');
+        if ($request->has('priority')) {
+            $query->where('default_priority', $request->input('priority'));
+        }
+
+        if ($request->has('status')) {
+            $query->where('default_status', $request->input('status'));
+        }
+
+        if ($request->has('category')) {
+            $query->where('default_type', $request->input('category'));
+        }
+
+        if ($payload && $payload['role_id'] == 3) {
+            $query->whereHas('assignedAgent', function ($q) use ($payload) {
+                $q->where('id', $payload['id']);
             });
         }
 
-        // Apply other filters dynamically
-        foreach ($filters as $key => $variable) {
-            if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
-                $query->where($variable, $inputs[$variable]);
+        return $query;
+    }
+
+    private function extractPayload(Request $request)
+    {
+        $token = $request->bearerToken();
+        return $token ? JWTAuth::setToken($token)->getPayload() : null;
+    }
+
+    private function formatTickets($tickets)
+    {
+        return collect($tickets)->map(function ($ticket) {
+            $resolveNotification = $ticket->notifications
+                ->where('status', 'Resolved')
+                ->sortByDesc('created_at')
+                ->first();
+
+            $resolveDateTime = $resolveNotification?->created_at->format('Y-m-d H:i:s') ?? '';
+
+            $customerName = $ticket->notifications->first()?->user->username ?? '';
+
+            return [
+                'id' => $ticket->id,
+                'ticketId' => $ticket->support_ticket_id,
+                'customerName' => $customerName,
+                'category' => $ticket->default_type,
+                'priority' => $ticket->default_priority,
+                'status' => $ticket->default_status,
+                'createdDate' => $ticket->created_at->format('Y-m-d H:i:s'),
+                'lastUpdated' => $ticket->updated_at->format('Y-m-d H:i:s'),
+                'assignedAgent' => $ticket->assignedAgent->username ?? '',
+                'resolutionTime' => $resolveDateTime,
+                'comments' => $ticket->description,
+                'escalation' => $ticket->is_escalated,
+            ];
+        });
+    }
+
+    public function ticketReport(Request $request)
+    {
+        try {
+            $query = SupportTicket::with(['notifications', 'assignedAgent']);
+
+            $payload = $this->extractPayload($request);
+
+            $query = $this->applyFilters($query, $request, $payload);
+
+            // Paginate the results
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
+            if ($page === config('omni.ALL_PAGE')) {
+                // If 'page' is 'all', retrieve all records without pagination
+                $tickets = $query->get();
+                $mappedTickets = $this->formatTickets($tickets->items());
+            } else {
+                // Paginate the results
+                $tickets = $query->paginate($perPage);
+
+                $mappedTickets = $this->formatTickets($tickets->items());
             }
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $mappedTickets, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
         }
-
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $tenants = $query->paginate($perPage);
-
-        // Return the response
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.data_fetch'));
     }
 
-    public function store(Request $request)
+    public function categorySummary(Request $request)
     {
-        $createData = $this->prepareTenantData($request);
+        try {
+            $payload = $this->extractPayload($request);
+            $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
 
-        if ($request->hasFile('tenant_logo')) {
-            $createData['tenant_logo'] = $this->uploadTenantLogo($request);
+            $categorySummary = $query->select(
+                'supportticket.default_type',
+                DB::raw('COUNT(*) AS total_tickets'),
+                DB::raw('SUM(CASE WHEN supportticket.default_status = "Resolved" THEN 1 ELSE 0 END) AS resolved'),
+                DB::raw('SUM(CASE WHEN supportticket.default_status = "Open" THEN 1 ELSE 0 END) AS open'),
+                DB::raw('SUM(CASE WHEN supportticket.default_status = "Closed" THEN 1 ELSE 0 END) AS closed'),
+                DB::raw('SUM(CASE WHEN supportticket.default_status NOT IN ("Resolved", "Open", "Closed") THEN 1 ELSE 0 END) AS pending')
+            )
+                ->groupBy('supportticket.default_type')
+                ->get();
+
+            $formattedCategorySummary = $categorySummary->map(function ($category) {
+                return [
+                    'Category' => $category->default_type,
+                    'Total Tickets' => $category->total_tickets,
+                    'Open' => $category->open,
+                    'Resolved' => $category->resolved,
+                    'Pending' => $category->pending,
+                    'Closed' => $category->closed,
+                ];
+            });
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedCategorySummary, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
         }
-        $tenants = Tenant::create($createData);
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.tenant_create_msg'));
     }
 
-
-    public function update(Request $request, $tenant)
+    public function prioritySummary(Request $request)
     {
-        $updateData = $this->prepareTenantData($request);
+        try {
+            $payload = $this->extractPayload($request);
+            $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
 
-        if ($request->hasFile('tenant_logo')) {
-            $updateData['tenant_logo'] = $this->uploadTenantLogo($request);
+            $prioritySummary = $query->select(
+                'supportticket.default_priority',
+                DB::raw('COUNT(*) AS Total_Tickets')
+            )
+                ->groupBy('supportticket.default_priority')
+                ->get();
+
+            $formattedPrioritySummary = $prioritySummary->map(function ($priority) {
+                return [
+                    'Priority' => ucfirst($priority->default_priority),
+                    'Total Tickets' => $priority->Total_Tickets ?? 0,
+                ];
+            });
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedPrioritySummary, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
         }
-    
-        // Update the tenant record
-        $tenant->update($updateData);
-    
-        // Return response
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_update_msg'));
     }
 
-    public function delete($tenant)
+    public function statusSummary(Request $request)
     {
-        $tenant->delete();
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_delete_msg'));
-    }
+        try {
+            $payload = $this->extractPayload($request);
+            $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
 
+            $statusSummary = $query->select(
+                'supportticket.default_status',
+                DB::raw('COUNT(*) AS total_tickets')
+            )
+                ->groupBy('supportticket.default_status')
+                ->get();
 
-    public function show($tenant)
-    {
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.data_fetch'));
-    }
+            $formattedStatusSummary = $statusSummary->map(function ($status) {
+                return [
+                    'Status' => $status->default_status,
+                    'Total Tickets' => $status->total_tickets,
+                ];
+            });
 
-    public function dashboard()
-    {
-        $type_wise_ticket = array("Problem" => "1", "Help" => "0", "Incident" => "2", "Questions" => "5", "Feature Request" => "0", "Other" => 10);
-        $priority_wise_ticket = array("High" => "5", "Medium" => "2", "Low" => "0", "Urgent" => "10");
-        $agent_status = array("ABC 101" => array("Login", "Pause", "192.168.1.110"), "BCD 201" => array("Login", "Resume", "192.168.1.111"), "XYZ 301" => array("Logout", "Pause", "192.168.1.112"));
-        $lead_status = array("Unassigned" => "0", "Open" => "100", "Waiting On Customer" => "5", "Waiting On Third party" => "5", "Resolved" => "50", "Closed" => "200");
-        $call_count_status = array("Success" => "200", "Failed" => "30");
-        $agent_count =  Users::query()->where('type', '3')->count();
-        $final_array = array("type_wise_ticket" => $type_wise_ticket, "priority_wise_ticket" => $priority_wise_ticket, "agent_status" => $agent_status, "lead_status" => $lead_status, "call_count_status" => $call_count_status, "agent_count" => $agent_count);
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $final_array, trans('message.data_fetch'));
-    }
-
-    protected function prepareTenantData(Request $request)
-    {
-        $data = $request->only([
-            'first_name',
-            'username',
-            'last_name',
-            'email',
-            'mobile',
-            'company_code',
-            'company_name',
-            'server_serialnumber',
-            'server_ip',
-            'server_mac',
-            'status',
-            'tenant_role_id',
-            'title',
-            'footer_content',
-            'footer_url'
-        ]);
-
-        // Hash the password only if it's present in the request
-        if ($request->has('password')) {
-            $data['password'] = bcrypt($request->password);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedStatusSummary, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
         }
-
-        return $data;
     }
 
-    /**
-     * Handle tenant logo file upload
-     *
-     * @param Request $request
-     * @return string
-     */
-    protected function uploadTenantLogo(Request $request)
+    public function weekdaySummary(Request $request)
     {
-        $tenant_logo = $request->file('tenant_logo');
-        $filename = now()->format('Y_m_d_H_i_s') . '.' . $tenant_logo->getClientOriginalExtension();
-        $path = $tenant_logo->storeAs('tenant_logo', $filename, 'public');
-        return $path;
+        try {
+            $payload = $this->extractPayload($request);
+            $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
+
+            $weekdaySummary = $query->select(
+                DB::raw('DAYOFWEEK(supportticket.created_at) AS weekday'),
+                DB::raw('COUNT(*) AS total_tickets')
+            )
+                ->whereRaw('WEEK(supportticket.created_at) = WEEK(CURRENT_DATE())')
+                ->whereRaw('YEAR(supportticket.created_at) = YEAR(CURRENT_DATE())')
+                ->groupBy(DB::raw('DAYOFWEEK(supportticket.created_at)'))
+                ->get();
+
+            $weekdayMapping = [
+                1 => 'Sunday',
+                2 => 'Monday',
+                3 => 'Tuesday',
+                4 => 'Wednesday',
+                5 => 'Thursday',
+                6 => 'Friday',
+                7 => 'Saturday',
+            ];
+
+            $formattedWeekdaySummary = $weekdaySummary->map(function ($day) use ($weekdayMapping) {
+                return [
+                    'Weekday' => $weekdayMapping[$day->weekday] ?? 'Unknown',
+                    'Total Tickets' => $day->total_tickets,
+                ];
+            });
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedWeekdaySummary, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function exportCsv(Request $request)
+    {
+        try {
+            $payload = $this->extractPayload($request);
+            $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
+
+            $tickets = $query->get();
+
+            $headers = ['Ticket ID', 'Customer Name', 'Category', 'Priority', 'Status', 'Created Date', 'Last Updated', 'Assigned Agent', 'Resolution Time', 'Comments', 'Escalation'];
+
+            $csvData = $this->formatTickets($tickets);
+
+            $callback = function () use ($headers, $csvData) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, $headers); // Write the header row
+                foreach ($csvData as $row) {
+                    fputcsv($file, $row); // Write data rows
+                }
+                fclose($file);
+            };
+
+            // Create a response to download the file
+            return new StreamedResponse($callback, ResponseHTTP::HTTP_OK, [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment;filename="ticket_report.csv"',
+            ]);
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
     }
 }
