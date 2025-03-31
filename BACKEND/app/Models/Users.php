@@ -69,7 +69,7 @@ class Users extends Authenticatable implements JWTSubject
             ->value('tenant_role_id');
 
         if ($tenantRoleId) {
-            $permission = DB::table('omnichannel.tenant_role')
+            $permission = DB::table('omnichannel.tenant_roles')
                 ->where('id', $tenantRoleId)
                 ->value('permission');
         }
