@@ -166,12 +166,12 @@ class SupportTicketController extends Controller
         ]);
     }
     
-    public function show(SupportTicket $supportticket)
+    public function show(SupportTicket $supportTicket)
     {
-        return new TenantsResource($supportticket);
+        return $this->slaReportRepository->show($supportTicket);
     }
 
-    public function update(Request $request, SupportTicket $supportticket)
+    public function update(Request $request, SupportTicket $supportTicket)
     {
         $apiUser = auth()->user();
         $attachment_urls = [];

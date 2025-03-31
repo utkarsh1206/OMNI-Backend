@@ -143,8 +143,16 @@ class SupportTicketRepository
         }
     }
 
-    public function show($tenant)
+    public function show(SupportTicket $supportTicket)
     {
+        try {
+            $response = new TenantsResource($supportTicket);
+            
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            Log::error("Error fetching SLA setting: " . $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
         return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.data_fetch'));
     }
 
