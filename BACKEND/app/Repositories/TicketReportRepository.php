@@ -21,74 +21,6 @@ class TicketReportRepository
         $this->apiResponse = $customApiResponse;
     }
 
-    private function applyFilters($query, Request $request, $payload = null)
-    {
-        if ($request->has('startDate') && $request->has('endDate')) {
-            $startDate = Carbon::parse($request->input('startDate'));
-            $endDate = Carbon::parse($request->input('endDate'));
-            $query->whereBetween('created_at', [$startDate, $endDate]);
-        }
-
-        if ($request->has('ticket_id')) {
-            $query->where('support_ticket_id', $request->input('ticket_id'));
-        }
-
-        if ($request->has('priority')) {
-            $query->where('default_priority', $request->input('priority'));
-        }
-
-        if ($request->has('status')) {
-            $query->where('default_status', $request->input('status'));
-        }
-
-        if ($request->has('category')) {
-            $query->where('default_type', $request->input('category'));
-        }
-
-        if ($payload && $payload['role_id'] == 3) {
-            $query->whereHas('assignedAgent', function ($q) use ($payload) {
-                $q->where('id', $payload['id']);
-            });
-        }
-
-        return $query;
-    }
-
-    private function extractPayload(Request $request)
-    {
-        $token = $request->bearerToken();
-        return $token ? JWTAuth::setToken($token)->getPayload() : null;
-    }
-
-    private function formatTickets($tickets)
-    {
-        return collect($tickets)->map(function ($ticket) {
-            $resolveNotification = $ticket->notifications
-                ->where('status', 'Resolved')
-                ->sortByDesc('created_at')
-                ->first();
-
-            $resolveDateTime = $resolveNotification?->created_at->format('Y-m-d H:i:s') ?? '';
-
-            $customerName = $ticket->notifications->first()?->user->username ?? '';
-
-            return [
-                'id' => $ticket->id,
-                'ticketId' => $ticket->support_ticket_id,
-                'customerName' => $customerName,
-                'category' => $ticket->default_type,
-                'priority' => $ticket->default_priority,
-                'status' => $ticket->default_status,
-                'createdDate' => $ticket->created_at->format('Y-m-d H:i:s'),
-                'lastUpdated' => $ticket->updated_at->format('Y-m-d H:i:s'),
-                'assignedAgent' => $ticket->assignedAgent->username ?? '',
-                'resolutionTime' => $resolveDateTime,
-                'comments' => $ticket->description,
-                'escalation' => $ticket->is_escalated,
-            ];
-        });
-    }
-
     public function ticketReport(Request $request)
     {
         try {
@@ -271,5 +203,73 @@ class TicketReportRepository
         } catch (Exception $ex) {
             return $this->apiResponse->handleAndResponseException($ex);
         }
+    }
+
+    private function applyFilters($query, Request $request, $payload = null)
+    {
+        if ($request->has('startDate') && $request->has('endDate')) {
+            $startDate = Carbon::parse($request->input('startDate'));
+            $endDate = Carbon::parse($request->input('endDate'));
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+
+        if ($request->has('ticket_id')) {
+            $query->where('support_ticket_id', $request->input('ticket_id'));
+        }
+
+        if ($request->has('priority')) {
+            $query->where('default_priority', $request->input('priority'));
+        }
+
+        if ($request->has('status')) {
+            $query->where('default_status', $request->input('status'));
+        }
+
+        if ($request->has('category')) {
+            $query->where('default_type', $request->input('category'));
+        }
+
+        if ($payload && $payload['role_id'] == 3) {
+            $query->whereHas('assignedAgent', function ($q) use ($payload) {
+                $q->where('id', $payload['id']);
+            });
+        }
+
+        return $query;
+    }
+
+    private function extractPayload(Request $request)
+    {
+        $token = $request->bearerToken();
+        return $token ? JWTAuth::setToken($token)->getPayload() : null;
+    }
+
+    private function formatTickets($tickets)
+    {
+        return collect($tickets)->map(function ($ticket) {
+            $resolveNotification = $ticket->notifications
+                ->where('status', 'Resolved')
+                ->sortByDesc('created_at')
+                ->first();
+
+            $resolveDateTime = $resolveNotification?->created_at->format('Y-m-d H:i:s') ?? '';
+
+            $customerName = $ticket->notifications->first()?->user->username ?? '';
+
+            return [
+                'id' => $ticket->id,
+                'ticketId' => $ticket->support_ticket_id,
+                'customerName' => $customerName,
+                'category' => $ticket->default_type,
+                'priority' => $ticket->default_priority,
+                'status' => $ticket->default_status,
+                'createdDate' => $ticket->created_at->format('Y-m-d H:i:s'),
+                'lastUpdated' => $ticket->updated_at->format('Y-m-d H:i:s'),
+                'assignedAgent' => $ticket->assignedAgent->username ?? '',
+                'resolutionTime' => $resolveDateTime,
+                'comments' => $ticket->description,
+                'escalation' => $ticket->is_escalated,
+            ];
+        });
     }
 }

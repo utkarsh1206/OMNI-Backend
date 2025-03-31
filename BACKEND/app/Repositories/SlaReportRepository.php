@@ -3,9 +3,16 @@
 namespace App\Repositories;
 
 use Illuminate\Http\Request;
-use App\Models\Tenant;
 use App\Http\Response\CustomApiResponse;
-use App\Models\Users;
+use App\Models\IncidentType;
+use App\Models\SlaTarget;
+use App\Models\Supportticket;
+use Illuminate\Support\Facades\DB;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Exception;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class SlaReportRepository
 {
@@ -16,150 +23,258 @@ class SlaReportRepository
         $this->apiResponse = $customApiResponse;
     }
 
-    public function list(Request $request)
+    public function generateReport(Request $request)
     {
-        $filters = [
-            'search' => 'searchTerm',
-            'company_name' => 'companyName',
-            'email' => 'email',
-            'mobile' => 'mobile',
-            'domain_name' => 'domainName',
-            'company_code' => 'companyCode',
-        ];
+        try {
+            $perPage = $request->input('perPage', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
-        // Retrieve input values
-        $inputs = [];
-        foreach ($filters as $key => $variable) {
-            $inputs[$variable] = $request->input($key, '');
-        }
+            $ticketsquery = Supportticket::with([
+                'notifications' => function ($query) {
+                    $query->select(
+                        'support_ticket_id',
+                        DB::raw("MAX(CASE WHEN status = 'Resolved' THEN date ELSE NULL END) as resolved_date")
+                    )->groupBy('support_ticket_id');
+                },
+            ])
+                ->select(
+                    'supportticket.id',
+                    'supportticket.support_ticket_id as ticket_id',
+                    'supportticket.default_type as category',
+                    'supportticket.default_priority as priority',
+                    'supportticket.created_at as opened_date',
+                    'supportticket.is_escalated as sla_compliance',
+                    'supportticket.actual_resolved_time',
+                    'supportticket.incident_id'
+                )
+                ->join('users', 'supportticket.assign_to_id', '=', 'users.id')
+                ->addSelect('users.username as user_name');
 
-        // Start the query for tenants
-        $query = Tenant::query();
+            $payload = $this->extractPayload($request);
 
-        // Apply search term conditions if available
-        if (!empty($inputs['searchTerm'])) {
-            $query->where(function ($q) use ($inputs) {
-                $searchTerm = $inputs['searchTerm'];
-                $q->where('username', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('first_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('email', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_code', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_url', 'like', '%' . $searchTerm . '%');
-            });
-        }
+            $ticketsquery = $this->applyFilters($ticketsquery, $request, $payload);
 
-        // Apply other filters dynamically
-        foreach ($filters as $key => $variable) {
-            if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
-                $query->where($variable, $inputs[$variable]);
+            if ($page !== config('omni.ALL_PAGE')) {
+                $ticketsquery = $ticketsquery->paginate($perPage);
+            } else {
+                $ticketsquery = $ticketsquery->get();
             }
+
+            // Step 2: Get SLA IDs for incidents
+            $incidentIds = $ticketsquery->pluck('incident_id')->unique();
+            $incidentSLA = IncidentType::whereIn('id', $incidentIds)
+                ->pluck('sla_id', 'id'); // ['incident_id' => sla_id]
+
+            // Step 3: Get Resolve Time from SLA Targets
+            $slaIds = $incidentSLA->values()->unique();
+            $slaTargets = SlaTarget::whereIn('sla_id', $slaIds)
+                ->get()
+                ->groupBy(function ($item) {
+                    return $item->sla_id . '_' . $item->priority_type;
+                }); // Create a mapping ['slaId_priority' => resolve_time]
+
+            // Step 4: Merge Data in PHP
+            $ticketsquery->transform(function ($ticket) use ($incidentSLA, $slaTargets) {
+                $slaId = $incidentSLA[$ticket->incident_id] ?? null;
+                $resolveTime = $slaId ? ($slaTargets[$slaId . '_' . $ticket->priority] ?? null) : null;
+                $resolveTimeMinutes = $resolveTime ? $resolveTime->first()->resolve_time_value : null;
+
+                // Convert minutes to HH:MM:SS
+                if ($resolveTimeMinutes !== null) {
+                    $hours = floor($resolveTimeMinutes / 60);
+                    $minutes = $resolveTimeMinutes % 60;
+                    $seconds = 0; // Defaulting to 0 seconds
+                    $ticket->resolve_time_value = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+                } else {
+                    $ticket->resolve_time_value = null;
+                }
+
+                return $ticket;
+            });
+
+            if ($page !== config('omni.ALL_PAGE')) {
+                $ticketsquery = $ticketsquery->items();
+            } else {
+                $ticketsquery = $ticketsquery;
+            }
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $ticketsquery, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+        // return response()->json([
+        //     'data' => $page !== 'all' ? $ticketsquery->items() : $ticketsquery,
+        //     'meta' => $page !== 'all' ? [
+        //         'current_page' => $ticketsquery->currentPage(),
+        //         'last_page' => $ticketsquery->lastPage(),
+        //         'perPage' => $ticketsquery->perPage(),
+        //         'total' => $ticketsquery->total(),
+        //     ] : null,
+        // ]);
+    }
+
+    public function prioritySLA(Request $request)
+    {
+        try {
+            $tickets = Supportticket::select(
+                'default_priority as priority',
+                DB::raw("COUNT(*) as ticket_count")
+            )
+                ->where('is_escalated', 'Yes')
+                ->groupBy('default_priority');
+
+            $payload = $this->extractPayload($request);
+
+            $tickets = $this->applyFilters($tickets, $request, $payload);
+
+            $tickets = $tickets->get();
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tickets, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function categorySLA(Request $request)
+    {
+        try {
+            $tickets = Supportticket::select(
+                'default_type as category',
+                DB::raw("COUNT(*) as ticket_count")
+            )
+                ->where('is_escalated', 'Yes')
+                ->groupBy('default_type');
+
+            $payload = $this->extractPayload($request);
+
+            $tickets = $this->applyFilters($tickets, $request, $payload);
+
+            $tickets = $tickets->get();
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tickets, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function incidentSLA(Request $request)
+    {
+        try {
+            $tickets = DB::table('supportticket')
+                ->join('incident_types', 'supportticket.incident_id', '=', 'incident_types.id')
+                ->select(
+                    'supportticket.incident_id',
+                    'incident_types.name as incident_name',
+                    DB::raw('COUNT(supportticket.id) as ticket_count')
+                )
+                ->where('supportticket.is_escalated', 'Yes')
+                ->groupBy('supportticket.incident_id', 'incident_types.name');
+
+            $payload = $this->extractPayload($request);
+
+            $tickets = $this->applyFilters($tickets, $request, $payload);
+
+            $tickets = $tickets->get();
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tickets, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function exportCsv(Request $request)
+    {
+        try {
+            $ticketsquery = Supportticket::with([
+                'notifications' => function ($query) {
+                    $query->select(
+                        'support_ticket_id',
+                        DB::raw("MAX(CASE WHEN status = 'Resolved' THEN date ELSE NULL END) as resolved_date")
+                    )->groupBy('support_ticket_id');
+                },
+            ])
+                ->select(
+                    'supportticket.id',
+                    'supportticket.support_ticket_id as ticket_id',
+                    'supportticket.default_type as category',
+                    'supportticket.default_priority as priority',
+                    'supportticket.created_at as opened_date',
+                    'supportticket.is_escalated as sla_compliance'
+                )
+                ->join('users', 'supportticket.assign_to_id', '=', 'users.id')
+                ->addSelect('users.username as user_name');
+
+            $payload = $this->extractPayload($request);
+
+            $ticketsquery = $this->applyFilters($ticketsquery, $request, $payload);
+            $tickets = $ticketsquery->get();
+
+            // Prepare CSV content
+            $headers = ['User Name', 'Ticket ID', 'Category', 'Priority', 'Opened Date', 'Resolved Date', 'SLA Compliance'];
+
+            $callback = function () use ($headers, $tickets) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, $headers);
+
+                foreach ($tickets as $ticket) {
+                    $resolvedDate = $ticket->notifications->first()->resolved_date ?? null;
+                    $openedDate = Carbon::parse($ticket->opened_date)->toDateTimeString();
+                    $row = [
+                        $ticket->user_name,
+                        $ticket->ticket_id,
+                        $ticket->category,
+                        $ticket->priority,
+                        $openedDate,
+                        $resolvedDate ? Carbon::parse($resolvedDate)->toDateTimeString() : null,
+                        $ticket->sla_compliance,
+                    ];
+                    fputcsv($file, $row);
+                }
+                fclose($file);
+            };
+
+            return new StreamedResponse($callback,  ResponseHTTP::HTTP_OK, [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment;"',
+            ]);
+        } catch (Exception $ex) {
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    private function applyFilters($query, Request $request, $payload = null)
+    {
+        if ($request->has('startDate') && $request->has('endDate')) {
+            $startDate = Carbon::parse($request->input('startDate'));
+            $endDate = Carbon::parse($request->input('endDate'));
+            $query->whereBetween('supportticket.created_at', [$startDate, $endDate]);
         }
 
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $tenants = $query->paginate($perPage);
-
-        // Return the response
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.data_fetch'));
-    }
-
-    public function store(Request $request)
-    {
-        $createData = $this->prepareTenantData($request);
-
-        if ($request->hasFile('tenant_logo')) {
-            $createData['tenant_logo'] = $this->uploadTenantLogo($request);
-        }
-        $tenants = Tenant::create($createData);
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.tenant_create_msg'));
-    }
-
-
-    public function update(Request $request, $tenant)
-    {
-        $updateData = $this->prepareTenantData($request);
-
-        if ($request->hasFile('tenant_logo')) {
-            $updateData['tenant_logo'] = $this->uploadTenantLogo($request);
-        }
-    
-        // Update the tenant record
-        $tenant->update($updateData);
-    
-        // Return response
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_update_msg'));
-    }
-
-    public function delete($tenant)
-    {
-        $tenant->delete();
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_delete_msg'));
-    }
-
-
-    public function show($tenant)
-    {
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.data_fetch'));
-    }
-
-    public function dashboard()
-    {
-        $type_wise_ticket = array("Problem" => "1", "Help" => "0", "Incident" => "2", "Questions" => "5", "Feature Request" => "0", "Other" => 10);
-        $priority_wise_ticket = array("High" => "5", "Medium" => "2", "Low" => "0", "Urgent" => "10");
-        $agent_status = array("ABC 101" => array("Login", "Pause", "192.168.1.110"), "BCD 201" => array("Login", "Resume", "192.168.1.111"), "XYZ 301" => array("Logout", "Pause", "192.168.1.112"));
-        $lead_status = array("Unassigned" => "0", "Open" => "100", "Waiting On Customer" => "5", "Waiting On Third party" => "5", "Resolved" => "50", "Closed" => "200");
-        $call_count_status = array("Success" => "200", "Failed" => "30");
-        $agent_count =  Users::query()->where('type', '3')->count();
-        $final_array = array("type_wise_ticket" => $type_wise_ticket, "priority_wise_ticket" => $priority_wise_ticket, "agent_status" => $agent_status, "lead_status" => $lead_status, "call_count_status" => $call_count_status, "agent_count" => $agent_count);
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $final_array, trans('message.data_fetch'));
-    }
-
-    protected function prepareTenantData(Request $request)
-    {
-        $data = $request->only([
-            'first_name',
-            'username',
-            'last_name',
-            'email',
-            'mobile',
-            'company_code',
-            'company_name',
-            'server_serialnumber',
-            'server_ip',
-            'server_mac',
-            'status',
-            'tenant_role_id',
-            'title',
-            'footer_content',
-            'footer_url'
-        ]);
-
-        // Hash the password only if it's present in the request
-        if ($request->has('password')) {
-            $data['password'] = bcrypt($request->password);
+        if ($request->has('priority')) {
+            $query->where('supportticket.default_priority', $request->input('priority'));
         }
 
-        return $data;
+        if ($request->has('category')) {
+            $query->where('supportticket.default_type', $request->input('category'));
+        }
+
+        if ($request->has('slaCompliance')) {
+            $query->where('supportticket.is_escalated', $request->input('slaCompliance'));
+        }
+
+        if ($payload['role_id'] == 3) {
+            $query->where('assign_to_id', $payload['id']);
+        }
+
+        if ($request->has('user')) {
+            $query->where('supportticket.assign_to_id', $request->input('user'));
+        }
+
+        return $query;
     }
 
-    /**
-     * Handle tenant logo file upload
-     *
-     * @param Request $request
-     * @return string
-     */
-    protected function uploadTenantLogo(Request $request)
+    private function extractPayload(Request $request)
     {
-        $tenant_logo = $request->file('tenant_logo');
-        $filename = now()->format('Y_m_d_H_i_s') . '.' . $tenant_logo->getClientOriginalExtension();
-        $path = $tenant_logo->storeAs('tenant_logo', $filename, 'public');
-        return $path;
+        $token = $request->bearerToken();
+        return $token ? JWTAuth::setToken($token)->getPayload() : null;
     }
 }
