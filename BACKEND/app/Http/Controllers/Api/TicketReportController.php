@@ -341,10 +341,7 @@ class TicketReportController extends Controller
      *     summary="Fetch Summary of Support Tickets by Status",
      *     description="Fetches the summary of support tickets grouped by status, with the total ticket count for each status.",
      *     operationId="statusSummary",
-     *     tags={"Support Tickets"},
-     *     security={{
-     *         "bearerAuth": {}
-     *     }},
+     *     tags={"Ticket Report"},
      *     @OA\Parameter(
      *         name="startDate",
      *         in="query",
@@ -442,10 +439,7 @@ class TicketReportController extends Controller
      *     summary="Fetch Summary of Support Tickets by Weekday",
      *     description="Fetches the summary of support tickets grouped by the weekday they were created, showing the total number of tickets for each weekday of the current week.",
      *     operationId="weekdaySummary",
-     *     tags={"Support Tickets"},
-     *     security={{
-     *         "bearerAuth": {}
-     *     }},
+     *     tags={"Ticket Report"},
      *     @OA\Parameter(
      *         name="startDate",
      *         in="query",
@@ -543,10 +537,7 @@ class TicketReportController extends Controller
      *     summary="Download Ticket Report as CSV",
      *     description="Generates a CSV report of support tickets filtered by various parameters and allows the user to download it.",
      *     operationId="ticketReportDownload",
-     *     tags={"Support Tickets"},
-     *     security={{
-     *         "bearerAuth": {}
-     *     }},
+     *     tags={"Ticket Report"},
      *     @OA\Parameter(
      *         name="startDate",
      *         in="query",
