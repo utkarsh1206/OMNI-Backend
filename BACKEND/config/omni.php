@@ -6,7 +6,7 @@ return [
    'INCIDENT_RESOLUTION' => 1007071499087761958,
    'INCIDENT_FEEDBACK' => 1007667463449182703,
 
-   'PER_PAGE' => 10,
-   'DEFAULT_PAGE' => 1,
-   'ALL_PAGE' => 'all'
+   'PER_PAGE' => env('PER_PAGE', 10),
+   'DEFAULT_PAGE' => env('DEFAULT_PAGE', 1),
+   'ALL_PAGE' => env('ALL_PAGE', 'all')
 ];
