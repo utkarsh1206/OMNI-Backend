@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+
 class SlaSettingRepository
 {
     private $apiResponse;
@@ -58,20 +59,20 @@ class SlaSettingRepository
         }
     }
 
-    public function store($slaData)
+    public function store(Request $request)
     {
         try {
-            // $validated = $this->validateRequest($request);
+            $validated = $request->all();
 
             DB::beginTransaction();
 
-            $sla = SlaSetting::create($slaData['sla']);
-            $this->saveRelatedData($sla, $slaData);
+            $sla = SlaSetting::create($validated['sla']);
+            $this->saveRelatedData($sla, $validated);
 
             DB::commit();
-            
+
             $response = $this->formatSlaResponse($sla->load(['offDays', 'holidays', 'targets']));
-            
+
             return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.sla_setting_create_msg'));
         } catch (Exception $ex) {
             DB::rollBack();
@@ -88,7 +89,7 @@ class SlaSettingRepository
     {
         try {
             $response = $this->formatSlaResponse($slaSetting->load(['offDays', 'holidays', 'targets']));
-        
+
             return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.data_fetch'));
         } catch (Exception $ex) {
             Log::error("Error fetching SLA setting: " . $ex->getMessage());
@@ -96,28 +97,16 @@ class SlaSettingRepository
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, SlaSetting $slaSetting)
     {
         try {
-            Log::info("SLA update request received for ID: {$id}");
-
-            $validated = $this->validateRequest($request);
-            Log::info("Validated data: ", $validated);
+            $validated = $request->all();
 
             DB::beginTransaction();
 
-            // Find the SLA by ID
-            $slaSetting = SlaSetting::find($id);
-
-            // Check if SLA setting exists
-            if (!$slaSetting) {
-                Log::error("SLA not found for ID: {$id}");
-                return response()->json(['message' => 'SLA setting not found'], 404);
-            }
-
             // Update the SLA setting
             $slaSetting->update($validated['sla']);
-            Log::info("SLA updated successfully: ", $slaSetting->toArray());
+
 
             // Remove existing related data and save new data
             $slaSetting->offDays()->delete();
@@ -130,18 +119,7 @@ class SlaSettingRepository
 
             $response = $this->formatSlaResponse($slaSetting->load(['offDays', 'holidays', 'targets']));
 
-            return response()->json([
-                'message' => 'SLA updated successfully',
-                'data' => $response
-            ], 200);
-
-            Log::info("Transaction committed, SLA data after update: ", $slaSetting->load(['offDays', 'holidays', 'targets'])->toArray());
-
-            // return response()->json([
-            //     'message' => 'SLA updated successfully',
-            //     'data' => new SlaSettingResource($slaSetting->load(['offDays', 'holidays', 'targets']))
-            // ], 200);
-            // return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.sla_setting_update_msg'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.sla_setting_update_msg'));
         } catch (Exception $ex) {
             DB::rollBack();
             Log::error("Error during SLA update: " . $ex->getMessage());
@@ -153,7 +131,7 @@ class SlaSettingRepository
     {
         try {
             $slaSetting->delete();
-       
+
             return $this->apiResponse->getResponseStructure(trans('message.success'), $slaSetting, trans('message.sla_setting_delete_msg'));
         } catch (\Exception $ex) {
             Log::error("Error deleting SLA setting: " . $ex->getMessage());

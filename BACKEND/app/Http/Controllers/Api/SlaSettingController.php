@@ -24,8 +24,7 @@ class SlaSettingController extends Controller
 
     public function store(SlaSettingRequest $request)
     {
-        $validatedData = $request->validated();
-        return $this->slaSettingRepository->store($validatedData);
+        return $this->slaSettingRepository->store($request);
     }
 
     public function show(SlaSetting $slaSetting)
