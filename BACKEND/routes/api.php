@@ -116,7 +116,6 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('tenant-dashboard', [TenantController::class, 'dashboard']);
     Route::apiResource('sms-providers', SmsProviderController::class);
     Route::apiResource('sms-configurations', SmsProviderConfigurationController::class);
-    Route::get('notification', [SupportTicketNotificationController::class, 'index']);
     Route::apiResource('accounts', AccountController::class);
     Route::get('industry_type', [IndustryTypeController::class, 'index']);
     Route::get('business_type', [BusinessTypeController::class, 'index']);
@@ -171,6 +170,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('updateticketstatus/{supportticket}', [SupportTicketController::class, 'statusupdate']);
     Route::post('transfer', [SupportTicketTransferController::class, 'store']);
     Route::post('merge', [SupportTicketMergeController::class, 'store']);
+    Route::get('notification', [SupportTicketNotificationController::class, 'index']);
 
     // Ticket Report
     Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
@@ -180,8 +180,10 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/ticket/summary/status', [TicketReportController::class, 'statusSummary']);
     Route::get('/ticket/summary/weekday', [TicketReportController::class, 'weekdaySummary']);
 
-    // SLA
+    // SLA Settings
     Route::apiResource('sla-settings', SlaSettingController::class);
+
+    // SLA Report
     Route::get('slareport', [SlaReportController::class, 'generateReport']);
     Route::get('slareport/csv', [SlaReportController::class, 'exportCsv']);
     Route::get('sla-priority', [SlaReportController::class, 'prioritySLA']);
