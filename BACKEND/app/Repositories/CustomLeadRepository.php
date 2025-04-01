@@ -3,10 +3,8 @@
 namespace App\Repositories;
 
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
 use App\Http\Response\CustomApiResponse;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 class CustomLeadRepository
@@ -39,6 +37,7 @@ class CustomLeadRepository
 
             return $this->getAllLeads($request, $query, $columns);
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in getting Lead By Id: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -60,6 +59,7 @@ class CustomLeadRepository
                 'data' => $leadData
             ], trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in getting single lead: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -81,6 +81,7 @@ class CustomLeadRepository
                 'data' => $data
             ], trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating all leads: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -122,6 +123,7 @@ class CustomLeadRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.error'), [], trans('message.no_changes_made'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in updating lead: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -149,6 +151,7 @@ class CustomLeadRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.error'), $leadId, trans('message.lead_delete_failed'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in deleting lead: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

@@ -12,7 +12,6 @@ use Exception;
 
 class ContactRepository
 {
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
@@ -22,55 +21,59 @@ class ContactRepository
 
     public function list(Request $request)
     {
-        $searchTerm = $request->input('search', '');
-        $productId = $request->input('product_id', '');
-        $accountId = $request->input('account_id', '');
-        $ownerId = $request->input('owner_id', '');
+        try {
+            $searchTerm = $request->input('search', '');
+            $productId = $request->input('product_id', '');
+            $accountId = $request->input('account_id', '');
+            $ownerId = $request->input('owner_id', '');
 
-        $query = Contact::query();
-        $perPage = $request->input('per_page', 10);
-        $page = $request->input('page', 1);
+            $query = Contact::query();
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('first_name', 'like', "%$searchTerm%")
-                    ->orWhere('last_name', 'like', "%$searchTerm%")
-                    ->orWhere('email', 'like', "%$searchTerm%")
-                    ->orWhere('mobile', 'like', "%$searchTerm%")
-                    ->orWhere('product_id', 'like', "%$searchTerm%")
-                    ->orWhere('account_id', 'like', "%$searchTerm%")
-                    ->orWhere('owner_id', 'like', "%$searchTerm%");
-            });
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('first_name', 'like', "%$searchTerm%")
+                        ->orWhere('last_name', 'like', "%$searchTerm%")
+                        ->orWhere('email', 'like', "%$searchTerm%")
+                        ->orWhere('mobile', 'like', "%$searchTerm%")
+                        ->orWhere('product_id', 'like', "%$searchTerm%")
+                        ->orWhere('account_id', 'like', "%$searchTerm%")
+                        ->orWhere('owner_id', 'like', "%$searchTerm%");
+                });
 
-            $account = Account::where('name', 'like', "%$searchTerm%")->first();
-            if ($account) {
-                $query->orWhere('account_id', $account->id);
+                $account = Account::where('name', 'like', "%$searchTerm%")->first();
+                if ($account) {
+                    $query->orWhere('account_id', $account->id);
+                }
+
+                $owner = User::where('username', 'like', "%$searchTerm%")->first();
+                if ($owner) {
+                    $query->orWhere('owner_id', $owner->id);
+                }
             }
 
-            $owner = User::where('username', 'like', "%$searchTerm%")->first();
-            if ($owner) {
-                $query->orWhere('owner_id', $owner->id);
+            if (!empty($productId)) {
+                $query->where('product_id', $productId);
             }
-        }
 
-        if (!empty($productId)) {
-            $query->where('product_id', $productId);
-        }
+            if (!empty($accountId)) {
+                $query->where('account_id', $accountId);
+            }
 
-        if (!empty($accountId)) {
-            $query->where('account_id', $accountId);
-        }
+            if (!empty($ownerId)) {
+                $query->where('owner_id', $ownerId);
+            }
 
-        if (!empty($ownerId)) {
-            $query->where('owner_id', $ownerId);
-        }
-
-        if ($page === 'all') {
-            $contact = $query->get();
+            if ($page === config('omni.ALL_PAGE')) {
+                $contact = $query->get();
+            } else {
+                $contact = $query->paginate($perPage);
+            }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.data_fetch'));
-        } else {
-            $contact = $query->paginate($perPage);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Contact Listing: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -97,51 +100,66 @@ class ContactRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.contact_created'), ResponseHTTP::HTTP_CREATED);
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in creating Contact: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
-
     public function update(Request $request, $id)
     {
-        $contact = Contact::find($id);
+        try {
+            $contact = Contact::find($id);
 
-        if (!$contact) {
-            return response()->json(['message' => trans("message.contact_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
+            if (!$contact) {
+                return response()->json(['message' => trans("message.contact_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
+            }
+
+            $contact->update([
+                'product_id' => $request->product_id,
+                'account_id' => $request->account_id,
+                'name_prefix' => $request->name_prefix,
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'email' => $request->email,
+                'mobile' => $request->mobile,
+                'owner_id' => $request->owner_id,
+                'country_id' => $request->country_id,
+                'state_id' => $request->state_id,
+                'city_id' => $request->state_id,
+                'pincode' => $request->pincode,
+                'address' => $request->address,
+                'gender' => $request->gender,
+                'description' => $request->description
+            ]);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.contact_updated'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in updating Contact: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
-
-        $contact->update([
-            'product_id' => $request->product_id,
-            'account_id' => $request->account_id,
-            'name_prefix' => $request->name_prefix,
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'mobile' => $request->mobile,
-            'owner_id' => $request->owner_id,
-            'country_id' => $request->country_id,
-            'state_id' => $request->state_id,
-            'city_id' => $request->state_id,
-            'pincode' => $request->pincode,
-            'address' => $request->address,
-            'gender' => $request->gender,
-            'description' => $request->description
-        ]);
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.contact_updated'));
     }
 
     public function delete($id)
     {
-        $contact = Contact::find($id);
-        if (!$contact) {
-            return response()->json(['message' => trans("message.contact_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
+        try {
+            $contact = Contact::find($id);
+            if (!$contact) {
+                return response()->json(['message' => trans("message.contact_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
+            }
+            $contact->delete();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.contact_deleted'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in deleting Contact: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
-        $contact->delete();
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.contact_deleted'));
     }
 
     public function show($contact)
     {
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.fetch_data'));
+        try {
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.fetch_data'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in fetching Contact: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
     }
 }

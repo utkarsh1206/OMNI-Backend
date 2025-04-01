@@ -125,6 +125,7 @@ class AccountRepository
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
+    
     public function show($account)
     {
         try {
