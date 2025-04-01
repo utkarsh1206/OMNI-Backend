@@ -16,8 +16,6 @@ use Exception;
 
 class DashboardRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
@@ -30,7 +28,6 @@ class DashboardRepository
         $token = $request->bearerToken();
         return $token ? JWTAuth::setToken($token)->getPayload() : null;
     }
-
 
     public function index(Request $request)
     {
@@ -167,8 +164,9 @@ class DashboardRepository
                 // 'deleted_ticket_count' => $deletedTicketCount
             ];
             return $this->apiResponse->getResponseStructure(trans('message.success'), $dashboardData, trans('message.data_fetch'));
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating data of dashboard: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 }

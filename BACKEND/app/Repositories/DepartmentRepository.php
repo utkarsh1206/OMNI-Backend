@@ -6,11 +6,10 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\Department;
-use Illuminate\Database\QueryException;
+use Exception;
 
 class DepartmentRepository
 {
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
@@ -23,8 +22,8 @@ class DepartmentRepository
         try {
             $searchTerm = $request->input('search', '');
             $name = $request->input('name', '');
-            $perPage = $request->input('per_page', 10);
-            $page = $request->input('page', 1);
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             $query = Department::query();
 
@@ -36,15 +35,15 @@ class DepartmentRepository
                 $query->where('name', $name);
             }
 
-            if ($page === 'all') {
+            if ($page === config('omni.ALL_PAGE')) {
                 $departments = $query->get();
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $departments, trans('message.fetch_data'));
             } else {
                 $departments = $query->paginate($perPage);
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $departments, trans('message.fetch_data'));
             }
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $departments, trans('message.fetch_data'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Department Listing: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -55,9 +54,10 @@ class DepartmentRepository
                 'name' => $request->name,
                 'description' => $request->description,
             ]);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $department, trans('message.department_created'), ResponseHTTP::HTTP_CREATED);
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $department, trans('message.department_created'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in saving Department: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -79,11 +79,11 @@ class DepartmentRepository
             ]);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $department, trans('message.department_updated'));
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in updating Department: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
-
 
     public function delete($id)
     {
@@ -98,8 +98,9 @@ class DepartmentRepository
 
             $department->delete();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $department, trans('message.department_deleted'));
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in deleting Department: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -114,8 +115,9 @@ class DepartmentRepository
                 ], ResponseHTTP::HTTP_NOT_FOUND);
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $department, trans('message.fetch_data'));
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in fetching Department: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 }
