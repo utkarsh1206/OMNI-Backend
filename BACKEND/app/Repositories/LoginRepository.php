@@ -43,7 +43,7 @@ class LoginRepository
         $domain = $request->input('domain');
         if ($validator["flag"] == 1 || $validator["flag"] == 2) {
             if (isLicenseExpired($request)) {
-              //  return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
+                //  return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
             }
 
             if (!$domain) {
@@ -77,6 +77,17 @@ class LoginRepository
                 Log::info('Phone data retrieved:', ['phoneData' => $phoneData]);
                 if ($this->authenticatePassword($credentials, $userData, $request->input('phone_password'), $phoneData)) {
                     Log::info('Both password and phone password checks passed');
+
+                    // Check if user or extension already exists in LiveAgents
+                    $existingAgent = LiveAgents::where('user_id', $userData['id'])
+                        ->orWhere('extension', $request->phone)
+                        ->first();
+
+                    if ($existingAgent) {
+                        Log::error('User or phone already logged in', ['userId' => $userData['id'], 'extension' => $request->phone]);
+                        return response()->json(['error' => trans('message.user_or_phone_already_logged_in')], ResponseHTTP::HTTP_UNAUTHORIZED);
+                    }
+
                     // Set the flag to include phone in JWT
                     $userData->setAddPhoneToJWT($validator['flag']);
                     $token = JWTAuth::attempt($credentials);
@@ -116,7 +127,7 @@ class LoginRepository
         $userId = $parseValue->authenticate()->id;
 
         // Delete user from Live Agents Table
-        LiveAgents::where('user_id',$userId)->delete();
+        LiveAgents::where('user_id', $userId)->delete();
         $parseValue->invalidate($token);
         return true;
     }
