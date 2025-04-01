@@ -157,6 +157,8 @@ return [
     //Call Data
     'call_data_created' => 'Call data created successfully',
     'not_accessible' => 'Not accessible for outer source',
+
+    'user_or_phone_already_logged_in' => 'Multiple Login instances not permitted',
 ]   
 ?>
 
