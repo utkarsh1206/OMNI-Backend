@@ -11,6 +11,8 @@ use App\Models\Users;
 use App\Models\Tenant;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 
 class UserRepository
 {
@@ -246,14 +248,14 @@ class UserRepository
         try {
             $payload = JWTAuth::setToken($token)->getPayload();
             $domain = $payload['domain'];
+            establishMasterConnection($domain,"omnichannel","mysql");
             $tenant = Tenant::select('title', 'footer_content', 'footer_url', 'tenant_logo')
                 ->where('domain_name', $domain)
                 ->first();
-
             if (!$tenant) {
                 return response()->json(['error' => trans("message.tenant_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
             }
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.fetch_data'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.data_fetch'));
         } catch (\Exception $e) {
             return $this->apiResponse->handleAndResponseException($e);
         }

@@ -124,6 +124,18 @@ if (! function_exists('authenticateUser')) {
     }
 }
 
+
+if (!function_exists('establishMasterConnection')) {
+
+    function establishMasterConnection($domain,$masterDB,$connection)
+    {
+        DB::purge($domain);
+        establishDatabaseConnect($domain, $masterDB);
+        DB::setDefaultConnection($connection);
+    }
+}
+
+
 if (!function_exists('getDbConnection')) {
     /**
      * Set up a dynamic database connection based on the domain name.
