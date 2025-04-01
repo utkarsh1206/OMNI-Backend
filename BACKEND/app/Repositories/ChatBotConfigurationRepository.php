@@ -7,13 +7,10 @@ use App\Models\ChatBotConfiguration;
 use App\Models\ChatBotProvider;
 use App\Http\Response\CustomApiResponse;
 use Exception;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class ChatBotConfigurationRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
@@ -23,36 +20,41 @@ class ChatBotConfigurationRepository
 
     public function list(Request $request)
     {
-        $providerName = $request->input('provider_name', '');
-        $method = $request->input('method', '');
-        $enabled = $request->input('enabled', '');
-        $search = $request->input('search', '');
+        try {
+            $providerName = $request->input('provider_name', '');
+            $method = $request->input('method', '');
+            $enabled = $request->input('enabled', '');
+            $search = $request->input('search', '');
 
-        if ($method) {
-            $chatBotConfigurations = ChatBotConfiguration::where('config_value', $method);
-        } elseif ($enabled) {
-            $chatBotConfigurations = ChatBotConfiguration::where('config_value', $enabled);
-        } else {
-            $chatBotConfigurations = ChatBotConfiguration::query();
+            if ($method) {
+                $chatBotConfigurations = ChatBotConfiguration::where('config_value', $method);
+            } elseif ($enabled) {
+                $chatBotConfigurations = ChatBotConfiguration::where('config_value', $enabled);
+            } else {
+                $chatBotConfigurations = ChatBotConfiguration::query();
+            }
+
+            if ($search) {
+                $chatBotConfigurations = $chatBotConfigurations->orWhere('config_value', 'like', '%' . $search . '%');
+            }
+
+            $chatBotConfigurations = $chatBotConfigurations->pluck("provider_id");
+            $configurations  = ChatBotProvider::whereIn("id", $chatBotConfigurations);
+
+            if ($providerName) {
+                $configurations =  $configurations->where('name', '=', $providerName);
+            }
+
+            if ($search) {
+                $configurations = $configurations->orWhere('name', 'like', '%' . $search . '%');
+            }
+
+            $configurations = $configurations->get();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations, $method, $enabled), trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Chatboat Configuration Listing: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
-
-        if ($search) {
-            $chatBotConfigurations = $chatBotConfigurations->orWhere('config_value', 'like', '%' . $search . '%');
-        }
-
-        $chatBotConfigurations = $chatBotConfigurations->pluck("provider_id");
-        $configurations  = ChatBotProvider::whereIn("id", $chatBotConfigurations);
-
-        if ($providerName) {
-            $configurations =  $configurations->where('name', '=', $providerName);
-        }
-
-        if ($search) {
-            $configurations = $configurations->orWhere('name', 'like', '%' . $search . '%');
-        }
-
-        $configurations = $configurations->get();
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations, $method, $enabled), trans('message.data_fetch'));
     }
 
     public function store($request)
@@ -75,12 +77,9 @@ class ChatBotConfigurationRepository
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $chatConfigurations, trans('message.chat_provider_conf_add'));
-        } catch (Exception $e) {
-            Log::error('Error while generating the Sms configuration', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json(['message' => trans('message.wrong_with_query'), 'error' => $e->getMessage()], 500);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in storing Chatboat Configuration: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -111,15 +110,11 @@ class ChatBotConfigurationRepository
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $chatConfiguration, trans('message.sms_provider_conf_update'));
-        } catch (Exception $e) {
-            Log::error('Error while generating the ChatBot configuration', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json(['message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in updating Chatboat Configuration: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
-
 
     public function delete($chatId)
     {
@@ -136,20 +131,21 @@ class ChatBotConfigurationRepository
                 $smsConfiguration->delete();
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $configuration, trans('message.sms_provider_conf_delete'));
-        } catch (Exception $e) {
-            Log::error('Error while generating the Sms configuration', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json(['message' => trans("message.wrong_with_query"), 'error' => $e->getMessage()], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in deleting Chatboat Configuration: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
-
     public function show($providerId)
     {
-        $configurations = ChatBotProvider::where("id", $providerId)->get();
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations), trans('message.data_fetch'));
+        try {
+            $configurations = ChatBotProvider::where("id", $providerId)->get();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations), trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in fetching Chatboat Configuration: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
     }
 
     private function formatListingData($configurations, $method = null, $enabled = null)

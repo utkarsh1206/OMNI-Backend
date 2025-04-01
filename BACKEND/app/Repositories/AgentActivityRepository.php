@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AgentActivityRepository
 {
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)

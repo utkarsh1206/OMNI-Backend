@@ -6,11 +6,9 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\Category;
-use Illuminate\Database\QueryException;
-
+use Exception;
 class CategoryRepository
 {
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
@@ -22,8 +20,8 @@ class CategoryRepository
     {
         try {
             $searchTerm = $request->input('search', '');
-            $perPage = $request->input('per_page', 10);
-            $page = $request->input('page', 1);
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
             $name = $request->input('name');
             $department_id = $request->input('department_id');
 
@@ -40,15 +38,15 @@ class CategoryRepository
                 $query->where('name', 'like', "%$searchTerm%");
             }
 
-            if ($page === 'all') {
+            if ($page === config('omni.ALL_PAGE')) {
                 $category = $query->with('department')->get();
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $category, trans('message.fetch_data'));
             } else {
                 $category = $query->with('department')->paginate($perPage);
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $category, trans('message.fetch_data'));
             }
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $category, trans('message.fetch_data'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Category Listing: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -62,8 +60,9 @@ class CategoryRepository
             ]);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $category, trans('message.category_created_msg'), ResponseHTTP::HTTP_CREATED);
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in Storing Category: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -86,11 +85,11 @@ class CategoryRepository
             ]);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $category, trans('message.category_updated_msg'));
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in Updating Category: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
-
 
     public function delete($id)
     {
@@ -105,8 +104,9 @@ class CategoryRepository
 
             $category->delete();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $category, trans('message.category_deleted_msg'));
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in Deleting Category: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -121,8 +121,9 @@ class CategoryRepository
                 ], ResponseHTTP::HTTP_NOT_FOUND);
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $category, trans('message.fetch_data'));
-        } catch (QueryException $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in Fetching Category: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 }

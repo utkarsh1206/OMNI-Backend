@@ -3,7 +3,7 @@
 namespace App\Http\Response;
 
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
-
+use Exception;
 class CustomApiResponse
 {
     public function getResponseStructure($status, $payload = null, $message = '', $statusCode = 200)
@@ -51,7 +51,7 @@ class CustomApiResponse
      *
      * @return mixed|string
      */
-    public function handleAndResponseException(\Exception $ex)
+    public function handleAndResponseException(Exception $ex)
     {
         $response = '';
         switch ($ex) {

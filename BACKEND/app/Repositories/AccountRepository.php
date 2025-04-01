@@ -72,7 +72,6 @@ class AccountRepository
         }
     }
 
-
     public function store(Request $request)
     {
         try {

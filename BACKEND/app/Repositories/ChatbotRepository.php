@@ -5,13 +5,8 @@ namespace App\Repositories;
 use App\Models\Chatbot;
 use Illuminate\Http\Request;
 use App\Http\Resources\ChatbotResource;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
-use Illuminate\Support\Facades\Log;
 use App\Http\Response\CustomApiResponse;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Config;
 
 class ChatbotRepository
 {
@@ -24,70 +19,74 @@ class ChatbotRepository
 
     public function list(Request $request)
     {
+        try {
+            $filters = [
+                'search' => 'searchTerm',
+                'question' => 'question',
+                'answer' => 'answer',
+                'keywords' => 'keywords',
+                'status' => 'status',
+            ];
 
-        $filters = [
-            'search' => 'searchTerm',
-            'question' => 'question',
-            'answer' => 'answer',
-            'keywords' => 'keywords',
-            'status' => 'status',
-        ];
+            $inputs = [];
+            foreach ($filters as $key => $variable) {
+                $inputs[$variable] = $request->input($key, '');
+            }
 
-        $inputs = [];
-        foreach ($filters as $key => $variable) {
-            $inputs[$variable] = $request->input($key, '');
-        }
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
-        $perPage = $request->input('per_page', 10);
-        $page = $request->input('page', 1);
+            $perPage = (int)$perPage;
 
-        $perPage = (int)$perPage;
+            $query = Chatbot::query();
 
-        $query = Chatbot::query();
+            if (!empty($inputs['searchTerm'])) {
+                $query->where(function ($q) use ($inputs) {
+                    $searchTerm = $inputs['searchTerm'];
+                    $q->where('question', 'like', "%{$searchTerm}%")
+                        ->orWhere('answer', 'like', "%{$searchTerm}%")
+                        ->orWhereJsonContains('keywords', $searchTerm);
+                });
+            }
 
-        if (!empty($inputs['searchTerm'])) {
-            $query->where(function ($q) use ($inputs) {
-                $searchTerm = $inputs['searchTerm'];
-                $q->where('question', 'like', "%{$searchTerm}%")
-                    ->orWhere('answer', 'like', "%{$searchTerm}%")
-                    ->orWhereJsonContains('keywords', $searchTerm);
-            });
-        }
-
-        foreach ($filters as $key => $variable) {
-            if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
-                if ($variable === 'status') {
-                    $status = filter_var($inputs[$variable], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-                    if (!is_null($status)) {
-                        $query->where($variable, $status);
+            foreach ($filters as $key => $variable) {
+                if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
+                    if ($variable === 'status') {
+                        $status = filter_var($inputs[$variable], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                        if (!is_null($status)) {
+                            $query->where($variable, $status);
+                        }
+                    } elseif ($variable === 'keywords') {
+                        if (!is_null($inputs['keywords'])) {
+                            $query->whereJsonContains('keywords', $inputs['keywords']);
+                        }
+                    } else {
+                        $query->where($variable, 'like', "%{$inputs[$variable]}%");
                     }
-                } elseif ($variable === 'keywords') {
-                    if (!is_null($inputs['keywords'])) {
-                        $query->whereJsonContains('keywords', $inputs['keywords']);
-                    }
-                } else {
-                    $query->where($variable, 'like', "%{$inputs[$variable]}%");
                 }
             }
-        }
 
-        if ($page === 'all') {
-            $chatbots = $query->get();
-        } else {
-            $chatbots = $query->paginate($perPage);
-        }
+            if ($page === config('omni.ALL_PAGE')) {
+                $chatbots = $query->get();
+            } else {
+                $chatbots = $query->paginate($perPage);
+            }
 
-        return $this->apiResponse->getResponseStructure(
-            trans('message.success'),
-            $chatbots,
-            trans('message.data_fetch')
-        );
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $chatbots,
+                trans('message.data_fetch')
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Chatboats Listing: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
     }
 
     public function create(Request $request)
     {
         try {
-            $status = filter_var($request->input('status'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            // $status = filter_var($request->input('status'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
             // $request->merge(['status' => $status]);
 
@@ -102,6 +101,7 @@ class ChatbotRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.chatbot_create_success'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in storing Chatboat: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -124,6 +124,7 @@ class ChatbotRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.chatbot_update_success'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in updating Chatboat: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -137,6 +138,7 @@ class ChatbotRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $id, trans('message.chatbot_delete_success'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in deleting Chatboat: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
