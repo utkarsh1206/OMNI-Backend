@@ -78,6 +78,7 @@ use App\Http\Controllers\Api\StartConfApiController;
 use App\Http\Controllers\Api\LiveAgentController;
 use App\Http\Controllers\Api\WebhookCallController;
 use App\Http\Middleware\ModifyRequestMiddleware;
+use App\Http\Controllers\Api\ChatBotConfigurationController;
 
 Route::post('login', [LoginController::class, 'login']);
 
@@ -212,6 +213,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('/call_connected', [WebhookCallController::class, 'callConnected']);
     Route::post('/call_hangup', [WebhookCallController::class, 'callHangup']);
     Route::post('/call_history', [WebhookCallController::class, 'callHistory']);
+    Route::apiResource('chat-bot-configurations', ChatBotConfigurationController::class);
 });
 
 Route::post('/camp_list', [CampaignApiController::class, 'campaignListApi']);

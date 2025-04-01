@@ -157,6 +157,11 @@ return [
     //Call Data
     'call_data_created' => 'Call data created successfully',
     'not_accessible' => 'Not accessible for outer source',
+
+    'chat_provider_not_found'=>'Chat Provider not found.',
+    'chat_provider_conf_delete'=>  'Chat Provider Configuration deleted successfully !',
+    'chat_provider_conf_add'=>  'Chat Provider Configuration added successfully !',
+    'chat_provider_conf_not_found'=> 'Chat Provider Configuration not found.',
 ]   
 ?>
 
