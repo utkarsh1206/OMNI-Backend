@@ -73,7 +73,7 @@ if (! function_exists('isLicenseExpired')) {
         $licenseInfo = $licenseResponse->getData(true);
         if (isset($licenseInfo['validity_date'])) {
             if ($licenseInfo['validity_date'] <= time()) {
-                Log::info('License expired');
+                generateLogs('info', 'License expired');
                 return true;
             }
         } else {
@@ -127,7 +127,7 @@ if (! function_exists('authenticateUser')) {
 
 if (!function_exists('establishMasterConnection')) {
 
-    function establishMasterConnection($domain,$masterDB,$connection)
+    function establishMasterConnection($domain, $masterDB, $connection)
     {
         DB::purge($domain);
         establishDatabaseConnect($domain, $masterDB);
@@ -279,9 +279,17 @@ if (!function_exists('sendHttpRequest')) {
             }
         } catch (\Exception $e) {
             return [
-                'status_code' => 500,
+                'status_code' => ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR,
                 'message' => $e->getMessage(),
             ];
+        }
+    }
+
+    if (!function_exists('generateLogs')) {
+
+        function generateLogs($type, $msg, $error = null)
+        {
+            Log::$type($msg . ($error ? ' ' . $error : ''));
         }
     }
 }

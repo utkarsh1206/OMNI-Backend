@@ -30,14 +30,15 @@ class AgentActivityRepository
             $campaign = $request->input('campaign', null);
             $start_date = $validated['start_date'];
             $end_date = $validated['end_date'];
-            $per_page = $request->input('per_page', 15);
+            $per_page = $request->input('per_page', config('omni.PER_PAGE'));
 
             $agent_logs_data = $this->getAgentLogQuery($users, $start_date, $end_date, $campaign)->paginate($per_page);
             $formattedData = $this->formatAgentLogData($agent_logs_data);
             $agent_logs_data->setCollection($formattedData);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $agent_logs_data, trans('message.data_fetch'));
-        } catch (\Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Agent Activity Listing: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -134,8 +135,9 @@ class AgentActivityRepository
             $response->headers->set('Content-Disposition', 'attachment; filename="agent_activity_log.csv"');
 
             return $response;
-        } catch (\Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating a CSV for Agent Activities: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -155,8 +157,9 @@ class AgentActivityRepository
             return response()->json([
                 'data' => $formattedData,
             ]);
-        } catch (\Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating a PDF for Agent Activities: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
@@ -294,8 +297,9 @@ class AgentActivityRepository
                 return $this->downloadAgentActivityPDF($request);
             }
             return $this->getAgentActivityListing($request);
-        } catch (\Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating a Agent Activity List: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 }
