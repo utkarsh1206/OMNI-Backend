@@ -25,7 +25,6 @@ class DatabaseServiceProvider extends ServiceProvider
     public function boot(Request $request): void
     {
         // dd('Here');
-        Config::set(['auth.defaults.guard' => 'api']);
         $domain = $request->input('domain');
         
         $fullUrl = $request->fullUrl();
@@ -71,7 +70,6 @@ class DatabaseServiceProvider extends ServiceProvider
 
             DB::purge('dynamic');
             DB::reconnect('dynamic');
-            Config::set(['auth.defaults.guard' => 'api_users']);
         }
     }
 }
