@@ -192,32 +192,32 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('sla-incident', [SlaReportController::class, 'incidentSLA']);
 
     Route::apiResource('neox-configurations', NeoxConfigurationController::class);
-    Route::middleware([ModifyRequestMiddleware::class])->group(function () {
-        Route::post('/dispo_list', [DispositionApiController::class, 'dispositionListApi']);
-        Route::post('/api_hold_call', [HoldCallApiController::class, 'holdCallApi']);
-        Route::post('/api_logout', [LogoutApiController::class, 'agentLogoutApi']);
-        Route::post('/api_dial_call', [DialCallApiController::class, 'dialCallApi']);
-        Route::post('/api_pause_resume', [PauseResumeApiController::class, 'pauseResumeApi']);
-        Route::post('/api_hangup', [HangupApiController::class, 'hangupApi']);
-        Route::post('/api_dispos_call', [DisposCallApiController::class, 'disposCallApi']);
-        Route::post('/api_dial_next', [DialNextCallApiController::class, 'dialNextCallApi']);
-        Route::post('/api_add_party', [AddPartyApiController::class, 'addPartyApi']);
-        Route::post('/api_call_tansfer', [CallTransferApiController::class, 'callTransferApi']);
-        Route::post('/api_disconnect_conf', [DisconnectConfApiController::class, 'disconnectConfApi']);
-        Route::post('/api_leave_conf', [LeaveConfApiController::class, 'leaveConfApi']);
-        Route::post('/api_record_call', [RecordApiController::class, 'callRecordingApi']);
-        Route::post('/api_remove_party', [RemovePartyApiController::class, 'removePartyApi']);
-        Route::post('/api_start_conf', [StartConfApiController::class, 'startConfApi']);
+    Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
+        Route::post('dispo-list', [DispositionApiController::class, 'dispositionListApi']);
+        Route::post('hold-call', [HoldCallApiController::class, 'holdCallApi']);
+        Route::post('logout', [LogoutApiController::class, 'agentLogoutApi']);
+        Route::post('dial-call', [DialCallApiController::class, 'dialCallApi']);
+        Route::post('pause-resume', [PauseResumeApiController::class, 'pauseResumeApi']);
+        Route::post('hangup', [HangupApiController::class, 'hangupApi']);
+        Route::post('dispos-call', [DisposCallApiController::class, 'disposCallApi']);
+        Route::post('dial-next', [DialNextCallApiController::class, 'dialNextCallApi']);
+        Route::post('add-party', [AddPartyApiController::class, 'addPartyApi']);
+        Route::post('call-tansfer', [CallTransferApiController::class, 'callTransferApi']);
+        Route::post('disconnect-conf', [DisconnectConfApiController::class, 'disconnectConfApi']);
+        Route::post('leave-conf', [LeaveConfApiController::class, 'leaveConfApi']);
+        Route::post('record-call', [RecordApiController::class, 'callRecordingApi']);
+        Route::post('remove-party', [RemovePartyApiController::class, 'removePartyApi']);
+        Route::post('start-conf', [StartConfApiController::class, 'startConfApi']);
     });
-    Route::post('/call_initiate', [WebhookCallController::class, 'callInitiated']);
-    Route::post('/call_connected', [WebhookCallController::class, 'callConnected']);
-    Route::post('/call_hangup', [WebhookCallController::class, 'callHangup']);
-    Route::post('/call_history', [WebhookCallController::class, 'callHistory']);
+    Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);
+    Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
+    Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
+    Route::post('call-history', [WebhookCallController::class, 'callHistory']);
     Route::apiResource('chat-bot-configurations', ChatBotConfigurationController::class);
 });
 
-Route::post('/camp_list', [CampaignApiController::class, 'campaignListApi']);
+Route::post('/ext-api/camp-list', [CampaignApiController::class, 'campaignListApi']);
 Route::middleware([ModifyRequestMiddleware::class])->group(function () {
-    Route::post('/ingroup_list', [IngroupApiController::class, 'ingroupListApi']);
+    Route::post('/ext-api/ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
 });
-Route::post('/api_login', [LoginApiController::class, 'agentLoginApi']);
+Route::post('/ext-api/login', [LoginApiController::class, 'agentLoginApi']);

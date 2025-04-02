@@ -7354,6 +7354,146 @@
                 }
             }
         },
+        "/api/api_pause_resume": {
+            "post": {
+                "tags": [
+                    "Agent Pause Resume"
+                ],
+                "summary": "Pause or Resume Agent",
+                "description": "Handles pausing and resuming an agent's status.",
+                "operationId": "pauseResumeApi",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "action"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "description": "User ID of the agent",
+                                        "type": "string",
+                                        "example": "8002"
+                                    },
+                                    "action": {
+                                        "description": "Action type: Pause or Resume",
+                                        "type": "string",
+                                        "enum": [
+                                            "Pause",
+                                            "Resume"
+                                        ],
+                                        "example": "Pause"
+                                    },
+                                    "pause_code": {
+                                        "description": "Pause reason code (required if action is Pause)",
+                                        "type": "string",
+                                        "example": "",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated agent status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Action processed successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user_id": {
+                                                    "type": "integer"
+                                                },
+                                                "campaign_id": {
+                                                    "type": "string"
+                                                },
+                                                "user_status": {
+                                                    "type": "string"
+                                                },
+                                                "resume_time": {
+                                                    "type": "string"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string"
+                                                },
+                                                "created_at": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "total_pause_time": {}
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid request parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong, please try again later"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/phones": {
             "get": {
                 "tags": [
@@ -10493,7 +10633,7 @@
                 }
             }
         },
-        "api/tenants": {
+        "/tenants": {
             "get": {
                 "tags": [
                     "Tenants"
@@ -10627,9 +10767,7 @@
                         }
                     }
                 }
-            }
-        },
-        "/tenants": {
+            },
             "post": {
                 "tags": [
                     "Tenants"
@@ -15076,6 +15214,10 @@
         {
             "name": "Occupation",
             "description": "Occupation"
+        },
+        {
+            "name": "Agent Pause Resume",
+            "description": "Agent Pause Resume"
         },
         {
             "name": "Phones",
