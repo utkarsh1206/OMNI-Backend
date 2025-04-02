@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Nameprefixes;
+use App\Models\NamePrefix;
 use Carbon\Carbon;
 
 class NamePrefixesSeeder extends Seeder
@@ -14,12 +14,12 @@ class NamePrefixesSeeder extends Seeder
      */
     public function run(): void
     {
-        Nameprefixes::truncate();
+        NamePrefix::truncate();
 
         $namePrefixes = ['Mr', 'Miss', 'Mrs'];
 
         foreach ($namePrefixes as $prefix) {
-            Nameprefixes::insert([
+            NamePrefix::insert([
                 'title' => $prefix,
                 'status' => 'Active',
                 'created_at' => Carbon::now(),

@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Observers\SupportTicketObserver;
-use App\Models\Supportticket;
+use App\Models\SupportTicket;
 use App\Observers\SupportTicketNotificationObserver;
 use App\Models\SupportTicketNotification;
 use App\Models\Tenant;

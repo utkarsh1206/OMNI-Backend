@@ -1,3 +1,10 @@
+2025-04-02 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 4c7e9e14
+	* Version : Dev
+	* Laravel : Small Changes hindering the working of code. Changed campaign_id to department_id in accounts, renamed some files, etc.
+
 2025-03-28 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :
