@@ -91,10 +91,10 @@ class TicketReportRepository
             $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
 
             $prioritySummary = $query->select(
-                'supportticket.default_priority',
+                'support_tickets.default_priority',
                 DB::raw('COUNT(*) AS Total_Tickets')
             )
-                ->groupBy('supportticket.default_priority')
+                ->groupBy('support_tickets.default_priority')
                 ->get();
 
             $formattedPrioritySummary = $prioritySummary->map(function ($priority) {

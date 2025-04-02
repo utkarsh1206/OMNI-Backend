@@ -33,6 +33,8 @@ class ModifyRequestMiddleware
         $modifiedData['user'] = $payload['username'];
         $modifiedData['campaign_id'] = $payload['campaign'];
         $modifiedData['domain_name'] = $payload['domain'];
+        $modifiedData['id'] = $payload['id'];
+        $modifiedData['phone'] = $payload['phone'];
 
         // Replace the original request with modified data
         $request->merge($modifiedData);

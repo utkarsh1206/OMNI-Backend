@@ -1,3 +1,13 @@
+2025-04-02 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 2d15176
+	* Version : Dev
+	* Laravel : Create database table pause_resume_user_logs to store pause/resume status for users. 
+	Also change routes as per laravel standard.
+	Created swagger for pause/resume user logs.
+	Created Service to call DC agent API to make it common.
+
 2025-04-02 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :

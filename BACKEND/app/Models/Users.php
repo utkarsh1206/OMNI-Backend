@@ -89,6 +89,7 @@ class Users extends Authenticatable implements JWTSubject
                     }
 
                     $campaign = isset($postData['campaign']) ? $postData['campaign'] : null;
+                    $phone = isset($postData['phone']) ? $postData['phone'] : null; 
 
                     $claims = [
                         'id' => $this->id,
@@ -101,12 +102,13 @@ class Users extends Authenticatable implements JWTSubject
 
                     if ($postData['flag'] == 2) {
                         $claims['campaign'] = $campaign;
+                        $claims['phone'] = $phone;
                     }
 
                     // Conditionally add phone to JWT claims if flag == 2
-                    if ($this->addPhoneToJWT) {
-                        $claims['phone'] = $this->phone;
-                    }
+                    // if ($this->addPhoneToJWT) {
+                    //     $claims['phone'] = $this->phone;
+                    // }
 
                     return $claims;
                 }
