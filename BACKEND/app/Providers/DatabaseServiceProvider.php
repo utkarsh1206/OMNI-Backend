@@ -24,29 +24,36 @@ class DatabaseServiceProvider extends ServiceProvider
      */
     public function boot(Request $request): void
     {
+        // dd('Here');
+        Config::set(['auth.defaults.guard' => 'api']);
         $domain = $request->input('domain');
+        
         $fullUrl = $request->fullUrl();
         $lastSegment = $request->segment($request->segments() ? count($request->segments()) : 0);
+       
         if ($domain == '' && $lastSegment != 'login') {
             $token = $request->bearerToken();
+          
             if ($token != "") {
                 $payload = JWTAuth::setToken($token)->getPayload();
+               
                 if ($payload['admin_type'] != 'Super') {
                     $domain = $payload['domain'];
                     $domain = str_replace("https://", "", $domain);
                     $domain = str_replace("http://", "", $domain);
                 }
+              
             }
         }
-        $details = Detail::where('domain', $domain)->first();
 
+        $details = Detail::where('domain', $domain)->first();
         if ($details) {
             $connectionDetails = [
                 'database' => $details->db,
                 'username' => $details->username,
                 'password' => $details->password,
             ];
-
+           
             Config::set('database.connections.dynamic', [
                 'driver' => 'mysql',
                 'host' => '127.0.0.1',
@@ -60,10 +67,11 @@ class DatabaseServiceProvider extends ServiceProvider
                 'engine' => null,
             ]);
 
-            Config::set('database.default', 'dynamic');
+           Config::set('database.default', 'dynamic');
 
             DB::purge('dynamic');
             DB::reconnect('dynamic');
+            Config::set(['auth.defaults.guard' => 'api_users']);
         }
     }
 }
