@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Occupations;
+use App\Models\Occupation;
 use Carbon\Carbon;
 
 class OccupationsSeeder extends Seeder
@@ -14,7 +14,7 @@ class OccupationsSeeder extends Seeder
      */
     public function run(): void
     {
-        Occupations::truncate();
+        Occupation::truncate();
 
         $occupations = [
             ['title' => 'Salaried'],
@@ -28,7 +28,7 @@ class OccupationsSeeder extends Seeder
         ];
 
         foreach ($occupations as $occupation) {
-            Occupations::insert([
+            Occupation::insert([
                 'title' => $occupation['title'],
                 'user_id' => 0,
                 'status' => 'Active',

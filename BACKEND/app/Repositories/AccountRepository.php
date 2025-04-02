@@ -29,7 +29,7 @@ class AccountRepository
             $filters = [
                 'search' => $request->input('search', ''),
                 'product_id' => $request->input('product_id', ''),
-                'campaign_id' => $request->input('campaign_id', ''),
+                'department_id' => $request->input('department_id', ''),
                 'owner_id' => $request->input('owner_id', '')
             ];
 
@@ -48,7 +48,7 @@ class AccountRepository
             }
 
             // Apply other filters
-            foreach (['product_id', 'campaign_id', 'owner_id'] as $filter) {
+            foreach (['product_id', 'department_id', 'owner_id'] as $filter) {
                 if (!empty($filters[$filter])) {
                     $query->where($filter, $filters[$filter]);
                 }
@@ -89,7 +89,7 @@ class AccountRepository
             // Prepare data for account creation
             $accountData = $request->only([
                 'product_id',
-                'campaign_id',
+                'department_id',
                 'name',
                 'mobile',
                 'website',
@@ -174,7 +174,7 @@ class AccountRepository
             // Prepare the data to be updated
             $accountData = $request->only([
                 'product_id',
-                'campaign_id',
+                'department_id',
                 'name',
                 'mobile',
                 'website',

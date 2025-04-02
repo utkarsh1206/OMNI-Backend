@@ -18,7 +18,7 @@ class AdminsSeeder extends Seeder
         DB::table('admins')->truncate();
 
         DB::table('admins')->insert([
-            'edit_id' => 'd9a9193805dc8832cadf31791f51949b',
+            // 'edit_id' => 'd9a9193805dc8832cadf31791f51949b',
             'username' => 'superadmin',
             'first_name' => 'super',
             'last_name' => 'admin',

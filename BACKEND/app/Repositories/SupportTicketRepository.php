@@ -50,7 +50,7 @@ class SupportTicketRepository
             }
 
             // Start the query for tenants
-            $query = supportticket::query()->where('is_delete', 'No')->with('department');
+            $query = supportticket::query()->with('department');
 
             if ($roleId == 3) {
                 $query->where('assign_to_id', $userId); // Filter by the logged-in user's ID

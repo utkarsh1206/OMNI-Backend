@@ -23,7 +23,7 @@ class AccountRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'campaign_id' => 'required|string',
+            'department_id' => 'required|string',
             'company_name' => '',
             'contact_person_first_name' => '',
             'contact_person_last_name' => '',
