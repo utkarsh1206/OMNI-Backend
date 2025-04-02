@@ -1804,6 +1804,334 @@
                 }
             }
         },
+        "/api/sms-provider-configurations": {
+            "get": {
+                "tags": [
+                    "Sms Provider Configurations"
+                ],
+                "summary": "List SMS Provider Configurations",
+                "description": "Retrieve a list of SMS provider configurations with optional search filters.",
+                "operationId": "fe267f8d4d58da9d08b197874a401d7c",
+                "parameters": [
+                    {
+                        "name": "provider_name",
+                        "in": "query",
+                        "description": "Filter by provider name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "method",
+                        "in": "query",
+                        "description": "Filter by method",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "enabled",
+                        "in": "query",
+                        "description": "Filter by enabled status",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search term for filtering",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of SMS Provider Configurations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "provider_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "provider_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "configurations": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "config_key": {
+                                                                    "type": "string"
+                                                                },
+                                                                "config_value": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Sms Provider Configurations"
+                ],
+                "summary": "Create SMS Provider Configuration",
+                "description": "Create a new SMS provider and its configurations.",
+                "operationId": "c561a96e8e7a199f9b9f2a296daf85ce",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "provider_name",
+                                    "configurations"
+                                ],
+                                "properties": {
+                                    "provider_name": {
+                                        "type": "string",
+                                        "example": "Twilio"
+                                    },
+                                    "configurations": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "key": {
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "SMS Provider Configuration created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sms Provider Configuration created successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/api/sms-provider-configurations/{providerId}": {
+            "get": {
+                "tags": [
+                    "Sms Provider Configurations"
+                ],
+                "summary": "Show SMS Provider Configuration",
+                "description": "Retrieve the details of a specific SMS provider configuration.",
+                "operationId": "dbdfb2571b64cf21a118639c5fb9cc36",
+                "parameters": [
+                    {
+                        "name": "providerId",
+                        "in": "path",
+                        "description": "The ID of the SMS provider configuration.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Details of the SMS provider configuration",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Sms Provider Configurations"
+                ],
+                "summary": "Update SMS Provider Configuration",
+                "description": "Update the configurations of a specific SMS provider.",
+                "operationId": "ce29584ac0f3a6dda6a2f96958de6744",
+                "parameters": [
+                    {
+                        "name": "providerId",
+                        "in": "path",
+                        "description": "The ID of the SMS provider configuration to update.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "configurations"
+                                ],
+                                "properties": {
+                                    "configurations": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "key": {
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "SMS Provider Configuration updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sms Provider Configuration updated successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Sms Provider Configurations"
+                ],
+                "summary": "Delete SMS Provider Configuration",
+                "description": "Delete a specific SMS provider configuration.",
+                "operationId": "9d595d88d6e22b9633668494c71e54fd",
+                "parameters": [
+                    {
+                        "name": "providerId",
+                        "in": "path",
+                        "description": "The ID of the SMS provider configuration to delete.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SMS Provider Configuration deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sms Provider Configuration deleted successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/api/chatbots": {
             "get": {
                 "tags": [
@@ -9157,14 +9485,14 @@
                 }
             }
         },
-        "/api/sms-provider-configurations": {
+        "/api/sms-configurations": {
             "get": {
                 "tags": [
-                    "Sms Provider Configurations"
+                    "SMS Configuration"
                 ],
                 "summary": "List SMS Provider Configurations",
-                "description": "Retrieve a list of SMS provider configurations with optional search filters.",
-                "operationId": "4ac31c603c7cbf5c90e6305ac97e338a",
+                "description": "Fetches a list of SMS provider configurations based on filters like provider name, method, enabled status, or search query.",
+                "operationId": "listSmsConfigurations",
                 "parameters": [
                     {
                         "name": "provider_name",
@@ -9196,7 +9524,7 @@
                     {
                         "name": "search",
                         "in": "query",
-                        "description": "Search term for filtering",
+                        "description": "Search term to filter by provider name or config value",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -9205,41 +9533,18 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of SMS Provider Configurations",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "provider_id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "provider_name": {
-                                                        "type": "string"
-                                                    },
-                                                    "configurations": {
-                                                        "type": "array",
-                                                        "items": {
-                                                            "properties": {
-                                                                "id": {
-                                                                    "type": "integer"
-                                                                },
-                                                                "config_key": {
-                                                                    "type": "string"
-                                                                },
-                                                                "config_value": {
-                                                                    "type": "string"
-                                                                }
-                                                            },
-                                                            "type": "object"
-                                                        }
-                                                    }
-                                                },
-                                                "type": "object"
-                                            }
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetch successful"
                                         }
                                     },
                                     "type": "object"
@@ -9247,19 +9552,37 @@
                             }
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error"
+                    "400": {
+                        "description": "Bad request, invalid parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             },
             "post": {
                 "tags": [
-                    "Sms Provider Configurations"
+                    "SMS Provider"
                 ],
-                "summary": "Create SMS Provider Configuration",
-                "description": "Create a new SMS provider and its configurations.",
-                "operationId": "304d9352f1cda95bddccc5fb5d501ccd",
+                "summary": "Create a new SMS provider and configurations",
+                "description": "Creates a new SMS provider and its configurations based on the data provided in the request.",
+                "operationId": "storeSmsProvider",
                 "requestBody": {
+                    "description": "Data to create a new SMS provider and configurations",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -9270,21 +9593,19 @@
                                 ],
                                 "properties": {
                                     "provider_name": {
+                                        "description": "The name of the SMS provider",
                                         "type": "string",
                                         "example": "Twilio"
                                     },
                                     "configurations": {
+                                        "description": "Array of configurations for the SMS provider",
                                         "type": "array",
                                         "items": {
-                                            "properties": {
-                                                "key": {
-                                                    "type": "string"
-                                                },
-                                                "value": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "type": "object"
+                                            "description": "Key-value pairs for SMS provider configurations",
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
                                         }
                                     }
                                 },
@@ -9295,99 +9616,148 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "SMS Provider Configuration created successfully",
+                        "description": "Successfully created SMS provider and configurations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "SMS provider configuration added successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Sms Provider Configuration created successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
+                                            "example": "Something went wrong"
+                                        },
                                         "error": {
-                                            "type": "object"
+                                            "type": "string",
+                                            "example": "Error message details"
                                         }
                                     },
                                     "type": "object"
                                 }
                             }
                         }
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
                     }
                 }
             }
         },
-        "/api/sms-provider-configurations/{providerId}": {
+        "/api/sms-configurations/{providerId}": {
             "get": {
                 "tags": [
-                    "Sms Provider Configurations"
+                    "SMS Provider"
                 ],
-                "summary": "Show SMS Provider Configuration",
-                "description": "Retrieve the details of a specific SMS provider configuration.",
-                "operationId": "b8e357bbbe12f0cd0d1b611347626347",
+                "summary": "Get SMS provider details by ID",
+                "description": "Fetches the details of an SMS provider based on the provider ID.",
+                "operationId": "showSmsProvider",
                 "parameters": [
                     {
                         "name": "providerId",
                         "in": "path",
-                        "description": "The ID of the SMS provider configuration.",
+                        "description": "ID of the SMS provider",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Details of the SMS provider configuration",
+                        "description": "Successfully fetched SMS provider details",
                         "content": {
                             "application/json": {
                                 "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        }
+                                    },
                                     "type": "object"
                                 }
                             }
                         }
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "SMS provider not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "SMS provider not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message details"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             },
             "put": {
                 "tags": [
-                    "Sms Provider Configurations"
+                    "SMS Provider"
                 ],
-                "summary": "Update SMS Provider Configuration",
-                "description": "Update the configurations of a specific SMS provider.",
-                "operationId": "050b1c5a6182304ed309f4e1abb15168",
+                "summary": "Update SMS provider configurations",
+                "description": "Updates the configurations of an SMS provider by its ID. The request body should contain the updated configurations.",
+                "operationId": "updateSmsProviderConfigurations",
                 "parameters": [
                     {
                         "name": "providerId",
                         "in": "path",
-                        "description": "The ID of the SMS provider configuration to update.",
+                        "description": "ID of the SMS provider to update configurations for",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "requestBody": {
+                    "description": "Request body containing the configurations to update",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -9397,17 +9767,14 @@
                                 ],
                                 "properties": {
                                     "configurations": {
+                                        "description": "Array of updated configurations for the SMS provider",
                                         "type": "array",
                                         "items": {
-                                            "properties": {
-                                                "key": {
-                                                    "type": "string"
-                                                },
-                                                "value": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "type": "object"
+                                            "description": "Key-value pairs for SMS provider configurations",
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
                                         }
                                     }
                                 },
@@ -9418,14 +9785,35 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "SMS Provider Configuration updated successfully",
+                        "description": "Successfully updated SMS provider configurations",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "provider_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "config_key": {
+                                                        "type": "string"
+                                                    },
+                                                    "config_value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "Sms Provider Configuration updated successfully!"
+                                            "example": "SMS provider configurations updated successfully"
                                         }
                                     },
                                     "type": "object"
@@ -9434,41 +9822,93 @@
                         }
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "SMS provider configurations not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "SMS provider configurations not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal Server Error"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message details"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             },
             "delete": {
                 "tags": [
-                    "Sms Provider Configurations"
+                    "SMS Provider"
                 ],
-                "summary": "Delete SMS Provider Configuration",
-                "description": "Delete a specific SMS provider configuration.",
-                "operationId": "ea46085bfdd5ebe885086183b75b8e54",
+                "summary": "Delete SMS provider configurations",
+                "description": "Deletes the configurations associated with the specified SMS provider by its ID.",
+                "operationId": "deleteSmsProviderConfigurations",
                 "parameters": [
                     {
                         "name": "providerId",
                         "in": "path",
-                        "description": "The ID of the SMS provider configuration to delete.",
+                        "description": "ID of the SMS provider whose configurations are to be deleted",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "SMS Provider Configuration deleted successfully",
+                        "description": "Successfully deleted SMS provider configurations",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "provider_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "config_key": {
+                                                        "type": "string"
+                                                    },
+                                                    "config_value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "Sms Provider Configuration deleted successfully!"
+                                            "example": "SMS provider configurations deleted successfully"
                                         }
                                     },
                                     "type": "object"
@@ -9477,10 +9917,40 @@
                         }
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "SMS provider configurations not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "SMS provider not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message details"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -10023,7 +10493,7 @@
                 }
             }
         },
-        "/tenants": {
+        "api/tenants": {
             "get": {
                 "tags": [
                     "Tenants"
@@ -10157,7 +10627,9 @@
                         }
                     }
                 }
-            },
+            }
+        },
+        "/tenants": {
             "post": {
                 "tags": [
                     "Tenants"
@@ -14514,6 +14986,10 @@
             "description": "Categories"
         },
         {
+            "name": "Sms Provider Configurations",
+            "description": "Sms Provider Configurations"
+        },
+        {
             "name": "Chatbots",
             "description": "Chatbots"
         },
@@ -14618,8 +15094,12 @@
             "description": "SLA Settings"
         },
         {
-            "name": "Sms Provider Configurations",
-            "description": "Sms Provider Configurations"
+            "name": "SMS Configuration",
+            "description": "SMS Configuration"
+        },
+        {
+            "name": "SMS Provider",
+            "description": "SMS Provider"
         },
         {
             "name": "Sms Providers",
