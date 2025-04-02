@@ -65,12 +65,7 @@ class ChatbotRepository
                     }
                 }
             }
-
-            if ($page === config('omni.ALL_PAGE')) {
-                $chatbots = $query->get();
-            } else {
-                $chatbots = $query->paginate($perPage);
-            }
+            $chatbots = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),

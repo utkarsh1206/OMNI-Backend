@@ -22,14 +22,10 @@ class LicenseRepository
     {
         try {
             $userId = Auth::user()->id;
-
             $license = Admins::where('id', $userId)->find();
-
             $license->license_key = $request->license_key;
             $license->save();
-
-            // Log the action with user ID and license key
-            Log::debug('License updated', [
+            logMessage("debug","License updated", [
                 'user_id' => $userId,
                 'license_key' => $license->license_key
             ]);
@@ -39,6 +35,7 @@ class LicenseRepository
                 'message' => trans('message.license_updated'),
             ], ResponseHTTP::HTTP_OK);
         } catch (Exception $e) {
+            generateLogs('error', 'Error in generating failed Update License : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

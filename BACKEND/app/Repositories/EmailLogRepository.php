@@ -6,39 +6,55 @@ use App\Models\EmailLog;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Carbon\Carbon;
+use App\Http\Response\CustomApiResponse;
+use Illuminate\Database\QueryException;
+
 
 class EmailLogRepository
 {
     /**
      * Fetch email logs based on filters and pagination.
      */
+
+    private $apiResponse;
+
+    public function __construct(CustomApiResponse $customApiResponse)
+    {
+        $this->apiResponse = $customApiResponse;
+    }
     public function list($request)
     {
-        $query = EmailLog::with('user', 'emailTemplate');
+        try {
+            $query = EmailLog::with('user', 'emailTemplate');
 
-        if ($searchTerm = $request->input('search')) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->whereHas('emailTemplate', fn($query) => $query->where('subject', 'like', "%$searchTerm%"))
-                  ->orWhereHas('user', fn($query) => $query->where('username', 'like', "%$searchTerm%")
-                                                            ->orWhere('email', 'like', "%$searchTerm%"));
-            });
+            if ($searchTerm = $request->input('search')) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->whereHas('emailTemplate', fn($query) => $query->where('subject', 'like', "%$searchTerm%"))
+                        ->orWhereHas('user', fn($query) => $query->where('username', 'like', "%$searchTerm%")
+                            ->orWhere('email', 'like', "%$searchTerm%"));
+                });
+            }
+
+            if ($status = $request->input('status')) {
+                $query->where('status', $status);
+            }
+
+            if ($userId = $request->input('user_id')) {
+                $query->where('user_id', $userId);
+            }
+
+            if ($date = $request->input('date')) {
+                $query->whereDate('created_at', '=', Carbon::parse($date)->format('Y-m-d'));
+            }
+
+            $email =  $request->input('page') === 'all'
+                ? $query->get()
+                : $query->paginate($request->input('per_page', 10));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $email, trans('message.email_sent_success'));
+        } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Email  List: ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
-
-        if ($status = $request->input('status')) {
-            $query->where('status', $status);
-        }
-
-        if ($userId = $request->input('user_id')) {
-            $query->where('user_id', $userId);
-        }
-
-        if ($date = $request->input('date')) {
-            $query->whereDate('created_at', '=', Carbon::parse($date)->format('Y-m-d'));
-        }
-
-        return $request->input('page') === 'all'
-            ? $query->get()
-            : $query->paginate($request->input('per_page', 10));
     }
 
     /**
@@ -46,7 +62,12 @@ class EmailLogRepository
      */
     public function findById($id)
     {
-        return EmailLog::findOrFail($id);
+        try {
+            return EmailLog::findOrFail($id);
+        } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Email  List: ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 
     /**
@@ -68,8 +89,13 @@ class EmailLogRepository
 
             foreach ($logs as $log) {
                 fputcsv($file, [
-                    $log->from_email, $log->to_email, $log->username, $log->contact,
-                    $log->subject, $log->created_at, $log->status === 'sent' ? 'Sent' : 'Failed'
+                    $log->from_email,
+                    $log->to_email,
+                    $log->username,
+                    $log->contact,
+                    $log->subject,
+                    $log->created_at,
+                    $log->status === 'sent' ? 'Sent' : 'Failed'
                 ]);
             }
 

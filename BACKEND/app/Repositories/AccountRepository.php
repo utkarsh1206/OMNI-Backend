@@ -54,12 +54,7 @@ class AccountRepository
                 }
             }
 
-            if ($page == config('omni.ALL_PAGE')) {
-                $accounts = $query->get();
-            } else {
-                $accounts = $query->paginate($perPage);
-            }
-
+            $accounts = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             // Return the response
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),

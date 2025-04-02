@@ -67,14 +67,9 @@ class CustomLeadRepository
     private function getAllLeads(Request $request, $query, $columns)
     {
         try {
-            $perPage = $request->input('per_page', 10);
-            $page = $request->input('page', 1);
-
-            if ($page === 'all') {
-                $data = $query->get()->map(fn($row) => $this->formatLeadData($row, $columns))->toArray();
-            } else {
-                $data = $query->paginate($perPage);
-            }
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+            $data = $page == config('omni.ALL_PAGE') ?$query->get()->map(fn($row) => $this->formatLeadData($row, $columns))->toArray() : $query->paginate($perPage);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), [
                 'columns' => $columns,

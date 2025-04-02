@@ -21,6 +21,7 @@ class SmsProviderConfigurationRepository
         $this->apiResponse = $customApiResponse;
     }
 
+    
     public function list(Request $request)
     {
         $providerName = $request->input('provider_name', '');
@@ -55,6 +56,8 @@ class SmsProviderConfigurationRepository
         return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations, $method, $enabled), trans('message.data_fetch'));
     }
 
+
+    
     public function store($request)
     {
         try {

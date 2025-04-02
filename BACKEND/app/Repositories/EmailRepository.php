@@ -45,9 +45,8 @@ class EmailRepository
         try {
             // Attempt to send the email
             Mail::to($validated['to'])->send(new SendEmail($validated['subject'], $validated['content'], ""));
-
             // Log success (optional)
-            Log::info("Email sent successfully to {$validated['to']} with subject: {$validated['subject']}");
+            generateLogs('info', 'Email sent successfully: ', "Email sent successfully to {$validated['to']} with subject: {$validated['subject']}");
             return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.email_sent_success'));
         } catch (Exception $e) {
             // Log the error message if email fails to send
@@ -58,6 +57,7 @@ class EmailRepository
             ]);
 
             // Return a response indicating failure
+            generateLogs('error', 'Error in generating Email  List: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

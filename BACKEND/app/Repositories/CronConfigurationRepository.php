@@ -21,46 +21,41 @@ class CronConfigurationRepository
     {
         try {
             $searchTerm = $request->input('search', '');
-        // Paginate the results
-        $perPage = $request->input('per_page', config('omni.PER_PAGE'));
-        $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-
-        // Filter Conditions
-        $commandSignature = $request->input('command_signature');
-        $scheduleType = $request->input('schedule_type');
-        $status = $request->input('status');
-
-        // Start the query for tenants
-        $query = CronConfiguration::select("id", "command_signature", "schedule_type", "schedule_expression");
-
-        // If there's a search term, apply it to the query
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('command_signature', 'like', '%' . $searchTerm . '%')
-                    ->orwhere('schedule_type', 'like', '%' . $searchTerm . '%')
-                    ->orwhere('schedule_expression', 'like', '%' . $searchTerm . '%');
-            });
-        }
-
-        if ($commandSignature) {
-            $query->where('command_signature', $commandSignature);
-        }
-
-        if ($scheduleType) {
-            $query->where('schedule_type', $scheduleType);
-        }
-
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        if ($page === config('omni.ALL_PAGE')) {
-            $cronConfiguration = $query->get();
-        } else {
             // Paginate the results
-            $cronConfiguration = $query->paginate($perPage);
-        }
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $cronConfiguration, trans('message.data_fetch'));
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
+            // Filter Conditions
+            $commandSignature = $request->input('command_signature');
+            $scheduleType = $request->input('schedule_type');
+            $status = $request->input('status');
+
+            // Start the query for tenants
+            $query = CronConfiguration::select("id", "command_signature", "schedule_type", "schedule_expression");
+
+            // If there's a search term, apply it to the query
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('command_signature', 'like', '%' . $searchTerm . '%')
+                        ->orwhere('schedule_type', 'like', '%' . $searchTerm . '%')
+                        ->orwhere('schedule_expression', 'like', '%' . $searchTerm . '%');
+                });
+            }
+
+            if ($commandSignature) {
+                $query->where('command_signature', $commandSignature);
+            }
+
+            if ($scheduleType) {
+                $query->where('schedule_type', $scheduleType);
+            }
+
+            if ($status) {
+                $query->where('status', $status);
+            }
+
+            $cronConfiguration = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $cronConfiguration, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Cron configuraion Listing: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);

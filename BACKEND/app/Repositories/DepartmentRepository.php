@@ -34,12 +34,7 @@ class DepartmentRepository
             if (!empty($name)) {
                 $query->where('name', $name);
             }
-
-            if ($page === config('omni.ALL_PAGE')) {
-                $departments = $query->get();
-            } else {
-                $departments = $query->paginate($perPage);
-            }
+            $departments = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $departments, trans('message.fetch_data'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Department Listing: ', $ex->getMessage());

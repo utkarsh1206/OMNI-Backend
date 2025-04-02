@@ -27,6 +27,7 @@ class ImportExportLeadRepository
                 ->orderBy('field_order')
                 ->get();
         } catch (\Exception $e) {
+            generateLogs('error', 'Error in generating getFieldsByListId : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -79,6 +80,7 @@ class ImportExportLeadRepository
             } catch (\Exception $e) {
                 $failedCount++; // Increment failed count on error
                 $status = 'failed';
+                generateLogs('error', 'Error in generating failed : ', $e->getMessage());
                 return $this->apiResponse->handleAndResponseException($e);
             }
 
@@ -96,14 +98,7 @@ class ImportExportLeadRepository
 
         // Log the import history
         $this->logImportHistory($list_id, $insertedCount, $failedCount, $fileName, $fileType);
-
-        // After the loop, return success if any rows were inserted
-        if ($insertedCount > 0) {
-            // Make sure you're sending a message that indicates success.
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_inserted_successfully'));
-        } else {
-            return $this->apiResponse->getResponseStructure(trans('message.error'), $data, trans('message.no_data_inserted'));
-        }
+        return ($insertedCount > 0) ? $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_inserted_successfully')) : $this->apiResponse->getResponseStructure(trans('message.error'), $data, trans('message.no_data_inserted'));
     }
 
     public function downloadSampleCsv($list_id)
@@ -119,6 +114,7 @@ class ImportExportLeadRepository
 
             return $this->createCsvResponse($headers, $list_id);
         } catch (\Exception $e) {
+            generateLogs('error', 'Error in downloadSampleCsv failed : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -153,6 +149,7 @@ class ImportExportLeadRepository
 
             return $this->insertDataIntoTable($list_id, $validData, $fileName, $fileType);
         } catch (\Exception $e) {
+            generateLogs('error', 'Error in processCsvFile failed : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

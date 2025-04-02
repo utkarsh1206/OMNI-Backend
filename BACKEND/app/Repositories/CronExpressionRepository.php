@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\CronExpression;
 use App\Http\Response\CustomApiResponse;
 use Exception;
+
 class CronExpressionRepository
 {
     private $apiResponse;
@@ -33,13 +34,7 @@ class CronExpressionRepository
             // Paginate the results
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-
-            if ($page === config('omni.ALL_PAGE')) {
-                $expressions = $query->get();
-            } else {
-                // Paginate the results
-                $expressions = $query->paginate($perPage);
-            }
+            $expressions = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $expressions, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Cron Expression Listing: ', $ex->getMessage());

@@ -64,12 +64,7 @@ class ContactRepository
             if (!empty($ownerId)) {
                 $query->where('owner_id', $ownerId);
             }
-
-            if ($page === config('omni.ALL_PAGE')) {
-                $contact = $query->get();
-            } else {
-                $contact = $query->paginate($perPage);
-            }
+            $contact = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Contact Listing: ', $ex->getMessage());

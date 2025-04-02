@@ -5,6 +5,7 @@ namespace App\Repositories;
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Nameprefix;
+use Illuminate\Validation\ValidationException;
 
 class NamePrefixRepository
 {
@@ -19,24 +20,27 @@ class NamePrefixRepository
 
     public function list(Request $request)
     {
-        // Get the search term from the request
-        $searchTerm = $request->input('search', '');
+        try {
+            // Get the search term from the request
+            $searchTerm = $request->input('search', '');
 
-        $query = Nameprefix::query();
+            $query = Nameprefix::query();
 
-        // If there's a search term, apply it to the query
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('country_name', 'like', '%' . $searchTerm . '%')
-                    ->orwhere('country_code', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('iso_code', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('status', 'like', '%' . $searchTerm . '%');
-            });
+            // If there's a search term, apply it to the query
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('country_name', 'like', '%' . $searchTerm . '%')
+                        ->orwhere('country_code', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('iso_code', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('status', 'like', '%' . $searchTerm . '%');
+                });
+            }
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $nameprefixes = $query->paginate($perPage);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $nameprefixes, trans('message.data_fetch'));
+        } catch (ValidationException $e) {
+            generateLogs('error', 'Error in generating failed List NamePrefix : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
-
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $nameprefixes = $query->paginate($perPage);
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $nameprefixes, trans('message.data_fetch'));
     }
 }

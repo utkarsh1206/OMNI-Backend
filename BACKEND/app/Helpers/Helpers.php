@@ -103,26 +103,27 @@ if (! function_exists('authenticateUser')) {
         }
         return $token;
     }
+}
 
-    if (! function_exists('establishDatabaseConnect')) {
-        function establishDatabaseConnect($newConnectionName, $databaseName)
-        {
-            Config::set("database.connections.$newConnectionName", [
-                'driver'    => 'mysql',
-                'host'      => env('DB_HOST', '127.0.0.1'),
-                'port'      => env('DB_PORT', '3306'),
-                'database'  => $databaseName,
-                'username'  => env('DB_USERNAME'),
-                'password'  => env('DB_PASSWORD'),
-                'charset'   => 'utf8mb4',
-                'collation' => 'utf8mb4_unicode_ci',
-                'prefix'    => '',
-                'strict'    => true,
-                'engine'    => null,
-            ]);
-        }
+if (! function_exists('establishDatabaseConnect')) {
+    function establishDatabaseConnect($newConnectionName, $databaseName)
+    {
+        Config::set("database.connections.$newConnectionName", [
+            'driver'    => 'mysql',
+            'host'      => env('DB_HOST', '127.0.0.1'),
+            'port'      => env('DB_PORT', '3306'),
+            'database'  => $databaseName,
+            'username'  => env('DB_USERNAME'),
+            'password'  => env('DB_PASSWORD'),
+            'charset'   => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix'    => '',
+            'strict'    => true,
+            'engine'    => null,
+        ]);
     }
 }
+
 
 
 if (!function_exists('establishMasterConnection')) {
@@ -290,6 +291,29 @@ if (!function_exists('sendHttpRequest')) {
         function generateLogs($type, $msg, $error = null)
         {
             Log::$type($msg . ($error ? ' ' . $error : ''));
+        }
+    }
+
+    if (!function_exists('logMessage')) {
+        function logMessage($level, $message, $data = [])
+        {
+            switch ($level) {
+                case 'error':
+                    Log::error($message, $data);
+                    break;
+                case 'info':
+                    Log::info($message, $data);
+                    break;
+                case 'warning':
+                    Log::warning($message, $data);
+                    break;
+                case 'debug':
+                    Log::debug($message, $data);
+                    break;
+                default:
+                    Log::info($message, $data);
+                    break;
+            }
         }
     }
 }

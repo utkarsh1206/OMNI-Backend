@@ -23,6 +23,7 @@ class EcdialListRepository
 
     public function list(Request $request)
     {
+        try {
         $searchTerm = $request->input('search', '');
         $status = $request->input('status', '');
         $name = $request->input('name');
@@ -48,14 +49,13 @@ class EcdialListRepository
         if (!empty($name)) {
             $query->where('name', $name);
         }
+        $listData = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $listData, trans('message.data_fetch'));
+    } catch (Exception $ex) {
+        generateLogs('error', 'Error in generating EcDial Listing: ', $ex->getMessage());
+        return $this->apiResponse->handleAndResponseException($ex);
+    }
 
-        if ($page === 'all') {
-            $listData = $query->get();
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $listData, trans('message.data_fetch'));
-        } else {
-            $listData = $query->paginate($perPage);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $listData, trans('message.data_fetch'));
-        }
     }
 
     public function create(Request $request)
@@ -72,6 +72,7 @@ class EcdialListRepository
             $data = new EcdialListResource($ecdialLists);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_create_success'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating EcDial Create: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -90,6 +91,7 @@ class EcdialListRepository
             $data = new EcdialListResource($ecdialLists);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_update_success'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating EcDial Update: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -107,6 +109,7 @@ class EcdialListRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $list_id, trans('message.list_delete_success'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating EcDial Delete: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

@@ -27,9 +27,8 @@ class IncidentTypeRepository
             $department_id = $request->input('department_id');
             $category_id = $request->input('category_id');
             $sla_id = $request->input('sla_id');
-            $perPage = $request->input('per_page', 10);
-            $page = $request->input('page', 1);
-
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
             $query = IncidentType::query();
 
             if ($name) {
@@ -53,14 +52,10 @@ class IncidentTypeRepository
                 $query->where('sla_id', $sla_id);  // Filter by priority
             }
 
-            if ($page === 'all') {
-                $incidentType = $query->with('category.department', 'slaSettings')->get();
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.fetch_data'));
-            } else {
-                $incidentType = $query->with('category.department', 'slaSettings')->paginate($perPage);
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.fetch_data'));
-            }
+            $incidentType = $page == config('omni.ALL_PAGE') ? $query->with('category.department', 'slaSettings')->get() : $query->paginate($perPage);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.fetch_data'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating failed Incident type : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -77,6 +72,7 @@ class IncidentTypeRepository
             ]);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.incident_type_created'), ResponseHTTP::HTTP_CREATED);
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating failed Incident Store : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -102,6 +98,7 @@ class IncidentTypeRepository
             ]);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.incident_type_update'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating failed Incident Update : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -119,12 +116,9 @@ class IncidentTypeRepository
             }
 
             $incidentType->delete();
-
-            return response()->json([
-                'message' => trans("message.incident_type_delete"),
-            ]);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.incident_type_not_found'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.incident_type_delete'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating failed Incident Delete : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -140,11 +134,9 @@ class IncidentTypeRepository
                 ], ResponseHTTP::HTTP_NOT_FOUND);
             }
 
-            return response()->json([
-                'data' => $incidentType
-            ]);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.fetch_data'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating failed Incident Show : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

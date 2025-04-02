@@ -23,8 +23,8 @@ class NeoxConfigurationRepository
     {
         try {
             $searchTerm = $request->input('search', '');
-            $perPage = $request->input('per_page', 10);
-            $page = $request->input('page', 1);
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             $query = NeoxConfiguration::query();
 
@@ -35,15 +35,11 @@ class NeoxConfigurationRepository
                         ->orWhere('neox_local_ip', 'like', "%$searchTerm%");
                 });
             }
+            $listData = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $listData, trans('message.data_fetch'));
 
-            if ($page === 'all') {
-                $listData = $query->get();
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $listData, trans('message.data_fetch'));
-            } else {
-                $listData = $query->paginate($perPage);
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $listData, trans('message.data_fetch'));
-            }
         } catch (\Exception $e) {
+            generateLogs('error', 'Error in generating Neox Configuration : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -67,6 +63,7 @@ class NeoxConfigurationRepository
             $data = new NeoxConfigurationResource($configuration);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.configuration_create_success'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Neox Configuration : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -92,6 +89,7 @@ class NeoxConfigurationRepository
             $data = new NeoxConfigurationResource($configuration);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.configuration_update_success'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Neox Configuration Update : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -104,6 +102,7 @@ class NeoxConfigurationRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $id, trans('message.configuration_delete_success'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Neox Configuration Delete : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

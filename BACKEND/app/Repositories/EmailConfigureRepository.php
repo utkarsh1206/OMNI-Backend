@@ -53,6 +53,7 @@ class EmailConfigureRepository
             // Return the response
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.fetch_data'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Email Configure List: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -64,6 +65,7 @@ class EmailConfigureRepository
             $emailConfig = EmailConfigure::create($request->validated());
             return $this->apiResponse->getResponseStructure(trans('message.success'), $emailConfig, trans('message.email_configure_created'), ResponseHTTP::HTTP_CREATED);
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Email Configure Store: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -75,6 +77,7 @@ class EmailConfigureRepository
             $email_configure->update($request->validated());
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.email_configure_updated'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Email Configure Update: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -86,6 +89,7 @@ class EmailConfigureRepository
             $email_configure->delete();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.email_configure_deleted'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Email Configure Delete: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -95,6 +99,7 @@ class EmailConfigureRepository
         try {
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.fetch_data'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Email Configure Show: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

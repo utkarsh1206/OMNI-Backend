@@ -75,7 +75,7 @@ class UserRepository
                 }
 
                 // Paginate the results
-                $perPage = $request->input('per_page', 10);
+                $perPage = $request->input('per_page', config('omni.PER_PAGE'));
                 $users = $query->paginate($perPage);
                 //  $newToken = JWTAuth::refresh(JWTAuth::getToken());
                 // Return the response
@@ -85,6 +85,7 @@ class UserRepository
             $users = $query->get();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.fetch_data'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error during User List : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -136,6 +137,7 @@ class UserRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.users_created'), ResponseHTTP::HTTP_CREATED);
         } catch (QueryException $e) {
+            generateLogs('error', 'Error during User Store : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -171,6 +173,7 @@ class UserRepository
             ]);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $user, trans('message.users_updated'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error during Update User : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -182,6 +185,7 @@ class UserRepository
             $user->delete();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $user, trans('message.users_deleted'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error during Delete User : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -191,6 +195,7 @@ class UserRepository
         try {
             return $this->apiResponse->getResponseStructure(trans('message.success'), $user, trans('message.fetch_data'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error during User Show : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -215,6 +220,7 @@ class UserRepository
                 return response()->json(['error' => trans("message.user_not_found")], ResponseHTTP::HTTP_FORBIDDEN);
             }
         } catch (QueryException $e) {
+            generateLogs('error', 'Error during Update Password : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -233,6 +239,7 @@ class UserRepository
                 return response()->json(['error' => trans("message.user_not_found")], ResponseHTTP::HTTP_FORBIDDEN);
             }
         } catch (QueryException $e) {
+            generateLogs('error', 'Error during My Profile : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -257,6 +264,7 @@ class UserRepository
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.data_fetch'));
         } catch (\Exception $e) {
+            generateLogs('error', 'Error during Get Branding: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

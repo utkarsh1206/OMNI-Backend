@@ -31,14 +31,7 @@ class AuditLogRepository
             // Paginate the results
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-
-            if ($page === config('omni.ALL_PAGE')) {
-                // If 'page' is 'all', retrieve all records without pagination
-                $result = $query->get();
-            } else {
-                // Paginate the results
-                $result = $query->orderBy('created_at', 'desc')->paginate($perPage);
-            }
+            $result = $page === config('omni.ALL_PAGE') ? $query->get() : $query->orderBy('created_at', 'desc')->paginate($perPage);
             // Return the response with pagination meta
             return $this->apiResponse->getResponseStructure(trans('message.success'), $result, trans('message.data_fetch'));
         } catch (Exception $ex) {

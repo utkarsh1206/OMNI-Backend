@@ -26,9 +26,14 @@ class MailDetailRepository
 
     public function index(Request $request)
     {
-        $supportticketId = $request->input('supportticket_id');
-        $mailDetails = MailDetail::where('supportticket_id', $supportticketId)->orderBy('id', 'desc')->get();
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $mailDetails, trans('message.data_fetch'));
+        try {
+            $supportticketId = $request->input('supportticket_id');
+            $mailDetails = MailDetail::where('supportticket_id', $supportticketId)->orderBy('id', 'desc')->get();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $mailDetails, trans('message.data_fetch'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in generating failed MailDetail List: ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 
     public function store(Request $request)
@@ -104,8 +109,7 @@ class MailDetailRepository
         try {
             Mail::to($request->to)->send(new SendEmail("Test support mail sent", $request->body, $mailAttachmentUrls));
         } catch (Exception $e) {
-            // Log the error if the email fails
-            Log::error('Failed to send email', [
+            logMessage("error", $e->getMessage(), [
                 'error' => $e->getMessage(),
                 'recipient' => $request->to,
                 'subject' => $request->subject,

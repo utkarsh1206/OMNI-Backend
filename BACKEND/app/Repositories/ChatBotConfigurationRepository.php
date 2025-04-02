@@ -150,7 +150,7 @@ class ChatBotConfigurationRepository
 
     private function formatListingData($configurations, $method = null, $enabled = null)
     {
-        $formattedData =  collect($configurations)->map(function ($item) use ($method, $enabled) {
+        $formattedData =  collect($configurations)->map(function ($item) {
             $providerInfo = ChatBotConfiguration::select(["id", "config_key", "config_value"])->where("provider_id", $item['id']);
             $providerInfo = $providerInfo->get();
 

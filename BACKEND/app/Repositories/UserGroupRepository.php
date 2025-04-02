@@ -47,17 +47,11 @@ class UserGroupRepository
                 $query->where('status', $status);
             }
             // Paginate the results
-            $perPage = $request->input('per_page', 10);
-            $usergroup = $query->paginate($perPage);
-            $page = $request->input('page', 1);
-
-            if ($page === 'all') {
-                // If 'page' is 'all', retrieve all records without pagination
-                $usergroup = $query->get();
-            } else {
-                // Paginate the results
-                $usergroup = $query->paginate($perPage);
-            }
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+            $usergroup =   $page === config('omni.ALL_PAGE')
+            ? $query->get()
+            : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.data_fetch'));
         } catch (Exception $ex) {
             return $this->apiResponse->handleAndResponseException($ex);

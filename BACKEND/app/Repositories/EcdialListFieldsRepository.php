@@ -56,15 +56,10 @@ class EcdialListFieldsRepository
             if (!empty($status)) {
                 $query->where('status', $status);
             }
-
-            if ($page === 'all') {
-                $fieldData = $query->get();
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $fieldData, trans('message.data_fetch'));
-            } else {
-                $fieldData = $query->paginate($perPage);
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $fieldData, trans('message.data_fetch'));
-            }
+            $fieldData = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $fieldData, trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating EcDial Listing: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -97,6 +92,7 @@ class EcdialListFieldsRepository
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_field_create_success'));
         } catch (Exception $ex) {
             DB::rollBack();
+            generateLogs('error', 'Error in generating EcDial: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -116,6 +112,7 @@ class EcdialListFieldsRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_field_update_success'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in Update EcDial: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -128,6 +125,7 @@ class EcdialListFieldsRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $id, trans('message.list_field_delete_success'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in Delete EcDial: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

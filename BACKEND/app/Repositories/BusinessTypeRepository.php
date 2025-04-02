@@ -33,14 +33,7 @@ class BusinessTypeRepository
             // Paginate the results
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-
-            if ($page === config('omni.ALL_PAGE')) {
-                // If 'page' is 'all', retrieve all records without pagination
-                $business_type = $query->get();
-            } else {
-                // Paginate the results
-                $business_type = $query->paginate($perPage);
-            }
+            $business_type = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $business_type, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Business Type Listing: ', $ex->getMessage());

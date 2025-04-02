@@ -23,7 +23,7 @@ class TenantController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/tenants",
+     *     path="api/tenants",
      *     summary="List tenants with filters and pagination",
      *     description="Retrieve a list of tenants based on optional filters and pagination.",
      *     operationId="listTenants",

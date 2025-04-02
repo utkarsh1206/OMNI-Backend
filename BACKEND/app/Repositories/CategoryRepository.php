@@ -38,11 +38,8 @@ class CategoryRepository
                 $query->where('name', 'like', "%$searchTerm%");
             }
 
-            if ($page === config('omni.ALL_PAGE')) {
-                $category = $query->with('department')->get();
-            } else {
-                $category = $query->with('department')->paginate($perPage);
-            }
+            $query =  $query->with('department');
+            $category = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $category, trans('message.fetch_data'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Category Listing: ', $ex->getMessage());

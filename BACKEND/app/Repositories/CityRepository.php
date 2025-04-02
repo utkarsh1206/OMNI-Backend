@@ -38,12 +38,7 @@ class CityRepository
             // Paginate the results
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-
-            if ($page === config('omni.ALL_PAGE')) {
-                $cities = $query->get();
-            } else {
-                $cities = $query->paginate($perPage);
-            }
+            $cities = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $cities, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating City Listing: ', $ex->getMessage());

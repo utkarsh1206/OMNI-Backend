@@ -37,13 +37,7 @@ class CountryRepository
             // Paginate the results
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-
-            if ($page === config('omni.ALL_PAGE')) {
-                $countires = $query->get();
-            } else {
-                // Paginate the results
-                $countires = $query->paginate($perPage);
-            }
+            $countires = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $countires, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Country Listing: ', $ex->getMessage());
