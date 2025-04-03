@@ -1,3 +1,11 @@
+2025-04-03 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 2a38ab8
+	* Version : Dev
+	* Laravel : Added dialy user activity for Login and pause and resume.
+	Also store pause duration and Resume duration in user_daily_activities table.
+
 2025-04-02 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

@@ -14,11 +14,11 @@ class ApiRequestService
     {
         $this->apiResponse = $customApiResponse;
     }
-    public function handleApiRequest(Request $request, $action, $formRequestClass)
+    public function handleApiRequest(Request $request, $action, $formRequestClass, $domainName = null)
     {
         try {
-            // Fetch configuration
-            $config = getNeoxConfig();
+            // Fetch configuration based on domain or use default if domain is not provided
+            $config = $domainName ? getNeoxConfig($domainName) : getNeoxConfig();
 
             // Check configuration status and handle error centrally
             if (isset($config['status']) && $config['status'] === 'error') {
@@ -28,6 +28,11 @@ class ApiRequestService
             // Extract IP and Token from the configuration
             $ip = $config['neox_local_ip'];
             $neoxToken = $config['neox_token'];
+
+            // Handle case where IP or token is missing
+            if (!$ip || !$neoxToken) {
+                return response()->json(['error' => 'Missing required configuration']);
+            }
 
             // Build the URL dynamically based on the action
             $url = "https://{$ip}/api/agent/actions/v2/{$action}.php";

@@ -5,28 +5,47 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\LoginApiRequest;
+use App\Repositories\LoginApiRepository;
+use App\Services\ApiRequestService;
 
 class LoginApiController extends Controller
 {
+    private $apiRequestService;
+    private $loginRepository;
+
+    public function __construct(ApiRequestService $apiRequestService, LoginApiRepository $loginRepository)
+    {
+        $this->apiRequestService = $apiRequestService;
+        $this->loginRepository = $loginRepository;
+    }
+
     public function agentLoginApi(LoginApiRequest $request)
     {
         $domainName = $request->domain_name;
         if (!$domainName) {
             return response()->json(['error' => 'Domain name is required']);
         }
-        
-        $config = getNeoxConfig($domainName);
-        if (isset($config['status']) && $config['status'] === 'error') {
-            return response()->json($config);
+
+        // Pass domain name to the common service to fetch configuration and process the request
+        $result = $this->apiRequestService->handleApiRequest(
+            $request,
+            'agent_login',
+            LoginApiRequest::class,
+            $domainName
+        );
+
+        // Check if the result is a JsonResponse
+        if ($result instanceof \Illuminate\Http\JsonResponse) {
+            $result = $result->getData(true);
         }
 
-        $ip = $config['neox_local_ip'] ?? null;
-        $neoxToken = $config['neox_token'] ?? null;
+        if (isset($result['code']) && $result['code'] === 0) {
+            $connection = getDbConnection($domainName);
 
-        $url = "https://{$ip}/api/agent/actions/v2/agent_login.php";
-        
-        $requestData = array_merge($request->validated(), ['token' => $neoxToken]);
-
-        return sendHttpRequest($url, 'POST', $requestData);
+            $username = $request->user_id;
+            $campaignId = $request->campaign_id;
+            
+            return $this->loginRepository->loginData($connection, $username, $campaignId);
+        }
     }
 }
