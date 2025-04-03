@@ -23,8 +23,8 @@ class PhoneRepository
             $searchTerm = $request->input('search', '');
             $extension = $request->input('extension', '');
             $login = $request->input('login', '');
-            $perPage = $request->input('per_page', 10);
-            $page = $request->input('page', 1);
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             $query = Phone::query();
 
@@ -42,16 +42,10 @@ class PhoneRepository
             if (!empty($login)) {
                 $query->where('login', $login);
             }
-            if ($page === 'all') {
-                $phones = $query->get();
-                return response()->json([
-                    'data' => $phones,
-                ]);
-            } else {
-                $phones = $query->paginate($perPage);
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $phones, trans('message.fetch_data'));
-            }
+            $phones = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $phones, trans('message.fetch_data'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Phone List : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -67,6 +61,7 @@ class PhoneRepository
             $phone = Phone::create($validatedData);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phone, trans('message.phone_created'), ResponseHTTP::HTTP_ACCEPTED);
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Phone Store : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -85,6 +80,7 @@ class PhoneRepository
             $phone->update($validatedData);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phone, trans('message.phone_updated'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Phone Update : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -102,6 +98,7 @@ class PhoneRepository
             $phone->delete();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phone, trans('message.phone_deleted'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Phone Delete : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -118,6 +115,7 @@ class PhoneRepository
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phone, trans('message.fetch_data'));
         } catch (QueryException $e) {
+            generateLogs('error', 'Error in generating Phone Show : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

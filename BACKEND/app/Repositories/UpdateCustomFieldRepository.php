@@ -65,8 +65,7 @@ class UpdateCustomFieldRepository
                     'inserted_id' => $insertedId
                 ]);
             } catch (\Exception $e) {
-                // Log any exception that occurs during insertion
-                Log::error('Insert failed: ' . $e->getMessage());
+                generateLogs('error', 'Error during User Group List : ', $e->getMessage());
                 return $this->apiResponse->handleAndResponseException($e);
             }
         }

@@ -99,6 +99,7 @@ class SlaReportRepository
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $ticketsquery, trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in Sla Report List : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
         // return response()->json([
@@ -130,6 +131,7 @@ class SlaReportRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $tickets, trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in Sla prioritySLA List : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -152,6 +154,7 @@ class SlaReportRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $tickets, trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in Sla categorySLA List : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -177,6 +180,7 @@ class SlaReportRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $tickets, trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in Sla incidentSLA List : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -237,6 +241,7 @@ class SlaReportRepository
                 'Content-Disposition' => 'attachment;"',
             ]);
         } catch (Exception $ex) {
+            generateLogs('error', 'Error in Sla exportCsv List : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

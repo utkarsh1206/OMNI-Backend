@@ -34,7 +34,7 @@ class IndustryTypeRepository
 
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-            $industry_type = $page == config('omni.ALL_PAGE') ? $query->with('category.department', 'slaSettings')->get() : $query->paginate($perPage);
+            $industry_type = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $industry_type, trans('message.data_fetch'));
         } catch (QueryException $e) {
             generateLogs('error', 'Error in generating failed Incident Show : ', $e->getMessage());

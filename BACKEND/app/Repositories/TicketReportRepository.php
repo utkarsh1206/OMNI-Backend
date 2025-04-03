@@ -46,6 +46,7 @@ class TicketReportRepository
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $mappedTickets, trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error during Ticket Report : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -80,6 +81,7 @@ class TicketReportRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedCategorySummary, trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error during Ticket Category Summary : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -106,6 +108,7 @@ class TicketReportRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedPrioritySummary, trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error during Ticket Category prioritySummary : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -132,6 +135,7 @@ class TicketReportRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedStatusSummary, trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error during Ticket Category Status Summary : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -170,6 +174,7 @@ class TicketReportRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedWeekdaySummary, trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error during Ticket Category Weekday Summary : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -201,6 +206,7 @@ class TicketReportRepository
                 'Content-Disposition' => 'attachment;filename="ticket_report.csv"',
             ]);
         } catch (Exception $ex) {
+            generateLogs('error', 'Error during Ticket Category Export CSV : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

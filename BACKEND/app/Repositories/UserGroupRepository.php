@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use Illuminate\Http\Request;
 use App\Models\UserGroup;
-use Illuminate\Support\Facades\Log;
 use App\Http\Response\CustomApiResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
@@ -54,6 +53,7 @@ class UserGroupRepository
             : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.data_fetch'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error during User Group Listing : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -70,7 +70,7 @@ class UserGroupRepository
             ]);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.user_group_create_msg'));
         } catch (Exception $ex) {
-            Log::error('Error during authentication: ' . $ex->getMessage());
+            generateLogs('error', 'Error during User Group Create : ', $ex->getMessage());
             return response()->json(['error' => trans('message.wrong_with_query')], ResponseHTTP::HTTP_UNAUTHORIZED);
         }
     }
@@ -89,6 +89,7 @@ class UserGroupRepository
             ]);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.user_group_update_msg'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error during User Group Update : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -100,6 +101,7 @@ class UserGroupRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.user_group_delete_msg'));
         } catch (Exception $ex) {
+            generateLogs('error', 'Error during User Group Delete : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

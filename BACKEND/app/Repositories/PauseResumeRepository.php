@@ -2,15 +2,25 @@
 
 namespace App\Repositories;
 
+use App\Http\Response\CustomApiResponse;
 use App\Models\LiveAgents;
 use App\Models\PauseResumeUserLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class PauseResumeRepository
 {
+    
+    private $apiResponse;
+
+    public function __construct(CustomApiResponse $customApiResponse)
+    {
+        $this->apiResponse = $customApiResponse;
+    }
     public function logAction($userId, $campaignId, $extension, $action, $pauseCode = null)
     {
+        try{
         $logData = [
             'user_id'     => $userId,
             'campaign_id' => $campaignId,
@@ -36,6 +46,10 @@ class PauseResumeRepository
         }
 
         return $logEntry;
+    } catch (ValidationException $e) {
+        generateLogs('error', 'Error in Occupation List : ', $e->getMessage());
+        return $this->apiResponse->handleAndResponseException($e);
+    }
     }
 
     private function updateTimeDifference($userId, $logEntry, $previousStatus, $field)
