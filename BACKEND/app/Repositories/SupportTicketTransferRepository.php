@@ -4,8 +4,8 @@ namespace App\Repositories;
 
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
-use App\Models\SupportTicketnotification;
-use App\Models\Supportticket;
+use App\Models\SupportTicketNotification;
+use App\Models\SupportTicket;
 use Exception;
 
 class SupportTicketTransferRepository
@@ -20,7 +20,7 @@ class SupportTicketTransferRepository
     public function store(Request $request)
     {
         try {
-            Supportticket::where('id', $request->supportticket_id)
+            SupportTicket::where('id', $request->supportticket_id)
             ->update(['assign_to_id' => $request->user_id]);
             SupportTicketNotification::create([
                 'type' => "Transfer",
@@ -30,6 +30,7 @@ class SupportTicketTransferRepository
             ]);
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.transfer_ticket'));
         } catch (Exception $e) {
+            generateLogs('error', 'Error in Storing Support Ticket Transfer : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

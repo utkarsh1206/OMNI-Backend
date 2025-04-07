@@ -5,18 +5,11 @@ namespace App\Repositories;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Resources\ProductResource;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
-use Illuminate\Support\Facades\Log;
 use App\Http\Response\CustomApiResponse;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Validation\ValidationException;
 
 class ProductRepository
 {
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
@@ -75,12 +68,11 @@ class ProductRepository
                 $products,
                 trans('message.data_fetch')
             );
-        } catch (ValidationException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in Product List : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
-
 
     public function create(Request $request)
     {

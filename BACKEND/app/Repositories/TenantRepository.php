@@ -4,15 +4,12 @@ namespace App\Repositories;
 
 use Illuminate\Http\Request;
 use App\Models\Tenant;
-use Illuminate\Support\Facades\Log;
-use App\Http\Resources\TenantsResource;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Users;
+use Exception;
 
 class TenantRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
@@ -22,95 +19,118 @@ class TenantRepository
 
     public function list(Request $request)
     {
-        $filters = [
-            'search' => 'searchTerm',
-            'company_name' => 'companyName',
-            'email' => 'email',
-            'mobile' => 'mobile',
-            'domain_name' => 'domainName',
-            'company_code' => 'companyCode',
-        ];
+        try {
+            $filters = [
+                'search' => 'searchTerm',
+                'company_name' => 'companyName',
+                'email' => 'email',
+                'mobile' => 'mobile',
+                'domain_name' => 'domainName',
+                'company_code' => 'companyCode',
+            ];
 
-        // Retrieve input values
-        $inputs = [];
-        foreach ($filters as $key => $variable) {
-            $inputs[$variable] = $request->input($key, '');
-        }
-
-        // Start the query for tenants
-        $query = Tenant::query();
-
-        // Apply search term conditions if available
-        if (!empty($inputs['searchTerm'])) {
-            $query->where(function ($q) use ($inputs) {
-                $searchTerm = $inputs['searchTerm'];
-                $q->where('username', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('first_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('email', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_code', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('company_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('domain_url', 'like', '%' . $searchTerm . '%');
-            });
-        }
-
-        // Apply other filters dynamically
-        foreach ($filters as $key => $variable) {
-            if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
-                $query->where($variable, $inputs[$variable]);
+            // Retrieve input values
+            $inputs = [];
+            foreach ($filters as $key => $variable) {
+                $inputs[$variable] = $request->input($key, '');
             }
+
+            // Start the query for tenants
+            $query = Tenant::query();
+
+            // Apply search term conditions if available
+            if (!empty($inputs['searchTerm'])) {
+                $query->where(function ($q) use ($inputs) {
+                    $searchTerm = $inputs['searchTerm'];
+                    $q->where('username', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('first_name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('email', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('domain_name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('company_code', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('company_name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('server_serialnumber', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('server_ip', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('server_mac', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('domain_url', 'like', '%' . $searchTerm . '%');
+                });
+            }
+
+            // Apply other filters dynamically
+            foreach ($filters as $key => $variable) {
+                if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
+                    $query->where($variable, $inputs[$variable]);
+                }
+            }
+
+            // Paginate the results
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $tenants = $query->paginate($perPage);
+
+            // Return the response
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.data_fetch'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in Tenant List : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
-
-        // Paginate the results
-        $perPage = $request->input('per_page', 10);
-        $tenants = $query->paginate($perPage);
-
-        // Return the response
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.data_fetch'));
     }
 
     public function store(Request $request)
     {
-        $createData = $this->prepareTenantData($request);
+        try {
+            $createData = $this->prepareTenantData($request);
 
-        if ($request->hasFile('tenant_logo')) {
-            $createData['tenant_logo'] = $this->uploadTenantLogo($request);
+            if ($request->hasFile('tenant_logo')) {
+                $createData['tenant_logo'] = $this->uploadTenantLogo($request);
+            }
+            $tenants = Tenant::create($createData);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.tenant_create_msg'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in Storing Tenant : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
-        $tenants = Tenant::create($createData);
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.tenant_create_msg'));
     }
-
 
     public function update(Request $request, $tenant)
     {
-        $updateData = $this->prepareTenantData($request);
+        try {
+            $updateData = $this->prepareTenantData($request);
 
-        if ($request->hasFile('tenant_logo')) {
-            $updateData['tenant_logo'] = $this->uploadTenantLogo($request);
+            if ($request->hasFile('tenant_logo')) {
+                $updateData['tenant_logo'] = $this->uploadTenantLogo($request);
+            }
+
+            // Update the tenant record
+            $tenant->update($updateData);
+
+            // Return response
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_update_msg'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in Updating Tenant : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
-    
-        // Update the tenant record
-        $tenant->update($updateData);
-    
-        // Return response
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_update_msg'));
     }
 
     public function delete($tenant)
     {
-        $tenant->delete();
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_delete_msg'));
+        try {
+            $tenant->delete();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_delete_msg'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in Deleting Tenant : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
-
 
     public function show($tenant)
     {
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.data_fetch'));
+        try {
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.data_fetch'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in Showing Tenant : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 
     public function dashboard()
@@ -122,6 +142,7 @@ class TenantRepository
         $call_count_status = array("Success" => "200", "Failed" => "30");
         $agent_count =  Users::query()->where('type', '3')->count();
         $final_array = array("type_wise_ticket" => $type_wise_ticket, "priority_wise_ticket" => $priority_wise_ticket, "agent_status" => $agent_status, "lead_status" => $lead_status, "call_count_status" => $call_count_status, "agent_count" => $agent_count);
+
         return $this->apiResponse->getResponseStructure(trans('message.success'), $final_array, trans('message.data_fetch'));
     }
 
@@ -153,17 +174,11 @@ class TenantRepository
         return $data;
     }
 
-    /**
-     * Handle tenant logo file upload
-     *
-     * @param Request $request
-     * @return string
-     */
     protected function uploadTenantLogo(Request $request)
     {
         $tenant_logo = $request->file('tenant_logo');
         $filename = now()->format('Y_m_d_H_i_s') . '.' . $tenant_logo->getClientOriginalExtension();
-        $path = $tenant_logo->storeAs('tenant_logo', $filename, 'public');
-        return $path;
+
+        return $tenant_logo->storeAs('tenant_logo', $filename, 'public');
     }
 }

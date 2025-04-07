@@ -10,7 +10,6 @@ use App\Models\MailDetail;
 use App\Models\EmailConfigure;
 use App\Models\SupportTicketNotification;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use App\Mail\SendEmail;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -94,15 +93,11 @@ class SupportTicketRepository
                 $query->where('contact_id', $contact_id);
             }
 
-            if ($page === config('omni.ALL_PAGE')) {
-                $supportticket = $query->get();
-            } else {
-                $supportticket = $query->paginate($perPage);
-            }
+            $supportTicket = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             // Return the response
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $supportticket, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.data_fetch'));
         } catch (Exception $ex) {
-            Log::error("Error fetching Support Tickets: " . $ex->getMessage());
+            generateLogs('error', 'Error fetching Support Tickets List : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -215,7 +210,7 @@ class SupportTicketRepository
             // Return the response
             return $this->apiResponse->getResponseStructure(trans('message.success'), $newSupportTicket, trans('message.support_ticket_create_msg'));
         } catch (Exception $ex) {
-            Log::error("Error occurred while creating  Support Tickets: " . $ex->getMessage());
+            generateLogs('error', 'Error occurred while creating  Support Tickets : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -306,11 +301,10 @@ class SupportTicketRepository
             ]);
 
             $updatedSupportTicket = new TenantsResource($supportTicket);
-
             // Return the response
             return $this->apiResponse->getResponseStructure(trans('message.success'), $updatedSupportTicket, trans('message.support_ticket_update_msg'));
         } catch (Exception $ex) {
-            Log::error("Error occurred while updating  Support Tickets: " . $ex->getMessage());
+            generateLogs('error', 'Error occurred while updating  Support Tickets : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -322,7 +316,7 @@ class SupportTicketRepository
             // Return the response
             return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.support_ticket_delete_msg'));
         } catch (Exception $ex) {
-            Log::error("Error occurred while deleting  Support Tickets: " . $ex->getMessage());
+            generateLogs('error', 'Error occurred while deleting  Support Tickets : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -334,10 +328,9 @@ class SupportTicketRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.data_fetch'));
         } catch (Exception $ex) {
-            Log::error("Error fetching SLA setting: " . $ex->getMessage());
+            generateLogs('error', 'Error fetching SLA setting : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.data_fetch'));
     }
 
     public function statusUpdate(Request $request, Supportticket $supportTicket)
@@ -394,7 +387,7 @@ class SupportTicketRepository
             // Return the response
             return $this->apiResponse->getResponseStructure(trans('message.success'), $statusUpdateData, trans('message.data_fetch'));
         } catch (Exception $ex) {
-            Log::error("Error fetching Support Tickets: " . $ex->getMessage());
+            generateLogs('error', 'Error fetching Support Tickets : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

@@ -21,43 +21,46 @@ class SmsProviderConfigurationRepository
         $this->apiResponse = $customApiResponse;
     }
 
-    
+
     public function list(Request $request)
     {
-        $providerName = $request->input('provider_name', '');
-        $method = $request->input('method', '');
-        $enabled = $request->input('enabled', '');
-        $search = $request->input('search', '');
+        try {
+            $providerName = $request->input('provider_name', '');
+            $method = $request->input('method', '');
+            $enabled = $request->input('enabled', '');
+            $search = $request->input('search', '');
 
-        if ($method) {
-            $smsConfigurations = SmsProviderConfiguration::where('config_value', $method);
-        } elseif ($enabled) {
-            $smsConfigurations = SmsProviderConfiguration::where('config_value', $enabled);
-        } else {
-            $smsConfigurations = SmsProviderConfiguration::query();
+            if ($method) {
+                $smsConfigurations = SmsProviderConfiguration::where('config_value', $method);
+            } elseif ($enabled) {
+                $smsConfigurations = SmsProviderConfiguration::where('config_value', $enabled);
+            } else {
+                $smsConfigurations = SmsProviderConfiguration::query();
+            }
+
+            if ($search) {
+                $smsConfigurations = $smsConfigurations->orWhere('config_value', 'like', '%' . $search . '%');
+            }
+
+            $smsConfigurations = $smsConfigurations->pluck("provider_id");
+            $configurations  = SmsProvider::whereIn("id", $smsConfigurations);
+
+            if ($providerName) {
+                $configurations =  $configurations->where('name', '=', $providerName);
+            }
+
+            if ($search) {
+                $configurations = $configurations->orWhere('name', 'like', '%' . $search . '%');
+            }
+
+            $configurations = $configurations->get();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations, $method, $enabled), trans('message.data_fetch'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in SMS Configuration List : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
-
-        if ($search) {
-            $smsConfigurations = $smsConfigurations->orWhere('config_value', 'like', '%' . $search . '%');
-        }
-
-        $smsConfigurations = $smsConfigurations->pluck("provider_id");
-        $configurations  = SmsProvider::whereIn("id", $smsConfigurations);
-
-        if ($providerName) {
-            $configurations =  $configurations->where('name', '=', $providerName);
-        }
-
-        if ($search) {
-            $configurations = $configurations->orWhere('name', 'like', '%' . $search . '%');
-        }
-
-        $configurations = $configurations->get();
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations, $method, $enabled), trans('message.data_fetch'));
     }
 
-
-    
     public function store($request)
     {
         try {
@@ -79,14 +82,10 @@ class SmsProviderConfigurationRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $smsConfigurations, trans('message.sms_provider_conf_add'));
         } catch (Exception $e) {
-            Log::error('Error while generating the Sms configuration', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json(['message' => trans('message.wrong_with_query'), 'error' => $e->getMessage()], 500);
+            generateLogs('error', 'Error in Storing SMS Configuration : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
-
 
     public function update($request, $providerId)
     {
@@ -115,14 +114,10 @@ class SmsProviderConfigurationRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $smsConfigurations, trans('message.sms_provider_conf_update'));
         } catch (Exception $e) {
-            Log::error('Error while generating the cron configuration', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json(['message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
+            generateLogs('error', 'Error in Updating SMS Configuration : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
-
 
     public function delete($providerId)
     {
@@ -140,19 +135,20 @@ class SmsProviderConfigurationRepository
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $configuration, trans('message.sms_provider_conf_delete'));
         } catch (Exception $e) {
-            Log::error('Error while generating the Sms configuration', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json(['message' => trans("message.wrong_with_query"), 'error' => $e->getMessage()], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            generateLogs('error', 'Error in Deleting SMS Configuration : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
-
     public function show($providerId)
     {
-        $configurations = SmsProvider::where("id", $providerId)->get();
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations), trans('message.data_fetch'));
+        try {
+            $configurations = SmsProvider::where("id", $providerId)->get();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations), trans('message.data_fetch'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in Showing SMS Configuration : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 
     private function formatListingData($configurations, $method = null, $enabled = null)
@@ -167,7 +163,6 @@ class SmsProviderConfigurationRepository
                 'configurations' => $providerInfo
             ];
         });
-
         return $formattedData;
     }
 }

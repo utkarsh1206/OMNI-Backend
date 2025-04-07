@@ -6,7 +6,6 @@ use App\Http\Response\CustomApiResponse;
 use App\Models\UserSmsGateway;
 use App\Models\SmsProvider;
 use Exception;
-use Illuminate\Support\Facades\Log;
 
 class SmsProviderRepository
 {
@@ -21,11 +20,14 @@ class SmsProviderRepository
 
     public function list()
     {
-        $providers = SmsProvider::where("status", "active")->get();
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $providers, trans('message.data_fetch'));
+        try {
+            $providers = SmsProvider::where("status", "active")->get();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $providers, trans('message.data_fetch'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in Sms Provider List : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
-    
-
 
     public function saveUserProvider($request)
     {
@@ -33,22 +35,19 @@ class SmsProviderRepository
         try {
             $smsProviers = UserSmsGateway::updateOrCreate(
                 [
-                'provider_id' => $request->provider_id,  // Condition for matching an existing record
-                'user_id' => $apiUser->id,  // Another condition for matching an existing record
+                    'provider_id' => $request->provider_id,  // Condition for matching an existing record
+                    'user_id' => $apiUser->id,  // Another condition for matching an existing record
                 ],
                 [
-                'provider_id' => $request->provider_id,  // Fields to be created or updated
-                'user_id' => $apiUser->id,  // Fields to be created or updated
+                    'provider_id' => $request->provider_id,  // Fields to be created or updated
+                    'user_id' => $apiUser->id,  // Fields to be created or updated
                 ]
             );
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $smsProviers, trans('message.provider_configurations_created'));
         } catch (Exception $e) {
-            Log::error('Error while generating the Sms configuration', [
-            'error' => $e->getMessage(),
-            ]);
-
-            return response()->json(['message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
+            generateLogs('error', 'Error in Sacing User SMS Provider : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 }

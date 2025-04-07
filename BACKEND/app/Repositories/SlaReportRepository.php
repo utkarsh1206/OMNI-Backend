@@ -54,11 +54,7 @@ class SlaReportRepository
 
             $ticketsquery = $this->applyFilters($ticketsquery, $request, $payload);
 
-            if ($page !== config('omni.ALL_PAGE')) {
-                $ticketsquery = $ticketsquery->paginate($perPage);
-            } else {
-                $ticketsquery = $ticketsquery->get();
-            }
+            $ticketsquery = $page == config('omni.ALL_PAGE') ? $ticketsquery->get() : $ticketsquery->paginate($perPage);
 
             // Step 2: Get SLA IDs for incidents
             $incidentIds = $ticketsquery->pluck('incident_id')->unique();
@@ -92,11 +88,8 @@ class SlaReportRepository
                 return $ticket;
             });
 
-            if ($page !== config('omni.ALL_PAGE')) {
-                $ticketsquery = $ticketsquery->items();
-            } else {
-                $ticketsquery = $ticketsquery;
-            }
+            $ticketsquery = $page == config('omni.ALL_PAGE') ? $ticketsquery : $ticketsquery->items();
+
             return $this->apiResponse->getResponseStructure(trans('message.success'), $ticketsquery, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in Sla Report List : ', $ex->getMessage());
