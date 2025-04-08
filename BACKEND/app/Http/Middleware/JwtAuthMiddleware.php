@@ -22,7 +22,7 @@ class JwtAuthMiddleware
         } catch (Exception $e) {
             if ($e instanceof TokenInvalidException) {
                 return response()->json(['message' => 'Token invalid.!'], Response::HTTP_UNAUTHORIZED);
-            } else if ($e instanceof TokenExpiredException) {
+            } elseif ($e instanceof TokenExpiredException) {
                 try {
                     JWTAuth::setToken(JWTAuth::refresh());
                     $user = JWTAuth::authenticate();
