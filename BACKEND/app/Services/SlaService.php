@@ -201,7 +201,7 @@ class SlaService
     private function calculateResolvedTime($startTime, $firstResponseTime, $resolveTimeValue, $slaSetting, $createdAt, $offDays, $holidays)
     {
         // Convert resolveTimeValue (seconds) to minutes
-        generateLogs('info',"resolveTimeValue time : {$resolveTimeValue}");
+        generateLogs('info', "resolveTimeValue time : {$resolveTimeValue}");
         $resolveTimeInMinutes = $resolveTimeValue / 60;
 
         // Calculate resolved time
@@ -209,21 +209,21 @@ class SlaService
         $resolvedTime = $createdTime->copy()->addMinutes($resolveTimeInMinutes);
         $businessEndTime = Carbon::parse($slaSetting->end_time);
 
-        generateLogs('info',"start time : {$startTime}");
-        generateLogs('info',"resolvedTime time : {$resolvedTime}");
-        generateLogs('info',"createdTime time : {$createdTime}");
-        generateLogs('info',"businessEndTime time : {$businessEndTime}");
+        generateLogs('info', "start time : {$startTime}");
+        generateLogs('info', "resolvedTime time : {$resolvedTime}");
+        generateLogs('info', "createdTime time : {$createdTime}");
+        generateLogs('info', "businessEndTime time : {$businessEndTime}");
 
         if ($this->isOffDayOrHoliday($createdTime, $offDays, $holidays) > 0) {
             $resolvedTime = $startTime->copy()->setTimeFromTimeString($slaSetting->start_time)->addMinutes($resolveTimeInMinutes);
-            generateLogs('info',"resolve time Start time is an off day or holiday, moving to next business day: {$resolvedTime}");
+            generateLogs('info', "resolve time Start time is an off day or holiday, moving to next business day: {$resolvedTime}");
             return $resolvedTime;
         }
 
         if ($resolvedTime->gt($businessEndTime)) {
             // Calculate the remaining minutes from the created time to the business end time
             $remainingMinutes = $createdTime->diffInMinutes($businessEndTime);
-            generateLogs('info',"remainingMinutes in resolve time : {$remainingMinutes}");
+            generateLogs('info', "remainingMinutes in resolve time : {$remainingMinutes}");
 
             if ($remainingMinutes < 0) {
                 $remainingMinutes = 0;
@@ -231,7 +231,7 @@ class SlaService
             // Adjust the resolve time value by subtracting the remaining minutes
             $adjustedResolveTimeValue = $resolveTimeInMinutes - $remainingMinutes;
 
-            generateLogs('info',"adjustedResolveTimeValue in resolve time : {$adjustedResolveTimeValue}");
+            generateLogs('info', "adjustedResolveTimeValue in resolve time : {$adjustedResolveTimeValue}");
             // If the adjusted resolve time value is less than or equal to zero, set it to zero
             if ($adjustedResolveTimeValue < 0) {
                 $adjustedResolveTimeValue = 0;
@@ -244,10 +244,10 @@ class SlaService
         while ($this->isOffDayOrHoliday($resolvedTime, $offDays, $holidays)) {
             $resolve = Carbon::parse($resolvedTime);
             $resolvedTime = $resolve->addDay(); // Skip the off day or holiday
-            generateLogs('info',"First response time falls on an off day or holiday, moving to next business day: {$resolvedTime}");
+            generateLogs('info', "First response time falls on an off day or holiday, moving to next business day: {$resolvedTime}");
         }
 
-        generateLogs('info',"ResolvedTime in resolve time : {$resolvedTime}");
+        generateLogs('info', "ResolvedTime in resolve time : {$resolvedTime}");
         return $resolvedTime;
     }
 

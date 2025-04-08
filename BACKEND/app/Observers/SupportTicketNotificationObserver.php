@@ -19,7 +19,7 @@ class SupportTicketNotificationObserver
         $sla_service = new SlaService();
         $openTicketData = $sla_service->calculateSla($support_ticket_id);
 
-        generateLogs('info', 'openTicketData: '. json_encode($openTicketData));
+        generateLogs('info', 'openTicketData: ' . json_encode($openTicketData));
 
         $updateData = [];
 

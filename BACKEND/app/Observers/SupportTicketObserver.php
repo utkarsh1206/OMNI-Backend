@@ -3,7 +3,6 @@
 namespace App\Observers;
 
 use App\Models\Supportticket;
-use App\Services\SlaService;
 
 class SupportTicketObserver
 {
@@ -35,9 +34,7 @@ class SupportTicketObserver
     /**
      * Handle the Supportticket "updated" event.
      */
-    public function updated(Supportticket $supportticket): void
-    {
-    }
+    public function updated(Supportticket $supportticket): void {}
 
     /**
      * Handle the Supportticket "deleted" event.
