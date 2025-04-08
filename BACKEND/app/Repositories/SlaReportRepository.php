@@ -229,7 +229,7 @@ class SlaReportRepository
                 fclose($file);
             };
 
-            return new StreamedResponse($callback,  ResponseHTTP::HTTP_OK, [
+            return new StreamedResponse($callback, ResponseHTTP::HTTP_OK, [
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => 'attachment;"',
             ]);

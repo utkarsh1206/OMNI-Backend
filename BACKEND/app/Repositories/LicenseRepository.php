@@ -5,7 +5,6 @@ namespace App\Repositories;
 use App\Models\Admins;
 use App\Http\Response\CustomApiResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
@@ -25,7 +24,7 @@ class LicenseRepository
             $license = Admins::where('id', $userId)->find();
             $license->license_key = $request->license_key;
             $license->save();
-            logMessage("debug","License updated", [
+            logMessage("debug", "License updated", [
                 'user_id' => $userId,
                 'license_key' => $license->license_key
             ]);

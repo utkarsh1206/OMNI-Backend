@@ -16,12 +16,12 @@ class SupportTicketTransferRepository
     {
         $this->apiResponse = $customApiResponse;
     }
-    
+
     public function store(Request $request)
     {
         try {
             SupportTicket::where('id', $request->supportticket_id)
-            ->update(['assign_to_id' => $request->user_id]);
+                ->update(['assign_to_id' => $request->user_id]);
             SupportTicketNotification::create([
                 'type' => "Transfer",
                 'comment' => $request->comment,

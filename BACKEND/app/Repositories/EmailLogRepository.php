@@ -9,7 +9,6 @@ use Carbon\Carbon;
 use App\Http\Response\CustomApiResponse;
 use Illuminate\Database\QueryException;
 
-
 class EmailLogRepository
 {
     /**

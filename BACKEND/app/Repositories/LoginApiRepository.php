@@ -2,7 +2,6 @@
 
 namespace App\Repositories;
 
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Exception;
 use App\Http\Response\CustomApiResponse;

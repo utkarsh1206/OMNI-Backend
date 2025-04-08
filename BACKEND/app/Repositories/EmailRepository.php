@@ -5,10 +5,8 @@ namespace App\Repositories;
 use App\Models\EmailConfigure;
 use App\Http\Response\CustomApiResponse;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use App\Mail\SendEmail;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class EmailRepository
 {
@@ -29,7 +27,7 @@ class EmailRepository
         $smtpPassword = $emailConfig->smtp_password;
         $sender_name = $emailConfig->sender_name;
         $sender_email = $emailConfig->sender_email;
-        
+
         // Configure SMTP dynamically
         config([
             'mail.mailers.smtp.host' =>  $smtpHost,

@@ -5,9 +5,7 @@ namespace App\Repositories;
 use App\Models\EcdialLists;
 use Illuminate\Http\Request;
 use App\Http\Resources\EcdialListResource;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
-use Illuminate\Support\Facades\Log;
 use App\Http\Response\CustomApiResponse;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -24,38 +22,37 @@ class EcdialListRepository
     public function list(Request $request)
     {
         try {
-        $searchTerm = $request->input('search', '');
-        $status = $request->input('status', '');
-        $name = $request->input('name');
-        $perPage = $request->input('per_page', 10);
-        $page = $request->input('page', 1);
+            $searchTerm = $request->input('search', '');
+            $status = $request->input('status', '');
+            $name = $request->input('name');
+            $perPage = $request->input('per_page', 10);
+            $page = $request->input('page', 1);
 
-        $query = EcdialLists::query();
+            $query = EcdialLists::query();
 
-        // Search Filter
-        if (!empty($searchTerm)) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', "%$searchTerm%")
-                    ->orWhere('description', 'like', "%$searchTerm%")
-                    ->orWhere('status', 'like', "%$searchTerm%");
-            });
+            // Search Filter
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%$searchTerm%")
+                        ->orWhere('description', 'like', "%$searchTerm%")
+                        ->orWhere('status', 'like', "%$searchTerm%");
+                });
+            }
+
+            // Filter by status
+            if (!empty($status)) {
+                $query->where('status', $status);
+            }
+
+            if (!empty($name)) {
+                $query->where('name', $name);
+            }
+            $listData = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $listData, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating EcDial Listing: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
-
-        // Filter by status
-        if (!empty($status)) {
-            $query->where('status', $status);
-        }
-
-        if (!empty($name)) {
-            $query->where('name', $name);
-        }
-        $listData = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $listData, trans('message.data_fetch'));
-    } catch (Exception $ex) {
-        generateLogs('error', 'Error in generating EcDial Listing: ', $ex->getMessage());
-        return $this->apiResponse->handleAndResponseException($ex);
-    }
-
     }
 
     public function create(Request $request)

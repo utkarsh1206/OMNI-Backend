@@ -8,10 +8,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
 use App\Models\EmailConfigure;
-use App\Models\SupportTicketnotification;
+use App\Models\SupportTicketNotification;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendEmail;
-use Illuminate\Support\Facades\Log;
 
 class MailDetailRepository
 {

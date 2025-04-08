@@ -12,15 +12,12 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class SmsProviderConfigurationRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
     {
         $this->apiResponse = $customApiResponse;
     }
-
 
     public function list(Request $request)
     {

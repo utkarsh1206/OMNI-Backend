@@ -8,8 +8,6 @@ use Illuminate\Database\QueryException;
 
 class UserListRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)

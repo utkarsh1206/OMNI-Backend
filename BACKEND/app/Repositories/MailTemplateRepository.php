@@ -7,7 +7,6 @@ use App\Models\MailTemplate;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
-use Illuminate\Validation\ValidationException;
 
 class MailTemplateRepository
 {
@@ -48,7 +47,7 @@ class MailTemplateRepository
         try {
             $mailTemplate = MailTemplate::create($request->all());
             return $this->apiResponse->getResponseStructure(trans('message.success'), $mailTemplate, trans('message.mail_template_created'), ResponseHTTP::HTTP_CREATED);
-        } catch (ValidationException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating failed Store MailTemplate : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -69,7 +68,7 @@ class MailTemplateRepository
 
             $mailTemplate->update($request->all());
             return $this->apiResponse->getResponseStructure(trans('message.success'), $mailTemplate, trans('message.mail_template_updated'), ResponseHTTP::HTTP_CREATED);
-        } catch (ValidationException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating failed Update MailTemplate : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -96,7 +95,7 @@ class MailTemplateRepository
             }
             $mailTemplate->delete();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $mailTemplate, trans('message.mail_template_deleted'));
-        } catch (ValidationException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating failed Delete MailTemplate : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }

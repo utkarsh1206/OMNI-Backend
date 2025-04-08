@@ -9,8 +9,6 @@ use Exception;
 
 class SmsProviderRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)

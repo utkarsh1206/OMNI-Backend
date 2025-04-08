@@ -7,17 +7,17 @@ use App\Models\LiveAgents;
 use App\Models\PauseResumeUserLog;
 use App\Models\UserDailyActivity;
 use Carbon\Carbon;
-use Illuminate\Validation\ValidationException;
+use Exception;
 
 class PauseResumeRepository
 {
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
     {
         $this->apiResponse = $customApiResponse;
     }
+
     public function logAction($userId, $campaignId, $extension, $action, $pauseCode = null)
     {
         try {
@@ -30,7 +30,7 @@ class PauseResumeRepository
             $this->handleActivityLogging($userId, $campaignId, $action, $pauseCode, $logEntry);
 
             return $logEntry;
-        } catch (ValidationException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in Occupation List : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -60,7 +60,6 @@ class PauseResumeRepository
             $this->handleDuplicateEntries($userId, 'Resume', 'total_pause_time');
         }
     }
-
 
     private function updateTimeDifference($userId, $logEntry, $previousStatus, $field)
     {

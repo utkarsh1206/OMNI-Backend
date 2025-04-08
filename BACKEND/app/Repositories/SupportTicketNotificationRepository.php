@@ -9,8 +9,6 @@ use Exception;
 
 class SupportTicketNotificationRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)

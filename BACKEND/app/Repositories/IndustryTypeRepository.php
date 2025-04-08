@@ -9,8 +9,6 @@ use Illuminate\Database\QueryException;
 
 class IndustryTypeRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)

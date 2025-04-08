@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\Phone;
-use Illuminate\Database\QueryException;
+use Exception;
 
 class PhoneRepository
 {
@@ -44,7 +44,7 @@ class PhoneRepository
             }
             $phones = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phones, trans('message.fetch_data'));
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating Phone List : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -60,12 +60,11 @@ class PhoneRepository
 
             $phone = Phone::create($validatedData);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phone, trans('message.phone_created'), ResponseHTTP::HTTP_ACCEPTED);
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating Phone Store : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
-
 
     public function update($validatedData, $extension)
     {
@@ -79,12 +78,11 @@ class PhoneRepository
             $validatedData['local_gmt'] = $validatedData['local_gmt'] ?? '5.50';
             $phone->update($validatedData);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phone, trans('message.phone_updated'));
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating Phone Update : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
-
 
     public function delete($extension)
     {
@@ -97,7 +95,7 @@ class PhoneRepository
 
             $phone->delete();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phone, trans('message.phone_deleted'));
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating Phone Delete : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -114,7 +112,7 @@ class PhoneRepository
                 ], ResponseHTTP::HTTP_NOT_FOUND);
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phone, trans('message.fetch_data'));
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating Phone Show : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }

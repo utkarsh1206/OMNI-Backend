@@ -5,9 +5,7 @@ namespace App\Repositories;
 use App\Models\NeoxConfiguration;
 use Illuminate\Http\Request;
 use App\Http\Resources\NeoxConfigurationResource;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
-use Illuminate\Support\Facades\Log;
 use App\Http\Response\CustomApiResponse;
 
 class NeoxConfigurationRepository
@@ -37,7 +35,6 @@ class NeoxConfigurationRepository
             }
             $listData = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $listData, trans('message.data_fetch'));
-
         } catch (\Exception $e) {
             generateLogs('error', 'Error in generating Neox Configuration : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);

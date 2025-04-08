@@ -5,13 +5,11 @@ namespace App\Repositories;
 use App\Models\Notes;
 use App\Http\Response\CustomApiResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use Exception;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class NoteRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
@@ -25,7 +23,7 @@ class NoteRepository
             $supportticketId = $request->input('supportticket_id');
             $notedetail = Notes::where('supportticket_id', $supportticketId)->orderBy('id', 'desc')->get();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $notedetail, trans('message.data_fetch'));
-        } catch (ValidationException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in Note List : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -42,7 +40,7 @@ class NoteRepository
             ]);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $notedetail, trans('message.note_created_msg'), ResponseHTTP::HTTP_CREATED);
-        } catch (ValidationException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in Note Store : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }

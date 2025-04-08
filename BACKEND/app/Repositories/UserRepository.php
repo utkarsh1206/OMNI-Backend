@@ -11,13 +11,11 @@ use App\Models\Users;
 use App\Models\Tenant;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
 
 class UserRepository
 {
-
     private $apiResponse;
+
     private $licenseController;
 
     public function __construct(CustomApiResponse $customApiResponse, LicenseController $licenseController)
@@ -255,7 +253,7 @@ class UserRepository
         try {
             $payload = JWTAuth::setToken($token)->getPayload();
             $domain = $payload['domain'];
-            establishMasterConnection($domain,"omnichannel","mysql");
+            establishMasterConnection($domain, "omnichannel", "mysql");
             $tenant = Tenant::select('title', 'footer_content', 'footer_url', 'tenant_logo')
                 ->where('domain_name', $domain)
                 ->first();

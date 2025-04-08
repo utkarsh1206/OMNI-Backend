@@ -5,12 +5,10 @@ namespace App\Repositories;
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Nameprefix;
-use Illuminate\Validation\ValidationException;
+use Exception;
 
 class NamePrefixRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
@@ -38,7 +36,7 @@ class NamePrefixRepository
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $nameprefixes = $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $nameprefixes, trans('message.data_fetch'));
-        } catch (ValidationException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating failed List NamePrefix : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }

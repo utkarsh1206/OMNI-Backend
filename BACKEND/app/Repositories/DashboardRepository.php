@@ -133,7 +133,7 @@ class DashboardRepository
 
             // Deleted ticket count
             // $deletedTicketCount = SupportTicket::count();
-            // 
+            //
 
             // Combine all the data into a single response
             $dashboardData = [

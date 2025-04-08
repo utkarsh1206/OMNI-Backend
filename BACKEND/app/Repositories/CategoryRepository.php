@@ -7,6 +7,7 @@ use App\Http\Response\CustomApiResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\Category;
 use Exception;
+
 class CategoryRepository
 {
     private $apiResponse;

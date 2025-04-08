@@ -49,8 +49,8 @@ class UserGroupRepository
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
             $usergroup =   $page === config('omni.ALL_PAGE')
-            ? $query->get()
-            : $query->paginate($perPage);
+                ? $query->get()
+                : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error during User Group Listing : ', $ex->getMessage());

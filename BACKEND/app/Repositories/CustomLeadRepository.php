@@ -69,7 +69,7 @@ class CustomLeadRepository
         try {
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-            $data = $page == config('omni.ALL_PAGE') ?$query->get()->map(fn($row) => $this->formatLeadData($row, $columns))->toArray() : $query->paginate($perPage);
+            $data = $page == config('omni.ALL_PAGE') ? $query->get()->map(fn($row) => $this->formatLeadData($row, $columns))->toArray() : $query->paginate($perPage);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), [
                 'columns' => $columns,

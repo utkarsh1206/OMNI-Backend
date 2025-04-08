@@ -10,8 +10,6 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class UpdateCustomFieldRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
