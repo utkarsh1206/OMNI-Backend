@@ -85,7 +85,7 @@ class TicketReportController extends Controller
      *             type="object",
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="message", type="string", example="Data fetch successful"),
-     *             @OA\Property(property="data", type="array", 
+     *             @OA\Property(property="data", type="array",
      *                 @OA\Items(
      *                     type="object",
      *                     @OA\Property(property="ticket_id", type="integer"),
@@ -93,7 +93,7 @@ class TicketReportController extends Controller
      *                     @OA\Property(property="created_at", type="string", format="date-time"),
      *                     @OA\Property(property="status", type="string"),
      *                     @OA\Property(property="priority", type="string"),
-     *                     @OA\Property(property="assignedAgent", type="object", 
+     *                     @OA\Property(property="assignedAgent", type="object",
      *                         @OA\Property(property="id", type="integer"),
      *                         @OA\Property(property="name", type="string")
      *                     )
@@ -190,7 +190,7 @@ class TicketReportController extends Controller
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="success", type="string", example="Success"),
-     *             @OA\Property(property="data", type="array", 
+     *             @OA\Property(property="data", type="array",
      *                 @OA\Items(
      *                     type="object",
      *                     @OA\Property(property="Category", type="string"),
@@ -292,7 +292,7 @@ class TicketReportController extends Controller
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="success", type="string", example="Success"),
-     *             @OA\Property(property="data", type="array", 
+     *             @OA\Property(property="data", type="array",
      *                 @OA\Items(
      *                     type="object",
      *                     @OA\Property(property="Priority", type="string"),
@@ -390,7 +390,7 @@ class TicketReportController extends Controller
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="success", type="string", example="Success"),
-     *             @OA\Property(property="data", type="array", 
+     *             @OA\Property(property="data", type="array",
      *                 @OA\Items(
      *                     type="object",
      *                     @OA\Property(property="Status", type="string"),
@@ -488,7 +488,7 @@ class TicketReportController extends Controller
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="success", type="string", example="Success"),
-     *             @OA\Property(property="data", type="array", 
+     *             @OA\Property(property="data", type="array",
      *                 @OA\Items(
      *                     type="object",
      *                     @OA\Property(property="Weekday", type="string"),
