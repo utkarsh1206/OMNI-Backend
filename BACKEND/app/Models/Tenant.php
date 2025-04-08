@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tenant extends Model
 {
-    protected $appends = ['tenant_logo_url'];
     use HasFactory, SoftDeletes;
+
+    protected $appends = ['tenant_logo_url'];
+
     protected $fillable = [
         "username",
         "first_name",

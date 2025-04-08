@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Occupation extends Model
 {
     use HasFactory, SoftDeletes;
-    
+
     protected $connection = 'mysql';
 
     protected $fillable = [

@@ -10,7 +10,7 @@ class EcdialListField extends Model
     use HasFactory;
 
     protected $table = 'ecdial_lists_fields';
-    
+
     public $timestamps = true;
 
     protected $fillable = [

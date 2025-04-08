@@ -9,5 +9,6 @@ class IndustryType extends Model
 {
     use HasFactory;
     protected $table = 'industry_types';
+
     protected $connection = 'mysql';
 }

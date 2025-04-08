@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class NamePrefix extends Model
 {
-    use HasFactory , SoftDeletes;
+    use HasFactory, SoftDeletes;
+
     protected $connection = 'mysql';
+
     protected $fillable = [
         "id",
         "title",

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class UserDailyActivity extends Model
 {
     use HasFactory;
+
     protected $table = 'user_daily_activities';
 
     protected $fillable = [

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -8,5 +9,5 @@ class CronExpression extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['schedule_type','schedule_expression'];
+    protected $fillable = ['schedule_type', 'schedule_expression'];
 }

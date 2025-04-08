@@ -89,7 +89,7 @@ class Users extends Authenticatable implements JWTSubject
                     }
 
                     $campaign = isset($postData['campaign']) ? $postData['campaign'] : null;
-                    $phone = isset($postData['phone']) ? $postData['phone'] : null; 
+                    $phone = isset($postData['phone']) ? $postData['phone'] : null;
 
                     $claims = [
                         'id' => $this->id,

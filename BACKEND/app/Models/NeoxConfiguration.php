@@ -10,6 +10,7 @@ class NeoxConfiguration extends Model
     use HasFactory;
 
     protected $table = 'neox_configuration';
+
     protected $fillable = [
         'neox_token',
         'neox_local_ip',

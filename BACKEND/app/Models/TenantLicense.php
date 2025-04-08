@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class TenantLicense extends Model
 {
     use HasFactory;
-    protected $table = 'tenant_licenses';
+
     protected $connection = 'mysql';
+
+    protected $table = 'tenant_licenses';
+
     protected $fillable = [
         'id',
         'tenant_id',

@@ -11,6 +11,7 @@ class MailTemplate extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'mail_template';
+
     protected $fillable = [
         'title',
         'type',

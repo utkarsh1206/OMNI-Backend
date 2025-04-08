@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Phone extends Model
 {
     use HasFactory;
+
     protected $primaryKey = 'extension';
+
     public $incrementing = false;
+
     protected $fillable = [
         'extension',
         'login',
