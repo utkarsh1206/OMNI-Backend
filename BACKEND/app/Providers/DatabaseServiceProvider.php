@@ -41,7 +41,6 @@ class DatabaseServiceProvider extends ServiceProvider
                     $domain = str_replace("https://", "", $domain);
                     $domain = str_replace("http://", "", $domain);
                 }
-              
             }
         }
 
@@ -66,7 +65,7 @@ class DatabaseServiceProvider extends ServiceProvider
                 'engine' => null,
             ]);
 
-           Config::set('database.default', 'dynamic');
+            Config::set('database.default', 'dynamic');
 
             DB::purge('dynamic');
             DB::reconnect('dynamic');
