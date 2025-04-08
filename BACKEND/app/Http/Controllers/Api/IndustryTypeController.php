@@ -4,12 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\IndustryType;
 use App\Repositories\IndustryTypeRepository;
 
 class IndustryTypeController extends Controller
 {
-
     private $industryTypeRepository;
 
     public function __construct(IndustryTypeRepository $industryTypeRepository)

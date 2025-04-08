@@ -8,7 +8,6 @@ use App\Http\Requests\UserSmsProviderRequest;
 
 class SmsProviderController extends Controller
 {
-
     private $smsProviderRepository;
 
     public function __construct(SmsProviderRepository $smsProviderRepository)
@@ -115,7 +114,6 @@ class SmsProviderController extends Controller
      *     )
      * )
      */
-
     public function saveUserProvider(UserSmsProviderRequest $request)
     {
         return $this->smsProviderRepository->saveUserProvider($request);

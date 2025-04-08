@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Country;
 use App\Repositories\CountryRepository;
 
 class CountryController extends Controller
@@ -17,8 +16,7 @@ class CountryController extends Controller
         $this->countryRepository = $countryRepository;
     }
 
-
-     /**
+    /**
      * @OA\Get(
      *     path="/api/countries",
      *     summary="Retrieve a list of countries",

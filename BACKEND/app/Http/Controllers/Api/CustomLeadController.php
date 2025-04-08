@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\CustomLeadRepository;
-use App\Http\Resources\CustomLeadResource;
 
 class CustomLeadController extends Controller
 {
@@ -156,21 +155,21 @@ class CustomLeadController extends Controller
      */
     public function update(Request $request, $list_id, $lead_id)
     {
-        $table = "custom_lead_" .$list_id;
+        $table = "custom_lead_" . $list_id;
 
         if (!DB::getSchemaBuilder()->hasTable($table)) {
             return response()->json(['error' => 'Table not found'], 404);
         }
-    
+
         // Get table columns dynamically
         $columns = DB::getSchemaBuilder()->getColumnListing($table);
-    
+
         // Remove primary key (assuming 'id' is the primary key)
         $columns = array_filter($columns, fn($column) => $column !== 'id');
-    
+
         // Only keep fields that exist in the table
         $updateData = $request->only($columns);
-    
+
         // Ensure there's data to update
         if (empty($updateData)) {
             return response()->json(['error' => 'No valid fields provided for update'], 400);

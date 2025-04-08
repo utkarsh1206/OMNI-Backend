@@ -2,36 +2,31 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Repositories\ProductRepository;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Cache;
 use App\Http\Requests\ProductRequest;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 
-// use Illuminate\Database\QueryException;
-
 class ProductController extends Controller
 {
 
-    protected $ProductRepository;
+    protected $productRepository;
+
     private $apiResponse;
 
-    public function __construct(ProductRepository $ProductRepository, CustomApiResponse $customApiResponse)
+    public function __construct(ProductRepository $productRepository, CustomApiResponse $customApiResponse)
     {
-        $this->ProductRepository = $ProductRepository;
+        $this->productRepository = $productRepository;
         $this->apiResponse = $customApiResponse;
     }
 
     /**
      * @OA\Get(
-     * path="/api/products",
+     *  path="/api/products",
      * operationId="getProductsList",
      * tags={"Products"},
      * summary="Get list of products",
@@ -113,14 +108,9 @@ class ProductController extends Controller
      * )
      * )
      */
-
     public function index(Request $request)
     {
-        try {
-            return $this->ProductRepository->list($request);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->productRepository->list($request);
     }
 
     /**
@@ -179,11 +169,7 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
-        try {
-            return $this->ProductRepository->create($request);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->productRepository->create($request);
     }
 
     /**
@@ -310,11 +296,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        try {
-            return $this->ProductRepository->update($request, $id);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->productRepository->update($request, $id);
     }
 
     /**
@@ -358,10 +340,6 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        try {
-            return $this->ProductRepository->delete($id);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->productRepository->delete($id);
     }
 }

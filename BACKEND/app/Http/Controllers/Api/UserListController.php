@@ -3,19 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\EcdialUser;
 use App\Repositories\UserListRepository;
-use Illuminate\Http\Request;
 
 class UserListController extends Controller
 {
-
     private $userListRepository;
 
     public function __construct(UserListRepository $userListRepository)
     {
         $this->userListRepository = $userListRepository;
     }
+
     /**
      * @OA\Get(
      *     path="/api/usersList",

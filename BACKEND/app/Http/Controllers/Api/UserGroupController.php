@@ -35,7 +35,7 @@ class UserGroupController extends Controller
     {
         return $this->userGroupRepository->update($request, $usergroup);
     }
-    
+
     public function destroy(Usergroup $usergroup)
     {
         return $this->userGroupRepository->delete($usergroup);

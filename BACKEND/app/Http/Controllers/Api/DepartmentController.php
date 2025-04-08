@@ -9,14 +9,14 @@ use App\Repositories\DepartmentRepository;
 
 class DepartmentController extends Controller
 {
-
     private $departmentRepository;
 
     public function __construct(DepartmentRepository $departmentRepository)
     {
         $this->departmentRepository = $departmentRepository;
     }
-     /**
+
+    /**
      * @OA\Get(
      *     path="/api/departments",
      *     summary="Get all departments",
@@ -76,7 +76,7 @@ class DepartmentController extends Controller
         return $this->departmentRepository->list($request);
     }
 
-     /**
+    /**
      * @OA\Post(
      *     path="/api/departments",
      *     summary="Create a new department",
@@ -215,7 +215,7 @@ class DepartmentController extends Controller
         return $this->departmentRepository->update($request, $id);
     }
 
-      /**
+    /**
      * @OA\Delete(
      *     path="/api/departments/{id}",
      *     summary="Delete a department",

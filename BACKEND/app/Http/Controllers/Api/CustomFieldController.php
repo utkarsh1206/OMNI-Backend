@@ -17,7 +17,7 @@ class CustomFieldController extends Controller
         $list_ids = $this->getListIds($cdr_list);
         $isNumberHidingOn = $request->input('isNumberHidingOn', 'N');
         $fieldsToExclude = $this->getFieldsToExclude($isNumberHidingOn);
-        
+
         $custom_headers_list = [];
         foreach ($list_ids as $list) {
             $list_id = $list->list_id;
@@ -39,10 +39,10 @@ class CustomFieldController extends Controller
         $closecallid = $request->input('closecallid');
         $isNumberHidingOn = $request->input('isNumberHidingOn', 'N');
         $export = $request->input('Export', 'NO');
-        
+
         $list_ids = $this->getListIds($cdr_list);
         $fieldsToExclude = $this->getFieldsToExclude($isNumberHidingOn);
-        
+
         foreach ($list_ids as $list) {
             $list_id = $list->list_id;
             if ($list_id == $custom_list_id) {
@@ -84,8 +84,8 @@ class CustomFieldController extends Controller
             ->orderBy('field_rank')
             ->orderBy('field_order')
             ->get();
-            generateLogs('info', 'Fetched raw fields: '. $fields);
-        
+        generateLogs('info', 'Fetched raw fields: ' . $fields);
+
         $mappedFields = $fields->map(function ($field) {
             return [
                 'label' => $field->field_label,
@@ -94,7 +94,7 @@ class CustomFieldController extends Controller
                 'editable' => $field->editable,
             ];
         })
-        ->toArray();
+            ->toArray();
 
         return $mappedFields;
     }

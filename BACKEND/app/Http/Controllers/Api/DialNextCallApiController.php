@@ -7,7 +7,6 @@ use App\Http\Requests\DialNextCallApiRequest;
 use Illuminate\Http\Request;
 use Exception;
 use App\Http\Response\CustomApiResponse;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class DialNextCallApiController extends Controller

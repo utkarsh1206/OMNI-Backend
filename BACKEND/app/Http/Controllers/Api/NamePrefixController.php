@@ -4,12 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Nameprefix;
 use App\Repositories\NamePrefixRepository;
 
 class NamePrefixController extends Controller
 {
-
     private $nameSpacePrefix;
 
     public function __construct(NamePrefixRepository $nameSpacePrefix)
@@ -17,7 +15,7 @@ class NamePrefixController extends Controller
         $this->nameSpacePrefix = $nameSpacePrefix;
     }
 
-      /**
+    /**
      * @OA\Get(
      *     path="api/nameprefixes",
      *     summary="Get list of name prefixes",

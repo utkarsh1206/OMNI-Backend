@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ActivityLog;
-use App\Http\Resources\AuditLogResource;
 use App\Repositories\AuditLogRepository;
 
 class AuditController extends Controller

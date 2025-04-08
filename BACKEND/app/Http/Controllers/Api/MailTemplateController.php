@@ -8,19 +8,16 @@ use Illuminate\Http\Request;
 use App\Models\MailTemplate;
 use App\Http\Resources\MailTemplateResource;
 use App\Repositories\MailTemplateRepository;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class MailTemplateController extends Controller
 {
-
     private $mailTemplateRepository;
 
     public function __construct(MailTemplateRepository $mailTemplateRepository)
     {
         $this->mailTemplateRepository = $mailTemplateRepository;
     }
-
 
     /**
      * @OA\Get(
@@ -144,19 +141,7 @@ class MailTemplateController extends Controller
      */
     public function store(MailTemplateRequest $request)
     {
-        try {
-            $mailTemplate = MailTemplate::create($request->all());
-            return response()->json([
-                'message' => ' Mail Template created successfully!',
-                'data' => new MailTemplateResource($mailTemplate)
-            ], 201);
-        } catch (ValidationException $e) {
-            // Custom error response
-            return response()->json([
-                'message' => 'Validation error',
-                'errors' => $e->errors(),
-            ], 422);
-        }
+        return $this->mailTemplateRepository->store($request);
     }
 
     /**

@@ -6,16 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Repositories\OccupationRepository;
 
-/**
- * Class OccupationController
- *
- * @package App\Http\Controllers\Api
- */
 class OccupationController extends Controller
 {
-
-
-    
     private $occupationRepository;
 
     public function __construct(OccupationRepository $occupationRepository)

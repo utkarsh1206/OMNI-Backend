@@ -8,7 +8,6 @@ use App\Repositories\CityRepository;
 
 class CityController extends Controller
 {
-
     private $cityRepository;
 
     public function __construct(CityRepository $cityRepository)

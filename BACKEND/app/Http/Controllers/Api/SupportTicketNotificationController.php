@@ -8,13 +8,13 @@ use Illuminate\Http\Request;
 
 class SupportTicketNotificationController extends Controller
 {
-
     private $supportTicketNotificationRepository;
 
     public function __construct(SupportTicketNotificationRepository $supportTicketNotificationRepository)
     {
         $this->supportTicketNotificationRepository = $supportTicketNotificationRepository;
     }
+
     /**
      * @OA\Get(
      *     path="/api/notification",

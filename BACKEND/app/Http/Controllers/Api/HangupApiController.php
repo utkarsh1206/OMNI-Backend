@@ -34,13 +34,13 @@ class HangupApiController extends Controller
 
             // Get validation rules from FormRequest
             $rules = (new HangupApiRequest())->rules();
-    
+
             // Validate request using extracted rules
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()]);
             }
-    
+
             $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
             return sendHttpRequest($url, 'POST', $validatedData);
         } catch (Exception $e) {

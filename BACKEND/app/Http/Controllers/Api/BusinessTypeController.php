@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Repositories\BusinessTypeRepository;
-use Swagger\Annotations as SWG;
 
 class BusinessTypeController extends Controller
 {

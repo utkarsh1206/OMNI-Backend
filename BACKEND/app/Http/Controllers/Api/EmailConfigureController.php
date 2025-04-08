@@ -5,12 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmailConfigureRequest;
 use App\Models\EmailConfigure;
-use App\Http\Resources\TenantsResource;
 use App\Repositories\EmailConfigureRepository;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 
 class EmailConfigureController extends Controller
@@ -22,7 +17,8 @@ class EmailConfigureController extends Controller
     {
         $this->emailConfigureRepository = $emailConfigureRepository;
     }
-     /**
+
+    /**
      * @OA\Get(
      *     path="/api/email-configure",
      *     summary="Get all email configurations",
@@ -67,7 +63,6 @@ class EmailConfigureController extends Controller
     {
         return $this->emailConfigureRepository->list($request);
     }
-
 
     /**
      * @OA\Post(
@@ -125,7 +120,7 @@ class EmailConfigureController extends Controller
         return $this->emailConfigureRepository->store($request);
     }
 
-     /**
+    /**
      * @OA\Get(
      *     path="/api/email-configure/{id}",
      *     summary="Get an email configuration by ID",
@@ -162,7 +157,6 @@ class EmailConfigureController extends Controller
     {
         return $this->emailConfigureRepository->show($email_configure);
     }
-
 
     /**
      * @OA\Put(
@@ -225,7 +219,7 @@ class EmailConfigureController extends Controller
         return $this->emailConfigureRepository->update($request, $email_configure);
     }
 
-     /**
+    /**
      * @OA\Delete(
      *     path="/api/email-configure/{id}",
      *     summary="Delete an email configuration",

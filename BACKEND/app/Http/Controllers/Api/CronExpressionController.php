@@ -8,13 +8,13 @@ use App\Repositories\CronExpressionRepository;
 
 class CronExpressionController extends Controller
 {
-
     private $cronExpressionRepository;
 
     public function __construct(CronExpressionRepository $cronExpressionRepository)
     {
         $this->cronExpressionRepository = $cronExpressionRepository;
     }
+
     /**
      * @OA\Get(
      *     path="/api/cron-expressions",
@@ -75,6 +75,6 @@ class CronExpressionController extends Controller
      */
     public function index(Request $request)
     {
-          return $this->cronExpressionRepository->list($request);
+        return $this->cronExpressionRepository->list($request);
     }
 }

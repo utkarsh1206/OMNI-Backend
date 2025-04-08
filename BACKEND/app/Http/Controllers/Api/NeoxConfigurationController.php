@@ -8,8 +8,6 @@ use App\Http\Requests\NeoxConfigurationRequest;
 use App\Repositories\NeoxConfigurationRepository;
 use App\Http\Resources\NeoxConfigurationResource;
 use App\Models\NeoxConfiguration;
-use Exception;
-use App\Http\Response\CustomApiResponse;
 
 class NeoxConfigurationController extends Controller
 {
@@ -24,7 +22,6 @@ class NeoxConfigurationController extends Controller
     {
         return $this->neoxConfigurationRepository->list($request);
     }
-
 
     public function store(NeoxConfigurationRequest $request)
     {

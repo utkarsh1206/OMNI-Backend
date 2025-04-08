@@ -9,14 +9,14 @@ use Swagger\Annotations as SWG;
 
 class CronCommandController extends Controller
 {
-
     private $cronCommandRepository;
+
     public function __construct(CronCommandRepository $cronCommandRepository)
     {
         $this->cronCommandRepository = $cronCommandRepository;
     }
 
-     /**
+    /**
      * @SWG\Get(
      *     path="/api/cron-commands",
      *     summary="Get a list of cron commands",

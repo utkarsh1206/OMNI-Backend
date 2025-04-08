@@ -8,12 +8,13 @@ use App\Http\Response\CustomApiResponse;
 use App\Repositories\PauseResumeRepository;
 use App\Services\ApiRequestService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class PauseResumeApiController extends Controller
 {
     private $apiRequestService;
+
     private $pauseResumeRepository;
+
     private $apiResponse;
 
     public function __construct(ApiRequestService $apiRequestService, PauseResumeRepository $pauseResumeRepository, CustomApiResponse $customApiResponse)

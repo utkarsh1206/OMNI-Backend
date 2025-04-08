@@ -11,7 +11,6 @@ use App\Http\Requests\CronConfigurationRequest;
 
 class CronConfigurationController extends Controller
 {
-
     private $cronConfigurationRepository;
 
     public function __construct(CronConfigurationRepository $cronConfigurationRepository)
@@ -196,14 +195,14 @@ class CronConfigurationController extends Controller
      *     )
      * )
      */
-    
+
     public function update(CronConfigurationRequest $request, $id)
     {
         return $this->cronConfigurationRepository->update($request, $id);
     }
 
-   
-     /**
+
+    /**
      * @OA\Delete(
      *     path="/api/cron-configurations/{id}",
      *     tags={"Cron Configurations"},

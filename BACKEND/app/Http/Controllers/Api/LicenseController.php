@@ -189,11 +189,11 @@ class LicenseController extends Controller
         }
 
         $licenseKey = $isTenant
-        ? DB::table('licenses')->value('license_key')
-        : DB::table('admins')->value('license_key');
+            ? DB::table('licenses')->value('license_key')
+            : DB::table('admins')->value('license_key');
 
         $adminFlag = $isTenant ? 0 : 1;
-        
+
         if (!$licenseKey) {
             return response()->json([
                 'error' => trans('message.license_key_not_found'),

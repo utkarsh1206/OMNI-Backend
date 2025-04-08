@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -7,9 +8,7 @@ use Illuminate\Http\Request;
 
 class UpdateCustomFieldController extends Controller
 {
-
     private $updateCustomFieldRepository;
-
 
     public function __construct(UpdateCustomFieldRepository $updateCustomFieldRepository)
     {

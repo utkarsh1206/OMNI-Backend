@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use Illuminate\Http\Request;
 use App\Models\MailTemplate;
-use Illuminate\Support\Facades\Log;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;

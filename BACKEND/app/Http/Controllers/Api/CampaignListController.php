@@ -3,13 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\EcdialCampaign;
 use App\Repositories\CampaignListRepository;
-use Illuminate\Http\Request;
 
 class CampaignListController extends Controller
 {
-    
     private $campaignListRepository;
 
     public function __construct(CampaignListRepository $campaignListRepository)

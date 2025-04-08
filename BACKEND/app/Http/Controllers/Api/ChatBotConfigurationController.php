@@ -9,7 +9,6 @@ use App\Repositories\ChatBotConfigurationRepository;
 
 class ChatBotConfigurationController extends Controller
 {
-
     private $chatBotConfigurationRepository;
 
     public function __construct(ChatBotConfigurationRepository $chatBotConfigurationRepository)
@@ -88,7 +87,7 @@ class ChatBotConfigurationController extends Controller
         return $this->chatBotConfigurationRepository->list($request);
     }
 
-     /**
+    /**
      * @OA\Post(
      *     path="/api/sms-provider-configurations",
      *     tags={"Sms Provider Configurations"},

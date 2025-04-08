@@ -9,8 +9,6 @@ use App\Repositories\EcdialListRepository;
 use App\Http\Resources\EcdialListResource;
 use App\Models\EcdialLists;
 use Exception;
-use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Http\Response\CustomApiResponse;
 
 class EcdialListsController extends Controller
@@ -26,11 +24,7 @@ class EcdialListsController extends Controller
 
     public function index(Request $request)
     {
-        try {
-            return $this->ecdialListRepository->list($request);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->ecdialListRepository->list($request);
     }
 
     /**
@@ -38,11 +32,7 @@ class EcdialListsController extends Controller
      */
     public function store(EcdialListRequest $request)
     {
-        try {
-            return $this->ecdialListRepository->create($request);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->ecdialListRepository->create($request);
     }
 
     /**
@@ -63,11 +53,7 @@ class EcdialListsController extends Controller
      */
     public function update(EcdialListRequest $request, $list_id)
     {
-        try {
-            return $this->ecdialListRepository->update($request, $list_id);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->ecdialListRepository->update($request, $list_id);
     }
 
     /**
@@ -75,10 +61,6 @@ class EcdialListsController extends Controller
      */
     public function destroy($list_id)
     {
-        try {
-            return $this->ecdialListRepository->delete($list_id);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->ecdialListRepository->delete($list_id);
     }
 }

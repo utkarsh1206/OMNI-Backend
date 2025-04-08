@@ -4,18 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmailRequest;
-use App\Models\EmailConfigure;
 use App\Repositories\EmailRepository;
 
 class EmailController extends Controller
 {
-
     private $emailRepository;
 
     public function __construct(EmailRepository $emailRepository)
     {
         $this->emailRepository = $emailRepository;
     }
+
     /**
      * @OA\Post(
      *     path="/api/send-email",

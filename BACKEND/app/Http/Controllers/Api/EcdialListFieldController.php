@@ -9,14 +9,12 @@ use App\Repositories\EcdialListFieldsRepository;
 use App\Http\Resources\EcdialListFieldResource;
 use App\Models\EcdialListField;
 use Exception;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 use App\Http\Response\CustomApiResponse;
 
 class EcdialListFieldController extends Controller
 {
     protected $ecdialListFieldRepository;
+
     private $apiResponse;
 
     public function __construct(EcdialListFieldsRepository $ecdialListFieldRepository, CustomApiResponse $customApiResponse)
@@ -27,11 +25,7 @@ class EcdialListFieldController extends Controller
 
     public function index(Request $request)
     {
-        try {
-            return $this->ecdialListFieldRepository->list($request);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->ecdialListFieldRepository->list($request);
     }
 
     /**
@@ -39,12 +33,7 @@ class EcdialListFieldController extends Controller
      */
     public function store(EcdialListFieldRequest $request)
     {
-        try {
-            // Validation is automatically done by EcdialListFieldRequest
-            return $this->ecdialListFieldRepository->create($request);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->ecdialListFieldRepository->create($request);
     }
 
 
@@ -66,11 +55,7 @@ class EcdialListFieldController extends Controller
      */
     public function update(EcdialListFieldRequest $request, $id)
     {
-        try {
-            return $this->ecdialListFieldRepository->update($request, $id);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->ecdialListFieldRepository->update($request, $id);
     }
 
     /**
@@ -78,10 +63,6 @@ class EcdialListFieldController extends Controller
      */
     public function destroy($id)
     {
-        try {
-            return $this->ecdialListFieldRepository->delete($id);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->ecdialListFieldRepository->delete($id);
     }
 }

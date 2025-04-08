@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Repositories\EmailLogRepository;
 use App\Http\Resources\EmailLogResource;
-use Carbon\Carbon;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EmailLogController extends Controller
 {
@@ -87,11 +85,10 @@ class EmailLogController extends Controller
      *     )
      * )
      */
-    
+
     public function index(Request $request)
     {
-        $logs = $this->emailLogRepository->list($request);
-        return response()->json($logs);
+        return $this->emailLogRepository->list($request);
     }
 
     /**

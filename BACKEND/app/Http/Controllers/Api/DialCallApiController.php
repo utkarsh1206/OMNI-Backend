@@ -17,7 +17,7 @@ class DialCallApiController extends Controller
     {
         $this->apiResponse = $customApiResponse;
     }
-    
+
     public function dialCallApi(Request $request)
     {
         try {

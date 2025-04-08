@@ -5,21 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest;
 use Illuminate\Http\Request;
-use App\Models\Category;
 use App\Repositories\CategoryRepository;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Database\QueryException;
 
 class CategoryController extends Controller
 {
-
-
     private $categoryRepository;
 
     public function __construct(CategoryRepository $categoryRepository)
     {
         $this->categoryRepository = $categoryRepository;
     }
+
     /**
      * @OA\Get(
      *     path="/api/categories",

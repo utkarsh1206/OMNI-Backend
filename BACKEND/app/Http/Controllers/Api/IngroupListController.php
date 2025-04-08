@@ -3,18 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\EcdialInboundGroup;
 use App\Repositories\InGroupListRepository;
 
 class IngroupListController extends Controller
 {
-
     private $inGroupListRepository;
 
     public function __construct(InGroupListRepository $inGroupListRepository)
     {
         $this->inGroupListRepository = $inGroupListRepository;
     }
+
     /**
      * @OA\Get(
      *     path="/api/ingroups",

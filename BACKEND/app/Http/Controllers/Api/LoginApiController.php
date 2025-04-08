@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Requests\LoginApiRequest;
 use App\Repositories\LoginApiRepository;
 use App\Services\ApiRequestService;
@@ -11,6 +10,7 @@ use App\Services\ApiRequestService;
 class LoginApiController extends Controller
 {
     private $apiRequestService;
+
     private $loginRepository;
 
     public function __construct(ApiRequestService $apiRequestService, LoginApiRepository $loginRepository)
@@ -44,7 +44,7 @@ class LoginApiController extends Controller
 
             $username = $request->user_id;
             $campaignId = $request->campaign_id;
-            
+
             return $this->loginRepository->loginData($connection, $username, $campaignId);
         }
     }

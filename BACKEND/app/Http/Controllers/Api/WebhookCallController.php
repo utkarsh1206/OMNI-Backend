@@ -4,16 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use App\Http\Requests\WebhookCallRequest;
 use App\Http\Response\CustomApiResponse;
-use App\Models\NeoxCallLog;
 use App\Repositories\WebhookCallRepository;
 use Exception;
 
 class WebhookCallController extends Controller
 {
     protected $webhookCallRepository;
+
     private $apiResponse;
 
     // Inject WebhookCallRepository into the controller

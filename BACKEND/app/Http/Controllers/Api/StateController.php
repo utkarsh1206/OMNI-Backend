@@ -8,7 +8,6 @@ use App\Repositories\StateRepository;
 
 class StateController extends Controller
 {
-
     private $stateRepository;
 
     public function __construct(StateRepository $stateRepository)
@@ -16,8 +15,7 @@ class StateController extends Controller
         $this->stateRepository = $stateRepository;
     }
 
-
-     /**
+    /**
      * @OA\Get(
      *     path="/api/states",
      *     summary="Retrieve a list of states",
@@ -93,8 +91,6 @@ class StateController extends Controller
      *     ),
      * )
      */
-
-
     public function index(Request $request)
     {
         return $this->stateRepository->list($request);

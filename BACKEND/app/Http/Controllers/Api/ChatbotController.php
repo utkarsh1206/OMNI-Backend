@@ -14,13 +14,13 @@ use Exception;
 class ChatbotController extends Controller
 {
 
-    protected $ChatbotRepository;
-    
+    protected $chatbotRepository;
+
     private $apiResponse;
 
-    public function __construct(ChatbotRepository $ChatbotRepository, CustomApiResponse $customApiResponse)
+    public function __construct(ChatbotRepository $chatbotRepository, CustomApiResponse $customApiResponse)
     {
-        $this->ChatbotRepository = $ChatbotRepository;
+        $this->chatbotRepository = $chatbotRepository;
         $this->apiResponse = $customApiResponse;
     }
 
@@ -79,11 +79,7 @@ class ChatbotController extends Controller
 
     public function index(Request $request)
     {
-        try {
-            return $this->ChatbotRepository->list($request);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->chatbotRepository->list($request);
     }
 
     /**
@@ -155,11 +151,7 @@ class ChatbotController extends Controller
 
     public function store(ChatbotRequest $request)
     {
-        try {
-            return $this->ChatbotRepository->create($request);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->chatbotRepository->create($request);
     }
 
 
@@ -224,13 +216,8 @@ class ChatbotController extends Controller
 
     public function update(Request $request, $id)
     {
-        try {
-            return $this->ChatbotRepository->update($request, $id);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->chatbotRepository->update($request, $id);
     }
-
 
     /**
      * @OA\Delete(
@@ -267,10 +254,6 @@ class ChatbotController extends Controller
 
     public function destroy($id)
     {
-        try {
-            return $this->ChatbotRepository->delete($id);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
-        }
+        return $this->chatbotRepository->delete($id);
     }
 }

@@ -4,19 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\NoteRequest;
-use App\Models\Notes;
 use App\Repositories\NoteRepository;
-use Illuminate\Http\Request;
 
 class NoteController extends Controller
 {
-
     private $noteRepository;
 
     public function __construct(NoteRepository $noteRepository)
     {
         $this->noteRepository = $noteRepository;
     }
+
     /**
      * @OA\Get(
      *     path="/api/note",
@@ -55,7 +53,7 @@ class NoteController extends Controller
      *     )
      * )
      */
-    
+
     public function index(NoteRequest $request)
     {
         return  $this->noteRepository->index($request);

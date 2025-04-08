@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DisposCallApiRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use App\Http\Response\CustomApiResponse;
 use Illuminate\Support\Facades\Validator;

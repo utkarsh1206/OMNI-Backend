@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Tenant;
 use App\Models\Detail;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class TenantLicenseUpdateController extends Controller
