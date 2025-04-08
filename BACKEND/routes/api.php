@@ -55,7 +55,7 @@ use App\Http\Controllers\Api\SmsProviderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\EcdialListsController;
 use App\Http\Controllers\Api\EcdialListFieldController;
-use App\Http\Controllers\Api\ChatbotController;
+use App\Http\Controllers\Api\ChatBotController;
 use App\Http\Controllers\Api\ImportLeadController;
 use App\Http\Controllers\Api\CustomLeadController;
 use App\Http\Controllers\Api\CampaignApiController;
@@ -79,6 +79,7 @@ use App\Http\Controllers\Api\LiveAgentController;
 use App\Http\Controllers\Api\WebhookCallController;
 use App\Http\Middleware\ModifyRequestMiddleware;
 use App\Http\Controllers\Api\ChatBotConfigurationController;
+use App\Http\Controllers\Api\MessageController;
 
 Route::post('login', [LoginController::class, 'login']);
 
@@ -158,7 +159,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/branding', [UserController::class, 'getBranding']);
     Route::apiResource('live-agents', LiveAgentController::class);
     Route::apiResource('/lists_fields', EcdialListFieldController::class);
-    Route::apiResource('chatbots', ChatbotController::class);
+    Route::apiResource('chatbots', ChatBotController::class);
     Route::get('/download-sample/{list_id}', [ImportLeadController::class, 'downloadSampleCsv']);
     Route::post('/upload-lead-csv/{list_id}', [ImportLeadController::class, 'uploadLeadCsv']);
     Route::get('/custom-leads/{list_id}', [CustomLeadController::class, 'index']);  // Get all leads for a list
@@ -214,6 +215,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
     Route::post('call-history', [WebhookCallController::class, 'callHistory']);
     Route::apiResource('chat-bot-configurations', ChatBotConfigurationController::class);
+    Route::get('get-messages', [MessageController::class, 'getMessages']);
+    Route::post('message', [MessageController::class, 'storeMessage']);
 });
 
 Route::post('/ext-api/camp-list', [CampaignApiController::class, 'campaignListApi']);
