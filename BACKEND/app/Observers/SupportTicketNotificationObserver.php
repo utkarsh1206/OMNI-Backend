@@ -3,7 +3,6 @@
 namespace App\Observers;
 
 use App\Models\SupportTicketNotification;
-use Illuminate\Support\Facades\Log;
 use App\Services\SlaService;
 use App\Models\Supportticket;
 
@@ -20,7 +19,7 @@ class SupportTicketNotificationObserver
         $sla_service = new SlaService();
         $openTicketData = $sla_service->calculateSla($support_ticket_id);
 
-        Log::info("openTicketData " . json_encode($openTicketData));
+        generateLogs('info', 'openTicketData: '. json_encode($openTicketData));
 
         $updateData = [];
 

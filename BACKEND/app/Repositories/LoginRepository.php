@@ -6,9 +6,7 @@ use App\Exceptions\InvalidCredentialsException;
 use Illuminate\Http\Request;
 use App\Models\Admins;
 use App\Models\Users;
-use App\Models\Phones;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Api\LicenseController;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Response\CustomApiResponse;
@@ -43,7 +41,7 @@ class LoginRepository
         $domain = $request->input('domain');
         if ($validator["flag"] == 1 || $validator["flag"] == 2) {
             if (isLicenseExpired($request)) {
-                //  return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
+                return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
             }
 
             if (!$domain) {
@@ -66,25 +64,21 @@ class LoginRepository
             } elseif ($validator['flag'] == 2) {
                 $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
                 if (!$userData) {
-                    Log::error('User not found or deleted', ['credentials' => $credentials]);
+                    generateLogs('error', 'User not found or deleted credentials : ', $credentials);
                     return response()->json(['error' =>  trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
                 }
                 $phoneData = $this->getPhoneData($request);
                 if (!$phoneData) {
-                    Log::error('Phone not found or inactive', ['phone' => $request->input('phone')]);
+                    generateLogs('error', 'Phone not found or inactive phone: ', $request->input('phone'));
                     return response()->json(['error' =>  trans('message.invalid_phone_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
                 }
-                Log::info('Phone data retrieved:', ['phoneData' => $phoneData]);
                 if ($this->authenticatePassword($credentials, $userData, $request->input('phone_password'), $phoneData)) {
-                    Log::info('Both password and phone password checks passed');
-
                     // Check if user or extension already exists in LiveAgents
                     $existingAgent = LiveAgents::where('user_id', $userData['id'])
                         ->orWhere('extension', $request->phone)
                         ->first();
 
                     if ($existingAgent) {
-                        Log::error('User or phone already logged in', ['userId' => $userData['id'], 'extension' => $request->phone]);
                         return response()->json(['error' => trans('message.user_or_phone_already_logged_in')], ResponseHTTP::HTTP_UNAUTHORIZED);
                     }
 
@@ -104,7 +98,7 @@ class LoginRepository
                         ]);
                     }
                 } else {
-                    Log::error('Unauthorized: Invalid credentials', ['userData' => $userData]);
+                    generateLogs('error', 'Unauthorized: Invalid credentials userData: ', $userData);
                     return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
                 }
             }
@@ -114,7 +108,7 @@ class LoginRepository
             ];
             return is_string($token) ? $this->apiResponse->getResponseStructure(trans('message.success'), $dataArr, trans('message.login')) : $token;
         } catch (\Exception $ex) {
-            Log::error('Error during authentication: ' . $ex->getMessage());
+            generateLogs('error', 'Error during authentication: ', $ex->getMessage());
             return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
         }
     }

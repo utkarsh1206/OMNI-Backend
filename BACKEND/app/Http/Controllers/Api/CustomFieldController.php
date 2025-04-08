@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\EcdialLists;
 use App\Models\EcdialListField;
-use Illuminate\Support\Facades\Log;
 
 class CustomFieldController extends Controller
 {
@@ -85,8 +84,8 @@ class CustomFieldController extends Controller
             ->orderBy('field_rank')
             ->orderBy('field_order')
             ->get();
-            Log::info('Fetched raw fields', ['fields' => $fields]);
-
+            generateLogs('info', 'Fetched raw fields: '. $fields);
+        
         $mappedFields = $fields->map(function ($field) {
             return [
                 'label' => $field->field_label,

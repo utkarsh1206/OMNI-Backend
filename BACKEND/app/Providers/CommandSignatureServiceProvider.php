@@ -7,9 +7,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use App\Models\CronCommand;
 use File;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Artisan;
 
 class CommandSignatureServiceProvider extends ServiceProvider
 {
@@ -19,12 +17,11 @@ class CommandSignatureServiceProvider extends ServiceProvider
         // Listen for CommandStarting event
         Event::listen(CommandFinished::class, function ($event) {
             // Log the event to check if it's being triggered
-            Log::info('CommandStarting event fired!');
-
+            generateLogs('info', 'CommandStarting event fired!');
             // Check if the command being executed is 'make:command'
             if ($event->command === 'make:command') {
                 $commandName = $event->input->getArgument('name');
-                Log::info('Artisan make:command executed for ' . $commandName);
+                generateLogs('info', 'Artisan make:command executed for ' . $commandName);
                 $this->delayedCreateCommandAndStoreSignature($commandName);
             }
         });
@@ -59,12 +56,12 @@ class CommandSignatureServiceProvider extends ServiceProvider
                     ]
                 );
                 $this->updateSeederFile($signature, $type);
-                Log::info("Command '$commandName' created with signature '$signature' and stored in the database.");
+                generateLogs('info', "Command '$commandName' created with signature '$signature' and stored in the database.");
             } else {
-                Log::error("Could not extract signature from the generated command: '$commandName'.");
+                generateLogs('error', "Could not extract signature from the generated command: '$commandName'.");
             }
         } else {
-            Log::error("The generated command file for '$commandName' was not found.");
+            generateLogs('error', "The generated command file for '$commandName' was not found.");
         }
     }
 
@@ -88,12 +85,12 @@ class CommandSignatureServiceProvider extends ServiceProvider
                 // Write the updated contents back to the seeder file
                 File::put($seederFilePath, $newContents);
 
-                Log::info("CronCommandsSeeder file has been updated with signature: '$signature'.");
+                generateLogs('info', "CronCommandsSeeder file has been updated with signature: '$signature'.");
             } else {
-                Log::info("Command signature '$signature' already exists in the seeder file.");
+                generateLogs('info', "Command signature '$signature' already exists in the seeder file.");
             }
         } else {
-            Log::error("Seeder file 'CronCommandsSeeder.php' does not exist.");
+            generateLogs('error', "Seeder file 'CronCommandsSeeder.php' does not exist.");
         }
     }
 }

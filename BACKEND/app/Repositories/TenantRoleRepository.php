@@ -4,10 +4,8 @@ namespace App\Repositories;
 
 use Illuminate\Http\Request;
 use App\Models\TenantRole;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Http\Response\CustomApiResponse;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
 
 class TenantRoleRepository
@@ -39,7 +37,7 @@ class TenantRoleRepository
                 : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.data_fetch'));
         } catch (Exception $ex) {
-            Log::error("Error fetching Support Tickets: " . $ex->getMessage());
+            generateLogs('error', 'Error fetching Support Tickets: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\IncidentType;
 use App\Models\SlaTarget;
-use App\Models\Supportticket;
+use App\Models\SupportTicket;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Carbon\Carbon;
@@ -29,7 +29,7 @@ class SlaReportRepository
             $perPage = $request->input('perPage', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
-            $ticketsquery = Supportticket::with([
+            $ticketsquery = SupportTicket::with([
                 'notifications' => function ($query) {
                     $query->select(
                         'support_ticket_id',
@@ -109,7 +109,7 @@ class SlaReportRepository
     public function prioritySLA(Request $request)
     {
         try {
-            $tickets = Supportticket::select(
+            $tickets = SupportTicket::select(
                 'default_priority as priority',
                 DB::raw("COUNT(*) as ticket_count")
             )
@@ -132,7 +132,7 @@ class SlaReportRepository
     public function categorySLA(Request $request)
     {
         try {
-            $tickets = Supportticket::select(
+            $tickets = SupportTicket::select(
                 'default_type as category',
                 DB::raw("COUNT(*) as ticket_count")
             )
@@ -181,7 +181,7 @@ class SlaReportRepository
     public function exportCsv(Request $request)
     {
         try {
-            $ticketsquery = Supportticket::with([
+            $ticketsquery = SupportTicket::with([
                 'notifications' => function ($query) {
                     $query->select(
                         'support_ticket_id',

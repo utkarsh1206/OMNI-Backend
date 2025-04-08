@@ -9,7 +9,6 @@ use App\Models\SlaOffDay;
 use App\Models\SlaHoliday;
 use App\Models\SlaTarget;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
@@ -54,7 +53,7 @@ class SlaSettingRepository
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $slasFormatted, trans('message.data_fetch'));
         } catch (Exception $ex) {
-            Log::error("Error fetching SLA settings: " . $ex->getMessage());
+            generateLogs('error', 'Error fetching SLA settings: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -76,8 +75,7 @@ class SlaSettingRepository
             return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.sla_setting_create_msg'));
         } catch (Exception $ex) {
             DB::rollBack();
-            Log::error("Error occurred while creating SLA: " . $ex->getMessage());
-
+            generateLogs('error', 'Error occurred while creating SLA:  ', $ex->getMessage());
             if ($ex->getCode() === '23000' && strpos($ex->getMessage(), '1062') !== false) {
                 return response()->json(['message' => 'Error: SLA name must be unique.'], ResponseHTTP::HTTP_BAD_REQUEST);
             }
@@ -92,7 +90,7 @@ class SlaSettingRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.data_fetch'));
         } catch (Exception $ex) {
-            Log::error("Error fetching SLA setting: " . $ex->getMessage());
+            generateLogs('error', 'Error fetching SLA setting: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -122,7 +120,7 @@ class SlaSettingRepository
             return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.sla_setting_update_msg'));
         } catch (Exception $ex) {
             DB::rollBack();
-            Log::error("Error during SLA update: " . $ex->getMessage());
+            generateLogs('error', 'Error during SLA update: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -134,7 +132,7 @@ class SlaSettingRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $slaSetting, trans('message.sla_setting_delete_msg'));
         } catch (\Exception $ex) {
-            Log::error("Error deleting SLA setting: " . $ex->getMessage());
+            generateLogs('error', 'Error deleting SLA setting: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

@@ -12,8 +12,6 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class EmailRepository
 {
-
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
@@ -31,6 +29,7 @@ class EmailRepository
         $smtpPassword = $emailConfig->smtp_password;
         $sender_name = $emailConfig->sender_name;
         $sender_email = $emailConfig->sender_email;
+        
         // Configure SMTP dynamically
         config([
             'mail.mailers.smtp.host' =>  $smtpHost,
@@ -49,13 +48,6 @@ class EmailRepository
             generateLogs('info', 'Email sent successfully: ', "Email sent successfully to {$validated['to']} with subject: {$validated['subject']}");
             return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.email_sent_success'));
         } catch (Exception $e) {
-            // Log the error message if email fails to send
-            Log::error('Failed to send email', [
-                'error' => $e->getMessage(),
-                'recipient' => $validated['to'],
-                'subject' => $validated['subject'],
-            ]);
-
             // Return a response indicating failure
             generateLogs('error', 'Error in generating Email  List: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);

@@ -7,7 +7,6 @@ use App\Models\LiveAgents;
 use App\Models\PauseResumeUserLog;
 use App\Models\UserDailyActivity;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class PauseResumeRepository
@@ -76,7 +75,7 @@ class PauseResumeRepository
 
             $logEntry->update([$field => $formattedTime]);
         } else {
-            Log::warning("No previous $previousStatus log found for user ID: $userId.");
+            generateLogs('warning', "No previous $previousStatus log found for user ID: $userId.");
         }
     }
 
