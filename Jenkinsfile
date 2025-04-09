@@ -1,15 +1,9 @@
 pipeline {
     agent any
 
-    tools {
-        sonarScanner 'NEOX-Sonarscanner'
-    }
-
     environment {
         SONAR_AUTH_TOKEN = credentials('sonarqube-user')
     }
-
-  
 
     stages {
         stage('Checkout') {
@@ -19,12 +13,15 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            def scannerHome = tool 'SonarScanner';
-            withSonarQubeEnv() {
-                sh "${scannerHome}/bin/sonar-scanner"
+            steps {
+                script {
+                    def scannerHome = tool name: 'NEOX-Sonarscanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                    withSonarQubeEnv('NEOX-Sonarqube') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
             }
         }
-
     }
 
     post {
