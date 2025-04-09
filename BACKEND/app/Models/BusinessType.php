@@ -9,6 +9,4 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class BusinessType extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = 'business_types';
-    protected $connection = 'mysql';
 }

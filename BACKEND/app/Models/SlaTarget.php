@@ -9,8 +9,6 @@ class SlaTarget extends Model
 {
     use HasFactory;
 
-    protected $table = 'sla_targets';
-
     protected $fillable = [
         'sla_id',
         'escalation_level',

@@ -116,7 +116,7 @@ class DepartmentController extends Controller
      */
     public function store(DepartmentRequest $request)
     {
-        $this->departmentRepository->store($request);
+        return $this->departmentRepository->store($request);
     }
 
 

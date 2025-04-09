@@ -9,8 +9,6 @@ class IncidentType extends Model
 {
     use HasFactory;
 
-    protected $table = 'incident_types';
-
     protected $fillable = ['name', 'description', 'priority', 'category_id', 'priority', 'sla_id'];
 
     public function category()

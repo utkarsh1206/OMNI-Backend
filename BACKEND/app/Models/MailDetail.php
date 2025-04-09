@@ -10,8 +10,6 @@ class MailDetail extends Model
     use HasFactory;
 
     // Add table name if it doesn't follow the default naming convention
-    protected $table = 'mail_details';
-
     protected $fillable = [
         'date',
         'user_id',

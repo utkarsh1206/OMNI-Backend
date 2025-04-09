@@ -8,6 +8,4 @@ use Illuminate\Database\Eloquent\Model;
 class EcdialUserGroup extends Model
 {
     use HasFactory;
-
-    protected $table = 'ecdial_user_groups';
 }

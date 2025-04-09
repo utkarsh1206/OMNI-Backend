@@ -16,107 +16,102 @@ class MessageController extends Controller
         $this->messageRepository = $messageRepository;
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/get-messages",
-     *     tags={"Messages"},
-     *     summary="fetch messages",
-     *     description="Retrieve a list of cron configurations with optional search and pagination.",
-     *     @OA\Parameter(
-     *         name="search",
-     *         in="query",
-     *         description="Search term for command signature, schedule type, or schedule expression",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="per_page",
-     *         in="query",
-     *         description="Number of items per page for pagination",
-     *         required=false,
-     *         @OA\Schema(type="integer", default=10)
-     *     ),
-     *     @OA\Parameter(
-     *         name="page",
-     *         in="query",
-     *         description="Page number for pagination. Pass 'all' to fetch all records",
-     *         required=false,
-     *         @OA\Schema(type="string", default="1")
-     *     ),
-     *     @OA\Parameter(
-     *         name="command_signature",
-     *         in="query",
-     *         description="Filter by command signature",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="schedule_type",
-     *         in="query",
-     *         description="Filter by schedule type",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="status",
-     *         in="query",
-     *         description="Filter by status (active/inactive)",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="A list of cron configurations",
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal Server Error"
-     *     )
-     * )
-     */
+   /**
+ * @OA\Get(
+ *     path="/api/messages",
+ *     summary="Get messages for the authenticated user",
+ *     description="Fetches all messages for the currently authenticated user.",
+ *     operationId="getMessages",
+ *     tags={"Messages"},
+ *     security={{
+ *         "bearerAuth": {}
+ *     }},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successful retrieval of messages",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="success"),
+ *             @OA\Property(property="message", type="string", example="Data fetched successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="error"),
+ *             @OA\Property(property="message", type="string", example="Invalid request")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="error"),
+ *             @OA\Property(property="message", type="string", example="Internal server error")
+ *         )
+ *     )
+ * )
+ */
     public function getMessages(Request $request)
     {
         return $this->messageRepository->getMessages($request);
     }
 
     /**
-     * @OA\Post(
-     *     path="/api/cron-configurations",
-     *     tags={"Cron Configurations"},
-     *     summary="Create a new Cron Configuration",
-     *     description="Create a new cron configuration.",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"command_signature", "schedule_type", "schedule_expression"},
-     *             @OA\Property(property="command_signature", type="string"),
-     *             @OA\Property(property="schedule_type", type="string"),
-     *             @OA\Property(property="schedule_expression", type="string"),
-     *             @OA\Property(property="status", type="string", default="active")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Cron configuration created successfully",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="message", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Internal Server Error"
-     *     )
-     * )
-     */
+ * @OA\Post(
+ *     path="/api/messages",
+ *     summary="Store a new message",
+ *     description="Creates a new message for a specific user.",
+ *     operationId="storeMessage",
+ *     tags={"Messages"},
+ *     security={{
+ *         "bearerAuth": {}
+ *     }},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         description="Message data to be stored",
+ *         @OA\MediaType(
+ *             mediaType="application/json",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"text", "user_id"},
+ *                 @OA\Property(property="text", type="string", example="This is a message"),
+ *                 @OA\Property(property="user_id", type="integer", example=1)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=201,
+ *         description="Message successfully created",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="success"),
+ *             @OA\Property(property="message", type="string", example="Message created successfully")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="error"),
+ *             @OA\Property(property="message", type="string", example="Invalid request")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="error"),
+ *             @OA\Property(property="message", type="string", example="Internal server error")
+ *         )
+ *     )
+ * )
+ */
     public function storeMessage(MessageRequest $request)
     {
         return $this->messageRepository->storeMessage($request);

@@ -10,7 +10,6 @@ class NeoxCallLog extends Model
     use HasFactory;
 
     // Define the table name
-    protected $table = 'neox_call_logs';
 
     // Define the primary key (optional if 'id' is used by default)
     protected $primaryKey = 'id';

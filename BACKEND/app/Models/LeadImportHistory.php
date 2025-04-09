@@ -9,8 +9,6 @@ class LeadImportHistory extends Model
 {
     use HasFactory;
 
-    protected $table = 'lead_import_histories';
-
     protected $fillable = [
         'user_id',
         'file_name',

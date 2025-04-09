@@ -30,7 +30,18 @@ if (! function_exists('logEmail')) {
         $emailLog->save();
     }
 }
+if (! function_exists('uploadAttachment')) {
+ function uploadAttachment(Request $request, $fieldName = 'attachment', $directory = 'attachments')
+{
+    if ($request->hasFile($fieldName)) {
+        $attachment = $request->file($fieldName);
+        $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
+        return $attachment->storeAs($directory, $filename, 'public');
+    }
+    return null;
+}
 
+}
 /**
  * Set email configuration
  *

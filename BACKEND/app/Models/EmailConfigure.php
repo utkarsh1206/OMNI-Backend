@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class EmailConfigure extends Model
 {
     use SoftDeletes;
-    protected $table = 'email_configures';
     protected $fillable = [
         'type',
         'product_id',
