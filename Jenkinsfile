@@ -32,6 +32,7 @@ pipeline {
             body: """<p>Great news! The pipeline for <strong>${env.JOB_NAME}</strong> build <strong>#${env.BUILD_NUMBER}</strong> has passed.</p>
                      <p>Check console output <a href="${env.BUILD_URL}console">here</a>.</p>""",
             to: 'ranavishal037@gmail.com',
+            from: 'jenkins@stl.tech',
             attachLog: true
         )
         echo "✅ Email command executed for SUCCESS"
@@ -44,6 +45,7 @@ pipeline {
             body: """<p>Oops! The pipeline for <strong>${env.JOB_NAME}</strong> build <strong>#${env.BUILD_NUMBER}</strong> has failed.</p>
                      <p>Check console output <a href="${env.BUILD_URL}console">here</a>.</p>""",
             to: 'ranavishal037@gmail.com',
+            from: 'jenkins@stl.tech',
             attachLog: true
         )
         echo "❌ Email command executed for FAILURE"
