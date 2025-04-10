@@ -12,9 +12,7 @@ use Illuminate\Http\Request;
 class PauseResumeApiController extends Controller
 {
     private $apiRequestService;
-
     private $pauseResumeRepository;
-
     private $apiResponse;
 
     public function __construct(ApiRequestService $apiRequestService, PauseResumeRepository $pauseResumeRepository, CustomApiResponse $customApiResponse)
@@ -26,7 +24,7 @@ class PauseResumeApiController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/api_pause_resume",
+     *     path="/api/ext-api/pause-resume",
      *     summary="Pause or Resume Agent",
      *     description="Handles pausing and resuming an agent's status.",
      *     tags={"Agent Pause Resume"},

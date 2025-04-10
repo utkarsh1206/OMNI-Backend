@@ -7,45 +7,73 @@ use App\Http\Requests\HoldCallApiRequest;
 use Illuminate\Http\Request;
 use Exception;
 use App\Http\Response\CustomApiResponse;
+use App\Repositories\HoldApiRepository;
+use App\Services\ApiRequestService;
 use Illuminate\Support\Facades\Validator;
 
 class HoldCallApiController extends Controller
 {
-    private $apiResponse;
+    private $apiRequestService;
+    private $holdApiRepository;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(ApiRequestService $apiRequestService, HoldApiRepository $holdApiRepository)
     {
-        $this->apiResponse = $customApiResponse;
+        $this->apiRequestService = $apiRequestService;
+        $this->holdApiRepository = $holdApiRepository;
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/ext-api/hold-call",
+     *     summary="Hold or Unhold a Call",
+     *     operationId="holdCallApi",
+     *     tags={"Call Hold/Unhold"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *          @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                  type="object",
+     *                  required={"action"},
+     *                  @OA\Property(property="action", type="string", example="Park"),
+     *              )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="hold_log", type="object"),
+     *                 @OA\Property(property="call_log", type="object")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid Request"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error"
+     *     )
+     * )
+     */
 
     public function holdCallApi(Request $request)
     {
-        try {
-            $config = getNeoxConfig();
-            // Check configuration status and handle error centrally
-            if (isset($config['status']) && $config['status'] === 'error') {
-                return response()->json($config);
-            }
+        $result = $this->apiRequestService->handleApiRequest(
+            $request,
+            'agent_hold',
+            HoldCallApiRequest::class
+        );
 
-            $ip = $config['neox_local_ip'];
-            $neoxToken = $config['neox_token'];
-
-            $url = "https://{$ip}/api/agent/actions/v2/agent_hold.php";
-
-            // Get validation rules from FormRequest
-            $rules = (new HoldCallApiRequest())->rules();
-
-            // Validate request using extracted rules
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()]);
-            }
-
-            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
-
-            return sendHttpRequest($url, 'POST', $validatedData);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        if ($result instanceof \Illuminate\Http\JsonResponse) {
+            $result = $result->getData(true);
         }
+
+        return $this->holdApiRepository->processHoldAction($result, $request);
     }
 }

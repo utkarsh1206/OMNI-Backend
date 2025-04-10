@@ -4367,6 +4367,126 @@
                 }
             }
         },
+        "/api/ext-api/dial-call": {
+            "post": {
+                "tags": [
+                    "Agent Dial Call"
+                ],
+                "summary": "Agent Dial Call",
+                "description": "Handles Call Dialing.",
+                "operationId": "dialCallApi",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "dialed_phone_number"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "description": "User ID of the agent",
+                                        "type": "string",
+                                        "example": "8002"
+                                    },
+                                    "dialed_phone_number": {
+                                        "description": "Dialed Phone Number",
+                                        "type": "string",
+                                        "example": "333110"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully Call Dialed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Call Dialing processed successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user_id": {
+                                                    "type": "integer"
+                                                },
+                                                "agent_extension": {
+                                                    "type": "string"
+                                                },
+                                                "campaign_id": {
+                                                    "type": "string"
+                                                },
+                                                "call_unique_id": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid request parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong, please try again later"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/email-configure": {
             "get": {
                 "tags": [
@@ -5179,6 +5299,147 @@
                     },
                     "500": {
                         "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ext-api/hangup": {
+            "post": {
+                "tags": [
+                    "Hangup"
+                ],
+                "summary": "Handle call hangup",
+                "description": "This endpoint is triggered when call end. It updates logs, statuses, and other call-related records.",
+                "operationId": "hangupApi",
+                "responses": {
+                    "200": {
+                        "description": "Success or error message with call details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success.!"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Hangup processed successfully."
+                                                },
+                                                "dispostion_time": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-04-07 12:34:56"
+                                                },
+                                                "call_log": {
+                                                    "type": "object"
+                                                },
+                                                "live_call": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid data."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ext-api/hold-call": {
+            "post": {
+                "tags": [
+                    "Call Hold/Unhold"
+                ],
+                "summary": "Hold or Unhold a Call",
+                "operationId": "holdCallApi",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "action"
+                                ],
+                                "properties": {
+                                    "action": {
+                                        "type": "string",
+                                        "example": "Park"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "hold_log": {
+                                                    "type": "object"
+                                                },
+                                                "call_log": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 },
                 "security": [
@@ -7531,7 +7792,7 @@
                 }
             }
         },
-        "/api/api_pause_resume": {
+        "/api/ext-api/pause-resume": {
             "post": {
                 "tags": [
                     "Agent Pause Resume"
@@ -15343,6 +15604,10 @@
             "description": "Departments"
         },
         {
+            "name": "Agent Dial Call",
+            "description": "Agent Dial Call"
+        },
+        {
             "name": "Email Configuration",
             "description": "Email Configuration"
         },
@@ -15353,6 +15618,14 @@
         {
             "name": "Email Logs",
             "description": "Email Logs"
+        },
+        {
+            "name": "Hangup",
+            "description": "Hangup"
+        },
+        {
+            "name": "Call Hold/Unhold",
+            "description": "Call Hold/Unhold"
         },
         {
             "name": "IncidentTypes",

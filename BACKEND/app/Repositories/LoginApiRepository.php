@@ -69,7 +69,7 @@ class LoginApiRepository
                     'pause_resume_log' => $pauseResumeLog,
                     'user_daily_activities' => $userDailyActivities
                 ],
-                trans('message.login')
+                trans('message.success')
             );
         } catch (Exception $ex) {
             // Rollback transaction on error

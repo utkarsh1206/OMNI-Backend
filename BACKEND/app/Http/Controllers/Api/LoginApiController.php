@@ -46,6 +46,8 @@ class LoginApiController extends Controller
             $campaignId = $request->campaign_id;
 
             return $this->loginRepository->loginData($connection, $username, $campaignId);
+        } else {
+            return response()->json($result);
         }
     }
 }

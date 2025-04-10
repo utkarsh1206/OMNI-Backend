@@ -5,46 +5,69 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\HangupApiRequest;
 use Illuminate\Http\Request;
-use Exception;
-use App\Http\Response\CustomApiResponse;
-use Illuminate\Support\Facades\Validator;
+use App\Repositories\HangupApiRepository;
+use App\Services\ApiRequestService;
 
 class HangupApiController extends Controller
 {
-    private $apiResponse;
+    private $apiRequestService;
+    private $hangupApiRepository;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(ApiRequestService $apiRequestService, HangupApiRepository $hangupApiRepository)
     {
-        $this->apiResponse = $customApiResponse;
+        $this->apiRequestService = $apiRequestService;
+        $this->hangupApiRepository = $hangupApiRepository;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/ext-api/hangup",
+     *     summary="Handle call hangup",
+     *     description="This endpoint is triggered when call end. It updates logs, statuses, and other call-related records.",
+     *     operationId="hangupApi",
+     *     tags={"Hangup"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success or error message with call details",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="code", type="integer", example=0),
+     *             @OA\Property(property="message", type="string", example="Success.!"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="message", type="string", example="Hangup processed successfully."),
+     *                 @OA\Property(property="dispostion_time", type="string", format="date-time", example="2025-04-07 12:34:56"),
+     *                 @OA\Property(property="call_log", type="object"),
+     *                 @OA\Property(property="live_call", type="object")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Invalid data."),
+     *         )
+     *     )
+     * )
+     */
     public function hangupApi(Request $request)
     {
-        try {
-            $config = getNeoxConfig();
-            // Check configuration status and handle error centrally
-            if (isset($config['status']) && $config['status'] === 'error') {
-                return response()->json($config);
-            }
+        $result = $this->apiRequestService->handleApiRequest(
+            $request,
+            'agent_hangup',
+            HangupApiRequest::class
+        );
 
-            $ip = $config['neox_local_ip'];
-            $neoxToken = $config['neox_token'];
+        if ($result instanceof \Illuminate\Http\JsonResponse) {
+            $result = $result->getData(true);
+        }
 
-            $url = "https://{$ip}/api/agent/actions/v2/agent_hangup.php";
-
-            // Get validation rules from FormRequest
-            $rules = (new HangupApiRequest())->rules();
-
-            // Validate request using extracted rules
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()]);
-            }
-
-            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
-            return sendHttpRequest($url, 'POST', $validatedData);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        if (isset($result['code']) && $result['code'] === 0) {
+            return $this->hangupApiRepository->handleSuccessfulHangup($request, $result);
+        } else {
+            return $this->hangupApiRepository->handleFailedHangup($request, $result);
         }
     }
 }

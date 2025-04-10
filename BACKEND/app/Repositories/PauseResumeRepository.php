@@ -44,7 +44,7 @@ class PauseResumeRepository
             'user_status'   => $action,
             'pause_code_id' => $action === 'Pause' ? $pauseCode : null,
             'pause_time'    => $action === 'Pause' ? Carbon::now()->toTimeString() : '00:00:00',
-            'resume_time'   => $action === 'Resume' ? Carbon::now()->format('H:i:s') : '00:00:00',
+            'resume_time'   => $action === 'Resume' ? Carbon::now()->toTimeString() : '00:00:00',
         ];
     }
 

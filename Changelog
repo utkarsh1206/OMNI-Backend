@@ -1,3 +1,10 @@
+2025-04-10 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 13ef998
+	* Version : Dev
+	* Laravel : Worked on to store logs or live data for Dial call, Hold unhold actions, Hangup.  created relavent migrations file to create database tables to store data.
+
 2025-04-03 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
