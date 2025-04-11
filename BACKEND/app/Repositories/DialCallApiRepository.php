@@ -73,7 +73,7 @@ class DialCallApiRepository
         try {
             return LiveAgents::where('user_id', $userId)
                 ->where('extension', $extension)
-                ->update(['customer' => $dialed_phone_number, 'uniqueid' => $uniqueId, 'call_date' => Carbon::now()]);
+                ->update(['customer' => $dialed_phone_number, 'uniqueid' => $uniqueId, 'call_date' => Carbon::now(), 'call_direction' => 'out_call', 'status' => 'call']);
         } catch (Exception $e) {
             generateLogs('error', 'Updating LiveAgent unique ID failed: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);

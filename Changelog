@@ -1,3 +1,16 @@
+2025-04-11 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID :
+	* Version : Dev
+	* Laravel : Implemented functionality to store data for Disposition submission. After the Disposition is successfully submitted, the Live Agent status is updated to "Ready" state. The following changes were made:
+
+    Created migrations to support the new data storage requirements for Disposition submission.
+
+    Developed a repository to handle the data interactions and status updates for Live Agent.
+
+    Ensured that upon successful Disposition submission, the Live Agent status is updated accordingly.
+
 2025-04-10 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
