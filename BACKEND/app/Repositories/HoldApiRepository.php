@@ -26,7 +26,7 @@ class HoldApiRepository
         if (isset($result['code']) && $result['code'] === 0) {
             $data = $this->handleHoldApi($request);
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'))->original + ['neox_status' => true];
         } else {
             return $result;
         }

@@ -48,7 +48,7 @@ class HangupApiRepository
                 trans('message.success'),
                 $data,
                 trans('message.success')
-            );
+            )->original + ['neox_status' => true];
         } catch (Exception $e) {
             generateLogs('error', "Error in handleSuccessfulHangup: ", $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);

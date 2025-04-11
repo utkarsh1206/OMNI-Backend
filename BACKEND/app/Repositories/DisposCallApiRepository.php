@@ -47,7 +47,7 @@ class DisposCallApiRepository
                     'live_call' => $liveCall,
                 ];
 
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'));
+                return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'))->original + ['neox_status' => true];
             } else {
                 $this->logDailyActivity($request, $user, $liveCallData);
                 return $apiResult;

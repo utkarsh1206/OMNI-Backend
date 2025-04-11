@@ -27,7 +27,7 @@ class DialCallApiRepository
                 $uniqueId = $apiResult['data']['UniqueId'];
                 $data = $this->handleSuccessfulCall($uniqueId, $request);
 
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'));
+                return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'))->original + ['neox_status' => true];
             } else {
                 return $apiResult;
             }

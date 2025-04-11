@@ -1,6 +1,13 @@
 2025-04-11 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
+	* Previous Commit ID : 4ea7b49
+	* Version : Dev
+	* Laravel : Added neox_status = true for success response in Login, Dial, Pause/Resume, Hold/Unhold, Hangup, Disposition submit API.
+
+2025-04-11 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
 	* Previous Commit ID :
 	* Version : Dev
 	* Laravel : Implemented functionality to store data for Disposition submission. After the Disposition is successfully submitted, the Live Agent status is updated to "Ready" state. The following changes were made:
