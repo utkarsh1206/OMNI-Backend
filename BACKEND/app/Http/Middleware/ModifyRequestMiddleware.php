@@ -18,7 +18,9 @@ class ModifyRequestMiddleware
     {
         $modifiedData = $request->all();
 
-        $token = $request->bearerToken();
+        // $token = $request->bearerToken();
+        $token = $request->bearerToken() ?: $request->auth_token;
+
         if (!$token) {
             // If no token is provided, return an error response
             $modifiedData['isJWT'] = 'No';
