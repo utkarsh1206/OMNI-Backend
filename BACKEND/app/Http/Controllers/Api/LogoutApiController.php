@@ -8,7 +8,6 @@ use App\Http\Response\CustomApiResponse;
 use App\Services\ApiRequestService;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class LogoutApiController extends Controller
 {

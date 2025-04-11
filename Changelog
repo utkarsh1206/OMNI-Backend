@@ -1,6 +1,15 @@
 2025-04-11 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
+	* Previous Commit ID : fa6d1be
+	* Version : Dev
+	* Laravel : This API is designed to handle user logout operations, particularly when the user refreshes the page or closes their browser/tab. It ensures that user-related data is cleared from both the DC and Omni systems, effectively logging the user out from all related services and removing sensitive data.
+	
+	Invalidate the user's authentication token to ensure that the token cannot be reused for subsequent requests.
+
+2025-04-11 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
 	* Previous Commit ID : 4ea7b49
 	* Version : Dev
 	* Laravel : Added neox_status = true for success response in Login, Dial, Pause/Resume, Hold/Unhold, Hangup, Disposition submit API.

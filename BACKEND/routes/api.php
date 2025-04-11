@@ -79,6 +79,7 @@ use App\Http\Controllers\Api\LiveAgentController;
 use App\Http\Controllers\Api\WebhookCallController;
 use App\Http\Middleware\ModifyRequestMiddleware;
 use App\Http\Controllers\Api\ChatBotConfigurationController;
+use App\Http\Controllers\Api\LogoutRefreshApiController;
 use App\Http\Controllers\Api\MessageController;
 
 Route::post('login', [LoginController::class, 'login']);
@@ -223,5 +224,6 @@ Route::post('/ext-api/camp-list', [CampaignApiController::class, 'campaignListAp
 Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
     Route::post('ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
     Route::post('logout', [LogoutApiController::class, 'agentLogoutApi']);
+    Route::post('refresh-logout', [LogoutRefreshApiController::class, 'agentLogoutRefreshApi']);
 });
 Route::post('/ext-api/login', [LoginApiController::class, 'agentLoginApi']);
