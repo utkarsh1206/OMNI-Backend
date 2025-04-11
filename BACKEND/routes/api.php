@@ -53,6 +53,7 @@ use App\Http\Controllers\Api\EmailLogController;
 use App\Http\Controllers\Api\SmsProviderConfigurationController;
 use App\Http\Controllers\Api\SmsProviderController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\DynamicListFieldController;
 use App\Http\Controllers\Api\EcdialListsController;
 use App\Http\Controllers\Api\EcdialListFieldController;
 use App\Http\Controllers\Api\ChatBotController;
@@ -159,6 +160,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('my-profile', [UserController::class, 'myprofile']);
     Route::get('/branding', [UserController::class, 'getBranding']);
     Route::apiResource('live-agents', LiveAgentController::class);
+    Route::apiResource('/dynamimc-list-fields', DynamicListFieldController::class);
     Route::apiResource('/lists_fields', EcdialListFieldController::class);
     Route::apiResource('chatbots', ChatBotController::class);
     Route::get('/download-sample/{list_id}', [ImportLeadController::class, 'downloadSampleCsv']);
