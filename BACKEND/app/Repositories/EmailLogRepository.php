@@ -46,9 +46,9 @@ class EmailLogRepository
                 $query->whereDate('created_at', '=', Carbon::parse($date)->format('Y-m-d'));
             }
 
-            $email =  $request->input('page') === 'all'
+            $email =  $request->input('page') === config('omni.ALL_PAGE')
                 ? $query->get()
-                : $query->paginate($request->input('per_page', 10));
+                : $query->paginate($request->input('per_page', config('omni.PER_PAGE')));
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email, trans('message.email_sent_success'));
         } catch (QueryException $e) {
             generateLogs('error', 'Error in generating Email  List: ', $e->getMessage());

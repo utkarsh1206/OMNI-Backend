@@ -44,7 +44,7 @@ class SmsProviderRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $smsProviers, trans('message.provider_configurations_created'));
         } catch (Exception $e) {
-            generateLogs('error', 'Error in Sacing User SMS Provider : ', $e->getMessage());
+            generateLogs('error', 'Error in Saving User SMS Provider : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

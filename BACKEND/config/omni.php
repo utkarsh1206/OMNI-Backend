@@ -8,5 +8,10 @@ return [
 
    'PER_PAGE' => env('PER_PAGE', 10),
    'DEFAULT_PAGE' => env('DEFAULT_PAGE', 1),
-   'ALL_PAGE' => env('ALL_PAGE', 'all')
+   'ALL_PAGE' => env('ALL_PAGE', 'all'),
+   
+   'CHAT_360_EMAIL' => env('CHAT360_EMAIL','sales@chat360.io'),
+   'CHAT_360_PASSWORD' => env('CHAT_360_PASSWORD','Chat@123sales'),
+   'CHAT_360_ROOM_ID' => env('CHAT_360_ROOM_ID',''),
+   'CHAT_360_API_KEY' => env('CHAT_360_API_KEY',''),
 ];

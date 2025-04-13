@@ -80,8 +80,10 @@ use App\Http\Controllers\Api\WebhookCallController;
 use App\Http\Middleware\ModifyRequestMiddleware;
 use App\Http\Controllers\Api\ChatBotConfigurationController;
 use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\ChatBootWebhookController;
 
 Route::post('login', [LoginController::class, 'login']);
+Route::get('chatboot-webhook', [ChatBootWebhookController::class, 'index']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();

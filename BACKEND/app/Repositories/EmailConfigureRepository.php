@@ -48,7 +48,7 @@ class EmailConfigureRepository
                 });
             }
             // Paginate the results
-            $perPage = $request->input('per_page', 10);
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $email_configure = $query->paginate($perPage);
             // Return the response
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.fetch_data'));
