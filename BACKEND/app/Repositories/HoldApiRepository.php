@@ -26,7 +26,7 @@ class HoldApiRepository
         if (isset($result['code']) && $result['code'] === 0) {
             $data = $this->handleHoldApi($request);
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'))->original + ['neox_status' => true];
         } else {
             return $result;
         }
@@ -44,6 +44,8 @@ class HoldApiRepository
 
             $holdLog = $this->logCallHold($user->id, $liveCallData, $callStatus);
 
+            $this->updateAgentStatus($user, $request, $callStatus);
+
             // Prepare call log data
             $callLogData = $this->prepareCallLogData($request, $user, $liveCallData, $callStatus);
 
@@ -57,7 +59,7 @@ class HoldApiRepository
 
             return [
                 'hold_log' => $holdLog,
-                'call_log' => $callLog
+                'call_log' => $callLog,
             ];
         } catch (Exception $e) {
             DB::rollBack();
@@ -149,6 +151,20 @@ class HoldApiRepository
             ]);
         } catch (Exception $e) {
             generateLogs('error', "Error in trackUserActivity: ", $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
+
+    private function updateAgentStatus($user, $request, $callStatus)
+    {
+        try {
+            $status = ($callStatus === 'Hold') ? 'Hold' : 'call';
+            
+            LiveAgents::where('user_id', $user->id)
+                ->where('extension', $request->phone)
+                ->update(['status' => $status]);
+        } catch (Exception $e) {
+            generateLogs('error', "Error in updateAgentStatus: ", $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

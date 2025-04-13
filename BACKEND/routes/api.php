@@ -53,6 +53,7 @@ use App\Http\Controllers\Api\EmailLogController;
 use App\Http\Controllers\Api\SmsProviderConfigurationController;
 use App\Http\Controllers\Api\SmsProviderController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\DynamicListFieldController;
 use App\Http\Controllers\Api\EcdialListsController;
 use App\Http\Controllers\Api\EcdialListFieldController;
 use App\Http\Controllers\Api\ChatBotController;
@@ -79,6 +80,7 @@ use App\Http\Controllers\Api\LiveAgentController;
 use App\Http\Controllers\Api\WebhookCallController;
 use App\Http\Middleware\ModifyRequestMiddleware;
 use App\Http\Controllers\Api\ChatBotConfigurationController;
+use App\Http\Controllers\Api\LogoutRefreshApiController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\ChatBootWebhookController;
 
@@ -160,6 +162,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('my-profile', [UserController::class, 'myprofile']);
     Route::get('/branding', [UserController::class, 'getBranding']);
     Route::apiResource('live-agents', LiveAgentController::class);
+    Route::apiResource('/dynamic-list-fields', DynamicListFieldController::class);
     Route::apiResource('/lists_fields', EcdialListFieldController::class);
     Route::apiResource('chatbots', ChatBotController::class);
     Route::get('/download-sample/{list_id}', [ImportLeadController::class, 'downloadSampleCsv']);
@@ -198,7 +201,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::post('dispo-list', [DispositionApiController::class, 'dispositionListApi']);
         Route::post('hold-call', [HoldCallApiController::class, 'holdCallApi']);
-        Route::post('logout', [LogoutApiController::class, 'agentLogoutApi']);
+        
         Route::post('dial-call', [DialCallApiController::class, 'dialCallApi']);
         Route::post('pause-resume', [PauseResumeApiController::class, 'pauseResumeApi']);
         Route::post('hangup', [HangupApiController::class, 'hangupApi']);
@@ -222,7 +225,9 @@ Route::middleware(['jwt.auth'])->group(function () {
 });
 
 Route::post('/ext-api/camp-list', [CampaignApiController::class, 'campaignListApi']);
-Route::middleware([ModifyRequestMiddleware::class])->group(function () {
-    Route::post('/ext-api/ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
+Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
+    Route::post('ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
+    Route::post('logout', [LogoutApiController::class, 'agentLogoutApi']);
+    Route::post('refresh-logout', [LogoutRefreshApiController::class, 'agentLogoutRefreshApi']);
 });
 Route::post('/ext-api/login', [LoginApiController::class, 'agentLoginApi']);

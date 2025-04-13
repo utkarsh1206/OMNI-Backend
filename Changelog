@@ -1,3 +1,32 @@
+2025-04-11 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : fa6d1be
+	* Version : Dev
+	* Laravel : This API is designed to handle user logout operations, particularly when the user refreshes the page or closes their browser/tab. It ensures that user-related data is cleared from both the DC and Omni systems, effectively logging the user out from all related services and removing sensitive data.
+	
+	Invalidate the user's authentication token to ensure that the token cannot be reused for subsequent requests.
+
+2025-04-11 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 4ea7b49
+	* Version : Dev
+	* Laravel : Added neox_status = true for success response in Login, Dial, Pause/Resume, Hold/Unhold, Hangup, Disposition submit API.
+
+2025-04-11 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID :
+	* Version : Dev
+	* Laravel : Implemented functionality to store data for Disposition submission. After the Disposition is successfully submitted, the Live Agent status is updated to "Ready" state. The following changes were made:
+
+    Created migrations to support the new data storage requirements for Disposition submission.
+
+    Developed a repository to handle the data interactions and status updates for Live Agent.
+
+    Ensured that upon successful Disposition submission, the Live Agent status is updated accordingly.
+
 2025-04-10 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

@@ -5,45 +5,76 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DisposCallApiRequest;
 use Illuminate\Http\Request;
-use Exception;
-use App\Http\Response\CustomApiResponse;
-use Illuminate\Support\Facades\Validator;
+use App\Repositories\DisposCallApiRepository;
+use App\Services\ApiRequestService;
 
 class DisposCallApiController extends Controller
 {
-    private $apiResponse;
+    private $disposCallApiRepository;
+    private $apiRequestService;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(ApiRequestService $apiRequestService, DisposCallApiRepository $disposCallApiRepository)
     {
-        $this->apiResponse = $customApiResponse;
+        $this->disposCallApiRepository = $disposCallApiRepository;
+        $this->apiRequestService = $apiRequestService;
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/ext-api/dispos-call",
+     *     tags={"Disposition"},
+     *     summary="Handle disposition after call ends",
+     *     description="Processes the agent disposition input and updates related tables.",
+     *     operationId="disposCallApi",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 required={"disposition_status"},
+     *                 @OA\Property(property="disposition_status", type="string", description="Disposition sort code", example="NI"),
+     *                 @OA\Property(property="comment", type="string", description="Comment for disposition", example="User not interested."),
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Disposition processed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="dispos_data", type="object"),
+     *                 @OA\Property(property="live_call", type="object")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error"
+     *     )
+     * )
+     */
 
     public function disposCallApi(Request $request)
     {
-        try {
-            $config = getNeoxConfig();
-            // Check configuration status and handle error centrally
-            if (isset($config['status']) && $config['status'] === 'error') {
-                return response()->json($config);
-            }
+        $apiResult = $this->apiRequestService->handleApiRequest(
+            $request,
+            'agent_dispo_call',
+            DisposCallApiRequest::class
+        );
 
-            $ip = $config['neox_local_ip'];
-            $neoxToken = $config['neox_token'];
-
-            $url = "https://{$ip}/api/agent/actions/v2/agent_dispo_call.php";
-            // Get validation rules from FormRequest
-            $rules = (new DisposCallApiRequest())->rules();
-
-            // Validate request using extracted rules
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()]);
-            }
-
-            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
-            return sendHttpRequest($url, 'POST', $validatedData);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        if ($apiResult instanceof \Illuminate\Http\JsonResponse) {
+            $apiResult = $apiResult->getData(true);
         }
+
+        return $this->disposCallApiRepository->processDisposCall($apiResult, $request);
     }
 }

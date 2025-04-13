@@ -4487,6 +4487,81 @@
                 ]
             }
         },
+        "/api/ext-api/dispos-call": {
+            "post": {
+                "tags": [
+                    "Disposition"
+                ],
+                "summary": "Handle disposition after call ends",
+                "description": "Processes the agent disposition input and updates related tables.",
+                "operationId": "disposCallApi",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "disposition_status"
+                                ],
+                                "properties": {
+                                    "disposition_status": {
+                                        "description": "Disposition sort code",
+                                        "type": "string",
+                                        "example": "NI"
+                                    },
+                                    "comment": {
+                                        "description": "Comment for disposition",
+                                        "type": "string",
+                                        "example": "User not interested."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Disposition processed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "dispos_data": {
+                                                    "type": "object"
+                                                },
+                                                "live_call": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/email-configure": {
             "get": {
                 "tags": [
@@ -15606,6 +15681,10 @@
         {
             "name": "Agent Dial Call",
             "description": "Agent Dial Call"
+        },
+        {
+            "name": "Disposition",
+            "description": "Disposition"
         },
         {
             "name": "Email Configuration",

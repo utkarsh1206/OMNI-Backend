@@ -70,7 +70,7 @@ class LoginApiRepository
                     'user_daily_activities' => $userDailyActivities
                 ],
                 trans('message.success')
-            );
+            )->original + ['neox_status' => true];
         } catch (Exception $ex) {
             // Rollback transaction on error
             $connection->rollBack();

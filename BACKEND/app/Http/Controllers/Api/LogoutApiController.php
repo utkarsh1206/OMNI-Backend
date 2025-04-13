@@ -5,46 +5,42 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LogoutApiRequest;
 use App\Http\Response\CustomApiResponse;
+use App\Services\ApiRequestService;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class LogoutApiController extends Controller
 {
     private $apiResponse;
+    private $apiRequestService;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(CustomApiResponse $customApiResponse, ApiRequestService $apiRequestService)
     {
         $this->apiResponse = $customApiResponse;
+        $this->apiRequestService = $apiRequestService;
     }
 
     public function agentLogoutApi(Request $request)
     {
         try {
-            $config = getNeoxConfig();
-            // Check configuration status and handle error centrally
-            if (isset($config['status']) && $config['status'] === 'error') {
-                return response()->json($config);
+            $result = $this->apiRequestService->handleApiRequest(
+                $request,
+                'agent_logout',
+                LogoutApiRequest::class,
+                $request->domain_name
+            );
+
+            if ($result instanceof \Illuminate\Http\JsonResponse) {
+                $result = $result->getData(true);
             }
 
-            $ip = $config['neox_local_ip'];
-            $neoxToken = $config['neox_token'];
-
-            $url = "https://{$ip}/api/agent/actions/v2/agent_logout.php";
-
-            // Get validation rules from FormRequest
-            $rules = (new LogoutApiRequest())->rules();
-
-            // Validate request using extracted rules
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()]);
+            if (isset($result['code']) && $result['code'] === 0) {
+                return (response()->json($result))->original + ['neox_status' => true];
             }
 
-            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
-
-            return sendHttpRequest($url, 'POST', $validatedData);
+            return $result;
         } catch (Exception $e) {
+            generateLogs('error', 'Logout processing failed: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

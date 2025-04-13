@@ -27,7 +27,7 @@ class DialCallApiRepository
                 $uniqueId = $apiResult['data']['UniqueId'];
                 $data = $this->handleSuccessfulCall($uniqueId, $request);
 
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'));
+                return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'))->original + ['neox_status' => true];
             } else {
                 return $apiResult;
             }
@@ -73,7 +73,7 @@ class DialCallApiRepository
         try {
             return LiveAgents::where('user_id', $userId)
                 ->where('extension', $extension)
-                ->update(['customer' => $dialed_phone_number, 'uniqueid' => $uniqueId, 'call_date' => Carbon::now()]);
+                ->update(['customer' => $dialed_phone_number, 'uniqueid' => $uniqueId, 'call_date' => Carbon::now(), 'call_direction' => 'out_call', 'status' => 'call']);
         } catch (Exception $e) {
             generateLogs('error', 'Updating LiveAgent unique ID failed: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);

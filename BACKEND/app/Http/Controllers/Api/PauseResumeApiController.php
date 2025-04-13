@@ -105,11 +105,11 @@ class PauseResumeApiController extends Controller
             return $this->successResponse($data);
         }
 
-        return $this->apiResponse->getResponseStructure(trans('message.error'), $result, trans('message.error'));
+        return $result;
     }
 
     private function successResponse($data)
     {
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'));
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.success'))->original + ['neox_status' => true];
     }
 }
