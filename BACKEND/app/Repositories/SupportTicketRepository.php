@@ -102,115 +102,258 @@ class SupportTicketRepository
         }
     }
 
+    // public function store(Request $request)
+    // {
+    //     try {
+    //         $apiUser = auth()->user();
+
+    //         $attachment_urls = [];
+    //         $mail_attachment_urls = [];
+    //         if ($request->hasFile('attachment')) {
+    //             $files = $request->file('attachment');
+
+    //             if (is_array($files)) {
+    //                 foreach ($files as $attachment) {
+    //                     $file = uploadAttachment($request,"attachment","support_ticket");
+    //                     $attachment_urls[] = url('storage/' . $file['path']);
+    //                     $mail_attachment_urls[] = [
+    //                         'path' => storage_path('app/public/' . $file['path']),
+    //                         'name' => $file['fileName'],
+    //                         'mime' => $attachment->getMimeType()
+    //                     ];
+    //                 }
+    //             } else {
+    //                 $file = uploadAttachment($request,"attachment","support_ticket");
+    //                 $attachment_urls[] = url('storage/' . $file['path']);
+    //                 $mail_attachment_urls[] = [
+    //                     'path' => storage_path('app/public/' . $file['path']),
+    //                     'name' => $file['fileName'],
+    //                     'mime' => $files->getMimeType()
+    //                 ];
+    //             }
+    //         }
+
+    //         $supportTicket = SupportTicket::create([
+    //             'support_ticket_id' => gmdate('ymdhis'),
+    //             'product_id' => isset($request->product_id) ? $request->product_id : 0,
+    //             'campaign_id' => isset($request->campaign_id) ? $request->campaign_id : 0,
+    //             'inbound_group_id' => isset($request->inbound_group_id) ? $request->inbound_group_id : 0,
+    //             'contact_id' => isset($request->contact_id) ? $request->contact_id : 0,
+    //             'assign_to_id' => isset($request->assign_to_id) ? $request->assign_to_id : 0,
+    //             'default_type' => isset($request->default_type) ? $request->default_type : "",
+    //             'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
+    //             'default_status' => isset($request->default_status) ? $request->default_status : "",
+    //             'subject' => isset($request->subject) ? $request->subject : "",
+    //             'department_id' => isset($request->department_id) ? $request->department_id : "",
+    //             'to_emails' => isset($request->to_emails) ? $request->to_emails : "",
+    //             'cc' => isset($request->cc) ? $request->cc : "",
+    //             'bcc' => isset($request->bcc) ? $request->bcc : "",
+    //             'description' => isset($request->description) ? $request->description : "",
+    //             'attachment' => json_encode($attachment_urls),
+    //             'incident_id' => isset($request->incident_id) ? $request->incident_id : 0,
+    //             'account_id' => isset($request->account_id) ? $request->account_id : 0,
+    //         ]);
+
+    //         $datePrefix = now()->format('dmy'); // Get the current date in ddmmyy format
+    //         $supportTicketId = $datePrefix . $supportTicket->id; // Use the newly inserted ID
+    //         MailDetail::create([
+    //             'default_type' => isset($request->default_type) ? $request->default_type : "",
+    //             'user_id' => $apiUser->id ?? '',
+    //             'priority' => isset($request->default_priority) ? $request->default_priority : "",
+    //             'status' => isset($request->default_status) ? $request->default_status : "",
+    //             'to' => isset($request->to_emails) ? $request->to_emails : "",
+    //             'cc' => isset($request->cc) ? $request->cc : "",
+    //             'bcc' => isset($request->bcc) ? $request->bcc : "",
+    //             'body' => isset($request->description) ? $request->description : "",
+    //             'attachment' => json_encode($attachment_urls),
+    //             'supportticket_id' => $supportTicketId,
+    //             'date' => gmdate('Y-m-d H:i:s')
+    //             // 'user_id' => isset($request->assign_to_id) ? $request->assign_to_id : 0,
+    //         ]);
+
+    //         $supportTicket->update(['support_ticket_id' => $supportTicketId]);
+    //         $comment = $apiUser->first_name . " " . $apiUser->last_name . " has created the ticket";
+    //         $this->createTicket($supportTicket, "Ticket Created", $comment, $apiUser);
+    //         $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
+
+    //         setEmailConfig();
+
+    //         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
+    //         // $smtpHost = $emailConfig->smtp_host;
+    //         // $smtpPort = $emailConfig->smtp_port;
+    //         // $smtpUser = $emailConfig->smtp_user;
+    //         // $smtpPassword = $emailConfig->smtp_password;
+    //         // $sender_name = $emailConfig->sender_name;
+    //         $sender_email = $emailConfig->sender_email;
+
+    //         // config([
+    //         //     'mail.mailers.smtp.host' => $smtpHost,
+    //         //     'mail.mailers.smtp.port' => $smtpPort,
+    //         //     'mail.mailers.smtp.username' => $smtpUser,
+    //         //     'mail.mailers.smtp.password' => $smtpPassword,
+    //         //     'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
+    //         //     'mail.from.address' =>  $sender_email,
+    //         //     'mail.from.name' => $sender_name,
+    //         // ]);
+
+    //         Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
+
+    //         logEmail([
+    //             "user_id" => $request->assign_to_id,
+    //             "email_template_id" => 0,
+    //             "from_email" => $sender_email,
+    //             "module_name" => "Support Ticket",
+    //             "entity_id" => $supportTicket->id,
+    //             "status" => "sent",
+    //         ]);
+
+    //         // $newSupportTicket = new TenantsResource($supportTicket);
+    //         // Return the response
+    //         return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.support_ticket_create_msg'));
+    //     } catch (Exception $ex) {
+    //         generateLogs('error', 'Error occurred while creating  Support Tickets : ', $ex->getMessage());
+    //         return $this->apiResponse->handleAndResponseException($ex);
+    //     }
+    // }
+
+    // public function update(Request $request, SupportTicket $supportTicket)
+    // {
+    //     try {
+    //         $apiUser = auth()->user();
+    //         $attachment_urls = [];
+    //         $mail_attachment_urls = [];
+    //         if ($request->hasFile('attachment')) {
+    //             $files = $request->file('attachment');
+
+    //             if (is_array($files)) {
+    //                 foreach ($files as $attachment) {
+    //                     // $filename = now()->format('Y_m_d_H_i_s') . '_' . uniqid() . '.' . $attachment->getClientOriginalExtension();
+    //                     // $path = $attachment->storeAs('attachments', $filename, 'public');
+    //                     // $attachment_urls[] = url('storage/' . $path);
+    //                     // $mail_attachment_urls[] = [
+    //                     //     'path' => storage_path('app/public/' . $path),
+    //                     //     'name' => $filename,
+    //                     //     'mime' => $attachment->getMimeType()
+    //                     // ];
+    //                     $file = uploadAttachment($request,"attachment","support_ticket");
+    //                     $attachment_urls[] = url('storage/' . $file['path']);
+    //                     $mail_attachment_urls[] = [
+    //                         'path' => storage_path('app/public/' . $file['path']),
+    //                         'name' => $file['fileName'],
+    //                         'mime' => $attachment->getMimeType()
+    //                     ];
+    //                 }
+    //             } else {
+    //                 // $filename = now()->format('Y_m_d_H_i_s') . '_' . uniqid() . '.' . $files->getClientOriginalExtension();
+    //                 // $path = $files->storeAs('attachments', $filename, 'public');
+    //                 // $attachment_urls[] = url('storage/' . $path);
+    //                 // $mail_attachment_urls[] = [
+    //                 //     'path' => storage_path('app/public/' . $path),
+    //                 //     'name' => $filename,
+    //                 //     'mime' => $files->getMimeType()
+    //                 // ];
+
+    //                 $file = uploadAttachment($request,"attachment","support_ticket");
+    //                 $attachment_urls[] = url('storage/' . $file['path']);
+    //                 $mail_attachment_urls[] = [
+    //                     'path' => storage_path('app/public/' . $file['path']),
+    //                     'name' => $file['fileName'],
+    //                     'mime' => $files->getMimeType()
+    //                 ];
+    //             }
+    //         }
+
+    //         $updateData = [
+    //             'product_id' => isset($request->product_id) ? $request->product_id : 0,
+    //             'campaign_id' => isset($request->campaign_id) ? $request->campaign_id : 0,
+    //             'inbound_group_id' => isset($request->inbound_group_id) ? $request->inbound_group_id : 0,
+    //             'contact_id' => isset($request->contact_id) ? $request->contact_id : 0,
+    //             'assign_to_id' => isset($request->assign_to_id) ? $request->assign_to_id : 0,
+    //             'default_type' => isset($request->default_type) ? $request->default_type : "",
+    //             'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
+    //             'default_status' => isset($request->default_status) ? $request->default_status : "",
+    //             'subject' => isset($request->subject) ? $request->subject : "",
+    //             'department_id' => isset($request->department_id) ? $request->department_id : "",
+    //             'to_emails' => isset($request->to_emails) ? $request->to_emails : "",
+    //             'cc' => isset($request->cc) ? $request->cc : "",
+    //             'bcc' => isset($request->bcc) ? $request->bcc : "",
+    //             'description' => isset($request->description) ? $request->description : "",
+    //             'incident_id' => isset($request->incident_id) ? $request->incident_id : 0,
+    //             'account_id' => isset($request->account_id) ? $request->account_id : 0,
+    //         ];
+    //         if (!empty($attachment_urls)) {
+    //             $updateData['attachment'] = $attachment_urls;
+    //         }
+
+    //         $supportTicket->update($updateData);
+    //         $this->createTicket($supportTicket, isset($request->default_status) ? $request->default_status : "", "Edit Support Ticket", $apiUser);
+    //         $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
+
+    //         setEmailConfig();
+
+    //         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
+    //         // $smtpHost = $emailConfig->smtp_host;
+    //         // $smtpPort = $emailConfig->smtp_port;
+    //         // $smtpUser = $emailConfig->smtp_user;
+    //         // $smtpPassword = $emailConfig->smtp_password;
+    //         // $sender_name = $emailConfig->sender_name;
+    //         $sender_email = $emailConfig->sender_email;
+
+    //         // config([
+    //         //     'mail.mailers.smtp.host' => $smtpHost,
+    //         //     'mail.mailers.smtp.port' => $smtpPort,
+    //         //     'mail.mailers.smtp.username' => $smtpUser,
+    //         //     'mail.mailers.smtp.password' => $smtpPassword,
+    //         //     'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
+    //         //     'mail.from.address' =>  $sender_email,
+    //         //     'mail.from.name' => $sender_name,
+    //         // ]);
+
+    //         Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
+    //         logEmail([
+    //             "user_id" => $request->assign_to_id,
+    //             "email_template_id" => 0,
+    //             "from_email" => $sender_email,
+    //             "module_name" => "Support Ticket",
+    //             "entity_id" => $supportTicket->id,
+    //             "status" => "sent",
+    //         ]);
+
+    //         // $updatedSupportTicket = new TenantsResource($supportTicket);
+    //         // Return the response
+    //         return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.support_ticket_update_msg'));
+    //     } catch (Exception $ex) {
+    //         generateLogs('error', 'Error occurred while updating  Support Tickets : ', $ex->getMessage());
+    //         return $this->apiResponse->handleAndResponseException($ex);
+    //     }
+    // }
+
     public function store(Request $request)
     {
         try {
             $apiUser = auth()->user();
 
-            $attachment_urls = [];
-            $mail_attachment_urls = [];
-            if ($request->hasFile('attachment')) {
-                $files = $request->file('attachment');
+            // Handle file attachments
+            [$attachment_urls, $mail_attachment_urls] = $this->processAttachments($request);
 
-                if (is_array($files)) {
-                    foreach ($files as $attachment) {
-                        $filename = now()->format('Y_m_d_H_i_s') . '_' . uniqid() . '.' . $attachment->getClientOriginalExtension();
-                        $path = $attachment->storeAs('support_ticket', $filename, 'public');
-                        $attachment_urls[] = url('storage/' . $path);
-                        $mail_attachment_urls[] = [
-                            'path' => storage_path('app/public/' . $path),
-                            'name' => $filename,
-                            'mime' => $attachment->getMimeType()
-                        ];
-                    }
-                } else {
-                    $filename = now()->format('Y_m_d_H_i_s') . '_' . uniqid() . '.' . $files->getClientOriginalExtension();
-                    $path = $files->storeAs('support_ticket', $filename, 'public');
-                    $attachment_urls[] = url('storage/' . $path);
-                    $mail_attachment_urls[] = [
-                        'path' => storage_path('app/public/' . $path),
-                        'name' => $filename,
-                        'mime' => $files->getMimeType()
-                    ];
-                }
-            }
-
-            $supportTicket = SupportTicket::create([
-                'support_ticket_id' => gmdate('ymdhis'),
-                'product_id' => isset($request->product_id) ? $request->product_id : 0,
-                'campaign_id' => isset($request->campaign_id) ? $request->campaign_id : 0,
-                'inbound_group_id' => isset($request->inbound_group_id) ? $request->inbound_group_id : 0,
-                'contact_id' => isset($request->contact_id) ? $request->contact_id : 0,
-                'assign_to_id' => isset($request->assign_to_id) ? $request->assign_to_id : 0,
-                'default_type' => isset($request->default_type) ? $request->default_type : "",
-                'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
-                'default_status' => isset($request->default_status) ? $request->default_status : "",
-                'subject' => isset($request->subject) ? $request->subject : "",
-                'department_id' => isset($request->department_id) ? $request->department_id : "",
-                'to_emails' => isset($request->to_emails) ? $request->to_emails : "",
-                'cc' => isset($request->cc) ? $request->cc : "",
-                'bcc' => isset($request->bcc) ? $request->bcc : "",
-                'description' => isset($request->description) ? $request->description : "",
-                'attachment' => json_encode($attachment_urls),
-                'incident_id' => isset($request->incident_id) ? $request->incident_id : 0,
-                'account_id' => isset($request->account_id) ? $request->account_id : 0,
-            ]);
-
-            $datePrefix = now()->format('dmy'); // Get the current date in ddmmyy format
-            $supportTicketId = $datePrefix . $supportTicket->id; // Use the newly inserted ID
-            MailDetail::create([
-                'default_type' => isset($request->default_type) ? $request->default_type : "",
-                'user_id' => $apiUser->id ?? '',
-                'priority' => isset($request->default_priority) ? $request->default_priority : "",
-                'status' => isset($request->default_status) ? $request->default_status : "",
-                'to' => isset($request->to_emails) ? $request->to_emails : "",
-                'cc' => isset($request->cc) ? $request->cc : "",
-                'bcc' => isset($request->bcc) ? $request->bcc : "",
-                'body' => isset($request->description) ? $request->description : "",
-                'attachment' => json_encode($attachment_urls),
-                'supportticket_id' => $supportTicketId,
-                'date' => gmdate('Y-m-d H:i:s')
-                // 'user_id' => isset($request->assign_to_id) ? $request->assign_to_id : 0,
-            ]);
-
+            // Create support ticket
+            $supportTicket = SupportTicket::create($this->buildTicketData($request, $attachment_urls));
+            $supportTicketId = now()->format('dmy') . $supportTicket->id;
             $supportTicket->update(['support_ticket_id' => $supportTicketId]);
-            $comment = $apiUser->first_name . " " . $apiUser->last_name . " has created the ticket";
-            $this->createTicket($supportTicket, "Ticket Created", $comment, $apiUser);
+
+            // Create mail details
+            MailDetail::create($this->buildMailData($request, $apiUser, $attachment_urls, $supportTicketId));
+
+            // Log ticket creation
+            $this->createTicket($supportTicket, "Ticket Created", $apiUser->first_name . " " . $apiUser->last_name . " has created the ticket", $apiUser);
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
-            $emailConfig = EmailConfigure::where('type', 'gmail')->first();
-            $smtpHost = $emailConfig->smtp_host;
-            $smtpPort = $emailConfig->smtp_port;
-            $smtpUser = $emailConfig->smtp_user;
-            $smtpPassword = $emailConfig->smtp_password;
-            $sender_name = $emailConfig->sender_name;
-            $sender_email = $emailConfig->sender_email;
 
-            config([
-                'mail.mailers.smtp.host' => $smtpHost,
-                'mail.mailers.smtp.port' => $smtpPort,
-                'mail.mailers.smtp.username' => $smtpUser,
-                'mail.mailers.smtp.password' => $smtpPassword,
-                'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
-                'mail.from.address' =>  $sender_email,
-                'mail.from.name' => $sender_name,
-            ]);
+            // Send email
+            $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0);
 
-            Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
-
-            logEmail([
-                "user_id" => $request->assign_to_id,
-                "email_template_id" => 0,
-                "from_email" => $sender_email,
-                "module_name" => "Support Ticket",
-                "entity_id" => $supportTicket->id,
-                "status" => "sent",
-            ]);
-
-            $newSupportTicket = new TenantsResource($supportTicket);
-            // Return the response
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $newSupportTicket, trans('message.support_ticket_create_msg'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.support_ticket_create_msg'));
         } catch (Exception $ex) {
-            generateLogs('error', 'Error occurred while creating  Support Tickets : ', $ex->getMessage());
+            generateLogs('error', 'Error occurred while creating Support Ticket: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -219,92 +362,25 @@ class SupportTicketRepository
     {
         try {
             $apiUser = auth()->user();
-            $attachment_urls = [];
-            $mail_attachment_urls = [];
-            if ($request->hasFile('attachment')) {
-                $files = $request->file('attachment');
 
-                if (is_array($files)) {
-                    foreach ($files as $attachment) {
-                        $filename = now()->format('Y_m_d_H_i_s') . '_' . uniqid() . '.' . $attachment->getClientOriginalExtension();
-                        $path = $attachment->storeAs('attachments', $filename, 'public');
-                        $attachment_urls[] = url('storage/' . $path);
-                        $mail_attachment_urls[] = [
-                            'path' => storage_path('app/public/' . $path),
-                            'name' => $filename,
-                            'mime' => $attachment->getMimeType()
-                        ];
-                    }
-                } else {
-                    $filename = now()->format('Y_m_d_H_i_s') . '_' . uniqid() . '.' . $files->getClientOriginalExtension();
-                    $path = $files->storeAs('attachments', $filename, 'public');
-                    $attachment_urls[] = url('storage/' . $path);
-                    $mail_attachment_urls[] = [
-                        'path' => storage_path('app/public/' . $path),
-                        'name' => $filename,
-                        'mime' => $files->getMimeType()
-                    ];
-                }
-            }
+            // Handle file attachments
+            [$attachment_urls, $mail_attachment_urls] = $this->processAttachments($request);
 
-            $updateData = [
-                'product_id' => isset($request->product_id) ? $request->product_id : 0,
-                'campaign_id' => isset($request->campaign_id) ? $request->campaign_id : 0,
-                'inbound_group_id' => isset($request->inbound_group_id) ? $request->inbound_group_id : 0,
-                'contact_id' => isset($request->contact_id) ? $request->contact_id : 0,
-                'assign_to_id' => isset($request->assign_to_id) ? $request->assign_to_id : 0,
-                'default_type' => isset($request->default_type) ? $request->default_type : "",
-                'default_priority' => isset($request->default_priority) ? $request->default_priority : "",
-                'default_status' => isset($request->default_status) ? $request->default_status : "",
-                'subject' => isset($request->subject) ? $request->subject : "",
-                'department_id' => isset($request->department_id) ? $request->department_id : "",
-                'to_emails' => isset($request->to_emails) ? $request->to_emails : "",
-                'cc' => isset($request->cc) ? $request->cc : "",
-                'bcc' => isset($request->bcc) ? $request->bcc : "",
-                'description' => isset($request->description) ? $request->description : "",
-                'incident_id' => isset($request->incident_id) ? $request->incident_id : 0,
-                'account_id' => isset($request->account_id) ? $request->account_id : 0,
-            ];
-            if (!empty($attachment_urls)) {
-                $updateData['attachment'] = $attachment_urls;
+            $updateData = $this->buildTicketData($request, $attachment_urls);
+            if (empty($attachment_urls)) {
+                unset($updateData['attachment']);
             }
 
             $supportTicket->update($updateData);
-            $this->createTicket($supportTicket, isset($request->default_status) ? $request->default_status : "", "Edit Support Ticket", $apiUser);
+
+            $this->createTicket($supportTicket, $request->default_status ?? "", "Edit Support Ticket", $apiUser);
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
-            $emailConfig = EmailConfigure::where('type', 'gmail')->first();
-            $smtpHost = $emailConfig->smtp_host;
-            $smtpPort = $emailConfig->smtp_port;
-            $smtpUser = $emailConfig->smtp_user;
-            $smtpPassword = $emailConfig->smtp_password;
-            $sender_name = $emailConfig->sender_name;
-            $sender_email = $emailConfig->sender_email;
 
-            config([
-                'mail.mailers.smtp.host' => $smtpHost,
-                'mail.mailers.smtp.port' => $smtpPort,
-                'mail.mailers.smtp.username' => $smtpUser,
-                'mail.mailers.smtp.password' => $smtpPassword,
-                'mail.mailers.smtp.encryption' => ($smtpPort == 587) ? 'TLS' : 'SSL',
-                'mail.from.address' =>  $sender_email,
-                'mail.from.name' => $sender_name,
-            ]);
+            $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0);
 
-            Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
-            logEmail([
-                "user_id" => $request->assign_to_id,
-                "email_template_id" => 0,
-                "from_email" => $sender_email,
-                "module_name" => "Support Ticket",
-                "entity_id" => $supportTicket->id,
-                "status" => "sent",
-            ]);
-
-            $updatedSupportTicket = new TenantsResource($supportTicket);
-            // Return the response
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $updatedSupportTicket, trans('message.support_ticket_update_msg'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.support_ticket_update_msg'));
         } catch (Exception $ex) {
-            generateLogs('error', 'Error occurred while updating  Support Tickets : ', $ex->getMessage());
+            generateLogs('error', 'Error occurred while updating Support Ticket: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -324,9 +400,9 @@ class SupportTicketRepository
     public function show(SupportTicket $supportTicket)
     {
         try {
-            $response = new TenantsResource($supportTicket);
+            // $response = new TenantsResource($supportTicket);
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error fetching SLA setting : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -340,6 +416,7 @@ class SupportTicketRepository
             $type = "";
             $comment = "";
             $statusInfo = "";
+
             if (isset($request->default_status)) {
                 $type = $request->default_status;
                 $comment = "Change ticket status to: " . $request->default_status;
@@ -366,17 +443,21 @@ class SupportTicketRepository
             }
 
             $supportTicket->update($updateData);
+
             $ticketResponse = $this->createTicket($supportTicket, $type, $comment, $apiUser, $statusInfo);
+
             if ($request->default_status == "Resolved") {
                 // $this->sendSms($apiUser, "Ticket Resolved", $apiUser->mobile, $supportticket);
                 $toEmails = $supportTicket->assignedUser->email ?? '';
                 setEmailConfig();
+
                 $mailTemplate = MailTemplate::where("type", "agent_solve_the_ticket")->first();
                 $subject =  $mailTemplate->subject ?? '';
                 $body =  $mailTemplate->body ?? '';
                 $body = str_replace("{ticket_number}", $supportTicket->support_ticket_id, $body);
                 $body = str_replace("{{customer_name}}", $supportTicket->assignedUser->first_name, $body);
                 $subject = str_replace("{ticket_number}", $supportTicket->support_ticket_id, $subject);
+
                 Mail::to($toEmails)->send(new SendEmail($subject, $body));
             }
 
@@ -384,6 +465,7 @@ class SupportTicketRepository
                 (new TenantsResource($supportTicket))->toArray($request),
                 $ticketResponse
             );
+
             // Return the response
             return $this->apiResponse->getResponseStructure(trans('message.success'), $statusUpdateData, trans('message.data_fetch'));
         } catch (Exception $ex) {
@@ -459,5 +541,88 @@ class SupportTicketRepository
         $template = str_replace("{#ticket ##}", $supportticket->support_ticket_id, $template);
         $template = str_replace("{#customer name#}", $apiUser->first_name . ' ' . $apiUser->last_name, $template);
         $smsInfo->sendSMS($apiUser->id, $templateName, $template, $phone);
+    }
+
+    private function processAttachments(Request $request): array
+    {
+        $attachment_urls = [];
+        $mail_attachment_urls = [];
+
+        if ($request->hasFile('attachment')) {
+            $files = $request->file('attachment');
+            $files = is_array($files) ? $files : [$files];
+
+            foreach ($files as $attachment) {
+                $file = uploadAttachment($request, "attachment", "support_ticket");
+                $attachment_urls[] = url('storage/' . $file['path']);
+                $mail_attachment_urls[] = [
+                    'path' => storage_path('app/public/' . $file['path']),
+                    'name' => $file['fileName'],
+                    'mime' => $attachment->getMimeType()
+                ];
+            }
+        }
+
+        return [$attachment_urls, $mail_attachment_urls];
+    }
+
+    private function buildTicketData(Request $request, array $attachment_urls): array
+    {
+        return [
+            'support_ticket_id' => gmdate('ymdhis'),
+            'product_id' => $request->product_id ?? 0,
+            'campaign_id' => $request->campaign_id ?? 0,
+            'inbound_group_id' => $request->inbound_group_id ?? 0,
+            'contact_id' => $request->contact_id ?? 0,
+            'assign_to_id' => $request->assign_to_id ?? 0,
+            'default_type' => $request->default_type ?? '',
+            'default_priority' => $request->default_priority ?? '',
+            'default_status' => $request->default_status ?? '',
+            'subject' => $request->subject ?? '',
+            'department_id' => $request->department_id ?? '',
+            'to_emails' => $request->to_emails ?? '',
+            'cc' => $request->cc ?? '',
+            'bcc' => $request->bcc ?? '',
+            'description' => $request->description ?? '',
+            'attachment' => json_encode($attachment_urls),
+            'incident_id' => $request->incident_id ?? 0,
+            'account_id' => $request->account_id ?? 0,
+        ];
+    }
+
+    private function buildMailData(Request $request, $apiUser, array $attachment_urls, string $supportTicketId): array
+    {
+        return [
+            'default_type' => $request->default_type ?? '',
+            'user_id' => $apiUser->id ?? '',
+            'priority' => $request->default_priority ?? '',
+            'status' => $request->default_status ?? '',
+            'to' => $request->to_emails ?? '',
+            'cc' => $request->cc ?? '',
+            'bcc' => $request->bcc ?? '',
+            'body' => $request->description ?? '',
+            'attachment' => json_encode($attachment_urls),
+            'supportticket_id' => $supportTicketId,
+            'date' => gmdate('Y-m-d H:i:s'),
+        ];
+    }
+
+    private function sendSupportEmail(Request $request, array $mail_attachment_urls, int $ticketId, int $assignToId)
+    {
+        setEmailConfig();
+
+        $emailConfig = EmailConfigure::where('type', 'gmail')->first();
+        $sender_email = $emailConfig->sender_email ?? config('mail.from.address');
+
+        Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
+
+        logEmail([
+            "user_id" => $assignToId,
+            "email_template_id" => 0,
+            "from_email" => $sender_email,
+            "module_name" => "Support Ticket",
+            "entity_id" => $ticketId,
+            "status" => "sent",
+        ]);
     }
 }

@@ -5,7 +5,7 @@ namespace App\Repositories;
 use Illuminate\Http\Request;
 use App\Models\UserGroup;
 use App\Http\Response\CustomApiResponse;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+
 use Exception;
 
 class UserGroupRepository
@@ -71,10 +71,9 @@ class UserGroupRepository
             return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.user_group_create_msg'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error during User Group Create : ', $ex->getMessage());
-            return response()->json(['error' => trans('message.wrong_with_query')], ResponseHTTP::HTTP_UNAUTHORIZED);
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
-
 
     public function update(Request $request, $usergroup)
     {
@@ -93,7 +92,17 @@ class UserGroupRepository
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
-
+    
+    public function show(UserGroup $usergroup)
+    {
+        try {
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error fetching User Group : ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+    
     public function delete($usergroup)
     {
         try {

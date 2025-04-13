@@ -35,10 +35,11 @@ class MessageRepository
         // File upload logic is remaining here. We need to make file upload logic in common place
         try {
             $userId = $request->input('user_id');
+            $file = uploadAttachment($request,"attachment","attachment");
             $message = Message::Create([
                 "text" => $request->text,
                 "user_id" => $userId,
-                "attachment"=>uploadAttachment($request,"attachment","attachment")
+                "attachment" => $file['path']
             ]);
             SendMessage::dispatch($message);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));

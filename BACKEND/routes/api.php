@@ -108,73 +108,135 @@ Route::middleware(['auth:api'])->group(function () {
 Route::middleware(['jwt.auth'])->group(function () {
     Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
     Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
+    
     Route::apiResource('audit-logs', AuditController::class);
+    
     Route::post('save-user-provider', [SmsProviderController::class, 'saveUserProvider']);
+    
     Route::post('logout', [LoginController::class, 'logout']);
+    
     Route::apiResource('tenants', TenantController::class);
+    
     Route::apiResource('usergroup', UserGroupController::class);
+    
     Route::apiResource('tenantrole', TenantRoleController::class);
+    
     Route::get('cron-commands', [CronCommandController::class, 'index']);
+    
     Route::apiResource('cron-configurations', CronConfigurationController::class);
+    
     Route::get('cron-expressions', [CronExpressionController::class, 'index']);
+    
     Route::get('tenantrole-list', [TenantRoleController::class, 'list']);
+    
     Route::get('tenantrole-menu', [TenantRoleController::class, 'menu']);
+    
     Route::get('tenant-dashboard', [TenantController::class, 'dashboard']);
+    
     Route::apiResource('sms-providers', SmsProviderController::class);
+    
     Route::apiResource('sms-configurations', SmsProviderConfigurationController::class);
+    
     Route::apiResource('accounts', AccountController::class);
+    
     Route::get('industry_type', [IndustryTypeController::class, 'index']);
+    
     Route::get('business_type', [BusinessTypeController::class, 'index']);
+    
     Route::get('countries', [CountryController::class, 'index']);
+    
     Route::get('nameprefixes', [NamePrefixController::class, 'index']);
+    
     Route::get('occupations', [OccupationController::class, 'index']);
+    
     Route::get('states', [StateController::class, 'index']);
+    
     Route::get('cities', [CityController::class, 'index']);
+    
     Route::apiResource('email-logs', EmailLogController::class);
+    
     Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
+    
     Route::get('usersList', [UserListController::class, 'index']);
+    
     Route::get('campaigns', [CampaignListController::class, 'index']);
+    
     Route::get('ingroups', [IngroupListController::class, 'index']);
+    
     Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
+    
     Route::get('note', [NoteController::class, 'index']);
+    
     Route::post('note', [NoteController::class, 'store']);
+    
     Route::post('send-email', [EmailController::class, 'sendEmail']);
+    
     Route::post('insert-update-custom', [UpdateCustomFieldController::class, 'index']);
+    
     Route::apiResource('contacts', ContactController::class);
+    
     Route::get('agent-activity', [AgentActivityController::class, 'getAgentActivity']);
+    
     Route::get('mail-details', [MailDetailController::class, 'index']);
+    
     Route::post('mail-details', [MailDetailController::class, 'store']);
+    
     Route::apiResource('mail-templates', MailTemplateController::class);
+    
     Route::apiResource('departments', DepartmentController::class);
+    
     Route::apiResource('categories', CategoryController::class);
+    
     Route::apiResource('email-configure', EmailConfigureController::class);
+    
     Route::apiResource('products', ProductController::class);
+    
     // Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
     Route::apiResource('email-logs', EmailLogController::class);
+    
     Route::apiResource('sms-configurations', SmsProviderConfigurationController::class);
+    
     Route::apiResource('sms-providers', SmsProviderController::class);
+    
     Route::apiResource('lists', EcdialListsController::class);
+    
     Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
+    
     Route::apiResource('incident-types', IncidentTypeController::class);
+    
     Route::apiResource('phones', PhoneController::class);
+    
     Route::apiResource('users', UserController::class);
+    
     Route::put('update-tenantpassword', [UserController::class, 'updatepassword']);
+    
     Route::get('my-profile', [UserController::class, 'myprofile']);
+    
     Route::get('/branding', [UserController::class, 'getBranding']);
+    
     Route::apiResource('live-agents', LiveAgentController::class);
+    
     Route::apiResource('/dynamic-list-fields', DynamicListFieldController::class);
+    
     Route::apiResource('/lists_fields', EcdialListFieldController::class);
+    
     Route::apiResource('chatbots', ChatBotController::class);
+    
     Route::get('/download-sample/{list_id}', [ImportLeadController::class, 'downloadSampleCsv']);
+    
     Route::post('/upload-lead-csv/{list_id}', [ImportLeadController::class, 'uploadLeadCsv']);
+    
     Route::get('/custom-leads/{list_id}', [CustomLeadController::class, 'index']);  // Get all leads for a list
+    
     Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']); // Get a single lead by ID
+    
     Route::put('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'update']);
+    
     Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
 
     // Support Ticket
     Route::apiResource('support-ticket', SupportTicketController::class);
-    Route::post('updateticketstatus/{supportticket}', [SupportTicketController::class, 'statusUpdate']);
+    Route::post('update-ticket-status/{supportticket}', [SupportTicketController::class, 'statusUpdate']);
     Route::post('transfer', [SupportTicketTransferController::class, 'store']);
     Route::post('merge', [SupportTicketMergeController::class, 'store']);
     Route::get('notification', [SupportTicketNotificationController::class, 'index']);
@@ -182,11 +244,13 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Ticket Report
     Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
     Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);
-    Route::get('/ticket/summary/category', [TicketReportController::class, 'categorySummary']);
-    Route::get('/ticket/summary/priority', [TicketReportController::class, 'prioritySummary']);
-    Route::get('/ticket/summary/status', [TicketReportController::class, 'statusSummary']);
-    Route::get('/ticket/summary/weekday', [TicketReportController::class, 'weekdaySummary']);
-
+    Route::prefix('/ticket/summary')->group(function () {
+        Route::get('category', [TicketReportController::class, 'categorySummary']);
+        Route::get('priority', [TicketReportController::class, 'prioritySummary']);
+        Route::get('status', [TicketReportController::class, 'statusSummary']);
+        Route::get('weekday', [TicketReportController::class, 'weekdaySummary']);
+    });
+    
     // SLA Settings
     Route::apiResource('sla-settings', SlaSettingController::class);
 
@@ -198,6 +262,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('sla-incident', [SlaReportController::class, 'incidentSLA']);
 
     Route::apiResource('neox-configurations', NeoxConfigurationController::class);
+
     Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::post('dispo-list', [DispositionApiController::class, 'dispositionListApi']);
         Route::post('hold-call', [HoldCallApiController::class, 'holdCallApi']);
@@ -215,19 +280,24 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('remove-party', [RemovePartyApiController::class, 'removePartyApi']);
         Route::post('start-conf', [StartConfApiController::class, 'startConfApi']);
     });
+
     Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);
     Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
     Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
     Route::post('call-history', [WebhookCallController::class, 'callHistory']);
+    
     Route::apiResource('chat-bot-configurations', ChatBotConfigurationController::class);
+    
     Route::get('get-messages', [MessageController::class, 'getMessages']);
     Route::post('message', [MessageController::class, 'storeMessage']);
 });
 
 Route::post('/ext-api/camp-list', [CampaignApiController::class, 'campaignListApi']);
+
 Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
     Route::post('ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
     Route::post('logout', [LogoutApiController::class, 'agentLogoutApi']);
     Route::post('refresh-logout', [LogoutRefreshApiController::class, 'agentLogoutRefreshApi']);
 });
+
 Route::post('/ext-api/login', [LoginApiController::class, 'agentLoginApi']);

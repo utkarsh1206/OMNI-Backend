@@ -325,7 +325,13 @@ if (!function_exists('sendHttpRequest')) {
             if ($request->hasFile($fieldName)) {
                 $attachment = $request->file($fieldName);
                 $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
-                return $attachment->storeAs($directory, $filename, 'public');
+                $filePath = $attachment->storeAs($directory, $filename, 'public');
+               
+                return [
+                    'fileName' => $filename,
+                    'path' => $filePath
+                ];
+
             }
             return null;
         }
