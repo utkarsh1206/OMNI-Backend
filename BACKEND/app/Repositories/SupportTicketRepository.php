@@ -12,7 +12,6 @@ use App\Models\SupportTicketNotification;
 use Illuminate\Support\Facades\Mail;
 use Exception;
 use App\Mail\SendEmail;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\SmsTemplate;
 use App\Services\SmsService;
 use App\Models\MailTemplate;

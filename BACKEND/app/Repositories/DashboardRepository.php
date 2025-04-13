@@ -10,7 +10,6 @@ use App\Models\Department;
 use App\Models\IncidentType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 

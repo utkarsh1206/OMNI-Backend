@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Illuminate\Database\QueryException;
 use App\Models\Users;
 use App\Models\Tenant;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Hash;
 
 class UserRepository

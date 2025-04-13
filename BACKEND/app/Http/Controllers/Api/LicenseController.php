@@ -7,7 +7,6 @@ use App\Services\AESService;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
