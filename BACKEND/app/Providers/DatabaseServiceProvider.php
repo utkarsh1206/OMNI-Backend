@@ -34,7 +34,7 @@ class DatabaseServiceProvider extends ServiceProvider
             $token = $request->bearerToken();
           
             if ($token != "") {
-                $payload = JWTAuth::setToken($token)->getPayload();
+                $payload = extractPayload($token);
                
                 if ($payload['admin_type'] != 'Super') {
                     $domain = $payload['domain'];

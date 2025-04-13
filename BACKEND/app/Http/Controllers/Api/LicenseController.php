@@ -180,8 +180,9 @@ class LicenseController extends Controller
         $isTenant = $request->input('is_tanant', false);
 
         $token = $request->bearerToken();
+        
         if ($token != "") {
-            $payload = JWTAuth::setToken($token)->getPayload();
+            $payload = extractPayload($token);
 
             if ($payload['role_id'] > 0) {
                 $isTenant = true;

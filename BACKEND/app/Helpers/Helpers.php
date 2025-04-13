@@ -11,6 +11,7 @@ use App\Models\NeoxConfiguration;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
  * Format price with a currency symbol.
@@ -30,18 +31,7 @@ if (! function_exists('logEmail')) {
         $emailLog->save();
     }
 }
-if (! function_exists('uploadAttachment')) {
- function uploadAttachment(Request $request, $fieldName = 'attachment', $directory = 'attachments')
-{
-    if ($request->hasFile($fieldName)) {
-        $attachment = $request->file($fieldName);
-        $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
-        return $attachment->storeAs($directory, $filename, 'public');
-    }
-    return null;
-}
 
-}
 /**
  * Set email configuration
  *
@@ -325,6 +315,26 @@ if (!function_exists('sendHttpRequest')) {
                     Log::info($message, $data);
                     break;
             }
+        }
+    }
+
+
+    if (! function_exists('uploadAttachment')) {
+        function uploadAttachment(Request $request, $fieldName = 'attachment', $directory = 'attachments')
+        {
+            if ($request->hasFile($fieldName)) {
+                $attachment = $request->file($fieldName);
+                $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
+                return $attachment->storeAs($directory, $filename, 'public');
+            }
+            return null;
+        }
+    }
+
+    if (! function_exists('extractPayload')) {
+        function extractPayload($token)
+        {
+            return $token ? JWTAuth::setToken($token)->getPayload() : null;
         }
     }
 }

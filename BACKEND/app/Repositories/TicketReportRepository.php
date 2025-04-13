@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\SupportTicket;
 use Carbon\Carbon;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Exception;
@@ -246,8 +245,7 @@ class TicketReportRepository
 
     private function extractPayload(Request $request)
     {
-        $token = $request->bearerToken();
-        return $token ? JWTAuth::setToken($token)->getPayload() : null;
+        return extractPayload($request->bearerToken());
     }
 
     private function formatTickets($tickets)

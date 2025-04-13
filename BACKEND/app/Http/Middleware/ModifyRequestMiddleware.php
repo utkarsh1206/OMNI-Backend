@@ -29,7 +29,7 @@ class ModifyRequestMiddleware
             return $next($request);
         }
 
-        $payload = $token ? JWTAuth::setToken($token)->getPayload() : null;
+        $payload = $token ? extractPayload($token) : null;
 
         $modifiedData['user_id'] = $payload['username'];
         $modifiedData['user'] = $payload['username'];

@@ -8,7 +8,6 @@ use App\Models\IncidentType;
 use App\Models\SlaTarget;
 use App\Models\SupportTicket;
 use Illuminate\Support\Facades\DB;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Exception;
@@ -272,7 +271,6 @@ class SlaReportRepository
 
     private function extractPayload(Request $request)
     {
-        $token = $request->bearerToken();
-        return $token ? JWTAuth::setToken($token)->getPayload() : null;
+        return extractPayload($request->bearerToken());
     }
 }

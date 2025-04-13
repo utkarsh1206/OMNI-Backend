@@ -25,8 +25,7 @@ class DashboardRepository
 
     private function extractPayload(Request $request)
     {
-        $token = $request->bearerToken();
-        return $token ? JWTAuth::setToken($token)->getPayload() : null;
+        return extractPayload($request->bearerToken());
     }
 
     public function index(Request $request)

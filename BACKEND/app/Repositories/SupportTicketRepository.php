@@ -42,8 +42,9 @@ class SupportTicketRepository
             $contact_id = $request->input('contact_id', '');
 
             $token = $request->bearerToken();
+
             if ($token != "") {
-                $payload = JWTAuth::setToken($token)->getPayload();
+                $payload = extractPayload($token);
                 $roleId = $payload['role_id'];
                 $userId = $payload['id'];
             }
@@ -65,7 +66,7 @@ class SupportTicketRepository
             }
             // Paginate the results
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
-            $supportticket = $query->paginate($perPage);
+            // $supporTticket = $query->paginate($perPage);
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             if (!empty($ticket_id)) {

@@ -34,8 +34,7 @@ class UserRepository
             $mobile = $request->input('mobile', '');
             $usergroup_id = $request->input('usergroup_id', '');
 
-            $token = $request->bearerToken();
-            $payload = JWTAuth::setToken($token)->getPayload();
+            $payload = extractPayload($request->bearerToken());
             // Start the query for tenants
 
             $is_all_users = $request->has('all_user') ? $request->input('all_user') : null;
@@ -203,7 +202,7 @@ class UserRepository
         try {
             $token = $request->bearerToken();
             if ($token != "") {
-                $payload = JWTAuth::setToken($token)->getPayload();
+                $payload = extractPayload($token) ;
                 $users = Users::findOrFail($payload['id']);
                 if (!Hash::check($request->old_password, $users->password)) {
                     return response()->json(['error' => trans("message.old_password_incorrect")], ResponseHTTP::HTTP_FORBIDDEN);
@@ -228,7 +227,7 @@ class UserRepository
         try {
             $token = $request->bearerToken();
             if ($token != "") {
-                $payload = JWTAuth::setToken($token)->getPayload();
+                $payload = extractPayload($token);
                 $users = Users::where('id', $payload['id'])->first();
                 $return_array['profile_info'] = $users->toArray();
                 unset($return_array['profile_info']['password']);
@@ -251,7 +250,7 @@ class UserRepository
         }
 
         try {
-            $payload = JWTAuth::setToken($token)->getPayload();
+            $payload = extractPayload($token);
             $domain = $payload['domain'];
             establishMasterConnection($domain, "omnichannel", "mysql");
             $tenant = Tenant::select('title', 'footer_content', 'footer_url', 'tenant_logo')
