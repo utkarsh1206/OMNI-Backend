@@ -15017,7 +15017,7 @@
                 }
             }
         },
-        "/api/call_initiate": {
+        "/api/call-initiate": {
             "post": {
                 "tags": [
                     "Webhook Calls"
@@ -15141,7 +15141,7 @@
                 ]
             }
         },
-        "/api/call_connected": {
+        "/api/call-connected": {
             "post": {
                 "tags": [
                     "Webhook Calls"
@@ -15265,7 +15265,7 @@
                 ]
             }
         },
-        "/api/call_hangup": {
+        "/api/call-hangup": {
             "post": {
                 "tags": [
                     "Webhook Calls"
@@ -15389,7 +15389,7 @@
                 ]
             }
         },
-        "/api/call_history": {
+        "/api/call-history": {
             "post": {
                 "tags": [
                     "Webhook Calls"
