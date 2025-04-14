@@ -118,6 +118,15 @@ class DynamicListFieldsRepository
             );
         } catch (\Exception $ex) {
             DB::rollBack();
+            // Handle unique constraint violation directly
+            if (
+                $ex instanceof \Illuminate\Database\QueryException &&
+                strpos($ex->getMessage(), 'ecdial_lists_fields_list_id_field_name_unique') !== false
+            ) {
+                return response()->json([
+                    'message' => 'Field Name Already Exists',
+                ], 400);
+            }
             generateLogs('error', 'Error in generating EcDial: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
