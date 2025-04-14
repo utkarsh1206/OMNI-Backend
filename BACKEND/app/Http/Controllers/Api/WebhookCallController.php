@@ -24,7 +24,7 @@ class WebhookCallController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/call_initiate",
+     *     path="/api/call-initiate",
      *     summary="Handle call initiation",
      *     description="Logs the initiation of a call",
      *     operationId="callInitiated",
@@ -86,7 +86,7 @@ class WebhookCallController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/call_connected",
+     *     path="/api/call-connected",
      *     summary="Handle call connected",
      *     description="Logs the connected of a call",
      *     operationId="callConnected",
@@ -149,7 +149,7 @@ class WebhookCallController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/call_hangup",
+     *     path="/api/call-hangup",
      *     summary="Handle call Hangup",
      *     description="Logs the hangup of a call",
      *     operationId="callHangup",
@@ -211,7 +211,7 @@ class WebhookCallController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/call_history",
+     *     path="/api/call-history",
      *     summary="Handle call history",
      *     description="Logs the history of a call",
      *     operationId="callHistory",
