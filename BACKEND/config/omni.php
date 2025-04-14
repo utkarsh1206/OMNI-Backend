@@ -14,4 +14,5 @@ return [
    'CHAT_360_PASSWORD' => env('CHAT_360_PASSWORD','Chat@123sales'),
    'CHAT_360_ROOM_ID' => env('CHAT_360_ROOM_ID',''),
    'CHAT_360_API_KEY' => env('CHAT_360_API_KEY',''),
+   'CHAT_360_URL' => env('CHAT_360_URL','https://app.chat360.io/'),
 ];

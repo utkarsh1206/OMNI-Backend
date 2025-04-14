@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MailTemplateRequest;
 use Illuminate\Http\Request;
 use App\Models\MailTemplate;
-use App\Http\Resources\MailTemplateResource;
 use App\Repositories\MailTemplateRepository;
 use Illuminate\Validation\ValidationException;
 

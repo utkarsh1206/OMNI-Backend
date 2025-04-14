@@ -41,27 +41,17 @@ class Chat360Service
         return $loginResponse['access'] ?? null;
     }
 
-    public function getAuthorizationCode()
+
+
+    public function getChatHistory($accessCode,$roomId=NULL)
     {
-        $response = Http::withHeaders([
-            'X-API-Key' => $this->apiKey,
-        ])->get($this->url.'api/third-party-service/auth/verify');
+        $response = Http::get($this->url.'api/clientwidget_updated/listing/third_party_fetch?api_key='.$accessCode.'&room_status=active');
 
         if ($response->successful()) {
-            return $response->json()['authorization_code'] ?? null;
+            return $response->json();
         }
 
         return null;
-    }
-
-    public function getChatHistoryUrl()
-    {
-        $authCode = $this->getAuthorizationCode();
-
-        if (!$authCode) {
-            return null;
-        }
-        return $this->url."auth/login/sso?authorization_code={$authCode}&next=https%3A%2F%2Fapp.chat360.io%2Fchats%2F{$this->roomId}";
     }
 
     

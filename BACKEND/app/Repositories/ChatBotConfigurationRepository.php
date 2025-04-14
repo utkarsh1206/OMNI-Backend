@@ -20,7 +20,7 @@ class ChatBotConfigurationRepository
 
     public function list(Request $request)
     {
-        try {
+        // try {
             $providerName = $request->input('provider_name', '');
             $method = $request->input('method', '');
             $enabled = $request->input('enabled', '');
@@ -38,7 +38,7 @@ class ChatBotConfigurationRepository
                 $chatBotConfigurations = $chatBotConfigurations->orWhere('config_value', 'like', '%' . $search . '%');
             }
 
-            $chatBotConfigurations = $chatBotConfigurations->pluck("provider_id");
+            $chatBotConfigurations = $chatBotConfigurations->pluck("chat_id");
             $configurations  = ChatBotProvider::whereIn("id", $chatBotConfigurations);
 
             if ($providerName) {
@@ -51,10 +51,10 @@ class ChatBotConfigurationRepository
 
             $configurations = $configurations->get();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $this->formatListingData($configurations, $method, $enabled), trans('message.data_fetch'));
-        } catch (Exception $ex) {
-            generateLogs('error', 'Error in generating Chatboat Configuration Listing: ', $ex->getMessage());
-            return $this->apiResponse->handleAndResponseException($ex);
-        }
+        // } catch (Exception $ex) {
+        //     generateLogs('error', 'Error in generating Chatboat Configuration Listing: ', $ex->getMessage());
+        //     return $this->apiResponse->handleAndResponseException($ex);
+        // }
     }
 
     public function store($request)
@@ -63,9 +63,13 @@ class ChatBotConfigurationRepository
             $chatProviders = ChatBotProvider::Create([
                 "name" => $request->provider_name,
             ]);
-
-            if (count($request->configurations) > 0) {
-                foreach ($request->configurations as $config) {
+            $webhook ["web_hook_url"] = url('api/chatboot-webhook?source='.$request->provider_name."&tenant=tenant1"); 
+           
+            $webhookUrl = url('api/chatboot-webhook?source=' . $request->provider_name . "&tenant=".auth()->user()->domain?? '');
+            $requestConfig = $request->configurations;
+            $requestConfig[0]['web_hook_url'] = $webhookUrl;
+            if (!empty($requestConfig)) {
+                foreach ($requestConfig as $config) {
                     foreach ($config as $key => $value) {
                         $chatConfigurations = ChatBotConfiguration::create([
                             'chat_id' => $chatProviders->id ?? '',
@@ -75,8 +79,8 @@ class ChatBotConfigurationRepository
                     }
                 }
             }
-
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $chatConfigurations, trans('message.chat_provider_conf_add'));
+            $chatbootConfigurations= ChatBotConfiguration::where("chat_id",$chatProviders->id)->get();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $chatbootConfigurations, trans('message.chat_provider_conf_add'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in storing Chatboat Configuration: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -151,7 +155,7 @@ class ChatBotConfigurationRepository
     private function formatListingData($configurations, $method = null, $enabled = null)
     {
         $formattedData =  collect($configurations)->map(function ($item) {
-            $providerInfo = ChatBotConfiguration::select(["id", "config_key", "config_value"])->where("provider_id", $item['id']);
+            $providerInfo = ChatBotConfiguration::select(["id", "config_key", "config_value"])->where("chat_id", $item['id']);
             $providerInfo = $providerInfo->get();
 
             return [

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Http\Resources\CronsResource;
 use App\Models\CronConfiguration;
 use App\Repositories\CronConfigurationRepository;
 use App\Http\Requests\CronConfigurationRequest;
@@ -152,7 +151,7 @@ class CronConfigurationController extends Controller
      */
     public function show(CronConfiguration $cronConfiguration)
     {
-        return new CronsResource($cronConfiguration);
+        return $this->cronConfigurationRepository->show($cronConfiguration);
     }
 
     /**

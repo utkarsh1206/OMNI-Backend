@@ -113,4 +113,19 @@ class CronConfigurationRepository
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
+
+    public function show($cronConfiguration)
+    {
+        try {
+            if (!$cronConfiguration) {
+                return response()->json([
+                    'message' => trans("message.cron_configuration_not_found"),
+                ], ResponseHTTP::HTTP_NOT_FOUND);
+            }
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $cronConfiguration, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in show Cron Configuration: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
 }
