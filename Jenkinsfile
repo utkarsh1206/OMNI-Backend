@@ -25,22 +25,13 @@ pipeline {
     }
 
     post  {
-    success {
-        echo "🟢 SUCCESS block triggered"
-        updateGitlabCommitStatus name: 'build', state: 'success'
-        emailext attachLog: true, body: 'Email sent out from Jenkins', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', to: 'neox.tu@stl.tech'
-        echo "✅ Email command executed for SUCCESS"
-    }
-
-    failure {
-        echo "🔴 FAILURE block triggered"
-        updateGitlabCommitStatus name: 'build', state: 'success'
-        emailext attachLog: true, body: 'Email sent out from Jenkins', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', to: 'neox.tu@stl.tech'
-        echo "❌ Email command executed for FAILURE"
-    }
-
-    always {
-        echo "🔁 ALWAYS block triggered. Email attempt (success/failure) should have been made."
+        always {
+        emailext(
+            to: 'neox.tu@stl.tech',
+            from: 'utkarsh.rokade@stl.tech',
+            subject: "Build ${env.BUILD_NUMBER} Status: ${currentBuild.currentResult}",
+            body: "Build completed. View it at: ${env.BUILD_URL}"
+        )
     }
 }
 
