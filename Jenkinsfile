@@ -42,7 +42,7 @@ pipeline {
                 </ul>
             """,
             mimeType: 'text/html',
-            attachmentsPattern: '**/log.txt'
+            attachLog: true
         )
     }
 
@@ -63,7 +63,7 @@ pipeline {
                 <p>Attached: Log file for detailed error info.</p>
             """,
             mimeType: 'text/html',
-            attachmentsPattern: '**/log.txt'
+            attachLog: true
         )
     }
 }
