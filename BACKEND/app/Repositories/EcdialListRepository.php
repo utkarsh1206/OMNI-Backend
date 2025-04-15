@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Resources\EcdialListResource;
 use Exception;
 use App\Http\Response\CustomApiResponse;
+use App\Models\EcdialListField;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 
@@ -65,6 +66,167 @@ class EcdialListRepository
             ]);
             // Generate custom table name
             $this->createCustomTable($ecdialLists->list_id);
+
+            $baseFields = [
+                [
+                    'field_name' => 'First Name',
+                    'field_label' => 'First Name',
+                    'field_type' => 'text',
+                    'description' => 'User\'s first name',
+                    'options' => null,
+                    'mandatory' => 'Y',
+                    'calling_authority' => 'Y',
+                    'show_authority' => 'Y',
+                    'agent_view' => 'Y',
+                    'field_order' => 1,
+                    'field_help' => 'Enter the first name',
+                    'field_size' => 12,
+                    'field_max_length' => 50,
+                    'search_filter' => 'Y',
+                    'editable' => 'Y',
+                    'default_value' => null,
+                    'value_masked' => 'N',
+                    'duplicate_check' => 'N',
+                    'status' => 1,
+                    'field_column' => 'A',
+                ],
+                [
+                    'field_name' => 'Last Name',
+                    'field_label' => 'Last Name',
+                    'field_type' => 'text',
+                    'description' => 'User\'s last name',
+                    'options' => null,
+                    'mandatory' => 'Y',
+                    'calling_authority' => 'Y',
+                    'show_authority' => 'Y',
+                    'agent_view' => 'Y',
+                    'field_order' => 1,
+                    'field_help' => 'Enter the last name',
+                    'field_size' => 12,
+                    'field_max_length' => 50,
+                    'search_filter' => 'Y',
+                    'editable' => 'Y',
+                    'default_value' => null,
+                    'value_masked' => 'N',
+                    'duplicate_check' => 'N',
+                    'status' => 1,
+                    'field_column' => 'B',
+                ],
+                [
+                    'field_name' => 'Email',
+                    'field_label' => 'Email',
+                    'field_type' => 'text',
+                    'description' => 'User\'s email address',
+                    'options' => null,
+                    'mandatory' => 'Y',
+                    'calling_authority' => 'Y',
+                    'show_authority' => 'Y',
+                    'agent_view' => 'Y',
+                    'field_order' => 1,
+                    'field_help' => 'Enter the email',
+                    'field_size' => 12,
+                    'field_max_length' => 100,
+                    'search_filter' => 'Y',
+                    'editable' => 'Y',
+                    'default_value' => null,
+                    'value_masked' => 'N',
+                    'duplicate_check' => 'Y',
+                    'status' => 1,
+                    'field_column' => 'C',
+                ],
+                [
+                    'field_name' => 'Mobile',
+                    'field_label' => 'Mobile Number',
+                    'field_type' => 'text',
+                    'description' => 'User\'s mobile number',
+                    'options' => null,
+                    'mandatory' => 'Y',
+                    'calling_authority' => 'Y',
+                    'show_authority' => 'Y',
+                    'agent_view' => 'Y',
+                    'field_order' => 1,
+                    'field_help' => 'Enter the 10-digit mobile number',
+                    'field_size' => 10,
+                    'field_max_length' => 10,
+                    'search_filter' => 'Y',
+                    'editable' => 'Y',
+                    'default_value' => null,
+                    'value_masked' => 'N',
+                    'duplicate_check' => 'Y',
+                    'status' => 1,
+                    'field_column' => 'D',
+                ],
+                [
+                    'field_name' => 'Subject',
+                    'field_label' => 'Subject',
+                    'field_type' => 'text',
+                    'description' => 'Subject of the message',
+                    'options' => null,
+                    'mandatory' => 'N',
+                    'calling_authority' => 'N',
+                    'show_authority' => 'Y',
+                    'agent_view' => 'Y',
+                    'field_order' => 2,
+                    'field_help' => 'Enter the subject',
+                    'field_size' => 12,
+                    'field_max_length' => 150,
+                    'search_filter' => 'N',
+                    'editable' => 'Y',
+                    'default_value' => null,
+                    'value_masked' => 'N',
+                    'duplicate_check' => 'N',
+                    'status' => 1,
+                    'field_column' => 'A',
+                ],
+                [
+                    'field_name' => 'Description',
+                    'field_label' => 'Description',
+                    'field_type' => 'textarea',
+                    'description' => 'Additional message or notes',
+                    'options' => null,
+                    'mandatory' => 'N',
+                    'calling_authority' => 'N',
+                    'show_authority' => 'Y',
+                    'agent_view' => 'Y',
+                    'field_order' => 2,
+                    'field_help' => 'Enter additional details',
+                    'field_size' => 12,
+                    'field_max_length' => 500,
+                    'search_filter' => 'N',
+                    'editable' => 'Y',
+                    'default_value' => null,
+                    'value_masked' => 'N',
+                    'duplicate_check' => 'N',
+                    'status' => 1,
+                    'field_column' => 'B',
+                ],
+            ];
+
+            // Add list_id to each field in a clean way
+            $fields = array_map(function ($field) use ($ecdialLists) {
+                return ['list_id' => $ecdialLists->list_id] + $field;
+            }, $baseFields);
+
+            EcdialListField::insert($fields);
+
+            $tableName = 'custom_lead_' . $ecdialLists->list_id; // Replace with your actual table name
+
+            foreach ($baseFields as $field) {
+                $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field['field_label'])); // Convert field label to snake case for column name
+
+                if (!Schema::hasColumn($tableName, $columnName)) {
+                    Schema::table($tableName, function (Blueprint $table) use ($columnName, $field) {
+                        switch ($field['field_type']) {
+                            case 'textarea':
+                                $table->text($columnName)->nullable()->after('updated_at');
+                                break;
+                            default:
+                                $table->string($columnName, $field['field_max_length'] ?? 255)->nullable()->after('updated_at');
+                                break;
+                        }
+                    });
+                }
+            }
 
             $data = new EcdialListResource($ecdialLists);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_create_success'));
