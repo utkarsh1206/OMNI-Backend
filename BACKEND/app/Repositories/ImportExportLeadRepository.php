@@ -23,6 +23,7 @@ class ImportExportLeadRepository
         try {
             return EcdialListField::where('list_id', $list_id)
                 ->orderBy('field_order')
+                ->orderBy('field_column')
                 ->get();
         } catch (\Exception $e) {
             generateLogs('error', 'Error in generating getFieldsByListId : ', $e->getMessage());
@@ -65,7 +66,7 @@ class ImportExportLeadRepository
             $insertData = [];
 
             foreach ($fields as $field) {
-                $insertData[$field->field_label] = $row[$field->field_label] ?? null;
+                $insertData[strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_label))] = $row[$field->field_label] ?? null;
             }
 
             $insertData['created_at'] = now();

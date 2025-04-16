@@ -135,6 +135,10 @@ class LoginRepository
             }
         });
 
+        if ($flag == 1) {
+            $userData = $userData->where('role_id', 1);
+        }
+
         if ($flag == 2) {
             $userData = $userData->where('role_id', 3);
         }
