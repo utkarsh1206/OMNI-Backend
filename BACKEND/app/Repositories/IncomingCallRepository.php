@@ -97,7 +97,7 @@ class IncomingCallRepository
             ->where('neox_temp_call_logs.call_connected_status', 'unread')
             ->where('neox_temp_call_logs.call_hangup_status', 'unread')
             ->whereNotNull('neox_temp_call_logs.caller_user_extension')
-            ->where('neox_temp_call_logs.type', '!=', 'CALL_HISTORY')
+            ->where('neox_temp_call_logs.type', '!=', 'call_history')
             ->where('neox_temp_call_logs.call_type', 'incoming')
             ->orderByDesc('neox_temp_call_logs.id')
             ->first();
@@ -117,7 +117,7 @@ class IncomingCallRepository
         if (!$lastStatus) return 'Unknown';
 
         switch ($lastStatus->type) {
-            case 'CALL_INITIATED':
+            case 'call_initiated':
                 $ttt = PauseResumeUserLog::create([
                     "user_id" => $request->id,
                     "campaign_id" => $request->campaign_id,
@@ -126,10 +126,10 @@ class IncomingCallRepository
                 ]);
                 return "In Queue";
 
-            case 'CALL_CONNECTED':
+            case 'call_connected':
                 return "call";
 
-            case 'CALL_HANGUP':
+            case 'call_hangup':
                 return "Disposition";
 
             default:

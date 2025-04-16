@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\WebhookCallRequest;
 use App\Http\Response\CustomApiResponse;
 use App\Repositories\WebhookCallRepository;
+use Carbon\Carbon;
 use Exception;
 
 class WebhookCallController extends Controller
@@ -81,7 +82,7 @@ class WebhookCallController extends Controller
     // Handle call initiation
     public function callInitiated(WebhookCallRequest $request)
     {
-        return $this->handleCallRequest($request, 'CALL_INITIATED');
+        return $this->handleCallRequest($request, 'call_initiated');
     }
 
     /**
@@ -143,7 +144,7 @@ class WebhookCallController extends Controller
     // Handle call connection
     public function callConnected(WebhookCallRequest $request)
     {
-        return $this->handleCallRequest($request, 'CALL_CONNECTED');
+        return $this->handleCallRequest($request, 'call_connected');
     }
 
 
@@ -206,7 +207,7 @@ class WebhookCallController extends Controller
     // Handle call hangup
     public function callHangup(WebhookCallRequest $request)
     {
-        return $this->handleCallRequest($request, 'CALL_HANGUP');
+        return $this->handleCallRequest($request, 'call_hangup');
     }
 
     /**
@@ -374,7 +375,7 @@ class WebhookCallController extends Controller
             'call_term_reason' => $request->input('call_term_reason'),
             'comments' => $request->input('comments'),
             'call_recording_url' => $request->input('call_recording_url') ?? null,
-            'type' => 'CALL_HISTORY',
+            'type' => 'call_history',
             'call_type' => $callType,
             'json_data' => json_encode($request->all())
         ];
@@ -388,8 +389,8 @@ class WebhookCallController extends Controller
 
         // Prepare and save to neox_temp_call_logs
         $tempData = array_merge($data, [
-            'DATE' => now()->toDateString(),
-            'TIME' => now()->toTimeString()
+            'date' => Carbon::now()->toDateString(),
+            'time' => Carbon::now()->toTimeString()
         ]);
         $this->webhookCallRepository->saveTempCallLog($tempData);
 
