@@ -28,7 +28,7 @@ pipeline {
         
     success {
         emailext(
-            to: 'neox.tu@stl.tech',
+            to: 'neox.tu@stl.tech, khanjan.kukadiya@stltech.in',
             from: 'prajapati.hitesh@stl.tech',
             subject: "✅ SUCCESS: ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
             body: """
@@ -48,7 +48,7 @@ pipeline {
 
     failure {
         emailext(
-            to: 'neox.tu@stl.tech',
+            to: 'neox.tu@stl.tech, khanjan.kukadiya@stltech.in',
             from: 'prajapati.hitesh@stl.tech',
             subject: "❌ FAILURE: ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
             body: """
