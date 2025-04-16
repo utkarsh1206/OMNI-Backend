@@ -53,7 +53,7 @@ class DatabaseServiceProvider extends ServiceProvider
            
             Config::set('database.connections.dynamic', [
                 'driver' => 'mysql',
-                'host' => '127.0.0.1',
+                'host' => env('DB_HOST', '127.0.0.1'),
                 'database' => $connectionDetails['database'],
                 'username' => $connectionDetails['username'],
                 'password' => $connectionDetails['password'],

@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\NeoxCallLog;
 use App\Models\NeoxTempCallLog;
+use App\Events\DialCenterData;
 
 class WebhookCallRepository
 {
@@ -16,6 +17,7 @@ class WebhookCallRepository
     // Save to neox_temp_call_logs table
     public function saveTempCallLog($tempData)
     {
+        broadcast(new DialCenterData($tempData));
         return NeoxTempCallLog::create($tempData);
     }
 

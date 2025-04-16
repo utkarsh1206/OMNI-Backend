@@ -10878,6 +10878,1045 @@
                 }
             }
         },
+        "/api/support-ticket": {
+            "get": {
+                "tags": [
+                    "Support Ticket"
+                ],
+                "summary": "Retrieve a list of support tickets",
+                "description": "This API endpoint retrieves a paginated or full list of support tickets with filtering options.",
+                "operationId": "listSupportTickets",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search by to_emails, subject, or description",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ticket_id",
+                        "in": "query",
+                        "description": "Filter by ticket ID",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "product_id",
+                        "in": "query",
+                        "description": "Filter by product ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "subject",
+                        "in": "query",
+                        "description": "Filter by subject",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "default_type",
+                        "in": "query",
+                        "description": "Filter by default type",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "default_status",
+                        "in": "query",
+                        "description": "Filter by default status",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "default_priority",
+                        "in": "query",
+                        "description": "Filter by default priority",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "assign_to_id",
+                        "in": "query",
+                        "description": "Filter by assign_to_id",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "contact_id",
+                        "in": "query",
+                        "description": "Filter by contact_id",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of results per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number or 'all' to fetch all records",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of support tickets retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "support_ticket_id": {
+                                                        "type": "string",
+                                                        "example": "130424123456"
+                                                    },
+                                                    "product_id": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    },
+                                                    "subject": {
+                                                        "type": "string",
+                                                        "example": "Unable to access the dashboard"
+                                                    },
+                                                    "default_type": {
+                                                        "type": "string",
+                                                        "example": "Issue"
+                                                    },
+                                                    "default_status": {
+                                                        "type": "string",
+                                                        "example": "Open"
+                                                    },
+                                                    "default_priority": {
+                                                        "type": "string",
+                                                        "example": "High"
+                                                    },
+                                                    "to_emails": {
+                                                        "type": "string",
+                                                        "example": "user@example.com"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "User is experiencing issues accessing the dashboard."
+                                                    },
+                                                    "attachment": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "example": "https://yourdomain.com/storage/support_ticket/file1.pdf"
+                                                        }
+                                                    },
+                                                    "assign_to_id": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    },
+                                                    "contact_id": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    },
+                                                    "department_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-04-13T08:30:00Z"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Support Ticket"
+                ],
+                "summary": "Create a new support ticket",
+                "description": "This API endpoint creates a new support ticket.",
+                "operationId": "storeSupportTicket",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "subject",
+                                    "description",
+                                    "product_id",
+                                    "status",
+                                    "priority"
+                                ],
+                                "properties": {
+                                    "subject": {
+                                        "type": "string",
+                                        "example": "Issue with product X"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Detailed description of the issue."
+                                    },
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "open"
+                                    },
+                                    "priority": {
+                                        "type": "string",
+                                        "example": "high"
+                                    },
+                                    "to_emails": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "user@example.com"
+                                        }
+                                    },
+                                    "attachment": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "https://yourdomain.com/storage/attachments/file1.pdf"
+                                        }
+                                    },
+                                    "assign_to_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "contact_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "department_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Support ticket created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "subject": {
+                                                    "type": "string",
+                                                    "example": "Issue with product X"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Detailed description of the issue."
+                                                },
+                                                "product_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "open"
+                                                },
+                                                "priority": {
+                                                    "type": "string",
+                                                    "example": "high"
+                                                },
+                                                "to_emails": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "user@example.com"
+                                                    }
+                                                },
+                                                "attachment": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "https://yourdomain.com/storage/attachments/file1.pdf"
+                                                    }
+                                                },
+                                                "assign_to_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "contact_id": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "department_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-04-13T08:30:00Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ticket created successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid input data"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/support-tickets/{id}": {
+            "get": {
+                "tags": [
+                    "Support Ticket"
+                ],
+                "summary": "Get support ticket details",
+                "description": "Fetch a specific support ticket by its ID and return detailed ticket data.",
+                "operationId": "getSupportTicket",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the support ticket",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Support Ticket Details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "product_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "campaign_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "inbound_group_id": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "contact_id": {
+                                                    "type": "integer",
+                                                    "example": 4
+                                                },
+                                                "assign_to_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "default_type": {
+                                                    "type": "string",
+                                                    "example": "issue"
+                                                },
+                                                "default_priority": {
+                                                    "type": "string",
+                                                    "example": "high"
+                                                },
+                                                "default_status": {
+                                                    "type": "string",
+                                                    "example": "in_progress"
+                                                },
+                                                "subject": {
+                                                    "type": "string",
+                                                    "example": "Ticket subject"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Ticket description"
+                                                },
+                                                "department_id": {
+                                                    "type": "integer",
+                                                    "example": 6
+                                                },
+                                                "to_emails": {
+                                                    "type": "string",
+                                                    "example": "to@example.com"
+                                                },
+                                                "cc": {
+                                                    "type": "string",
+                                                    "example": "cc@example.com"
+                                                },
+                                                "bcc": {
+                                                    "type": "string",
+                                                    "example": "bcc@example.com"
+                                                },
+                                                "incident_id": {
+                                                    "type": "integer",
+                                                    "example": 7
+                                                },
+                                                "account_id": {
+                                                    "type": "integer",
+                                                    "example": 8
+                                                },
+                                                "attachment": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "https://yourdomain.com/storage/attachments/filename.pdf"
+                                                    }
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-04-12T10:00:00Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-04-13T09:00:00Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Support Ticket not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Support ticket not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/support-ticket/{id}": {
+            "put": {
+                "tags": [
+                    "Support Ticket"
+                ],
+                "summary": "Update an existing support ticket",
+                "description": "This endpoint updates an existing support ticket, processes attachments, sends emails, and logs the operation.",
+                "operationId": "updateSupportTicket",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the support ticket to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "subject",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "campaign_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "inbound_group_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "contact_id": {
+                                        "type": "integer",
+                                        "example": 4
+                                    },
+                                    "assign_to_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "default_type": {
+                                        "type": "string",
+                                        "example": "issue"
+                                    },
+                                    "default_priority": {
+                                        "type": "string",
+                                        "example": "high"
+                                    },
+                                    "default_status": {
+                                        "type": "string",
+                                        "example": "in_progress"
+                                    },
+                                    "subject": {
+                                        "type": "string",
+                                        "example": "Updated subject line"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Updated ticket description"
+                                    },
+                                    "department_id": {
+                                        "type": "integer",
+                                        "example": 6
+                                    },
+                                    "to_emails": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "to@example.com"
+                                    },
+                                    "cc": {
+                                        "type": "string",
+                                        "example": "cc@example.com"
+                                    },
+                                    "bcc": {
+                                        "type": "string",
+                                        "example": "bcc@example.com"
+                                    },
+                                    "incident_id": {
+                                        "type": "integer",
+                                        "example": 7
+                                    },
+                                    "account_id": {
+                                        "type": "integer",
+                                        "example": 8
+                                    },
+                                    "attachment": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Support Ticket Updated Successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Support Ticket Updated Successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "product_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "campaign_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "inbound_group_id": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "contact_id": {
+                                                    "type": "integer",
+                                                    "example": 4
+                                                },
+                                                "assign_to_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "default_type": {
+                                                    "type": "string",
+                                                    "example": "issue"
+                                                },
+                                                "default_priority": {
+                                                    "type": "string",
+                                                    "example": "high"
+                                                },
+                                                "default_status": {
+                                                    "type": "string",
+                                                    "example": "in_progress"
+                                                },
+                                                "subject": {
+                                                    "type": "string",
+                                                    "example": "Updated subject"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Updated description"
+                                                },
+                                                "department_id": {
+                                                    "type": "integer",
+                                                    "example": 6
+                                                },
+                                                "to_emails": {
+                                                    "type": "string",
+                                                    "example": "to@example.com"
+                                                },
+                                                "cc": {
+                                                    "type": "string",
+                                                    "example": "cc@example.com"
+                                                },
+                                                "bcc": {
+                                                    "type": "string",
+                                                    "example": "bcc@example.com"
+                                                },
+                                                "incident_id": {
+                                                    "type": "integer",
+                                                    "example": 7
+                                                },
+                                                "account_id": {
+                                                    "type": "integer",
+                                                    "example": 8
+                                                },
+                                                "attachment": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "https://yourdomain.com/storage/attachments/filename.pdf"
+                                                    }
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-04-12T10:00:00Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-04-13T09:00:00Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to send email",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to send email"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "SMTP connection failed"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Support Ticket not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Support Ticket"
+                ],
+                "summary": "Delete a support ticket",
+                "description": "Deletes a specific support ticket by ID.",
+                "operationId": "deleteSupportTicket",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the ticket to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Support ticket deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ticket deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ticket not found"
+                    }
+                }
+            }
+        },
+        "/api/update-ticket-status/{id}": {
+            "patch": {
+                "tags": [
+                    "Support Ticket"
+                ],
+                "summary": "Update the status, priority, or type of a support ticket",
+                "description": "This endpoint allows you to update the status, priority, or type of a specific support ticket. Sends email notifications when the ticket status is changed to 'Resolved'.",
+                "operationId": "statusUpdateSupportTicket",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the support ticket",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "default_status",
+                        "in": "query",
+                        "description": "New status for the ticket (e.g., 'Resolved', 'In Progress')",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "default_priority",
+                        "in": "query",
+                        "description": "New priority for the ticket (e.g., 'High', 'Low', 'Medium')",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "default_type",
+                        "in": "query",
+                        "description": "New type for the ticket (e.g., 'Issue', 'Bug', 'Feature Request')",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Support ticket status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Support ticket status updated successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "ticket": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "product_id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "campaign_id": {
+                                                            "type": "integer",
+                                                            "example": 2
+                                                        },
+                                                        "default_status": {
+                                                            "type": "string",
+                                                            "example": "Resolved"
+                                                        },
+                                                        "default_priority": {
+                                                            "type": "string",
+                                                            "example": "High"
+                                                        },
+                                                        "default_type": {
+                                                            "type": "string",
+                                                            "example": "Issue"
+                                                        },
+                                                        "subject": {
+                                                            "type": "string",
+                                                            "example": "Ticket subject"
+                                                        },
+                                                        "description": {
+                                                            "type": "string",
+                                                            "example": "Ticket description"
+                                                        },
+                                                        "updated_at": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2025-04-13T10:00:00Z"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request (Invalid Parameters)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Support Ticket not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Support ticket not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error occurred while processing the request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/merge": {
             "post": {
                 "tags": [
@@ -14983,6 +16022,674 @@
                 ]
             }
         },
+        "/usergroup": {
+            "get": {
+                "tags": [
+                    "User Groups"
+                ],
+                "summary": "Get list of user groups",
+                "description": "Fetches a paginated list of user groups with optional filters.",
+                "operationId": "getUserGroups",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filter by group name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "campaign_id",
+                        "in": "query",
+                        "description": "Filter by campaign ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Results per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of user groups fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Sales Group"
+                                                    },
+                                                    "department_id": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    },
+                                                    "campaign_id": {
+                                                        "type": "integer",
+                                                        "example": 101
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "Handles sales-related tickets"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "active"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "User Groups"
+                ],
+                "summary": "Create a new user group",
+                "description": "Creates a new user group with the provided data.",
+                "operationId": "createUserGroup",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "department_id",
+                                    "campaign_id",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Sales Group"
+                                    },
+                                    "department_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "campaign_id": {
+                                        "type": "integer",
+                                        "example": 101
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Handles sales-related tickets"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "active"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User group created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User group created successfully"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Sales Group"
+                                                },
+                                                "department_id": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "campaign_id": {
+                                                    "type": "integer",
+                                                    "example": 101
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Handles sales-related tickets"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "active"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/usergroup/{id}": {
+            "get": {
+                "tags": [
+                    "User Groups"
+                ],
+                "summary": "Get a single user group",
+                "description": "Returns the details of a specific user group.",
+                "operationId": "getUserGroupById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User Group ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User group details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Sales Group"
+                                                },
+                                                "department_id": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "campaign_id": {
+                                                    "type": "integer",
+                                                    "example": 101
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Group description here"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "active"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "User Groups"
+                ],
+                "summary": "Update an existing user group",
+                "description": "Updates a user group using the provided data.",
+                "operationId": "updateUserGroup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User Group ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "department_id",
+                                    "campaign_id",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Updated Group"
+                                    },
+                                    "department_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "campaign_id": {
+                                        "type": "integer",
+                                        "example": 102
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Updated description"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "inactive"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User group updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User group updated successfully"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Updated Group"
+                                                },
+                                                "department_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "campaign_id": {
+                                                    "type": "integer",
+                                                    "example": 102
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Updated description"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "inactive"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "User Groups"
+                ],
+                "summary": "Delete a user group",
+                "description": "Deletes the specified user group.",
+                "operationId": "deleteUserGroup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User Group ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User group deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User group deleted successfully"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Deleted Group"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/usersList": {
             "get": {
                 "tags": [
@@ -15813,6 +17520,10 @@
         {
             "name": "Branding",
             "description": "Branding"
+        },
+        {
+            "name": "User Groups",
+            "description": "User Groups"
         },
         {
             "name": "Webhook Calls",
