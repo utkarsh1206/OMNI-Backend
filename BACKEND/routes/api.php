@@ -83,6 +83,7 @@ use App\Http\Controllers\Api\ChatBotConfigurationController;
 use App\Http\Controllers\Api\LogoutRefreshApiController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\ChatBootWebhookController;
+use App\Http\Controllers\Api\IncomingCallController;
 
 Route::post('login', [LoginController::class, 'login']);
 Route::any('chatboot-webhook', [ChatBootWebhookController::class, 'index']);
@@ -290,6 +291,10 @@ Route::middleware(['jwt.auth'])->group(function () {
     
     Route::get('get-messages', [MessageController::class, 'getMessages']);
     Route::post('message', [MessageController::class, 'storeMessage']);
+
+    Route::middleware([ModifyRequestMiddleware::class])->group(function () {
+        Route::get('neox-call-incoming', [IncomingCallController::class, 'checkIncoming']);
+    });
 });
 
 Route::post('/ext-api/camp-list', [CampaignApiController::class, 'campaignListApi']);

@@ -5,46 +5,86 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CallTransferApiRequest;
 use Illuminate\Http\Request;
-use Exception;
-use App\Http\Response\CustomApiResponse;
-use Illuminate\Support\Facades\Validator;
+use App\Repositories\CallTransferApiRepository;
+use App\Services\ApiRequestService;
 
 class CallTransferApiController extends Controller
 {
-    private $apiResponse;
+    private $apiRequestService;
+    private $callTransferRepo;
 
-    public function __construct(CustomApiResponse $customApiResponse)
-    {
-        $this->apiResponse = $customApiResponse;
+    public function __construct(
+        ApiRequestService $apiRequestService,
+        CallTransferApiRepository $callTransferRepo
+    ) {
+        $this->apiRequestService = $apiRequestService;
+        $this->callTransferRepo = $callTransferRepo;
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/ext-api/call-tansfer",
+     *     summary="Transfer an ongoing call",
+     *     description="This API is used to transfer an active call to another agent (direct) or group (ingroup), or even to a phone number.",
+     *     operationId="callTransferApi",
+     *     tags={"Call Transfer"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="callroute", type="string", enum={"IN_GROUP"}, example="IN_GROUP", description="The routing is to be done on an ingroup for specific agent or group transfer."),
+     *             @OA\Property(
+     *                 property="callroutedata",
+     *                 type="string",
+     *                 example="AGENTDIRECT",
+     *                 description="The ingroup name where the call is to be transferred. Use 'AGENTDIRECT' for specific agent transfer, or ingroup name for group transfer. Required if callroute is 'IN_GROUP'."
+     *             ),
+     *             @OA\Property(
+     *                 property="transfer_target_user_id",
+     *                 type="string",
+     *                 example="U9002",
+     *                 description="User ID of the agent to transfer to. Required if callroutedata = 'AGENTDIRECT'."
+     *             ),
+     *             @OA\Property(
+     *                 property="transfer_target_phone_number",
+     *                 type="string",
+     *                 example="1234567890",
+     *                 description="External phone number for call transfer. Required if transferring to an external number (extension or PSTN)."
+     *             ),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Call transfer log created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Call transfer logged successfully"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error"
+     *     )
+     * )
+     */
 
     public function callTransferApi(Request $request)
     {
-        try {
-            $config = getNeoxConfig();
-            // Check configuration status and handle error centrally
-            if (isset($config['status']) && $config['status'] === 'error') {
-                return response()->json($config);
-            }
+        $apiResult = $this->apiRequestService->handleApiRequest(
+            $request,
+            'agent_call_transfer',
+            CallTransferApiRequest::class
+        );
 
-            $ip = $config['neox_local_ip'];
-            $neoxToken = $config['neox_token'];
-
-            $url = "https://{$ip}/api/agent/actions/v2/agent_call_transfer.php";
-
-            // Get validation rules from FormRequest
-            $rules = (new CallTransferApiRequest())->rules();
-
-            // Validate request using extracted rules
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()]);
-            }
-
-            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
-            return sendHttpRequest($url, 'POST', $validatedData);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        if ($apiResult instanceof \Illuminate\Http\JsonResponse) {
+            $apiResult = $apiResult->getData(true);
         }
+
+        return $this->callTransferRepo->handleCallTransfer($apiResult, $request);
     }
 }
