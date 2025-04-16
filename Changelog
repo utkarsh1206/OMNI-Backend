@@ -1,3 +1,14 @@
+2025-04-16 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 0549c43
+	* Version : Dev
+	* Laravel :
+	Created a repository to handle call transfer logic. It fetches live agent data, determines the transfer target (agent, group, or phone number), and logs the transfer details in TransferedCallLog.
+	Developed an API for transferring calls. The controller processes the request, validates the input, and delegates the logic to the repository. OpenAPI annotations for API swagger documentation were added.
+	Implemented exception handling and logging for failed transfers, ensuring proper responses for success or failure.
+	Added OpenAPI swagger annotations to define request structure and expected responses, helping API consumers understand the requirements for transferring calls. 
+
 2025-04-11 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

@@ -1244,6 +1244,87 @@
                 }
             }
         },
+        "/api/ext-api/call-tansfer": {
+            "post": {
+                "tags": [
+                    "Call Transfer"
+                ],
+                "summary": "Transfer an ongoing call",
+                "description": "This API is used to transfer an active call to another agent (direct) or group (ingroup), or even to a phone number.",
+                "operationId": "callTransferApi",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "callroute": {
+                                        "description": "The routing is to be done on an ingroup for specific agent or group transfer.",
+                                        "type": "string",
+                                        "enum": [
+                                            "IN_GROUP"
+                                        ],
+                                        "example": "IN_GROUP"
+                                    },
+                                    "callroutedata": {
+                                        "description": "The ingroup name where the call is to be transferred. Use 'AGENTDIRECT' for specific agent transfer, or ingroup name for group transfer. Required if callroute is 'IN_GROUP'.",
+                                        "type": "string",
+                                        "example": "AGENTDIRECT"
+                                    },
+                                    "transfer_target_user_id": {
+                                        "description": "User ID of the agent to transfer to. Required if callroutedata = 'AGENTDIRECT'.",
+                                        "type": "string",
+                                        "example": "U9002"
+                                    },
+                                    "transfer_target_phone_number": {
+                                        "description": "External phone number for call transfer. Required if transferring to an external number (extension or PSTN).",
+                                        "type": "string",
+                                        "example": "1234567890"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Call transfer log created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Call transfer logged successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/campaigns": {
             "get": {
                 "tags": [
@@ -4562,6 +4643,371 @@
                 ]
             }
         },
+        "/api/dynamic-list-fields": {
+            "get": {
+                "tags": [
+                    "Dynamic List Fields"
+                ],
+                "summary": "List dynamic list fields",
+                "description": "Returns a list of dynamic fields based on filters",
+                "operationId": "e57d7f7eeec32938ff657f129ef87889",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search keyword",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "list_id",
+                        "in": "query",
+                        "description": "List ID",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "field_type",
+                        "in": "query",
+                        "description": "Field type",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Status (active/inactive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful fetch"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Dynamic List Fields"
+                ],
+                "summary": "Create dynamic list fields",
+                "description": "Creates fields and adds schema to respective table",
+                "operationId": "68f432c31552fb39db8361c0968c6c93",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "list_id": {
+                                        "type": "inteer"
+                                    },
+                                    "form_items": {
+                                        "properties": {
+                                            "A": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "B": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "C": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "D": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/dynamic-list-fields/{id}": {
+            "get": {
+                "tags": [
+                    "Dynamic List Fields"
+                ],
+                "summary": "Get a dynamic list field by ID",
+                "operationId": "70f9c4896979d85fcc02b6e6ff2c10a8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Field ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Field found"
+                    },
+                    "404": {
+                        "description": "Field not found"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Dynamic List Fields"
+                ],
+                "summary": "Update a dynamic list field",
+                "operationId": "a769ff6252b7fc78aebb774b7983a2a2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Field ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "field_name": {
+                                        "type": "string"
+                                    },
+                                    "field_label": {
+                                        "type": "string"
+                                    },
+                                    "field_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "text",
+                                            "select",
+                                            "multi",
+                                            "checkbox",
+                                            "radio",
+                                            "textarea",
+                                            "date"
+                                        ]
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "options": {
+                                        "type": "string"
+                                    },
+                                    "mandatory": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Y",
+                                            "N"
+                                        ]
+                                    },
+                                    "calling_authority": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Y",
+                                            "N"
+                                        ]
+                                    },
+                                    "show_authority": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Y",
+                                            "N"
+                                        ]
+                                    },
+                                    "agent_view": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Y",
+                                            "N"
+                                        ]
+                                    },
+                                    "field_order": {
+                                        "type": "integer"
+                                    },
+                                    "field_help": {
+                                        "type": "string"
+                                    },
+                                    "field_size": {
+                                        "type": "integer"
+                                    },
+                                    "field_max_length": {
+                                        "type": "integer"
+                                    },
+                                    "search_filter": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Y",
+                                            "N"
+                                        ]
+                                    },
+                                    "editable": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Y",
+                                            "N"
+                                        ]
+                                    },
+                                    "default_value": {
+                                        "type": "string"
+                                    },
+                                    "value_masked": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Y",
+                                            "N"
+                                        ]
+                                    },
+                                    "duplicate_check": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Y",
+                                            "N"
+                                        ]
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "inactive"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated successfully"
+                    },
+                    "404": {
+                        "description": "Field not found"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Dynamic List Fields"
+                ],
+                "summary": "Delete a dynamic list field",
+                "operationId": "7b1918dca26e09fc0e7b67d948a97718",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Field ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted successfully"
+                    },
+                    "404": {
+                        "description": "Field not found"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/email-configure": {
             "get": {
                 "tags": [
@@ -6077,6 +6523,104 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/neox-call-incoming": {
+            "get": {
+                "tags": [
+                    "Incoming Calls Check"
+                ],
+                "summary": "Handle incoming call and logs",
+                "description": "This endpoint processes incoming calls by updating or creating records in LiveCallLog, LiveAgents, NeoxTempCallLog and returns updated data along with a status flag outside data block.",
+                "operationId": "checkIncoming",
+                "responses": {
+                    "200": {
+                        "description": "Incoming call processed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "neox_status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "live_call_log": {
+                                                    "description": "Details from LiveCallLog",
+                                                    "type": "object"
+                                                },
+                                                "live_agent": {
+                                                    "description": "Updated LiveAgent record",
+                                                    "type": "object"
+                                                },
+                                                "temp_call_log": {
+                                                    "description": "Updated NeoxTempCallLog record",
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation or Processing Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error or failure reason"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/industry_type": {
@@ -17322,6 +17866,10 @@
     },
     "tags": [
         {
+            "name": "Dynamic List Fields",
+            "description": "Manage dynamic list fields for custom lead forms"
+        },
+        {
             "name": "Accounts",
             "description": "Accounts"
         },
@@ -17336,6 +17884,10 @@
         {
             "name": "BusinessType",
             "description": "BusinessType"
+        },
+        {
+            "name": "Call Transfer",
+            "description": "Call Transfer"
         },
         {
             "name": "Campaigns",
@@ -17416,6 +17968,10 @@
         {
             "name": "IncidentTypes",
             "description": "IncidentTypes"
+        },
+        {
+            "name": "Incoming Calls Check",
+            "description": "Incoming Calls Check"
         },
         {
             "name": "Industry Types",

@@ -34,9 +34,5 @@ class NeoxTempCallLog extends Model
         'json_data',
     ];
 
-    // Define the types of attributes
-    protected $casts = [
-        'date' => 'date',
-        'time' => 'time',
-    ];
+    
 }

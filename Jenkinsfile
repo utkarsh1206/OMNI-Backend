@@ -25,22 +25,46 @@ pipeline {
     }
 
     post  {
+        
     success {
-        echo "🟢 SUCCESS block triggered"
-        updateGitlabCommitStatus name: 'build', state: 'success'
-        emailext attachLog: true, body: 'Email sent out from Jenkins', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', to: 'neox.tu@stl.tech'
-        echo "✅ Email command executed for SUCCESS"
+        emailext(
+            to: 'neox.tu@stl.tech, khanjan.kukadiya@stltech.in',
+            from: 'prajapati.hitesh@stl.tech',
+            subject: "✅ SUCCESS: ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
+            body: """
+                <p><b>Build Successful!</b></p>
+                <ul>
+                    <li>Job: ${env.JOB_NAME}</li>
+                    <li>Build Number: ${env.BUILD_NUMBER}</li>
+                    <li>Status: SUCCESS</li>
+                    <li>Duration: ${currentBuild.durationString}</li>
+                    <li>Build URL: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></li>
+                </ul>
+            """,
+            mimeType: 'text/html',
+            attachLog: true
+        )
     }
 
     failure {
-        echo "🔴 FAILURE block triggered"
-        updateGitlabCommitStatus name: 'build', state: 'success'
-        emailext attachLog: true, body: 'Email sent out from Jenkins', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', to: 'neox.tu@stl.tech'
-        echo "❌ Email command executed for FAILURE"
-    }
-
-    always {
-        echo "🔁 ALWAYS block triggered. Email attempt (success/failure) should have been made."
+        emailext(
+            to: 'neox.tu@stl.tech, khanjan.kukadiya@stltech.in',
+            from: 'prajapati.hitesh@stl.tech',
+            subject: "❌ FAILURE: ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
+            body: """
+                <p><b>Build Failed!</b></p>
+                <ul>
+                    <li>Job: ${env.JOB_NAME}</li>
+                    <li>Build Number: ${env.BUILD_NUMBER}</li>
+                    <li>Status: FAILURE</li>
+                    <li>Duration: ${currentBuild.durationString}</li>
+                    <li>Build URL: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></li>
+                </ul>
+                <p>Attached: Log file for detailed error info.</p>
+            """,
+            mimeType: 'text/html',
+            attachLog: true
+        )
     }
 }
 
