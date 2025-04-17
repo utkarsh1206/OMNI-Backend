@@ -5,46 +5,70 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StartConfApiRequest;
 use Illuminate\Http\Request;
-use Exception;
-use App\Http\Response\CustomApiResponse;
-use Illuminate\Support\Facades\Validator;
+use App\Repositories\StartConfApiRepository;
+use App\Services\ApiRequestService;
 
 class StartConfApiController extends Controller
 {
-    private $apiResponse;
+    private $apiRequestService;
+    private $startConfRepository;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(ApiRequestService $apiRequestService, StartConfApiRepository $startConfRepository)
     {
-        $this->apiResponse = $customApiResponse;
+        $this->apiRequestService = $apiRequestService;
+        $this->startConfRepository = $startConfRepository;
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/ext-api/start-conf",
+     *     tags={"Conference"},
+     *     summary="Start a conference call",
+     *     description="Initiates a conference call by logging the agent activity and updating the live call details.",
+     *     operationId="startConfApi",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Conference started successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation failed or agent not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Error")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Internal Server Error")
+     *         )
+     *     )
+     * )
+     */
 
     public function startConfApi(Request $request)
     {
-        try {
-            $config = getNeoxConfig();
-            // Check configuration status and handle error centrally
-            if (isset($config['status']) && $config['status'] === 'error') {
-                return response()->json($config);
-            }
+        $apiResult = $this->apiRequestService->handleApiRequest(
+            $request,
+            'agent_startconf',
+            StartConfApiRequest::class
+        );
 
-            $ip = $config['neox_local_ip'];
-            $neoxToken = $config['neox_token'];
-
-            $url = "https://{$ip}/api/agent/actions/v2/agent_startconf.php";
-
-            // Get validation rules from FormRequest
-            $rules = (new StartConfApiRequest())->rules();
-
-            // Validate request using extracted rules
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()]);
-            }
-
-            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
-            return sendHttpRequest($url, 'POST', $validatedData);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        if ($apiResult instanceof \Illuminate\Http\JsonResponse) {
+            $apiResult = $apiResult->getData(true);
         }
+
+        return $this->startConfRepository->handleStartConf($apiResult, $request);
     }
 }

@@ -1,3 +1,12 @@
+2025-04-17 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 589905b
+	* Version : Dev
+	* Laravel :
+	Created a repository to handle conference call logic for start conference, add party, disconnect, leave conference and remove party.
+	Created Swagger API documentation for all the API endpoints.
+
 2025-04-16 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

@@ -4,47 +4,71 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RemovePartyApiRequest;
+use App\Repositories\RemovePartyApiRepository;
 use Illuminate\Http\Request;
-use Exception;
-use App\Http\Response\CustomApiResponse;
-use Illuminate\Support\Facades\Validator;
+use App\Services\ApiRequestService;
 
 class RemovePartyApiController extends Controller
 {
-    private $apiResponse;
+    private $apiRequestService;
+    private $removePartyApiRepository;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(ApiRequestService $apiRequestService, RemovePartyApiRepository $removePartyApiRepository)
     {
-        $this->apiResponse = $customApiResponse;
+        $this->apiRequestService = $apiRequestService;
+        $this->removePartyApiRepository = $removePartyApiRepository;
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/ext-api/remove-party",
+     *     tags={"Conference"},
+     *     summary="Remove a party from the conference call",
+     *     description="Removes a participant from the ongoing conference and logs the activity.",
+     *     operationId="removePartyApi",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Party removed successfully from the conference",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation failed or agent not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Error")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Internal Server Error")
+     *         )
+     *     )
+     * )
+     */
 
     public function removePartyApi(Request $request)
     {
-        try {
-            $config = getNeoxConfig();
-            // Check configuration status and handle error centrally
-            if (isset($config['status']) && $config['status'] === 'error') {
-                return response()->json($config);
-            }
+        $apiResult = $this->apiRequestService->handleApiRequest(
+            $request,
+            'agent_removeparty',
+            RemovePartyApiRequest::class
+        );
 
-            $ip = $config['neox_local_ip'];
-            $neoxToken = $config['neox_token'];
-
-            $url = "https://{$ip}/api/agent/actions/v2/agent_removeparty.php";
-
-            // Get validation rules from FormRequest
-            $rules = (new RemovePartyApiRequest())->rules();
-
-            // Validate request using extracted rules
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()]);
-            }
-
-            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
-            return sendHttpRequest($url, 'POST', $validatedData);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        if ($apiResult instanceof \Illuminate\Http\JsonResponse) {
+            $apiResult = $apiResult->getData(true);
         }
+
+        return $this->removePartyApiRepository->handleRemoveParty($apiResult, $request);
     }
 }

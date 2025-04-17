@@ -7,44 +7,71 @@ use App\Http\Requests\DisconnectConfApiRequest;
 use Illuminate\Http\Request;
 use Exception;
 use App\Http\Response\CustomApiResponse;
+use App\Repositories\DisconnectConfApiRepository;
+use App\Services\ApiRequestService;
 use Illuminate\Support\Facades\Validator;
 
 class DisconnectConfApiController extends Controller
 {
-    private $apiResponse;
+    private $apiRequestService;
+    private $disconnectConf;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(ApiRequestService $apiRequestService, DisconnectConfApiRepository $disconnectConfApiRepository)
     {
-        $this->apiResponse = $customApiResponse;
+        $this->apiRequestService = $apiRequestService;
+        $this->disconnectConf = $disconnectConfApiRepository;
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/ext-api/disconnect-conf",
+     *     tags={"Conference"},
+     *     summary="Disconnect an ongoing conference call",
+     *     description="Disconnects a live conference call for an agent and logs call details in the system.",
+     *     operationId="disconnectConfApi",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Conference disconnected successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="object"), 
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation error or agent not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Error")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Internal Server Error")
+     *         )
+     *     )
+     * )
+     */
 
     public function disconnectConfApi(Request $request)
     {
-        try {
-            $config = getNeoxConfig();
-            // Check configuration status and handle error centrally
-            if (isset($config['status']) && $config['status'] === 'error') {
-                return response()->json($config);
-            }
+        $apiResult = $this->apiRequestService->handleApiRequest(
+            $request,
+            'agent_disconnectconf',
+            DisconnectConfApiRequest::class
+        );
 
-            $ip = $config['neox_local_ip'];
-            $neoxToken = $config['neox_token'];
-
-            $url = "https://{$ip}/api/agent/actions/v2/agent_disconnectconf.php";
-
-            // Get validation rules from FormRequest
-            $rules = (new DisconnectConfApiRequest())->rules();
-
-            // Validate request using extracted rules
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()]);
-            }
-
-            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
-            return sendHttpRequest($url, 'POST', $validatedData);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        if ($apiResult instanceof \Illuminate\Http\JsonResponse) {
+            $apiResult = $apiResult->getData(true);
         }
+
+        return $this->disconnectConf->handleDisconnectConf($apiResult, $request);
     }
 }

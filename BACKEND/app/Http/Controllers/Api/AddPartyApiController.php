@@ -1,49 +1,78 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AddPartyApiRequest;
 use Illuminate\Http\Request;
-use Exception;
-use App\Http\Response\CustomApiResponse;
-use Illuminate\Support\Facades\Validator;
+use App\Repositories\AddPartyApiRepository;
+use App\Services\ApiRequestService;
 
 class AddPartyApiController extends Controller
 {
-    private $apiResponse;
+    private $apiRequestService;
+    private $addPartyRepo;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(ApiRequestService $apiRequestService, AddPartyApiRepository $addPartyRepo)
     {
-        $this->apiResponse = $customApiResponse;
+        $this->apiRequestService = $apiRequestService;
+        $this->addPartyRepo = $addPartyRepo;
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/ext-api/add-party",
+     *     summary="Add a party to a live call (conference)",
+     *     tags={"Conference"},
+     *     operationId="addPartyApi",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"participant", "conf_type"},
+     *             @OA\Property(property="participant", type="string", example=8003, description="User ID of the agent"),
+     *             @OA\Property(property="conf_type", type="string", example="EXTERNAL", description="type of the conference")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Party added successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(property="data", type="object"),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Validation or logical error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Agent not found or invalid data"),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Internal server error"),
+     *         )
+     *     )
+     * )
+     */
 
     public function addPartyApi(Request $request)
     {
-        try {
-            $config = getNeoxConfig();
-            // Check configuration status and handle error centrally
-            if (isset($config['status']) && $config['status'] === 'error') {
-                return response()->json($config);
-            }
+        $apiResult = $this->apiRequestService->handleApiRequest(
+            $request,
+            'agent_addparty',
+            AddPartyApiRequest::class
+        );
 
-            $ip = $config['neox_local_ip'];
-            $neoxToken = $config['neox_token'];
-
-            $url = "https://{$ip}/api/agent/actions/v2/agent_addparty.php";
-
-            // Get validation rules from FormRequest
-            $rules = (new AddPartyApiRequest())->rules();
-
-            // Validate request using extracted rules
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()]);
-            }
-
-            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
-            return sendHttpRequest($url, 'POST', $validatedData);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        if ($apiResult instanceof \Illuminate\Http\JsonResponse) {
+            $apiResult = $apiResult->getData(true);
         }
+
+        return $this->addPartyRepo->handleAddParty($apiResult, $request);
     }
 }
