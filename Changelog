@@ -1,3 +1,11 @@
+2025-04-18 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 
+	* Version : Dev
+	* Laravel : DC Campaignlist API will now work for user specific and all campaign list.
+	If user param is found in request then response will be user specific campaign list otherwise it will be all campaign list.
+
 2025-04-17 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

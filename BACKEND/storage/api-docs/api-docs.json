@@ -1426,6 +1426,93 @@
                 ]
             }
         },
+        "/api/ext-api/camp-list": {
+            "post": {
+                "tags": [
+                    "Campaign"
+                ],
+                "summary": "Fetch campaign list from remote Neox system",
+                "operationId": "campaignListApi",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "domain_name"
+                                ],
+                                "properties": {
+                                    "domain_name": {
+                                        "description": "Domain name to fetch configuration",
+                                        "type": "string",
+                                        "example": "clientdomain.com"
+                                    },
+                                    "user": {
+                                        "description": "Neox system user",
+                                        "type": "string",
+                                        "example": "admin"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "status": "success",
+                                    "data": [
+                                        {
+                                            "campaign_id": "CAMP123",
+                                            "campaign_name": "Sales Campaign",
+                                            "dial_method": "INBOUND_MAN"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "error": "Domain name is required"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "error": "Unexpected error occurred"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/campaigns": {
             "get": {
                 "tags": [
@@ -18831,6 +18918,10 @@
         {
             "name": "Call Transfer",
             "description": "Call Transfer"
+        },
+        {
+            "name": "Campaign",
+            "description": "Campaign"
         },
         {
             "name": "Campaigns",
