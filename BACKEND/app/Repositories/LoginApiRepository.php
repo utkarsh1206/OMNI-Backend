@@ -60,6 +60,19 @@ class LoginApiRepository
             ];
             $connection->table('user_daily_activities')->insert($userDailyActivities);
 
+            $userLogin = [
+                'user_id' => $userId,
+                'campaign_id' => $campaignId,
+                'login_date'   => Carbon::today()->toDateString(), // 'Y-m-d' format
+                'login_time'   => Carbon::now()->toTimeString(), // 'H:i:s' format
+                'ip_address'   => request()->ip() ?: 'UNKNOWN',
+                'user_agent'   => request()->userAgent(),
+                'created_at'      => $now,
+                'updated_at'     => $now,
+            ];
+
+            $connection->table('user_login_logs')->insert($userLogin);
+
             // Commit transaction
             $connection->commit();
 
