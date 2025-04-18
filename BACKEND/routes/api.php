@@ -310,4 +310,4 @@ Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(fu
 
 Route::post('/ext-api/login', [LoginApiController::class, 'agentLoginApi']);
 
-Route::apiResource('pauseCode', 'App\Http\Controllers\Api\PauseCodeController');
+Route::apiResource('pause-code', 'App\Http\Controllers\Api\PauseCodeController');

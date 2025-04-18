@@ -18,7 +18,7 @@ class PauseCodeController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/pauseCode",
+     *     path="/api/pause-code",
      *     summary="Get all pause codes",
      *     description="Fetches pause codes with optional search and pagination",
      *     tags={"Pause Codes"},
@@ -86,7 +86,7 @@ class PauseCodeController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/pauseCode",
+     *     path="/api/pause-code",
      *     summary="Create a new pause code",
      *     description="Creates a new pause code with the provided data.",
      *     tags={"Pause Codes"},
@@ -143,7 +143,7 @@ class PauseCodeController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/pauseCode/{id}",
+     *     path="/api/pause-code/{id}",
      *     summary="Get a pause code by ID",
      *     description="Fetches a specific pause code by its ID.",
      *     tags={"Pause Codes"},
@@ -190,7 +190,7 @@ class PauseCodeController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/pauseCode/{id}",
+     *     path="/api/pause-code/{id}",
      *     summary="Update an existing pause code",
      *     description="Updates the details of an existing pause code based on the provided data.",
      *     tags={"Pause Codes"},
@@ -261,7 +261,7 @@ class PauseCodeController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/pauseCode/{id}",
+     *     path="/api/pause-code/{id}",
      *     summary="Delete a pause code by ID",
      *     description="Deletes an existing pause code by its ID.",
      *     tags={"Pause Codes"},
