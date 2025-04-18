@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\ApiConfigurationTypeRepository;
-use App\Http\Requests\UserSmsProviderRequest;
 
 class ApiConfigurationTypeController extends Controller
 {

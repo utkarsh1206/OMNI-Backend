@@ -385,7 +385,7 @@ class WebhookCallController extends Controller
     private function saveCallLogs(array $data)
     {
         // Save to neox_call_logs table
-        // $callLog = $this->webhookCallRepository->saveCallLog($data);
+        $callLog = $this->webhookCallRepository->saveCallLog($data);
 
         // Prepare and save to neox_temp_call_logs
         $tempData = array_merge($data, [
@@ -393,7 +393,6 @@ class WebhookCallController extends Controller
             'time' => Carbon::now()->toTimeString()
         ]);
         $this->webhookCallRepository->saveTempCallLog($tempData);
-        die;
         return $callLog;
     }
 
