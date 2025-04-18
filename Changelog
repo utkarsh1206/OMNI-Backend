@@ -1,6 +1,13 @@
 2025-04-18 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
+	* Previous Commit ID : 81a3eb1
+	* Version : Dev
+	* Laravel : Resolve error in SLA Reports. change table name supportticket to support_tickets.
+
+2025-04-18 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
 	* Previous Commit ID : 911a058
 	* Version : Dev
 	* Laravel : Added logs for Login and logout activity and store it in database tables.
