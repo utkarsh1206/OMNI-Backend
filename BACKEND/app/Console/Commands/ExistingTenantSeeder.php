@@ -28,7 +28,7 @@ class ExistingTenantSeeder extends Command
      */
     public function handle()
     {
-        Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
+        Tenant::where("domain_name","mk")->orderBy('id')  // Ensures consistent ordering by the ID column
             ->chunkById(100, function ($tenants) {
                 foreach ($tenants as $tenant) {
                     $newConnectionName = str_replace(".", "_", $tenant->domain_name);

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SmsProviderConfigurationRequest extends FormRequest
+class ApiConfigurationRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,6 +24,7 @@ class SmsProviderConfigurationRequest extends FormRequest
         return [
             'provider_name' => 'required',
             'configurations' => 'required|array',
+            'api_config_type_id' => 'required|exists:api_configuration_types,id',
         ];
     }
 }

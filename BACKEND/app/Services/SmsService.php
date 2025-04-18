@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\UserSmsGateway;
 use Twilio\Rest\Client as TwilioClient;
-use App\Models\SmsProviderConfiguration;
+use App\Models\ApiConfiguration;
 use GuzzleHttp\Client as GuzzleClient;
 use Exception;
 use App\Models\SmsProviderLog;
@@ -34,12 +34,12 @@ class SmsService implements ShouldQueue
             // Based on the provider, call the respective API
             switch ($userGateway->provider->name) {
                 case 'twilio':
-                    $configArr = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value", "config_key");
+                    $configArr = ApiConfiguration::where(["provider_id"=>$providerId,"type"=>"Sms"])->pluck("config_value", "config_key");
                     return $this->sendWithTwilio($message, $toPhone, $configArr);
                 case 'custom':
                     $configArr = [];
 
-                    $configurations = SmsProviderConfiguration::where("provider_id", $providerId)->pluck("config_value", "config_key");
+                    $configurations = ApiConfiguration::where(["provider_id"=>$providerId,"type"=>"Sms"])->pluck("config_value", "config_key");
                     if ($configurations->count()) {
                         $configArr =  $configurations->toArray();
                     }

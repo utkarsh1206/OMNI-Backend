@@ -50,7 +50,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\TicketReportController;
 use App\Http\Controllers\Api\SlaReportController;
 use App\Http\Controllers\Api\EmailLogController;
-use App\Http\Controllers\Api\SmsProviderConfigurationController;
+use App\Http\Controllers\Api\ApiConfigurationController;
 use App\Http\Controllers\Api\SmsProviderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\DynamicListFieldController;
@@ -84,6 +84,8 @@ use App\Http\Controllers\Api\LogoutRefreshApiController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\ChatBootWebhookController;
 use App\Http\Controllers\Api\IncomingCallController;
+use App\Http\Controllers\Api\ApiConfigurationTypeController;
+
 
 Route::post('login', [LoginController::class, 'login']);
 Route::any('chatboot-webhook', [ChatBootWebhookController::class, 'index']);
@@ -136,7 +138,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     
     Route::apiResource('sms-providers', SmsProviderController::class);
     
-    Route::apiResource('sms-configurations', SmsProviderConfigurationController::class);
+    Route::apiResource('api-configurations', ApiConfigurationController::class);
     
     Route::apiResource('accounts', AccountController::class);
     
@@ -195,7 +197,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
     Route::apiResource('email-logs', EmailLogController::class);
     
-    Route::apiResource('sms-configurations', SmsProviderConfigurationController::class);
+    Route::apiResource('api-configuration-types', ApiConfigurationTypeController::class);
+    Route::apiResource('api-configurations', ApiConfigurationController::class);
     
     Route::apiResource('sms-providers', SmsProviderController::class);
     

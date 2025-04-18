@@ -3,14 +3,15 @@
 namespace App\Repositories;
 
 use Illuminate\Http\Request;
-use App\Models\SmsProviderConfiguration;
+use App\Models\ApiConfiguration;
 use App\Models\SmsProvider;
+use App\Models\ChatBotProvider;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
-class SmsProviderConfigurationRepository
+class ApiConfigurationRepository
 {
     private $apiResponse;
 
@@ -26,17 +27,23 @@ class SmsProviderConfigurationRepository
             $method = $request->input('method', '');
             $enabled = $request->input('enabled', '');
             $search = $request->input('search', '');
+            $apiConfigId = $request->input('api_config_type_id', '');
 
             if ($method) {
-                $smsConfigurations = SmsProviderConfiguration::where('config_value', $method);
+                $smsConfigurations = ApiConfiguration::where('config_value', $method);
             } elseif ($enabled) {
-                $smsConfigurations = SmsProviderConfiguration::where('config_value', $enabled);
+                $smsConfigurations = ApiConfiguration::where('config_value', $enabled);
             } else {
-                $smsConfigurations = SmsProviderConfiguration::query();
+                $smsConfigurations = ApiConfiguration::query();
             }
 
             if ($search) {
                 $smsConfigurations = $smsConfigurations->orWhere('config_value', 'like', '%' . $search . '%');
+            }
+
+
+            if ($apiConfigId) {
+                $smsConfigurations = $smsConfigurations->where('api_config_type_id',$apiConfigId);
             }
 
             $smsConfigurations = $smsConfigurations->pluck("provider_id");
@@ -61,17 +68,36 @@ class SmsProviderConfigurationRepository
     public function store($request)
     {
         try {
-            $smsProviers = SmsProvider::Create([
-                "name" => $request->provider_name,
-            ]);
+            if($request->api_config_type_id == 1)
+            {
+                $smsProviers = SmsProvider::Create([
+                    "name" => $request->provider_name,
+                ]);
+    
+            }
 
-            if (count($request->configurations) > 0) {
-                foreach ($request->configurations as $config) {
+            $requestConfig = $request->configurations;
+            if($request->api_config_type_id == 3)
+            {
+                $smsProviers = ChatBotProvider::Create([
+                    "name" => $request->provider_name,
+                ]);
+                $webhookUrl = url('api/chatboot-webhook?source=' . $request->provider_name . "&tenant=".auth()->user()->domain?? '');
+                $requestConfig[0]['web_hook_url'] = $webhookUrl;
+
+                $webhookUrl = url('api/chatboot-webhook-auth?source=' . $request->provider_name . "&tenant=".auth()->user()->domain?? '');
+                $requestConfig[0]['web_hook_auth_url'] = $webhookUrl;
+            }
+           
+
+            if (count($requestConfig) > 0) {
+                foreach ($requestConfig as $config) {
                     foreach ($config as $key => $value) {
-                        $smsConfigurations = SmsProviderConfiguration::create([
-                            'provider_id' => $smsProviers->id ?? '',
+                        $smsConfigurations = ApiConfiguration::create([
+                            'provider_id' => $smsProviers->id ?? 0,
                             'config_key' => $key,
                             'config_value' => $value,
+                            'api_config_type_id'=>$request->api_config_type_id,
                         ]);
                     }
                 }
@@ -79,7 +105,7 @@ class SmsProviderConfigurationRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $smsConfigurations, trans('message.sms_provider_conf_add'));
         } catch (Exception $e) {
-            generateLogs('error', 'Error in Storing SMS Configuration : ', $e->getMessage());
+            generateLogs('error', 'Error in Storing API Configuration : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -87,7 +113,7 @@ class SmsProviderConfigurationRepository
     public function update($request, $providerId)
     {
         try {
-            $smsConfigurations = SmsProviderConfiguration::where("provider_id", $providerId)->get();
+            $smsConfigurations = ApiConfiguration::where("provider_id", $providerId)->get();
 
             if (!$smsConfigurations) {
                 return response()->json([
@@ -119,7 +145,7 @@ class SmsProviderConfigurationRepository
     public function delete($providerId)
     {
         try {
-            $configuration = SmsProviderConfiguration::where("provider_id", $providerId)->get();
+            $configuration = ApiConfiguration::where("provider_id", $providerId)->get();
 
             if (!$configuration) {
                 return response()->json([
@@ -151,7 +177,7 @@ class SmsProviderConfigurationRepository
     private function formatListingData($configurations, $method = null, $enabled = null)
     {
         $formattedData =  collect($configurations)->map(function ($item) use ($method, $enabled) {
-            $providerInfo = SmsProviderConfiguration::select(["id", "config_key", "config_value"])->where("provider_id", $item['id']);
+            $providerInfo = ApiConfiguration::select(["id", "config_key", "config_value","api_config_type_id"])->where(["provider_id"=> $item['id'],"api_config_type_id"=>request()->api_config_type_id]);
             $providerInfo = $providerInfo->get();
 
             return [

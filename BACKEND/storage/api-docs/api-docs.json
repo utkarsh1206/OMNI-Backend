@@ -975,6 +975,551 @@
                 }
             }
         },
+        "/api/api-configurations": {
+            "get": {
+                "tags": [
+                    "API Configuration"
+                ],
+                "summary": "List Api Provider Configurations",
+                "description": "Fetches a list of Api provider configurations based on filters like provider name, method, enabled status, or search query.",
+                "operationId": "listApiConfigurations",
+                "parameters": [
+                    {
+                        "name": "provider_name",
+                        "in": "query",
+                        "description": "Filter by provider name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "method",
+                        "in": "query",
+                        "description": "Filter by method",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "enabled",
+                        "in": "query",
+                        "description": "Filter by enabled status",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search term to filter by provider name or config value",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetch successful"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request, invalid parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Api Provider"
+                ],
+                "summary": "Create a new API provider and configurations",
+                "description": "Creates a new API provider and its configurations based on the data provided in the request.",
+                "operationId": "storeApiProvider",
+                "requestBody": {
+                    "description": "Data to create a new SMS provider and configurations",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "provider_name",
+                                    "configurations"
+                                ],
+                                "properties": {
+                                    "provider_name": {
+                                        "description": "The name of the SMS provider",
+                                        "type": "string",
+                                        "example": "Twilio"
+                                    },
+                                    "configurations": {
+                                        "description": "Array of configurations for the SMS provider",
+                                        "type": "array",
+                                        "items": {
+                                            "description": "Key-value pairs for SMS provider configurations",
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully created SMS provider and configurations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "SMS provider configuration added successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message details"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/api-configurations/{providerId}": {
+            "get": {
+                "tags": [
+                    "API Provider"
+                ],
+                "summary": "Get SMS provider details by ID",
+                "description": "Fetches the details of an SMS provider based on the provider ID.",
+                "operationId": "showApiProvider",
+                "parameters": [
+                    {
+                        "name": "providerId",
+                        "in": "path",
+                        "description": "ID of the API provider",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched API provider details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "SMS provider not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "SMS provider not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message details"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "API Provider"
+                ],
+                "summary": "Update API provider configurations",
+                "description": "Updates the configurations of an API provider by its ID. The request body should contain the updated configurations.",
+                "operationId": "updateAPIProviderConfigurations",
+                "parameters": [
+                    {
+                        "name": "providerId",
+                        "in": "path",
+                        "description": "ID of the SMS provider to update configurations for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Request body containing the configurations to update",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "configurations"
+                                ],
+                                "properties": {
+                                    "configurations": {
+                                        "description": "Array of updated configurations for the SMS provider",
+                                        "type": "array",
+                                        "items": {
+                                            "description": "Key-value pairs for SMS provider configurations",
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated API provider configurations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "provider_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "config_key": {
+                                                        "type": "string"
+                                                    },
+                                                    "config_value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "SMS provider configurations updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "SMS provider configurations not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "SMS provider configurations not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal Server Error"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message details"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "SMS Provider"
+                ],
+                "summary": "Delete API provider configurations",
+                "description": "Deletes the configurations associated with the specified SMS provider by its ID.",
+                "operationId": "deleteAPiProviderConfigurations",
+                "parameters": [
+                    {
+                        "name": "providerId",
+                        "in": "path",
+                        "description": "ID of the API provider whose configurations are to be deleted",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted API provider configurations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "provider_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "config_key": {
+                                                        "type": "string"
+                                                    },
+                                                    "config_value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "API provider configurations deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "API provider configurations not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "SMS provider not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message details"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "api/api-configuration-types": {
+            "get": {
+                "tags": [
+                    "Api Configuration Types"
+                ],
+                "summary": "Get list of Api Configuration Types",
+                "description": "Fetches a list of  with optional search and pagination.",
+                "operationId": "listApiConfigurationTypes",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search term to filter by country name, country code, ISO code, or status",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page for pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of Api Configuration Types successfully fetched",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "country_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "country_code": {
+                                                        "type": "string"
+                                                    },
+                                                    "iso_code": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request, possibly invalid query parameters"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
         "/audit-logs": {
             "get": {
                 "tags": [
@@ -10682,476 +11227,6 @@
                 }
             }
         },
-        "/api/sms-configurations": {
-            "get": {
-                "tags": [
-                    "SMS Configuration"
-                ],
-                "summary": "List SMS Provider Configurations",
-                "description": "Fetches a list of SMS provider configurations based on filters like provider name, method, enabled status, or search query.",
-                "operationId": "listSmsConfigurations",
-                "parameters": [
-                    {
-                        "name": "provider_name",
-                        "in": "query",
-                        "description": "Filter by provider name",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "method",
-                        "in": "query",
-                        "description": "Filter by method",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "enabled",
-                        "in": "query",
-                        "description": "Filter by enabled status",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "description": "Search term to filter by provider name or config value",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Data fetch successful"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request, invalid parameters",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Invalid parameters"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "SMS Provider"
-                ],
-                "summary": "Create a new SMS provider and configurations",
-                "description": "Creates a new SMS provider and its configurations based on the data provided in the request.",
-                "operationId": "storeSmsProvider",
-                "requestBody": {
-                    "description": "Data to create a new SMS provider and configurations",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "provider_name",
-                                    "configurations"
-                                ],
-                                "properties": {
-                                    "provider_name": {
-                                        "description": "The name of the SMS provider",
-                                        "type": "string",
-                                        "example": "Twilio"
-                                    },
-                                    "configurations": {
-                                        "description": "Array of configurations for the SMS provider",
-                                        "type": "array",
-                                        "items": {
-                                            "description": "Key-value pairs for SMS provider configurations",
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successfully created SMS provider and configurations",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "SMS provider configuration added successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        },
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Error message details"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/sms-configurations/{providerId}": {
-            "get": {
-                "tags": [
-                    "SMS Provider"
-                ],
-                "summary": "Get SMS provider details by ID",
-                "description": "Fetches the details of an SMS provider based on the provider ID.",
-                "operationId": "showSmsProvider",
-                "parameters": [
-                    {
-                        "name": "providerId",
-                        "in": "path",
-                        "description": "ID of the SMS provider",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully fetched SMS provider details",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Data fetched successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "SMS provider not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "SMS provider not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        },
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Error message details"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "SMS Provider"
-                ],
-                "summary": "Update SMS provider configurations",
-                "description": "Updates the configurations of an SMS provider by its ID. The request body should contain the updated configurations.",
-                "operationId": "updateSmsProviderConfigurations",
-                "parameters": [
-                    {
-                        "name": "providerId",
-                        "in": "path",
-                        "description": "ID of the SMS provider to update configurations for",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "description": "Request body containing the configurations to update",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "configurations"
-                                ],
-                                "properties": {
-                                    "configurations": {
-                                        "description": "Array of updated configurations for the SMS provider",
-                                        "type": "array",
-                                        "items": {
-                                            "description": "Key-value pairs for SMS provider configurations",
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successfully updated SMS provider configurations",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "provider_id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "config_key": {
-                                                        "type": "string"
-                                                    },
-                                                    "config_value": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                "type": "object"
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "SMS provider configurations updated successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "SMS provider configurations not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "SMS provider configurations not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Internal Server Error"
-                                        },
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Error message details"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "SMS Provider"
-                ],
-                "summary": "Delete SMS provider configurations",
-                "description": "Deletes the configurations associated with the specified SMS provider by its ID.",
-                "operationId": "deleteSmsProviderConfigurations",
-                "parameters": [
-                    {
-                        "name": "providerId",
-                        "in": "path",
-                        "description": "ID of the SMS provider whose configurations are to be deleted",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully deleted SMS provider configurations",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "provider_id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "config_key": {
-                                                        "type": "string"
-                                                    },
-                                                    "config_value": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                "type": "object"
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "SMS provider configurations deleted successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "SMS provider configurations not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "SMS provider not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        },
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Error message details"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "api/sms-providers": {
             "get": {
                 "tags": [
@@ -17878,6 +17953,26 @@
             "description": "Agent Activity"
         },
         {
+            "name": "API Configuration",
+            "description": "API Configuration"
+        },
+        {
+            "name": "Api Provider",
+            "description": "Api Provider"
+        },
+        {
+            "name": "API Provider",
+            "description": "API Provider"
+        },
+        {
+            "name": "SMS Provider",
+            "description": "SMS Provider"
+        },
+        {
+            "name": "Api Configuration Types",
+            "description": "Api Configuration Types"
+        },
+        {
             "name": "Audit Logs",
             "description": "Audit Logs"
         },
@@ -18032,14 +18127,6 @@
         {
             "name": "SLA Settings",
             "description": "SLA Settings"
-        },
-        {
-            "name": "SMS Configuration",
-            "description": "SMS Configuration"
-        },
-        {
-            "name": "SMS Provider",
-            "description": "SMS Provider"
         },
         {
             "name": "Sms Providers",

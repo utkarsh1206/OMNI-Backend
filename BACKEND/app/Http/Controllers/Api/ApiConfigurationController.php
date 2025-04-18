@@ -3,26 +3,26 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SmsProviderConfigurationRequest;
+use App\Http\Requests\ApiConfigurationRequest;
 use Illuminate\Http\Request;
-use App\Repositories\SmsProviderConfigurationRepository;
+use App\Repositories\ApiConfigurationRepository;
 
-class SmsProviderConfigurationController extends Controller
+class ApiConfigurationController extends Controller
 {
-    private $smsProviderConfigurationRepository;
+    private $apiConfigurationRepository;
 
-    public function __construct(SmsProviderConfigurationRepository $smsProviderConfigurationRepository)
+    public function __construct(ApiConfigurationRepository $apiConfigurationRepository)
     {
-        $this->smsProviderConfigurationRepository = $smsProviderConfigurationRepository;
+        $this->apiConfigurationRepository = $apiConfigurationRepository;
     }
 
     /**
      * @OA\Get(
-     *     path="/api/sms-configurations",
-     *     summary="List SMS Provider Configurations",
-     *     description="Fetches a list of SMS provider configurations based on filters like provider name, method, enabled status, or search query.",
-     *     operationId="listSmsConfigurations",
-     *     tags={"SMS Configuration"},
+     *     path="/api/api-configurations",
+     *     summary="List Api Provider Configurations",
+     *     description="Fetches a list of Api provider configurations based on filters like provider name, method, enabled status, or search query.",
+     *     operationId="listApiConfigurations",
+     *     tags={"API Configuration"},
      *     @OA\Parameter(
      *         name="provider_name",
      *         in="query",
@@ -97,16 +97,16 @@ class SmsProviderConfigurationController extends Controller
      */
     public function index(Request $request)
     {
-        return $this->smsProviderConfigurationRepository->list($request);
+        return $this->apiConfigurationRepository->list($request);
     }
 
     /**
      * @OA\Post(
-     *     path="/api/sms-configurations",
-     *     summary="Create a new SMS provider and configurations",
-     *     description="Creates a new SMS provider and its configurations based on the data provided in the request.",
-     *     operationId="storeSmsProvider",
-     *     tags={"SMS Provider"},
+     *     path="/api/api-configurations",
+     *     summary="Create a new API provider and configurations",
+     *     description="Creates a new API provider and its configurations based on the data provided in the request.",
+     *     operationId="storeApiProvider",
+     *     tags={"Api Provider"},
      *     @OA\RequestBody(
      *         required=true,
      *         description="Data to create a new SMS provider and configurations",
@@ -169,22 +169,22 @@ class SmsProviderConfigurationController extends Controller
      *     )
      * )
      */
-    public function store(SmsProviderConfigurationRequest $request)
+    public function store(ApiConfigurationRequest $request)
     {
-        return $this->smsProviderConfigurationRepository->store($request);
+        return $this->apiConfigurationRepository->store($request);
     }
 
     /**
      * @OA\Get(
-     *     path="/api/sms-configurations/{providerId}",
+     *     path="/api/api-configurations/{providerId}",
      *     summary="Get SMS provider details by ID",
      *     description="Fetches the details of an SMS provider based on the provider ID.",
-     *     operationId="showSmsProvider",
-     *     tags={"SMS Provider"},
+     *     operationId="showApiProvider",
+     *     tags={"API Provider"},
      *     @OA\Parameter(
      *         name="providerId",
      *         in="path",
-     *         description="ID of the SMS provider",
+     *         description="ID of the API provider",
      *         required=true,
      *         @OA\Schema(
      *             type="integer",
@@ -193,7 +193,7 @@ class SmsProviderConfigurationController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successfully fetched SMS provider details",
+     *         description="Successfully fetched API provider details",
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(
@@ -241,16 +241,16 @@ class SmsProviderConfigurationController extends Controller
      */
     public function show($providerId)
     {
-        return $this->smsProviderConfigurationRepository->show($providerId);
+        return $this->apiConfigurationRepository->show($providerId);
     }
 
     /**
      * @OA\Put(
-     *     path="/api/sms-configurations/{providerId}",
-     *     summary="Update SMS provider configurations",
-     *     description="Updates the configurations of an SMS provider by its ID. The request body should contain the updated configurations.",
-     *     operationId="updateSmsProviderConfigurations",
-     *     tags={"SMS Provider"},
+     *     path="/api/api-configurations/{providerId}",
+     *     summary="Update API provider configurations",
+     *     description="Updates the configurations of an API provider by its ID. The request body should contain the updated configurations.",
+     *     operationId="updateAPIProviderConfigurations",
+     *     tags={"API Provider"},
      *     @OA\Parameter(
      *         name="providerId",
      *         in="path",
@@ -283,7 +283,7 @@ class SmsProviderConfigurationController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successfully updated SMS provider configurations",
+     *         description="Successfully updated API provider configurations",
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(
@@ -341,20 +341,20 @@ class SmsProviderConfigurationController extends Controller
      */
     public function update(SmsProviderConfigurationRequest $request, $providerId)
     {
-        return $this->smsProviderConfigurationRepository->update($request, $providerId);
+        return $this->apiConfigurationRepository->update($request, $providerId);
     }
 
     /**
      * @OA\Delete(
-     *     path="/api/sms-configurations/{providerId}",
-     *     summary="Delete SMS provider configurations",
+     *     path="/api/api-configurations/{providerId}",
+     *     summary="Delete API provider configurations",
      *     description="Deletes the configurations associated with the specified SMS provider by its ID.",
-     *     operationId="deleteSmsProviderConfigurations",
+     *     operationId="deleteAPiProviderConfigurations",
      *     tags={"SMS Provider"},
      *     @OA\Parameter(
      *         name="providerId",
      *         in="path",
-     *         description="ID of the SMS provider whose configurations are to be deleted",
+     *         description="ID of the API provider whose configurations are to be deleted",
      *         required=true,
      *         @OA\Schema(
      *             type="integer",
@@ -363,7 +363,7 @@ class SmsProviderConfigurationController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successfully deleted SMS provider configurations",
+     *         description="Successfully deleted API provider configurations",
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(
@@ -384,13 +384,13 @@ class SmsProviderConfigurationController extends Controller
      *             @OA\Property(
      *                 property="message",
      *                 type="string",
-     *                 example="SMS provider configurations deleted successfully"
+     *                 example="API provider configurations deleted successfully"
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="SMS provider configurations not found",
+     *         description="API provider configurations not found",
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(
@@ -421,6 +421,6 @@ class SmsProviderConfigurationController extends Controller
      */
     public function destroy($providerId)
     {
-        return $this->smsProviderConfigurationRepository->delete($providerId);
+        return $this->apiConfigurationRepository->delete($providerId);
     }
 }
