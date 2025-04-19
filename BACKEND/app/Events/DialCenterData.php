@@ -6,11 +6,11 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class DialCenterData implements ShouldBroadcast
+class DialCenterData implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -22,6 +22,7 @@ class DialCenterData implements ShouldBroadcast
     public function __construct($data)
     {
         $this->dialerData = $data;
+        generateLogs('info', 'broadcast Data:'.['dialerData' => $this->dialerData]);
     }
 
     /**
@@ -31,14 +32,15 @@ class DialCenterData implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-
+        generateLogs('info', 'Channel Name:'.['Channel ' => "dialer_.{$this->dialerData->type}"]);
         return [
-            new PrivateChannel("dialer_.{$this->dialerData->type}"),
+            new Channel("dialer_.{$this->dialerData->type}"),
         ];
     }
 
     public function broadcastWith()
     {
+        generateLogs('info', 'broadcastWith Data:'.['dialCenter' => $this->dialerData]);
         return [
             'dialCenter' => $this->dialerData, // Make sure this is returning what you need
         ];

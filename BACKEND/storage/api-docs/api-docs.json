@@ -9296,14 +9296,14 @@
                 }
             }
         },
-        "/api/pauseCode": {
+        "/api/pause-code": {
             "get": {
                 "tags": [
                     "Pause Codes"
                 ],
                 "summary": "Get all pause codes",
                 "description": "Fetches pause codes with optional search and pagination",
-                "operationId": "e6d6f71b90b30a9dc7ecc48d4c805791",
+                "operationId": "888a8123bef4f9551a0e2d6a2b2c913a",
                 "parameters": [
                     {
                         "name": "search",
@@ -9405,7 +9405,7 @@
                 ],
                 "summary": "Create a new pause code",
                 "description": "Creates a new pause code with the provided data.",
-                "operationId": "de93d07deb9eb0647b536cc52697b175",
+                "operationId": "0daf4b6c9e62f8926d3c3ec75f35016a",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -9518,14 +9518,14 @@
                 ]
             }
         },
-        "/api/pauseCode/{id}": {
+        "/api/pause-code/{id}": {
             "get": {
                 "tags": [
                     "Pause Codes"
                 ],
                 "summary": "Get a pause code by ID",
                 "description": "Fetches a specific pause code by its ID.",
-                "operationId": "9e39fa84f8755c9c751bea0996a0be1d",
+                "operationId": "0aedf8e70dba630aa75164877d164470",
                 "parameters": [
                     {
                         "name": "id",
@@ -9616,7 +9616,7 @@
                 ],
                 "summary": "Update an existing pause code",
                 "description": "Updates the details of an existing pause code based on the provided data.",
-                "operationId": "deaf6629024b94a7fb42c88d3bee4401",
+                "operationId": "142942bb27f4a5192c24b3ed9dd3060b",
                 "parameters": [
                     {
                         "name": "id",
@@ -9761,7 +9761,7 @@
                 ],
                 "summary": "Delete a pause code by ID",
                 "description": "Deletes an existing pause code by its ID.",
-                "operationId": "7f7729e1be275bd14345868c6bca13a2",
+                "operationId": "5ba9da0535f219185430d032c0cf41c9",
                 "parameters": [
                     {
                         "name": "id",
