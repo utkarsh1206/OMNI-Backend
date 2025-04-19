@@ -8150,6 +8150,57 @@
                 ]
             }
         },
+        "/api/ext-api/logout": {
+            "post": {
+                "tags": [
+                    "Neox Logout"
+                ],
+                "summary": "Logout an agent from Neox",
+                "description": "Handles agent logout and logs user activity including login duration.",
+                "operationId": "dd1582e6002622e7ef4b12d4c195ed6a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {}
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Logout successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logout successful"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/mail-details": {
             "get": {
                 "tags": [
@@ -19117,6 +19168,10 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Neox Logout",
+            "description": "Neox Logout"
         },
         {
             "name": "Mail Details",

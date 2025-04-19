@@ -37,16 +37,16 @@ class SlaReportRepository
                 },
             ])
                 ->select(
-                    'supportticket.id',
-                    'supportticket.support_ticket_id as ticket_id',
-                    'supportticket.default_type as category',
-                    'supportticket.default_priority as priority',
-                    'supportticket.created_at as opened_date',
-                    'supportticket.is_escalated as sla_compliance',
-                    'supportticket.actual_resolved_time',
-                    'supportticket.incident_id'
+                    'support_tickets.id',
+                    'support_tickets.support_ticket_id as ticket_id',
+                    'support_tickets.default_type as category',
+                    'support_tickets.default_priority as priority',
+                    'support_tickets.created_at as opened_date',
+                    'support_tickets.is_escalated as sla_compliance',
+                    'support_tickets.actual_resolved_time',
+                    'support_tickets.incident_id'
                 )
-                ->join('users', 'supportticket.assign_to_id', '=', 'users.id')
+                ->join('users', 'support_tickets.assign_to_id', '=', 'users.id')
                 ->addSelect('users.username as user_name');
 
             $payload = $this->extractPayload($request);
@@ -154,15 +154,15 @@ class SlaReportRepository
     public function incidentSLA(Request $request)
     {
         try {
-            $tickets = DB::table('supportticket')
-                ->join('incident_types', 'supportticket.incident_id', '=', 'incident_types.id')
+            $tickets = DB::table('support_tickets')
+                ->join('incident_types', 'support_tickets.incident_id', '=', 'incident_types.id')
                 ->select(
-                    'supportticket.incident_id',
+                    'support_tickets.incident_id',
                     'incident_types.name as incident_name',
-                    DB::raw('COUNT(supportticket.id) as ticket_count')
+                    DB::raw('COUNT(support_tickets.id) as ticket_count')
                 )
-                ->where('supportticket.is_escalated', 'Yes')
-                ->groupBy('supportticket.incident_id', 'incident_types.name');
+                ->where('support_tickets.is_escalated', 'Yes')
+                ->groupBy('support_tickets.incident_id', 'incident_types.name');
 
             $payload = $this->extractPayload($request);
 
@@ -189,14 +189,14 @@ class SlaReportRepository
                 },
             ])
                 ->select(
-                    'supportticket.id',
-                    'supportticket.support_ticket_id as ticket_id',
-                    'supportticket.default_type as category',
-                    'supportticket.default_priority as priority',
-                    'supportticket.created_at as opened_date',
-                    'supportticket.is_escalated as sla_compliance'
+                    'support_tickets.id',
+                    'support_tickets.support_ticket_id as ticket_id',
+                    'support_tickets.default_type as category',
+                    'support_tickets.default_priority as priority',
+                    'support_tickets.created_at as opened_date',
+                    'support_tickets.is_escalated as sla_compliance'
                 )
-                ->join('users', 'supportticket.assign_to_id', '=', 'users.id')
+                ->join('users', 'support_tickets.assign_to_id', '=', 'users.id')
                 ->addSelect('users.username as user_name');
 
             $payload = $this->extractPayload($request);
@@ -243,19 +243,19 @@ class SlaReportRepository
         if ($request->has('startDate') && $request->has('endDate')) {
             $startDate = Carbon::parse($request->input('startDate'));
             $endDate = Carbon::parse($request->input('endDate'));
-            $query->whereBetween('supportticket.created_at', [$startDate, $endDate]);
+            $query->whereBetween('support_tickets.created_at', [$startDate, $endDate]);
         }
 
         if ($request->has('priority')) {
-            $query->where('supportticket.default_priority', $request->input('priority'));
+            $query->where('support_tickets.default_priority', $request->input('priority'));
         }
 
         if ($request->has('category')) {
-            $query->where('supportticket.default_type', $request->input('category'));
+            $query->where('support_tickets.default_type', $request->input('category'));
         }
 
         if ($request->has('slaCompliance')) {
-            $query->where('supportticket.is_escalated', $request->input('slaCompliance'));
+            $query->where('support_tickets.is_escalated', $request->input('slaCompliance'));
         }
 
         if ($payload['role_id'] == 3) {
@@ -263,7 +263,7 @@ class SlaReportRepository
         }
 
         if ($request->has('user')) {
-            $query->where('supportticket.assign_to_id', $request->input('user'));
+            $query->where('support_tickets.assign_to_id', $request->input('user'));
         }
 
         return $query;

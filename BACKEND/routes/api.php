@@ -270,7 +270,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::post('dispo-list', [DispositionApiController::class, 'dispositionListApi']);
         Route::post('hold-call', [HoldCallApiController::class, 'holdCallApi']);
-        
+        Route::post('logout', [LogoutApiController::class, 'agentLogoutApi']);
         Route::post('dial-call', [DialCallApiController::class, 'dialCallApi']);
         Route::post('pause-resume', [PauseResumeApiController::class, 'pauseResumeApi']);
         Route::post('hangup', [HangupApiController::class, 'hangupApi']);
@@ -304,7 +304,6 @@ Route::post('/ext-api/camp-list', [CampaignApiController::class, 'campaignListAp
 
 Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
     Route::post('ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
-    Route::post('logout', [LogoutApiController::class, 'agentLogoutApi']);
     Route::post('refresh-logout', [LogoutRefreshApiController::class, 'agentLogoutRefreshApi']);
 });
 

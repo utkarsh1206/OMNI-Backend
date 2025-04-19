@@ -57,14 +57,14 @@ class TicketReportRepository
             $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
 
             $categorySummary = $query->select(
-                'supportticket.default_type',
+                'support_tickets.default_type',
                 DB::raw('COUNT(*) AS total_tickets'),
-                DB::raw('SUM(CASE WHEN supportticket.default_status = "Resolved" THEN 1 ELSE 0 END) AS resolved'),
-                DB::raw('SUM(CASE WHEN supportticket.default_status = "Open" THEN 1 ELSE 0 END) AS open'),
-                DB::raw('SUM(CASE WHEN supportticket.default_status = "Closed" THEN 1 ELSE 0 END) AS closed'),
-                DB::raw('SUM(CASE WHEN supportticket.default_status NOT IN ("Resolved", "Open", "Closed") THEN 1 ELSE 0 END) AS pending')
+                DB::raw('SUM(CASE WHEN support_tickets.default_status = "Resolved" THEN 1 ELSE 0 END) AS resolved'),
+                DB::raw('SUM(CASE WHEN support_tickets.default_status = "Open" THEN 1 ELSE 0 END) AS open'),
+                DB::raw('SUM(CASE WHEN support_tickets.default_status = "Closed" THEN 1 ELSE 0 END) AS closed'),
+                DB::raw('SUM(CASE WHEN support_tickets.default_status NOT IN ("Resolved", "Open", "Closed") THEN 1 ELSE 0 END) AS pending')
             )
-                ->groupBy('supportticket.default_type')
+                ->groupBy('support_tickets.default_type')
                 ->get();
 
             $formattedCategorySummary = $categorySummary->map(function ($category) {
@@ -119,10 +119,10 @@ class TicketReportRepository
             $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
 
             $statusSummary = $query->select(
-                'supportticket.default_status',
+                'support_tickets.default_status',
                 DB::raw('COUNT(*) AS total_tickets')
             )
-                ->groupBy('supportticket.default_status')
+                ->groupBy('support_tickets.default_status')
                 ->get();
 
             $formattedStatusSummary = $statusSummary->map(function ($status) {
@@ -146,12 +146,12 @@ class TicketReportRepository
             $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
 
             $weekdaySummary = $query->select(
-                DB::raw('DAYOFWEEK(supportticket.created_at) AS weekday'),
+                DB::raw('DAYOFWEEK(support_tickets.created_at) AS weekday'),
                 DB::raw('COUNT(*) AS total_tickets')
             )
-                ->whereRaw('WEEK(supportticket.created_at) = WEEK(CURRENT_DATE())')
-                ->whereRaw('YEAR(supportticket.created_at) = YEAR(CURRENT_DATE())')
-                ->groupBy(DB::raw('DAYOFWEEK(supportticket.created_at)'))
+                ->whereRaw('WEEK(support_tickets.created_at) = WEEK(CURRENT_DATE())')
+                ->whereRaw('YEAR(support_tickets.created_at) = YEAR(CURRENT_DATE())')
+                ->groupBy(DB::raw('DAYOFWEEK(support_tickets.created_at)'))
                 ->get();
 
             $weekdayMapping = [
