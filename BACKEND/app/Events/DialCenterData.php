@@ -22,7 +22,7 @@ class DialCenterData implements ShouldBroadcastNow
     public function __construct($data)
     {
         $this->dialerData = $data;
-        generateLogs('info', 'broadcast Data:'.['dialerData' => $this->dialerData]);
+        generateLogs('info', 'broadcast Data: '.json_encode(['dialerData' => $this->dialerData]));
     }
 
     /**
@@ -32,17 +32,17 @@ class DialCenterData implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        generateLogs('info', 'Channel Name:'.['Channel ' => "dialer_.{$this->dialerData->type}"]);
+        generateLogs('info', 'Channel Name: '.json_encode(['Channel' => "dialer_{$this->dialerData['type']}"]));
         return [
-            new Channel("dialer_.{$this->dialerData->type}"),
+            new PrivateChannel("dialer_{$this->dialerData['type']}"),
         ];
     }
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data:'.['dialCenter' => $this->dialerData]);
+        generateLogs('info', 'broadcastWith Data: '.json_encode(['dialerData' => $this->dialerData]));
         return [
-            'dialCenter' => $this->dialerData, // Make sure this is returning what you need
+            'dialCenter' => $this->dialerData, 
         ];
     }
 }

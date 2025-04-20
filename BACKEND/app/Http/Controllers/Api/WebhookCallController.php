@@ -311,6 +311,7 @@ class WebhookCallController extends Controller
 
             return $this->sendErrorResponse();
         } catch (Exception $e) {
+            generateLogs('error', 'Error in Storing Request : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
