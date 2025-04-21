@@ -36,7 +36,8 @@ class TicketReportRepository
             if ($page === config('omni.ALL_PAGE')) {
                 // If 'page' is 'all', retrieve all records without pagination
                 $tickets = $query->get();
-                $mappedTickets = $this->formatTickets($tickets->items());
+                // $mappedTickets = $this->formatTickets($tickets->items());
+                $mappedTickets = $this->formatTickets($tickets);
             } else {
                 // Paginate the results
                 $tickets = $query->paginate($perPage);
