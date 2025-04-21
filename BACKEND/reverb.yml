@@ -7,6 +7,3 @@ apps:
     instances: 1  # Run 1 instance of the process
     autorestart: true  # Automatically restart if it crashes
     watch: false  # Disable file watching (optional, depending on your needs)
-    log_date_format: "YYYY-MM-DD HH:mm Z"  # Format the logs with a date
-    error_file: "/var/log/reverb-start-error.log"  # Error logs file
-    out_file: "/var/log/reverb-start-output.log"  # Output logs file
