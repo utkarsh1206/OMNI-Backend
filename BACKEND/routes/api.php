@@ -303,6 +303,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 });
 
 Route::post('/ext-api/camp-list', [CampaignApiController::class, 'campaignListApi']);
+Route::post('/ext-api/camp-list-filtered', [CampaignApiController::class, 'campaignListFilteredApi']);
 
 Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
     Route::post('ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
