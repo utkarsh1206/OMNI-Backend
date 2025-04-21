@@ -1,0 +1,12 @@
+apps:
+  - name: "reverb-start"  # This is the name PM2 will use to track the process
+    script: "php"  # We're calling PHP to run the Laravel Artisan command
+    args: "artisan reverb:start"  # Arguments for the Artisan command
+    cwd: "/var/www/html/omni/BACKEND"  # Set the working directory to your Laravel project
+    interpreter: "/usr/bin/php"  # Path to your PHP interpreter (adjust if needed)
+    instances: 1  # Run 1 instance of the process
+    autorestart: true  # Automatically restart if it crashes
+    watch: false  # Disable file watching (optional, depending on your needs)
+    log_date_format: "YYYY-MM-DD HH:mm Z"  # Format the logs with a date
+    error_file: "/var/log/reverb-start-error.log"  # Error logs file
+    out_file: "/var/log/reverb-start-output.log"  # Output logs file
