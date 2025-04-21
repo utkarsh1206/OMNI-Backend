@@ -24,4 +24,11 @@ class ChatBootWebhookController extends Controller
         }
         
     }
+
+    public function checkAuthWebhook(Request $request)
+    {
+        
+    }
+
+    
 }

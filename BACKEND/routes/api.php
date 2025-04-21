@@ -79,13 +79,13 @@ use App\Http\Controllers\Api\StartConfApiController;
 use App\Http\Controllers\Api\LiveAgentController;
 use App\Http\Controllers\Api\WebhookCallController;
 use App\Http\Middleware\ModifyRequestMiddleware;
-use App\Http\Controllers\Api\ChatBotConfigurationController;
 use App\Http\Controllers\Api\LogoutRefreshApiController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\ChatBootWebhookController;
 use App\Http\Controllers\Api\IncomingCallController;
 use App\Http\Controllers\Api\ApiConfigurationTypeController;
-
+use App\Http\Controllers\Api\AuthTokenController;
+use  App\Http\Middleware\AuthTokenMiddleware;
 
 Route::post('login', [LoginController::class, 'login']);
 Route::any('chatboot-webhook', [ChatBootWebhookController::class, 'index']);
@@ -93,6 +93,8 @@ Route::any('chatboot-webhook', [ChatBootWebhookController::class, 'index']);
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+Route::post('chatboot-webhook-auth', [ChatBootWebhookController::class, 'checkAuthWebhook'])->middleware([AuthTokenMiddleware::class]);
 
 #Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
 #Route::middleware('auth:api')->post('license_update', [LicenseUpdateController::class, 'updateLicense']);
@@ -289,11 +291,11 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
     Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
     Route::post('call-history', [WebhookCallController::class, 'callHistory']);
-    
-    Route::apiResource('chat-bot-configurations', ChatBotConfigurationController::class);
-    
+     
     Route::get('get-messages', [MessageController::class, 'getMessages']);
     Route::post('message', [MessageController::class, 'storeMessage']);
+
+    Route::get('auth-token', [AuthTokenController::class, 'index']);
 
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::get('neox-call-incoming', [IncomingCallController::class, 'checkIncoming']);
