@@ -59,7 +59,6 @@ class EcdialListRepository
     public function create(Request $request)
     {
         try {
-            echo "camp id " . $request->campaign_id;
             $ecdialLists = EcdialLists::create([
                 'name' => $request->name,
                 "description" => $request->description,

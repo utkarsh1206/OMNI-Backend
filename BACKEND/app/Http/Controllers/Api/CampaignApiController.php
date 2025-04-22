@@ -82,16 +82,71 @@ class CampaignApiController extends Controller
             }
 
             $ip = $config['neox_local_ip'];
-
             $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
             $validatedData = $request->validated();
 
-            return sendHttpRequest($url, 'POST', $validatedData);
+            // Send request to external API
+            $apiResponse = sendHttpRequest($url, 'POST', $validatedData);
+            $apiData = json_decode($apiResponse->getContent(), true);
+
+            if (!isset($apiData['data']) || !is_array($apiData['data'])) {
+                return response()->json($apiData); // Early exit if format is unexpected
+            }
+
+            // Get DB connection
+            $connection = getDbConnection($domainName);
+
+            // Retrieve allowed campaign_ids from EcdialLists table
+            $campaignIds = $connection
+                ? $connection->table('ecdial_lists')->pluck('campaign_id')->toArray()
+                : EcdialLists::pluck('campaign_id')->toArray();
+
+            // Filter the API response data
+            $filteredCampaigns = array_filter($apiData['data'], function ($campaign) use ($campaignIds) {
+                return in_array($campaign['campaign_id'], $campaignIds);
+            });
+
+            // Replace original data with filtered campaigns
+            // $apiData['data'] = array_values($filteredCampaigns);
+            if (empty($filteredCampaigns)) {
+                return response()->json([
+                    'message' => 'No valid campaigns found',
+                ], 400);
+            }
+
+            $apiData['data'] = array_values($filteredCampaigns);
+
+            return response()->json($apiData);
         } catch (Exception $e) {
             generateLogs('error', "Error in campaignListApi: ", $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
+
+    // public function campaignListApi(CampaignApiRequest $request)
+    // {
+    //     try {
+    //         $domainName = $request->domain_name;
+    //         if (!$domainName) {
+    //             return response()->json(['error' => 'Domain name is required']);
+    //         }
+
+    //         $config = getNeoxConfig($domainName);
+    //         if (isset($config['status']) && $config['status'] === 'error') {
+    //             return response()->json($config);
+    //         }
+
+    //         $ip = $config['neox_local_ip'];
+
+    //         $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
+    //         $validatedData = $request->validated();
+
+    //         return sendHttpRequest($url, 'POST', $validatedData);
+    //     } catch (Exception $e) {
+    //         generateLogs('error', "Error in campaignListApi: ", $e->getMessage());
+    //         return $this->apiResponse->handleAndResponseException($e);
+    //     }
+    // }
 
     public function campaignListFilteredApi(CampaignApiRequest $request)
     {
@@ -109,33 +164,25 @@ class CampaignApiController extends Controller
 
             // Retrieve configuration
             $config = getNeoxConfig($domainName);
-            generateLogs('info', 'after neoxconfig');
             if (isset($config['status']) && $config['status'] === 'error') {
                 return response()->json($config);
             }
-            generateLogs('info', 'before url');
 
             $ip = $config['neox_local_ip'];
             $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
-            generateLogs('info', 'before validate data');
             $validatedData = $request->validated();
-            generateLogs('info', 'after validate data');
 
             // Send HTTP request
             $response = sendHttpRequest($url, 'POST', $validatedData);
-            generateLogs('info', 'after response');
 
             // Convert JsonResponse to array
             $responseData = $response->getData(true);
-            generateLogs('info', 'after responsedata');
 
             if (isset($responseData['code']) && $responseData['code'] === 0 && isset($responseData['data'])) {
-                generateLogs('info', 'in if');
                 $campaigns = $responseData['data'];
 
                 // Get existing campaign IDs from ecdial_lists table
                 $existingCampaignIds = EcdialLists::pluck('campaign_id')->toArray();
-                generateLogs('info', 'after existing campaign ID');
 
                 // Filter out campaigns already present
                 $filteredCampaigns = array_filter($campaigns, function ($campaign) use ($existingCampaignIds) {

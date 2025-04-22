@@ -32,7 +32,13 @@ class CustomLeadRepository
             // If leadId is provided, get only that lead; otherwise, get all leads
             $query = DB::table($table);
             if ($leadId) {
-                return $this->getSingleLead($query, $leadId, $columns);
+                return $this->getSingleLead($query, 'id', $leadId, $columns);
+            }
+
+            // If leadId is not given but mob-no is
+            $mobileNumber = $request->query('mob-no');
+            if ($mobileNumber) {
+                return $this->getSingleLead($query, 'mobile_number', $mobileNumber, $columns);
             }
 
             return $this->getAllLeads($request, $query, $columns);
@@ -43,10 +49,10 @@ class CustomLeadRepository
     }
 
 
-    private function getSingleLead($query, $leadId, $columns)
+    private function getSingleLead($query, $column, $value, $columns)
     {
         try {
-            $lead = $query->where('id', $leadId)->first();
+            $lead = $query->where($column, $value)->first();
 
             if (!$lead) {
                 return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.lead_not_found'));
