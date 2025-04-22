@@ -11,7 +11,7 @@ use App\Http\Requests\ChatbotRequest;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 
-class ChatbotController extends Controller
+class ChatBotController extends Controller
 {
 
     protected $chatbotRepository;
