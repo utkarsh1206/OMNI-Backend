@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Chatbot;
 use App\Http\Resources\ChatbotResource;
-use App\Repositories\ChatbotRepository;
+use App\Repositories\ChatBotRepository;
 use App\Http\Requests\ChatbotRequest;
 use App\Http\Response\CustomApiResponse;
 use Exception;
@@ -14,13 +14,13 @@ use Exception;
 class ChatBotController extends Controller
 {
 
-    protected $chatbotRepository;
+    protected $chatBotRepository;
 
     private $apiResponse;
 
-    public function __construct(ChatbotRepository $chatbotRepository, CustomApiResponse $customApiResponse)
+    public function __construct(ChatBotRepository $chatBotRepository, CustomApiResponse $customApiResponse)
     {
-        $this->chatbotRepository = $chatbotRepository;
+        $this->chatBotRepository = $chatBotRepository;
         $this->apiResponse = $customApiResponse;
     }
 
@@ -79,7 +79,7 @@ class ChatBotController extends Controller
 
     public function index(Request $request)
     {
-        return $this->chatbotRepository->list($request);
+        return $this->chatBotRepository->list($request);
     }
 
     /**
@@ -151,7 +151,7 @@ class ChatBotController extends Controller
 
     public function store(ChatbotRequest $request)
     {
-        return $this->chatbotRepository->create($request);
+        return $this->chatBotRepository->create($request);
     }
 
 
@@ -216,7 +216,7 @@ class ChatBotController extends Controller
 
     public function update(Request $request, $id)
     {
-        return $this->chatbotRepository->update($request, $id);
+        return $this->chatBotRepository->update($request, $id);
     }
 
     /**
@@ -254,6 +254,6 @@ class ChatBotController extends Controller
 
     public function destroy($id)
     {
-        return $this->chatbotRepository->delete($id);
+        return $this->chatBotRepository->delete($id);
     }
 }

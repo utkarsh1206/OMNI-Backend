@@ -8,7 +8,7 @@ use App\Http\Resources\ChatbotResource;
 use Exception;
 use App\Http\Response\CustomApiResponse;
 
-class ChatbotRepository
+class ChatBotRepository
 {
     private $apiResponse;
 
