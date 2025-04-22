@@ -42,7 +42,7 @@ class DialCenterData implements ShouldBroadcastNow
     {
         generateLogs('info', 'Channel Name: '.json_encode(['Channel' => "dialer_{$this->dialerData['type']}"]));
         return [
-            new Channel("dialer_{$this->dialerData['type']}"),
+            new PrivateChannel("dialer_{$this->dialerData['type']}"),
         ];
     }
 
