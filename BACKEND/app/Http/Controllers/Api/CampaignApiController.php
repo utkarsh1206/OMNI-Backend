@@ -20,29 +20,38 @@ class CampaignApiController extends Controller
     /**
      * @OA\Post(
      *     path="/api/ext-api/camp-list",
-     *     summary="Fetch campaign list from remote Neox system",
+     *     summary="Fetch and filter campaign list from remote Neox system",
      *     tags={"Campaign"},
-     *     operationId="campaignListApi",
-     *     security={{"bearerAuth": {}}},
+     *     operationId="filteredCampaignListApi",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             required={"domain_name"},
-     *             @OA\Property(property="domain_name", type="string", example="clientdomain.com", description="Domain name to fetch configuration"),
-     *             @OA\Property(property="user", type="string", example="admin", description="Neox system user"),
+     *             @OA\Property(
+     *                 property="domain_name",
+     *                 type="string",
+     *                 example="TestTenant13.com",
+     *                 description="Domain name to fetch configuration"
+     *             ),
+     *             @OA\Property(
+     *                 property="user",
+     *                 type="string",
+     *                 example="8002",
+     *                 description="Neox system user"
+     *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successful response",
+     *         description="Filtered campaigns from Neox system",
      *         @OA\JsonContent(
      *             type="object",
      *             example={
-     *                 "status": "success",
+     *                 "message": "Campaign list retrieved successfully",
      *                 "data": {
      *                     {
-     *                         "campaign_id": "CAMP123",
-     *                         "campaign_name": "Sales Campaign",
+     *                         "campaign_id": "Incoming",
+     *                         "campaign_name": "Incoming",
      *                         "dial_method": "INBOUND_MAN"
      *                     }
      *                 }
@@ -51,10 +60,10 @@ class CampaignApiController extends Controller
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Bad Request",
+     *         description="No valid campaigns found or bad request",
      *         @OA\JsonContent(
      *             type="object",
-     *             example={"error": "Domain name is required"}
+     *             example={"message": "No valid campaigns found"}
      *         )
      *     ),
      *     @OA\Response(
@@ -147,6 +156,50 @@ class CampaignApiController extends Controller
     //         return $this->apiResponse->handleAndResponseException($e);
     //     }
     // }
+
+    /**
+     * @OA\Post(
+     *     path="/api/ext-api/camp-list-filtered",
+     *     summary="Fetch campaigns from Neox and exclude already existing campaigns",
+     *     tags={"Campaign"},
+     *     operationId="campaignListFilteredApi",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Filtered campaign list retrieved successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             example={
+     *                 "code": 0,
+     *                 "message": "Filtered campaign list retrieved successfully",
+     *                 "data": {
+     *                     {
+     *                         "campaign_id": "CAMP999",
+     *                         "campaign_name": "New Campaign",
+     *                         "dial_method": "OUTBOUND_MAN"
+     *                     }
+     *                 }
+     *             }
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             example={"error": "Domain name is required"}
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             example={"error": "Unexpected error occurred"}
+     *         )
+     *     )
+     * )
+     */
 
     public function campaignListFilteredApi(CampaignApiRequest $request)
     {

@@ -213,7 +213,7 @@ class EcdialListRepository
             $tableName = 'custom_lead_' . $ecdialLists->list_id; // Replace with your actual table name
 
             foreach ($baseFields as $field) {
-                $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field['field_label'])); // Convert field label to snake case for column name
+                $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field['field_name'])); // Convert field label to snake case for column name
 
                 if (!Schema::hasColumn($tableName, $columnName)) {
                     Schema::table($tableName, function (Blueprint $table) use ($columnName, $field) {

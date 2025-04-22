@@ -91,10 +91,10 @@ class EcdialListFieldsRepository
             DB::commit();
 
             $listId = $validatedData['list_id'];
-            $fieldLabel = $validatedData['field_label'];
+            $fieldName = $validatedData['field_name'];
 
             // Sanitize and create column name dynamically
-            $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $fieldLabel));
+            $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $fieldName));
 
             // Define table name
             $tableName = "custom_lead_{$listId}";
