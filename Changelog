@@ -1,3 +1,20 @@
+2025-04-22 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : afc15f4
+	* Version : Dev
+	* Laravel : 
+	Controller: Added endpoints for fetching call logs, exporting to CSV, generating chart summaries, and fetching call status and agent data.
+	Repository: Built logic to query call logs based on provided filters (e.g., date range, campaign ID, agent) and handle CSV export and summary generation for charts.
+	Key Methods:
+		Returns paginated or full call logs based on request parameters.
+		Exports call logs as a CSV file.
+		Provides a summary of call data for charts.
+		Returns distribution of call statuses.
+		Returns call data grouped by user group.
+		Returns call data grouped by agent.
+	Also apply swagger annotation for the all feature.
+
 2025-04-18 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
