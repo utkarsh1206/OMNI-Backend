@@ -17,6 +17,7 @@ class EcdialListRequest extends FormRequest
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive',
+            'campaign_id' => 'nullable|string',
         ];
     }
 }

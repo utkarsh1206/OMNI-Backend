@@ -15,7 +15,7 @@ class EcdialLists extends Model
 
     public $timestamps = true;
 
-    protected $fillable = ['name', 'description', 'status'];
+    protected $fillable = ['name', 'description', 'status', 'campaign_id'];
 
     public function ecdialListFields()
     {

@@ -59,10 +59,12 @@ class EcdialListRepository
     public function create(Request $request)
     {
         try {
+            echo "camp id " . $request->campaign_id;
             $ecdialLists = EcdialLists::create([
                 'name' => $request->name,
                 "description" => $request->description,
-                "status" => $request->status
+                "status" => $request->status,
+                "campaign_id" => $request->campaign_id
             ]);
             // Generate custom table name
             $this->createCustomTable($ecdialLists->list_id);
@@ -244,7 +246,8 @@ class EcdialListRepository
             $ecdialLists->update([
                 'name' => $request->name,
                 "description" => $request->description,
-                "status" => $request->status
+                "status" => $request->status,
+                "campaign_id" => $request->campaign_id
             ]);
 
             $data = new EcdialListResource($ecdialLists);
