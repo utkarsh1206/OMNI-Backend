@@ -8,6 +8,7 @@ use App\Http\Resources\EcdialListFieldResource;
 use App\Http\Requests\EcdialListFieldRequest;
 use Exception;
 use App\Http\Response\CustomApiResponse;
+use App\Models\EcdialLists;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -32,6 +33,20 @@ class EcdialListFieldsRepository
             $page = $request->input('page', 1);
 
             $query = EcdialListField::query();
+            $authHeader = $request->header('Authorization');
+            if ($authHeader && str_starts_with($authHeader, 'Bearer ')) {
+                $token = str_replace('Bearer ', '', $authHeader);
+                $payload = extractPayload($token);
+                if ($payload && isset($payload['campaign']) && ($payload['role_id'] == 3)) {
+                    $campaignListId = EcdialLists::where('campaign_id', $payload['campaign'])
+                        ->value('list_id');
+                    if ($campaignListId) {
+                        $listId = $campaignListId;
+                    } else {
+                        return $this->apiResponse->getResponseStructure(null, [], trans('message.list_not_found'));
+                    }
+                }
+            }
 
             // Search Filter
             if (!empty($searchTerm)) {

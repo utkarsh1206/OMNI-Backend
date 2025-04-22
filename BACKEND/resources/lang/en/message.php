@@ -100,6 +100,7 @@ return [
     'list_create_success' => 'List created successfully.',
     'list_update_success' => 'List updated successfully.',
     'list_delete_success' => 'List deleted successfully.',
+    'list_not_found' => 'List is not defined for the selected Campaign',
     //product
     'product_delete_success' => 'Product deleted successfully.',
     'product_update_success' => 'Product updated successfully.',
