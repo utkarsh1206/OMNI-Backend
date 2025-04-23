@@ -115,13 +115,27 @@ class CustomLeadRepository
                 );
             }
 
+            if (!empty($data['mobile'])) {
+                $existing = DB::table($table)->where('mobile', $data['mobile'])->exists();
+
+                if ($existing) {
+                    return $this->apiResponse->getResponseStructure(
+                        trans('message.error'),
+                        ['mobile' => $data['mobile']],
+                        trans('message.mobile_already_exists', ['mobile' => $data['mobile']])
+                    );
+                }
+            }
+
             $timestamp = now();
             $data['created_at'] = $timestamp;
             $data['updated_at'] = $timestamp;
 
-            $inserted = DB::table($table)->insert($data);
+            // Insert and get ID
+            $leadId = DB::table($table)->insertGetId($data);
 
-            if ($inserted) {
+            if ($leadId) {
+                $data['id'] = $leadId;
                 return $this->apiResponse->getResponseStructure(
                     trans('message.success'),
                     $data,
