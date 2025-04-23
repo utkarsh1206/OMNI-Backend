@@ -81,23 +81,20 @@ use App\Http\Controllers\Api\WebhookCallController;
 use App\Http\Middleware\ModifyRequestMiddleware;
 use App\Http\Controllers\Api\LogoutRefreshApiController;
 use App\Http\Controllers\Api\MessageController;
-use App\Http\Controllers\Api\ChatBootWebhookController;
 use App\Http\Controllers\Api\IncomingCallController;
 use App\Http\Controllers\Api\ApiConfigurationTypeController;
-use App\Http\Controllers\Api\AuthTokenController;
-use  App\Http\Middleware\AuthTokenMiddleware;
 use App\Http\Controllers\Api\CallLogReportController;
 
+require base_path('routes/externalUse.php');
+
 Route::post('login', [LoginController::class, 'login']);
-Route::any('chatboot-webhook', [ChatBootWebhookController::class, 'index']);
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
-Route::post('chatboot-webhook-auth', [ChatBootWebhookController::class, 'checkAuthWebhook'])->middleware([AuthTokenMiddleware::class]);
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');
 
 #Route::middleware('auth:api')->apiResource('tenants', TenantController::class);
+
 #Route::middleware('auth:api')->post('license_update', [LicenseUpdateController::class, 'updateLicense']);
 
 #This APIs are not used into current. In future it will be used.
@@ -295,8 +292,6 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('get-messages', [MessageController::class, 'getMessages']);
     Route::post('message', [MessageController::class, 'storeMessage']);
-
-    Route::get('auth-token', [AuthTokenController::class, 'index']);
 
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::get('neox-call-incoming', [IncomingCallController::class, 'checkIncoming']);

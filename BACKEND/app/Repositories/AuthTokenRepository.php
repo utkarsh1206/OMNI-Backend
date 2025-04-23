@@ -31,7 +31,7 @@ class AuthTokenRepository
             {
                 $authToken = AuthToken::create([
                     'token' =>  Str::random(64),
-                    'ipaddress' =>$request->ip(),
+                    'ipaddress' => $request->ip(),
                     'expire_at' =>  Carbon::now()->addHours(3),
                 ]);
                 $authToken->status = "New";
