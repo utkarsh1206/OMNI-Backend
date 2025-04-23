@@ -106,6 +106,80 @@ class CustomLeadController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *      path="/api/custom-leads/{list_id}",
+     *      tags={"Custom Leads"},
+     *      summary="Create a new lead",
+     *      description="Insert a new lead into the specified custom list",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="list_id",
+     *          in="path",
+     *          required=true,
+     *          description="List ID",
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Data for the new lead",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              example={
+     *                  "description" : "this is a test",
+     *                  "subject" : "this is test subject",
+     *                  "mobile" : "1234",
+     *                  "email" : "test@mail.com",
+     *                  "last_name" : "test_L",
+     *                  "first_name" : "test_F"
+     *              }
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Lead created successfully",
+     *          @OA\JsonContent(type="object")
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="No valid fields provided for insertion"
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Table not found"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized, invalid token"
+     *      )
+     * )
+     */
+    public function create(Request $request, $list_id)
+    {
+        $table = "custom_lead_" . $list_id;
+
+        if (!DB::getSchemaBuilder()->hasTable($table)) {
+            return response()->json(['error' => 'Table not found'], 404);
+        }
+
+        // Dynamically fetch table columns
+        $columns = DB::getSchemaBuilder()->getColumnListing($table);
+
+        // Remove 'id', 'created_at', and 'updated_at' if present
+        $excludedFields = ['id', 'created_at', 'updated_at'];
+        $validColumns = array_diff($columns, $excludedFields);
+
+        // Filter input based on valid columns
+        $insertData = $request->only($validColumns);
+
+        // Ensure there's data to insert
+        if (empty($insertData)) {
+            return response()->json(['error' => 'No valid fields provided for insertion'], 400);
+        }
+
+        return $this->leadRepository->createLead($list_id, $insertData);
+    }
+
+    /**
      * @OA\Put(
      *      path="/api/custom-leads/{list_id}/{lead_id}",
      *      tags={"Custom Leads"},

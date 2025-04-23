@@ -2504,26 +2504,6 @@
                 ],
                 "summary": "Fetch campaign list from remote Neox system",
                 "operationId": "campaignListAllApi",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "domain_name"
-                                ],
-                                "properties": {
-                                    "domain_name": {
-                                        "description": "Domain name to fetch configuration",
-                                        "type": "string",
-                                        "example": "TestTenant13.com"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -4660,6 +4640,70 @@
                     },
                     "404": {
                         "description": "List not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Custom Leads"
+                ],
+                "summary": "Create a new lead",
+                "description": "Insert a new lead into the specified custom list",
+                "operationId": "def1e20ce0b6c2ccc8c18f16962da4ea",
+                "parameters": [
+                    {
+                        "name": "list_id",
+                        "in": "path",
+                        "description": "List ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Data for the new lead",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            },
+                            "example": {
+                                "description": "this is a test",
+                                "subject": "this is test subject",
+                                "mobile": "1234",
+                                "email": "test@mail.com",
+                                "last_name": "test_L",
+                                "first_name": "test_F"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Lead created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "No valid fields provided for insertion"
+                    },
+                    "404": {
+                        "description": "Table not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token"
                     }
                 },
                 "security": [

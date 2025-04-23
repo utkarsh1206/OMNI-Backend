@@ -139,18 +139,6 @@ class CampaignApiController extends Controller
      *     tags={"Campaign"},
      *     operationId="campaignListAllApi",
      *     security={{"bearerAuth": {}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"domain_name"},
-     *             @OA\Property(
-     *                 property="domain_name",
-     *                 type="string",
-     *                 example="TestTenant13.com",
-     *                 description="Domain name to fetch configuration"
-     *             ),
-     *         )
-     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -210,7 +198,7 @@ class CampaignApiController extends Controller
 
             // Retrieve configuration
             $config = getNeoxConfig($domainName);
-            
+
             if (isset($config['status']) && $config['status'] === 'error') {
                 return response()->json($config);
             }

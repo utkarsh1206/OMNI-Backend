@@ -94,6 +94,52 @@ class CustomLeadRepository
         })->toArray();
     }
 
+    public function createLead(int $listId, array $data)
+    {
+        try {
+            $table = "custom_lead_" . $listId;
+
+            if (!$this->isTableExists($table)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    $table,
+                    trans('message.table_not_found')
+                );
+            }
+
+            if (empty($data)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    $data,
+                    trans('message.invalid_data')
+                );
+            }
+
+            $timestamp = now();
+            $data['created_at'] = $timestamp;
+            $data['updated_at'] = $timestamp;
+
+            $inserted = DB::table($table)->insert($data);
+
+            if ($inserted) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.success'),
+                    $data,
+                    trans('message.lead_create_success')
+                );
+            }
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.error'),
+                [],
+                trans('message.lead_create_failed')
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in creating lead: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
     public function updateLead(int $listId, int $leadId, array $data)
     {
         try {

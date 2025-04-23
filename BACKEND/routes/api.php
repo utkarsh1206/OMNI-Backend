@@ -237,6 +237,8 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']); // Get a single lead by ID
 
+    Route::post('/custom-leads/{list_id}', [CustomLeadController::class, 'create']);
+
     Route::put('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'update']);
 
     Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
