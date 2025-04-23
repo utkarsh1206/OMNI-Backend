@@ -38,7 +38,7 @@ class CustomLeadRepository
             // If leadId is not given but mob-no is
             $mobileNumber = $request->query('mob-no');
             if ($mobileNumber) {
-                return $this->getSingleLead($query, 'mobile_number', $mobileNumber, $columns);
+                return $this->getSingleLead($query, 'mobile', $mobileNumber, $columns);
             }
 
             return $this->getAllLeads($request, $query, $columns);
