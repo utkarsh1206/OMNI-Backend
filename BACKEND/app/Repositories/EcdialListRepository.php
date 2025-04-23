@@ -150,7 +150,7 @@ class EcdialListRepository
                     'field_size' => 10,
                     'field_max_length' => 10,
                     'search_filter' => 'Y',
-                    'editable' => 'Y',
+                    'editable' => 'N',
                     'default_value' => null,
                     'value_masked' => 'N',
                     'duplicate_check' => 'Y',

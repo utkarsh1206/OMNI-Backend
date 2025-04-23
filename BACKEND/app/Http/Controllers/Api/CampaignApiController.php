@@ -132,30 +132,100 @@ class CampaignApiController extends Controller
         }
     }
 
-    // public function campaignListApi(CampaignApiRequest $request)
-    // {
-    //     try {
-    //         $domainName = $request->domain_name;
-    //         if (!$domainName) {
-    //             return response()->json(['error' => 'Domain name is required']);
-    //         }
+    /**
+     * @OA\Post(
+     *     path="/api/ext-api/camp-list-all",
+     *     summary="Fetch campaign list from remote Neox system",
+     *     tags={"Campaign"},
+     *     operationId="campaignListAllApi",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"domain_name"},
+     *             @OA\Property(
+     *                 property="domain_name",
+     *                 type="string",
+     *                 example="TestTenant13.com",
+     *                 description="Domain name to fetch configuration"
+     *             ),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             example={
+     *                 "status": "success",
+     *                 "data": {
+     *                     {
+     *                         "campaign_id": "CAMP123",
+     *                         "campaign_name": "Sales Campaign",
+     *                         "dial_method": "INBOUND_MAN"
+     *                     }
+     *                 }
+     *             }
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             example={"error": "Domain name is required"}
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             example={"error": "Unexpected error occurred"}
+     *         )
+     *     )
+     * )
+     */
 
-    //         $config = getNeoxConfig($domainName);
-    //         if (isset($config['status']) && $config['status'] === 'error') {
-    //             return response()->json($config);
-    //         }
+    public function campaignListAllApi(CampaignApiRequest $request)
+    {
+        try {
+            // $domainName = $request->domain_name;
+            // if (!$domainName) {
+            //     return response()->json(['error' => 'Domain name is required']);
+            // }
 
-    //         $ip = $config['neox_local_ip'];
+            // $config = getNeoxConfig($domainName);
 
-    //         $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
-    //         $validatedData = $request->validated();
+            // Check if JWT is not provided
+            if ($request->isJWT == 'No') {
+                $domainName = $request->domain_name;
+                if (!$domainName) {
+                    return response()->json(['error' => 'Domain name is required']);
+                }
+            } else {
+                // If JWT is present, domain name is not required
+                $domainName = null;
+            }
 
-    //         return sendHttpRequest($url, 'POST', $validatedData);
-    //     } catch (Exception $e) {
-    //         generateLogs('error', "Error in campaignListApi: ", $e->getMessage());
-    //         return $this->apiResponse->handleAndResponseException($e);
-    //     }
-    // }
+            // Retrieve configuration
+            $config = getNeoxConfig($domainName);
+            
+            if (isset($config['status']) && $config['status'] === 'error') {
+                return response()->json($config);
+            }
+
+            $ip = $config['neox_local_ip'];
+
+            $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
+            $validatedData = $request->validated();
+
+            return sendHttpRequest($url, 'POST', $validatedData);
+        } catch (Exception $e) {
+            generateLogs('error', "Error in campaignListApi: ", $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
 
     /**
      * @OA\Post(

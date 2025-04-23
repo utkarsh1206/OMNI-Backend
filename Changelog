@@ -1,3 +1,10 @@
+2025-04-23 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : f4446458
+	* Version : Dev
+	* Laravel : Adds endpoint to fetch all campaigns. Introduces the `/ext-api/camp-list-all` API endpoint to retrieve the complete campaign list from the Neox system. Implements logic to determine `domain_name` requirement based on JWT presence. Adds OpenAPI documentation for the new endpoint and updates the generated spec. Removes unused, commented-out campaign list code. Makes the `mobile` field non-editable in the EcdialList repository.
+
 2025-04-22 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
