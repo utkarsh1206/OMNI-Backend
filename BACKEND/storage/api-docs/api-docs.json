@@ -2420,8 +2420,8 @@
                 "tags": [
                     "Campaign"
                 ],
-                "summary": "Fetch campaign list from remote Neox system",
-                "operationId": "campaignListApi",
+                "summary": "Fetch and filter campaign list from remote Neox system",
+                "operationId": "filteredCampaignListApi",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -2434,12 +2434,12 @@
                                     "domain_name": {
                                         "description": "Domain name to fetch configuration",
                                         "type": "string",
-                                        "example": "clientdomain.com"
+                                        "example": "TestTenant13.com"
                                     },
                                     "user": {
                                         "description": "Neox system user",
                                         "type": "string",
-                                        "example": "admin"
+                                        "example": "8002"
                                     }
                                 },
                                 "type": "object"
@@ -2447,6 +2447,63 @@
                         }
                     }
                 },
+                "responses": {
+                    "200": {
+                        "description": "Filtered campaigns from Neox system",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "message": "Campaign list retrieved successfully",
+                                    "data": [
+                                        {
+                                            "campaign_id": "Incoming",
+                                            "campaign_name": "Incoming",
+                                            "dial_method": "INBOUND_MAN"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "No valid campaigns found or bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "message": "No valid campaigns found"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "error": "Unexpected error occurred"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ext-api/camp-list-all": {
+            "post": {
+                "tags": [
+                    "Campaign"
+                ],
+                "summary": "Fetch campaign list from remote Neox system",
+                "operationId": "campaignListAllApi",
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -2462,6 +2519,69 @@
                                             "campaign_id": "CAMP123",
                                             "campaign_name": "Sales Campaign",
                                             "dial_method": "INBOUND_MAN"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "error": "Domain name is required"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "error": "Unexpected error occurred"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ext-api/camp-list-filtered": {
+            "post": {
+                "tags": [
+                    "Campaign"
+                ],
+                "summary": "Fetch campaigns from Neox and exclude already existing campaigns",
+                "operationId": "campaignListFilteredApi",
+                "responses": {
+                    "200": {
+                        "description": "Filtered campaign list retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "code": 0,
+                                    "message": "Filtered campaign list retrieved successfully",
+                                    "data": [
+                                        {
+                                            "campaign_id": "CAMP999",
+                                            "campaign_name": "New Campaign",
+                                            "dial_method": "OUTBOUND_MAN"
                                         }
                                     ]
                                 }
@@ -3069,7 +3189,7 @@
                 ],
                 "summary": "Get a list of all chatbots",
                 "description": "Retrieve a paginated list of all chatbots.",
-                "operationId": "4f42a96dbbcfda2c6b56016695783957",
+                "operationId": "d5b49127543181647e814e25d5595ed9",
                 "parameters": [
                     {
                         "name": "page",
@@ -3161,7 +3281,7 @@
                     "Chatbots"
                 ],
                 "summary": "Create a new chatbot",
-                "operationId": "fb7ab6ccdac620834a30776229ff438a",
+                "operationId": "e7b2e2b624c7095bffcd7fdbfa8090b8",
                 "parameters": [
                     {
                         "name": "question",
@@ -3273,7 +3393,7 @@
                 ],
                 "summary": "Update an existing chatbot",
                 "description": "Update the details of an existing chatbot.",
-                "operationId": "9c99490ed8dc51ceab6e353ca7c2f5c9",
+                "operationId": "c5f89807c0d9443358c57e91ff105a20",
                 "parameters": [
                     {
                         "name": "chatbot",
@@ -3354,7 +3474,7 @@
                 ],
                 "summary": "Delete a chatbot",
                 "description": "Delete a specific chatbot by ID.",
-                "operationId": "75fb6c1346d8e0414012daec1e1b304f",
+                "operationId": "24ec0697541e61638a537d9011938c07",
                 "parameters": [
                     {
                         "name": "chatbot",
@@ -4520,6 +4640,70 @@
                     },
                     "404": {
                         "description": "List not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Custom Leads"
+                ],
+                "summary": "Create a new lead",
+                "description": "Insert a new lead into the specified custom list",
+                "operationId": "def1e20ce0b6c2ccc8c18f16962da4ea",
+                "parameters": [
+                    {
+                        "name": "list_id",
+                        "in": "path",
+                        "description": "List ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Data for the new lead",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            },
+                            "example": {
+                                "description": "this is a test",
+                                "subject": "this is test subject",
+                                "mobile": "1234",
+                                "email": "test@mail.com",
+                                "last_name": "test_L",
+                                "first_name": "test_F"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Lead created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "No valid fields provided for insertion"
+                    },
+                    "404": {
+                        "description": "Table not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token"
                     }
                 },
                 "security": [

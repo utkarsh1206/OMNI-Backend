@@ -66,7 +66,7 @@ class ImportExportLeadRepository
             $insertData = [];
 
             foreach ($fields as $field) {
-                $insertData[strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_label))] = $row[$field->field_label] ?? null;
+                $insertData[strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_name))] = $row[$field->field_name] ?? null;
             }
 
             $insertData['created_at'] = now();
@@ -109,7 +109,7 @@ class ImportExportLeadRepository
                 return $this->apiResponse->getResponseStructure(trans('message.error'), $list_id, trans('message.no_fields_found_for_list'));
             }
 
-            $headers = $fields->pluck('field_label')->toArray();
+            $headers = $fields->pluck('field_name')->toArray();
 
             return $this->createCsvResponse($headers, $list_id);
         } catch (\Exception $e) {
@@ -136,7 +136,7 @@ class ImportExportLeadRepository
                 return $this->apiResponse->getResponseStructure(trans('message.error'), $list_id, trans('message.no_field_definitions_found'));
             }
 
-            $expectedHeaders = $fields->pluck('field_label')->toArray();
+            $expectedHeaders = $fields->pluck('field_name')->toArray();
             $csvHeaders = array_map('trim', $csvData[0]);
 
             if (!$this->validateCsvHeaders($csvHeaders, $expectedHeaders)) {

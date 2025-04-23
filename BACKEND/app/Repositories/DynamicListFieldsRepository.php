@@ -94,7 +94,7 @@ class DynamicListFieldsRepository
                     $insertedFields[] = $fieldModel;
 
                     // Track new schema column name
-                    $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field['field_label']));
+                    $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field['field_name']));
                     $columnsToAdd[$columnName] = true;
                 }
             }

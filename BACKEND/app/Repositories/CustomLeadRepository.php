@@ -32,7 +32,13 @@ class CustomLeadRepository
             // If leadId is provided, get only that lead; otherwise, get all leads
             $query = DB::table($table);
             if ($leadId) {
-                return $this->getSingleLead($query, $leadId, $columns);
+                return $this->getSingleLead($query, 'id', $leadId, $columns);
+            }
+
+            // If leadId is not given but mob-no is
+            $mobileNumber = $request->query('mob-no');
+            if ($mobileNumber) {
+                return $this->getSingleLead($query, 'mobile', $mobileNumber, $columns);
             }
 
             return $this->getAllLeads($request, $query, $columns);
@@ -43,10 +49,10 @@ class CustomLeadRepository
     }
 
 
-    private function getSingleLead($query, $leadId, $columns)
+    private function getSingleLead($query, $column, $value, $columns)
     {
         try {
-            $lead = $query->where('id', $leadId)->first();
+            $lead = $query->where($column, $value)->first();
 
             if (!$lead) {
                 return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.lead_not_found'));
@@ -86,6 +92,66 @@ class CustomLeadRepository
         return collect($columns)->mapWithKeys(function ($column) use ($lead) {
             return [$column => $lead->$column ?? null];
         })->toArray();
+    }
+
+    public function createLead(int $listId, array $data)
+    {
+        try {
+            $table = "custom_lead_" . $listId;
+
+            if (!$this->isTableExists($table)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    $table,
+                    trans('message.table_not_found')
+                );
+            }
+
+            if (empty($data)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    $data,
+                    trans('message.invalid_data')
+                );
+            }
+
+            if (!empty($data['mobile'])) {
+                $existing = DB::table($table)->where('mobile', $data['mobile'])->exists();
+
+                if ($existing) {
+                    return $this->apiResponse->getResponseStructure(
+                        trans('message.error'),
+                        ['mobile' => $data['mobile']],
+                        trans('message.mobile_already_exists', ['mobile' => $data['mobile']])
+                    );
+                }
+            }
+
+            $timestamp = now();
+            $data['created_at'] = $timestamp;
+            $data['updated_at'] = $timestamp;
+
+            // Insert and get ID
+            $leadId = DB::table($table)->insertGetId($data);
+
+            if ($leadId) {
+                $data['id'] = $leadId;
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.success'),
+                    $data,
+                    trans('message.lead_create_success')
+                );
+            }
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.error'),
+                [],
+                trans('message.lead_create_failed')
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in creating lead: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
     }
 
     public function updateLead(int $listId, int $leadId, array $data)

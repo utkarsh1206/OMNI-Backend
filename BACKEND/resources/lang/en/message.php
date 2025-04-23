@@ -108,6 +108,8 @@ return [
     //Custom lead
     'table_not_found' => 'Table not found.',
     'lead_not_found' => 'Lead not found.',
+    'mobile_already_exists' => 'Mobile number already used.',
+    'lead_create_success' => 'Lead created successfully',
     'lead_update_success' => 'Lead updated successfully.',
     'no_changes_made' => 'No changes made.',
     'lead_delete_success' => 'Lead deleted successfully.',

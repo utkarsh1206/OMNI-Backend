@@ -33,13 +33,17 @@ class EcdialListFieldsRepository
             $page = $request->input('page', 1);
 
             $query = EcdialListField::query();
+
             $authHeader = $request->header('Authorization');
+
             if ($authHeader && str_starts_with($authHeader, 'Bearer ')) {
                 $token = str_replace('Bearer ', '', $authHeader);
                 $payload = extractPayload($token);
+
                 if ($payload && isset($payload['campaign']) && ($payload['role_id'] == 3)) {
                     $campaignListId = EcdialLists::where('campaign_id', $payload['campaign'])
                         ->value('list_id');
+
                     if ($campaignListId) {
                         $listId = $campaignListId;
                     } else {
@@ -87,10 +91,10 @@ class EcdialListFieldsRepository
             DB::commit();
 
             $listId = $validatedData['list_id'];
-            $fieldLabel = $validatedData['field_label'];
+            $fieldName = $validatedData['field_name'];
 
             // Sanitize and create column name dynamically
-            $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $fieldLabel));
+            $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $fieldName));
 
             // Define table name
             $tableName = "custom_lead_{$listId}";

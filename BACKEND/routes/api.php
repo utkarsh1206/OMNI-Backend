@@ -234,6 +234,8 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']); // Get a single lead by ID
 
+    Route::post('/custom-leads/{list_id}', [CustomLeadController::class, 'create']);
+
     Route::put('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'update']);
 
     Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
@@ -308,6 +310,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 });
 
 Route::post('/ext-api/camp-list', [CampaignApiController::class, 'campaignListApi']);
+Route::post('/ext-api/camp-list-all', [CampaignApiController::class, 'campaignListAllApi']);
 Route::post('/ext-api/camp-list-filtered', [CampaignApiController::class, 'campaignListFilteredApi']);
 
 Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {

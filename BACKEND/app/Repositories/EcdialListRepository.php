@@ -59,7 +59,6 @@ class EcdialListRepository
     public function create(Request $request)
     {
         try {
-            echo "camp id " . $request->campaign_id;
             $ecdialLists = EcdialLists::create([
                 'name' => $request->name,
                 "description" => $request->description,
@@ -151,7 +150,7 @@ class EcdialListRepository
                     'field_size' => 10,
                     'field_max_length' => 10,
                     'search_filter' => 'Y',
-                    'editable' => 'Y',
+                    'editable' => 'N',
                     'default_value' => null,
                     'value_masked' => 'N',
                     'duplicate_check' => 'Y',
@@ -214,7 +213,7 @@ class EcdialListRepository
             $tableName = 'custom_lead_' . $ecdialLists->list_id; // Replace with your actual table name
 
             foreach ($baseFields as $field) {
-                $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field['field_label'])); // Convert field label to snake case for column name
+                $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field['field_name'])); // Convert field label to snake case for column name
 
                 if (!Schema::hasColumn($tableName, $columnName)) {
                     Schema::table($tableName, function (Blueprint $table) use ($columnName, $field) {
