@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\Chat360Service;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class ChatBotWebhookController extends Controller
 {
@@ -18,7 +17,7 @@ class ChatBotWebhookController extends Controller
     
     public function index(Request $request)
     {
-        Log::info("chatwebhook Log :",$request->all());
+        generateLogs("info", "chatwebhook Log :",$request->all());
 
         if($request->source == "chat360"){ 
             $response = $this->chat360Service->login();   
@@ -29,6 +28,6 @@ class ChatBotWebhookController extends Controller
 
     public function checkAuthWebhook(Request $request)
     {
-        
+        dd($request->all());
     }
 }

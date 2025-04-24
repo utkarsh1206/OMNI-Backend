@@ -125,8 +125,6 @@ if (! function_exists('establishDatabaseConnect')) {
     }
 }
 
-
-
 if (!function_exists('establishMasterConnection')) {
 
     function establishMasterConnection($domain, $masterDB, $connection)
@@ -136,7 +134,6 @@ if (!function_exists('establishMasterConnection')) {
         DB::setDefaultConnection($connection);
     }
 }
-
 
 if (!function_exists('getDbConnection')) {
     /**
@@ -153,7 +150,8 @@ if (!function_exists('getDbConnection')) {
         }
 
         // Get the database name associated with the domain from 'details' table
-        $details = DB::table('details')->where('domain', $domainName)->first();
+        $details = DB::table('details')->where('domain', $domainName)
+            ->orWhere('uin', $domainName)->first();
 
         if ($details) {
             $connectionDetails = [
@@ -178,7 +176,8 @@ if (!function_exists('getDbConnection')) {
                 'engine' => null,
             ]);
 
-            return DB::connection($newConnectionName);
+            // return DB::connection($newConnectionName);
+            return DB::setDefaultConnection($newConnectionName);
         }
         return null;
     }
@@ -318,7 +317,6 @@ if (!function_exists('sendHttpRequest')) {
         }
     }
 
-
     if (! function_exists('uploadAttachment')) {
         function uploadAttachment(Request $request, $fieldName = 'attachment', $directory = 'attachments')
         {
@@ -326,12 +324,11 @@ if (!function_exists('sendHttpRequest')) {
                 $attachment = $request->file($fieldName);
                 $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
                 $filePath = $attachment->storeAs($directory, $filename, 'public');
-               
+
                 return [
                     'fileName' => $filename,
                     'path' => $filePath
                 ];
-
             }
             return null;
         }

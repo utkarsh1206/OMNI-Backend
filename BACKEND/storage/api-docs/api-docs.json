@@ -1792,6 +1792,113 @@
                 ]
             }
         },
+        "/api/generate-auth-token": {
+            "get": {
+                "tags": [
+                    "External Use"
+                ],
+                "summary": "Generate or retrieve a valid auth token",
+                "description": "This endpoint returns an existing valid auth token if available, or generates a new one. Requires a valid UUID that exists in the `details` table.",
+                "operationId": "generateAuthToken",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "UUID from the `uin` column of the details table",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "8f45c618-75fb-4471-ba61-c539efd69dd0"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token generated or retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string",
+                                                    "example": "your_generated_token_here"
+                                                },
+                                                "ipaddress": {
+                                                    "type": "string",
+                                                    "example": "127.0.0.1"
+                                                },
+                                                "expire_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-04-24T17:30:00Z"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "New"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The id is missing."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/business-types": {
             "get": {
                 "tags": [
@@ -19360,6 +19467,10 @@
         {
             "name": "Audit Logs",
             "description": "Audit Logs"
+        },
+        {
+            "name": "External Use",
+            "description": "External Use"
         },
         {
             "name": "BusinessType",

@@ -8,7 +8,8 @@ use App\Models\AuthToken;
 use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
-
+Use App\Models\Detail;
+use Illuminate\Support\Facades\DB;
 class AuthTokenRepository
 {
     private $apiResponse;
@@ -21,20 +22,21 @@ class AuthTokenRepository
     public function list(Request $request)
     {
         try {
-            $checkToken = AuthToken::where('expire_at', '>', Carbon::now())
+            getDbConnection($request->id);
+            
+            $checkToken = AuthToken::select('token')->where('expire_at', '>', Carbon::now())
             ->first();
+
             if ($checkToken) {
                 $authToken = $checkToken;
-                $authToken->status = "Existing";
-            }
-            else
-            {
+            //    $authToken->status = "Existing";
+            } else {
                 $authToken = AuthToken::create([
                     'token' =>  Str::random(64),
                     'ipaddress' => $request->ip(),
                     'expire_at' =>  Carbon::now()->addHours(3),
                 ]);
-                $authToken->status = "New";
+            //    $authToken->status = "New";
             }
            
             return $this->apiResponse->getResponseStructure(trans('message.success'), $authToken, trans('message.data_fetch'));
