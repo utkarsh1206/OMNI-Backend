@@ -297,10 +297,18 @@ class WebhookCallController extends Controller
     private function handleCallRequest(Request $request, string $type)
     {
         try {
+            $authHeader = $request->header('Authorization');
+            if ($authHeader && str_starts_with($authHeader, 'Bearer ')) {
+                $token = str_replace('Bearer ', '', $authHeader);
+                $payload = extractPayload($token);
+
+                $agentId = $payload['id'];
+                $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $payload['domain']));
+            }
             if ($request->has('call_unique_id')) {
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
-                $callLog = $this->saveCallLogs($data);
+                $callLog = $this->saveCallLogs($data, $agentId, $domain);
 
                 return $this->apiResponse->getResponseStructure(
                     trans('message.success'),
@@ -383,7 +391,7 @@ class WebhookCallController extends Controller
     }
 
     // Save the call data to both main and temporary logs
-    private function saveCallLogs(array $data)
+    private function saveCallLogs(array $data, int $id, string $domain)
     {
         // Save to neox_call_logs table
         $callLog = $this->webhookCallRepository->saveCallLog($data);
@@ -393,7 +401,7 @@ class WebhookCallController extends Controller
             'date' => Carbon::now()->toDateString(),
             'time' => Carbon::now()->toTimeString()
         ]);
-        $this->webhookCallRepository->saveTempCallLog($tempData);
+        $this->webhookCallRepository->saveTempCallLog($tempData, $id, $domain);
         return $callLog;
     }
 

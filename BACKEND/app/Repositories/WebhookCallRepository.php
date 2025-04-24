@@ -2,6 +2,9 @@
 
 namespace App\Repositories;
 
+use App\Events\CallConnected;
+use App\Events\CallHangup;
+use App\Events\CallInitiated;
 use App\Models\NeoxCallLog;
 use App\Models\NeoxTempCallLog;
 use App\Events\DialCenterData;
@@ -15,9 +18,21 @@ class WebhookCallRepository
     }
 
     // Save to neox_temp_call_logs table
-    public function saveTempCallLog($tempData)
+    public function saveTempCallLog($tempData, $id, $domain)
     {
-        broadcast(new DialCenterData($tempData));
+        generateLogs('info', 'tempdata: ' . json_encode($tempData));
+
+        $broadcastEvents = [
+            'call_initiated' => CallInitiated::class,
+            'call_connected' => CallConnected::class,
+            'call_hangup'    => CallHangup::class,
+        ];
+
+        if (isset($broadcastEvents[$tempData['type']])) {
+            broadcast(new $broadcastEvents[$tempData['type']]($tempData, $id, $domain));
+        }
+
+        // broadcast(new DialCenterData($tempData));
         return NeoxTempCallLog::create($tempData);
     }
 
