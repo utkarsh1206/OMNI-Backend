@@ -166,6 +166,9 @@ return [
     'chat_provider_conf_add'=>  'Chat Provider Configuration added successfully !',
     'chat_provider_conf_not_found'=> 'Chat Provider Configuration not found.',
     'user_or_phone_already_logged_in' => 'Multiple Login instances not permitted',
+    'chatbot_create_success'=>'Chatbot created successfully',
+    'chatbot_update_success'=>'Chatbot updated successfully',
+    'chatbot_delete_success'=>'Chatbot deleted successfully',
     //Message
     'message_created'=>  'Message created successfully !',
     

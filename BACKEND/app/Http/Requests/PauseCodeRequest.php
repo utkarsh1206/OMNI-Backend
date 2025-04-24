@@ -21,7 +21,7 @@ class PauseCodeRequest extends FormRequest
      */
     public function rules(): array
     {
-        $pauseCodeId = $this->route('pause-code');
+        $pauseCodeId = $this->route('pause_code');
 
         $rules = [
             'code' => 'required|string|unique:pause_codes,code',
