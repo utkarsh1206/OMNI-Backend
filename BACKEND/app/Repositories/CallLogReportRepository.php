@@ -219,6 +219,10 @@ class CallLogReportRepository
     {
         try {
             $query = $this->buildCallLogQuery($request);
+            if (!$query) {
+                return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.record_not_found'));
+            }
+
             $summary = $query->select(
                 DB::raw('DATE(call_date) as call_day'),
                 DB::raw('COUNT(*) as total_calls'),
