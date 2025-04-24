@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use App\Models\Users;
+use Illuminate\Support\Str;
 
 class TenantObserver
 {
@@ -21,6 +22,7 @@ class TenantObserver
         $details_array = [
             'db' => str_replace(".", "_", request()->domain_name),
             'domain' => request()->domain_name,
+            'uin' => (string) Str::uuid(),
             'username'  => env('DB_USERNAME', 'root'),
             'password'  => env('DB_PASSWORD', 'Sterlite@2025'),
         ];
