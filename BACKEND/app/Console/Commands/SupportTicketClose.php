@@ -37,7 +37,7 @@ class SupportTicketClose extends Command
     public function handle()
     {
 
-        $allTenants = Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
+        Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
             ->chunkById(100, function ($tenants) {
                 foreach ($tenants as $tenant) {
                     $newConnectionName = str_replace(".", "_", $tenant->domain_name);
@@ -72,6 +72,7 @@ class SupportTicketClose extends Command
         $smtpPassword = $emailConfig->smtp_password;
         $sender_name = $emailConfig->sender_name;
         $sender_email = $emailConfig->sender_email;
+
         config([
             'mail.mailers.smtp.host' => $smtpHost,
             'mail.mailers.smtp.port' => $smtpPort,
@@ -81,6 +82,7 @@ class SupportTicketClose extends Command
             'mail.from.address' =>  $sender_email,
             'mail.from.name' => $sender_name,
         ]);
+        
         try {
             $toEmails = "khanjan.kukadiya@stltech.in";
             $mailTemplate = MailTemplate::on($newConnectionName)->where("type", "closed_ticket")->first();
@@ -99,7 +101,7 @@ class SupportTicketClose extends Command
                 "status" => "sent",
             ], $newConnectionName);
         } catch (Exception $e) {
-            echo  $e->getMessage();
+            generateLogs('error', 'Error in notifyViaEmail : ', $e->getMessage());
             exit;
         }
     }

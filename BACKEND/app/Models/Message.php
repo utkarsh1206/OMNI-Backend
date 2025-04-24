@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Message extends Model
 {
     protected $appends = ['attachment_url'];
+    
     protected $fillable = [
         'user_id',
         'text',

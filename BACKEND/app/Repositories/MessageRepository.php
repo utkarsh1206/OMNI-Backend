@@ -21,8 +21,10 @@ class MessageRepository
     {
         try {
             $userId = auth()->user()->id;
+        
             $messages  = Message::where("user_id", $userId);
             $messages = $messages->get();
+        
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Message Listing: ', $ex->getMessage());
@@ -48,7 +50,4 @@ class MessageRepository
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
-
-   
-   
 }

@@ -1,7 +1,9 @@
-<?php 
+<?php
+
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Exception;
 
 class Chat360Service
 {
@@ -22,37 +24,54 @@ class Chat360Service
 
     public function login()
     {
-        $response = Http::post($this->url.'api/auth/login', [
-            'email' => $this->email,
-            'password' => $this->password,
-        ]);
+        try {
+            $response = Http::post($this->url . 'api/auth/login', [
+                'email' => $this->email,
+                'password' => $this->password,
+            ]);
 
-        if ($response->successful()) {
-            return $response->json();
+            if ($response->status() == 200) {
+                return $response->json();
+            }
+
+            return null;
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in Login API Calling : ', $e->getMessage());
+            return $e->getMessage();
         }
-
-        return null;
     }
 
     public function getAccessToken()
     {
-        $loginResponse = $this->login();
+        try {
+            $loginResponse = $this->login();
 
-        return $loginResponse['access'] ?? null;
-    }
-
-
-
-    public function getChatHistory($accessCode,$roomId=NULL)
-    {
-        $response = Http::get($this->url.'api/clientwidget_updated/listing/third_party_fetch?api_key='.$accessCode.'&room_status=active');
-
-        if ($response->successful()) {
-            return $response->json();
+            return $loginResponse['access'] ?? null;
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in Login API Calling : ', $e->getMessage());
+            return $e->getMessage();
         }
-
-        return null;
     }
 
-    
+    public function getChatHistory()
+    {
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Basic '.$this->getAccessToken(),
+                'Cookie' => 'csrftoken=P8PSxHtwF5mI9grg1qhGrYtL55ScXbQoruVlnrdZXj8HWNF0pPcp7MDhpXGt1pDR',
+            ])->get('https://app.chat360.io/api/clientwidget_updated/chatroom/'.$this->roomId, [
+                'api_key' => $this->apiKey,
+            ]);
+
+            if (! $response->ok()) {
+                generateLogs('error', 'Failed to fetch data from Chat360 API.');
+                return null;
+            }
+
+            return $response->json();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in API Calling : ', $e->getMessage());
+            return $e->getMessage();
+        }
+    }
 }
