@@ -25,14 +25,6 @@ class DialCenterData implements ShouldBroadcastNow
         generateLogs('info', 'broadcast Data: '.json_encode(['dialerData' => $this->dialerData]));
     }
 
-    // /**
-    //  * The event's broadcast name.
-    //  */
-    // public function broadcastAs(): string
-    // {
-    //     return 'DialCenterData';
-    // }
-
     /**
      * Get the channels the event should broadcast on.
      *

@@ -5,8 +5,8 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Services\Chat360Service;
 use Carbon\Carbon;
-use Illuminate\Support\Str;
 use App\Models\Message;
+use App\Events\ChatMessagesStored;
 
 class fetchChat360Message extends Command
 {
@@ -53,7 +53,7 @@ class fetchChat360Message extends Command
                 } else {
                     $messageText = $msg['post_data'] ?? $msg['message'] ?? null;
                 }
-
+               
                 if (empty($messageText)) {
                     continue;
                 }
@@ -64,23 +64,32 @@ class fetchChat360Message extends Command
                     : now();
 
                 // Store message
-                $chatMessage = [
-                    'id' => $msg['currentId'] ?? Str::uuid()->toString(),
+                $chatMessage[] = [
+                    //'id' => $msg['currentId'] ?? Str::uuid()->toString(),
+                    'user_id' => null,
+                    'attachment' => null,
+                    'text' => strip_tags($messageText),
                     'room_id' => $msg['room_id'] ?? $chatHistory['room_id'],
                     'sender' => $sender,
-                    'message' => strip_tags($messageText),
-                    'timestamp' => $timestamp,
+                    'external_message_time' => $timestamp,
                     'node_type' => $msg['nodeType'] ?? $msg['data']['nodeType'] ?? 'MESSAGE',
                     'session_id' => $msg['session_id'] ?? null,
                     'first_name' => $msg['first_name'] ?? null,
                     'last_name' => $msg['last_name'] ?? nulL,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ];
-                echo '<pre>';
-                print_r($chatMessage);
             }
-            //    Message::insert($chatMessage);
-            generateLogs('info', 'Chat messages from bot and user stored successfully.');
-            die;
+
+            if (!empty($chatMessage)) {
+                broadcast(new ChatMessagesStored($chatMessage));
+                Message::insert($chatMessage);
+                generateLogs('info', "Inserted " . count($chatMessage) . " chat messages successfully.");
+            } else {
+                generateLogs('error', "No Valid message to insert.");
+            }
+
+            return 0;
         }
     }
 }

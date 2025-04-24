@@ -7,12 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class Message extends Model
 {
     protected $appends = ['attachment_url'];
-    
+
     protected $fillable = [
         'user_id',
         'text',
         'attachment',
         'is_read',
+        'room_id', 
+        'sender',
+        'external_message_time',
+        'node_type',
+        'session_id',
+        'first_name',
+        'last_name',
     ];
 
     public function getAttachmentUrlAttribute()
