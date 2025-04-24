@@ -1,0 +1,736 @@
+<?php
+
+namespace App\Repositories;
+
+use Illuminate\Http\Request;
+use App\Http\Response\CustomApiResponse;
+use App\Models\NeoxCallLog;
+use App\Models\PauseResumeUserLog;
+use App\Models\UserDailyActivity;
+use App\Models\UserLoginLog;
+use App\Models\Users;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Exception;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+
+class UserActivityReportRepository
+{
+    private $apiResponse;
+
+    public function __construct(CustomApiResponse $customApiResponse)
+    {
+        $this->apiResponse = $customApiResponse;
+    }
+
+    /**
+     * Get the user login report.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getReport(Request $request)
+    {
+        try {
+            // Validate required datetime filters
+            if (!$request->has(['start_date', 'end_date'])) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    trans('message.record_not_found')
+                );
+            }
+
+            // Parse start and end datetimes
+            $startDatetime = Carbon::parse($request->start_date);
+            $endDatetime = Carbon::parse($request->end_date);
+
+            // Build the base query
+            $query = UserLoginLog::with('user')
+                ->whereBetween('created_at', [$startDatetime, $endDatetime]);
+
+            // Optional user filter
+            if ($request->filled('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+
+            // Fetch logs
+            $logs = $query->get();
+
+            // If no logs, return response
+            if ($logs->isEmpty()) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    trans('message.record_not_found')
+                );
+            }
+
+            // Group by login_date and user
+            $groupedData = $logs->groupBy(['login_date', 'user_id']);
+
+            // Prepare final report data
+            $reportData = [];
+
+            foreach ($groupedData as $date => $users) {
+                foreach ($users as $userId => $entries) {
+                    $totalDuration = 0;
+
+                    foreach ($entries as $log) {
+                        if ($log->login_time && $log->logout_time) {
+                            try {
+                                $loginTime = Carbon::parse("{$log->login_date} {$log->login_time}");
+                                $logoutTime = Carbon::parse("{$log->logout_date} {$log->logout_time}");
+                                $totalDuration += $loginTime->diffInSeconds($logoutTime);
+                            } catch (Exception $e) {
+                                return $this->apiResponse->handleAndResponseException($e);
+                            }
+                        }
+                    }
+
+                    $reportData[$date][] = [
+                        'user_id' => $userId,
+                        'user_name' => optional($entries->first()->user)->username,
+                        'total_duration' => gmdate('H:i:s', $totalDuration),
+                        'login_count' => $entries->count(),
+                    ];
+                }
+            }
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $reportData,
+                trans('message.data_fetch')
+            );
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getReport: ' . $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
+
+    /**
+     * Get the activity report data for the user
+     *
+     * @param Request $request
+     * @return array
+     */
+    public function getData(Request $request)
+    {
+        try {
+            $user_id = $request->input('user_id');
+            $date = $request->input('date');
+
+            // Fetch necessary data
+            $log_data = $this->getLoginLogs($user_id, $date);
+            $pause_resume_data = $this->getPauseResumeLogs($user_id, $date);
+            $pause_resume_total = $this->getTotalPauseResumeTime($user_id, $date);
+            $user_name = $this->getUserNameById($user_id);
+            $i_call_data = $this->getCallData($user_name, $date, 'incoming');
+            $o_call_data = $this->getCallData($user_name, $date, 'outgoing');
+            $incoming = $this->getCallHistoryData('incoming', $user_name, $date);
+            $outgoing = $this->getCallHistoryData('outgoing', $user_name, $date);
+            $ready_data = $this->getReadyData($user_id, $date);
+            $dash_data = $this->getReportData($user_id, '', '', '', $date);
+            $todaysLoginData = $this->getTodaysLoginTime($request);
+            $pause_resume_activity = $this->getActivityPauseData($user_id, $date);
+            $daily_user_activity = $this->getDailyUserActivity($user_id, $date);
+            $total_duration = $this->getTotalDuration($user_id, $date);
+
+            $data = [
+                'log_data' => $log_data,
+                'pause_resume_data' => $pause_resume_data,
+                'i_call_data' => $i_call_data,
+                'o_call_data' => $o_call_data,
+                'incoming' => $incoming,
+                'outgoing' => $outgoing,
+                'dash_data' => $dash_data,
+                'ready_data' => $ready_data,
+                'pause_resume_activity' => $pause_resume_activity,
+                'date' => $date,
+                'pause_resume_total' => $pause_resume_total,
+                'daily_user_activity' => $daily_user_activity,
+                'total_duration' => $total_duration,
+                'todays_login_time' => $todaysLoginData['todays_login_time'],
+                'total_login_time' => $todaysLoginData['total_login_time'],
+            ];
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_fetch'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getData: ' . $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
+
+    /**
+     * Get login logs for the user
+     */
+    private function getLoginLogs($user_id, $date)
+    {
+        try {
+            return UserLoginLog::select('id', 'login_date', 'logout_date', 'login_time', 'logout_time')
+                ->where('user_id', $user_id)
+                ->where('login_date', $date)
+                ->get();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getLoginLogs: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Get pause/resume logs for the user
+     */
+    private function getPauseResumeLogs($user_id, $date)
+    {
+        try {
+            return PauseResumeUserLog::select('id', 'pause_time', 'resume_time', 'user_status', 'pause_code_id')
+                ->where('user_id', $user_id)
+                ->whereDate('created_at', $date)
+                ->get();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getPauseResumeLogs: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Get the total pause and resume times
+     */
+    private function getTotalPauseResumeTime($user_id, $date)
+    {
+        try {
+            return PauseResumeUserLog::selectRaw("SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))) AS total_resume, SEC_TO_TIME(SUM(TIME_TO_SEC(total_pause_time))) AS total_pause")
+                ->where('user_id', $user_id)
+                ->whereDate('created_at', $date)
+                ->first();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getTotalPauseResumeTime: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Get the username of the user
+     */
+    private function getUserNameById($user_id)
+    {
+        try {
+            return Users::where('id', $user_id)->pluck('username')->first();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getUserNameById: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Get incoming or outgoing call data for the user
+     */
+    private function getCallData($user_name, $date, $call_type)
+    {
+        try {
+            return DB::table('neox_call_logs as nl')
+                ->select(DB::raw('count(id) as total'))
+                ->where('caller_username', $user_name)
+                ->whereDate('created_at', $date)
+                ->where('call_type', $call_type)
+                ->first();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getCallData: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Get call history data for incoming or outgoing calls
+     */
+    private function getCallHistoryData($call_type, $user_name, $date)
+    {
+        try {
+            return NeoxCallLog::select(
+                'caller_user_extension',
+                'called_phone_number',
+                DB::raw('SEC_TO_TIME(call_talk_duration) as call_talk_duration'),
+                'call_status',
+                'created_at',
+                'call_date'
+            )
+                ->where('call_type', $call_type)
+                ->where('caller_username', $user_name)
+                ->whereDate('call_date', $date)
+                ->where('type', 'CALL_HISTORY')
+                ->get();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getCallHistoryData: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Get ready data (pause/resume data)
+     */
+    private function getReadyData($user_id, $date)
+    {
+        try {
+            return PauseResumeUserLog::selectRaw('SEC_TO_TIME(AVG(TIME_TO_SEC(total_resume_time))) AS ready_avg, SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))) AS ready')
+                ->where('user_id', $user_id)
+                ->whereDate('created_at', $date)
+                ->first();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getReadyData: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Get today's login time
+     */
+    public function getTodaysLoginTime(Request $request)
+    {
+        try {
+            $userId = $request->input('user_id');
+            $todayDate = Carbon::today()->toDateString();
+            $totalLoginTime = '';
+            $todaysLoginTime = false;
+
+            // Get the latest login record for today
+            $loginDetail = UserLoginLog::where('user_id', $userId)
+                ->whereDate('login_date', $todayDate)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($request->input('date') == $todayDate && $loginDetail) {
+                if ($loginDetail->logout_time == '00:00:00' && $loginDetail->logout_date == '0000-00-00') {
+                    // Get the first login time for today
+                    $firstLoginTime = UserLoginLog::where('user_id', $userId)
+                        ->whereDate('login_date', $todayDate)
+                        ->orderBy('id', 'asc')
+                        ->value('login_time');
+
+                    // Calculate the difference in time between the first login time and now
+                    $totalLoginTime = $this->timeDifferenceInHMS($firstLoginTime, Carbon::now()->format('H:i:s'));
+                    $todaysLoginTime = true;
+                }
+            }
+
+            return [
+                'todays_login_time' => $todaysLoginTime,
+                'total_login_time' => $totalLoginTime
+            ];
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getTodaysLoginTime: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Calculate the difference in time in H:M:S format
+     */
+    private function timeDifferenceInHMS($startTime, $endTime)
+    {
+        $start = Carbon::createFromFormat('H:i:s', $startTime);
+        $end = Carbon::createFromFormat('H:i:s', $endTime);
+
+        $diff = $start->diff($end);
+
+        return $diff->format('%H:%I:%S');
+    }
+
+    /**
+     * Get daily user activity
+     */
+    private function getDailyUserActivity($user_id, $date)
+    {
+        try {
+            return UserDailyActivity::where('user_id', $user_id)
+                ->when($date, function ($query) use ($date) {
+                    $query->whereDate('created_at', date('Y-m-d', strtotime($date)));
+                })
+                ->get();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getDailyUserActivity: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Get total duration of various activities for the user
+     */
+    private function getTotalDuration($user_id, $date)
+    {
+        try {
+            return UserDailyActivity::selectRaw("
+            SEC_TO_TIME(SUM(TIME_TO_SEC(total_login_duration))) AS total_login_d,
+            SEC_TO_TIME(SUM(TIME_TO_SEC(pause_duration))) AS total_pause_d,
+            SEC_TO_TIME(SUM(TIME_TO_SEC(resume_duration))) AS total_resume_d,
+            SEC_TO_TIME(SUM(TIME_TO_SEC(call_duration))) AS total_call_d,
+            SEC_TO_TIME(SUM(TIME_TO_SEC(dispo_duration))) AS total_dispose_d
+        ")
+                ->where('user_id', $user_id)
+                ->when($date, function ($query) use ($date) {
+                    $query->whereDate('created_at', date('Y-m-d', strtotime($date)));
+                })
+                ->first();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getTotalDuration: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Get the report data
+     */
+    public function getReportData($userId, $campaignId = '', $fromDate = '', $toDate = '')
+    {
+        try {
+            $subConditions = [];
+            $joinConditions = [];
+
+            if ($fromDate && $toDate) {
+                $dateRange = "created_at BETWEEN '{$fromDate}' AND '{$toDate}'";
+                $subConditions[] = $dateRange;
+                $joinConditions[] = $dateRange;
+            }
+
+            $subConditions[] = "u.id = {$userId}";
+
+            if (!empty($campaignId)) {
+                $subConditions[] = "campaign_id = '{$campaignId}'";
+                $joinConditions[] = "campaign_id = '{$campaignId}'";
+            }
+
+            $subCondStr = ' AND ' . implode(' AND ', $subConditions);
+            $joinCondStr = !empty($joinConditions) ? ' AND ' . implode(' AND ', $joinConditions) : '';
+
+            $result = DB::table('users as u')
+                ->leftJoin('user_login_logs as ul', DB::raw("ul.user_id"), '=', DB::raw("u.id {$joinCondStr}"))
+                ->selectRaw("
+                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}) as calls,
+                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.call_type = 'outgoing' AND nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}) as outgoing_call,
+                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.call_type = 'incoming' AND nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}) as incoming_call,
+                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.type = 'CALL_CONNECTED' AND nl.caller_username = u.username {$subCondStr}) as answered,
+                IFNULL((SELECT SEC_TO_TIME(ROUND(SUM(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}), 0) as total_talk,
+                IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}), 0) as talk_avg,
+                COUNT(ul.id) as login_count,
+                IF(MIN(ul.login_date) IS NOT NULL, CONCAT(MIN(ul.login_date), ' ', MIN(ul.login_time)), 'Not Logged') as first_login,
+                IF(MAX(ul.login_date) IS NOT NULL, CONCAT(MAX(ul.login_date), ' ', MAX(ul.login_time)), 'Not Logged') as last_log,
+                IF(MAX(ul.logout_date) IS NOT NULL, CONCAT(MAX(ul.logout_date), ' ', MAX(ul.login_time)), 'Not Logged') as last_logout,
+                IFNULL((SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(SEC_TO_TIME(logout_time)) - TIME_TO_SEC(SEC_TO_TIME(login_time)))) 
+                        FROM user_login_logs 
+                        WHERE user_id = u.id AND logout_time != '00:00:00' {$subCondStr} 
+                        GROUP BY user_id), 0) as total_log_time,
+                IFNULL((SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(total_pause_time))) 
+                        FROM pause_resume_user_logs 
+                        WHERE user_id = u.id {$subCondStr} 
+                        GROUP BY user_id), 0) as pause_time,
+                IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(TIME_TO_SEC(total_pause_time)))) 
+                        FROM pause_resume_user_logs 
+                        WHERE user_id = u.id {$subCondStr} 
+                        GROUP BY user_id), 0) as pause_time_avg,
+                IFNULL((SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))) 
+                        FROM pause_resume_user_logs 
+                        WHERE user_id = u.id {$subCondStr} 
+                        GROUP BY user_id), 0) as resume_time,
+                IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(TIME_TO_SEC(total_resume_time)))) 
+                        FROM pause_resume_user_logs 
+                        WHERE user_id = u.id {$subCondStr} 
+                        GROUP BY user_id), 0) as resume_time_avg
+            ")
+                ->where('u.id', $userId)
+                ->groupBy('u.id', 'u.username')
+                ->orderByDesc('u.id')
+                ->first();
+
+            if ($result) {
+                foreach (['first_login', 'last_log', 'last_logout'] as $field) {
+                    $timestamp = $result->$field;
+                    if (!$timestamp || strtotime($timestamp) < strtotime('1972-01-01')) {
+                        $result->$field = 'Not Logged';
+                    } else {
+                        $result->$field = Carbon::parse($timestamp)->format('Y-m-d H:i:s');
+                    }
+                }
+            }
+
+            return $result;
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getReportData: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Get pause and resume activity data
+     */
+    public function getActivityPauseData($user_id, $date)
+    {
+        try {
+            return PauseResumeUserLog::select(
+                'id',
+                'pause_time',
+                'resume_time',
+                'user_status',
+                'pause_code_id',
+                DB::raw('IF(user_status = "Pause", pause_time, resume_time) AS time'),
+                'total_resume_time',
+                'total_pause_time'
+            )
+                ->where('user_id', $user_id)
+                ->whereDate('created_at', $date)
+                ->get();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getActivityPauseData: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Export user activity report to CSV
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    public function exportReportToCsv(Request $request)
+    {
+        try {
+            // Validate required datetime filters
+            if (!$request->has(['start_date', 'end_date'])) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    trans('message.record_not_found')
+                );
+            }
+
+            // Get the main report data (same as getReport method)
+            $startDatetime = Carbon::parse($request->start_date);
+            $endDatetime = Carbon::parse($request->end_date);
+
+            $query = UserLoginLog::with('user')
+                ->whereBetween('created_at', [$startDatetime, $endDatetime]);
+
+            if ($request->filled('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+
+            $logs = $query->get();
+
+            if ($logs->isEmpty()) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    trans('message.record_not_found')
+                );
+            }
+
+            $groupedData = $logs->groupBy(['login_date', 'user_id']);
+
+            // Prepare headers for the CSV
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="user_activity_report_' . date('Y-m-d') . '.csv"',
+            ];
+
+            // Create a callback function for the StreamedResponse
+            $callback = function () use ($groupedData, $request) {
+                $file = fopen('php://output', 'w');
+
+                // Main report headers
+                fputcsv($file, [
+                    'Date',
+                    'Username',
+                    'Total Duration',
+                    'Login Count'
+                ]);
+
+                // Process each main report row
+                foreach ($groupedData as $date => $users) {
+                    foreach ($users as $userId => $entries) {
+                        $totalDuration = 0;
+
+                        foreach ($entries as $log) {
+                            if ($log->login_time && $log->logout_time) {
+                                $loginTime = Carbon::parse("{$log->login_date} {$log->login_time}");
+                                $logoutTime = Carbon::parse("{$log->logout_date} {$log->logout_time}");
+                                $totalDuration += $loginTime->diffInSeconds($logoutTime);
+                            }
+                        }
+
+                        // Write main report row
+                        fputcsv($file, [
+                            $date,
+                            optional($entries->first()->user)->username,
+                            gmdate('H:i:s', $totalDuration),
+                            $entries->count()
+                        ]);
+
+                        // Get detailed activity data for this user/date
+                        $detailedRequest = new Request([
+                            'user_id' => $userId,
+                            'date' => $date
+                        ]);
+
+                        try {
+                            $activityData = $this->getData($detailedRequest);
+
+                            if ($activityData && isset($activityData->original['data'])) {
+                                $details = $activityData->original['data'];
+
+                                // Add separator
+                                fputcsv($file, ['--- DETAILED ACTIVITY DATA ---']);
+
+                                fputcsv($file, ['First Login', 'Last Logout', 'Total Log Time']);
+                                fputcsv($file, [
+                                    $details['dash_data']->first_login ?? '00:00:00',
+                                    $details['dash_data']->last_logout ?? '00:00:00',
+                                    $details['dash_data']->total_log_time ?? '00:00:00'
+                                ]);
+
+                                fputcsv($file, ['']);
+                                fputcsv($file, ['Total Talk', 'Talk Average', 'Total Pause Time', 'Pause Average', 'Total Ready Time', 'Ready Average']);
+                                fputcsv($file, [
+                                    $details['dash_data']->total_talk ?? '00:00:00',
+                                    $details['dash_data']->talk_avg ?? '00:00:00',
+                                    $details['dash_data']->pause_time ?? '00:00:00',
+                                    $details['dash_data']->pause_time_avg ?? '00:00:00',
+                                    $details['ready_data']->ready ?? '00:00:00',
+                                    $details['ready_data']->ready_avg ?? '00:00:00'
+                                ]);
+
+                                fputcsv($file, ['']);
+                                fputcsv($file, ['--- INCOMING DATA ---']);
+                                fputcsv($file, ['Caller Number', 'Call Time', 'Call Duration', 'Dispo Stat']);
+                                if (!empty($details['incoming']) && count($details['incoming']) > 0) {
+                                    foreach ($details['incoming'] as $incomingData) {
+                                        fputcsv($file, [
+                                            $incomingData->called_phone_number,
+                                            $incomingData->call_date,
+                                            $incomingData->call_talk_duration,
+                                            $incomingData->call_status
+                                        ]);
+                                    }
+                                } else {
+                                    fputcsv($file, ['No Data']);
+                                }
+
+                                fputcsv($file, ['']);
+                                fputcsv($file, ['--- OUTGOING DATA ---']);
+                                fputcsv($file, ['Caller Number', 'Call Time', 'Call Duration', 'Dispo Stat']);
+                                if (!empty($details['outgoing']) && count($details['outgoing']) > 0) {
+                                    foreach ($details['outgoing'] as $outgoingData) {
+                                        fputcsv($file, [
+                                            $outgoingData->called_phone_number,
+                                            $outgoingData->call_date,
+                                            $outgoingData->call_talk_duration,
+                                            $outgoingData->call_status
+                                        ]);
+                                    }
+                                } else {
+                                    fputcsv($file, ['No Data']);
+                                }
+
+                                fputcsv($file, ['']);
+                                fputcsv($file, ['--- DAILY USER ACTIVITY ---']);
+                                fputcsv($file, ['Date/Time', 'Activity', 'Total Login Duration', 'Pause Duration', 'Pause Code', 'Resume Duration', 'Call Duration', 'Dispose Duration', 'Dispose Code']);
+                                if (!empty($details['daily_user_activity']) && count($details['daily_user_activity']) > 0) {
+                                    foreach ($details['daily_user_activity'] as $dailyUserActivity) {
+                                        fputcsv($file, [
+                                            $dailyUserActivity->created_at,
+                                            $dailyUserActivity->activity,
+                                            $dailyUserActivity->total_login_duration,
+                                            $dailyUserActivity->pause_duration,
+                                            $dailyUserActivity->pause_code,
+                                            $dailyUserActivity->resume_duration,
+                                            $dailyUserActivity->call_duration,
+                                            $dailyUserActivity->dispo_duration,
+                                            $dailyUserActivity->dispo_code
+                                        ]);
+                                    }
+                                } else {
+                                    fputcsv($file, ['No Data']);
+                                }
+                                fputcsv($file, ['']);
+
+                                fputcsv($file, ['--- TOTAL DURATIONS ---']);
+                                if (!empty($details['total_duration'])) {
+                                    fputcsv($file, [
+                                        'Total Login Duration',
+                                        'Total Pause Duration',
+                                        'Total Resume Duration',
+                                        'Total Call Duration',
+                                        'Total Disposition Duration'
+                                    ]);
+                                    $total = $details['total_duration'];
+                                    fputcsv($file, [
+                                        $total->total_login_d ?? '00:00:00',
+                                        $total->total_pause_d ?? '00:00:00',
+                                        $total->total_resume_d ?? '00:00:00',
+                                        $total->total_call_d ?? '00:00:00',
+                                        $total->total_dispose_d ?? '00:00:00'
+                                    ]);
+                                } else {
+                                    fputcsv($file, ['No daily activity data found']);
+                                }
+                                fputcsv($file, ['']);
+
+                                fputcsv($file, ['--- LOGIN/LOGOUT TIME ---']);
+                                fputcsv($file, ['Login Time', 'Login Time']);
+                                if (!empty($details['log_data']) && count($details['log_data']) > 0) {
+                                    foreach ($details['log_data'] as $logData) {
+                                        fputcsv($file, [
+                                            $logData->login_time = (!is_null($logData->login_time))
+                                                ? $logData->login_time : 'Closed Browser',
+                                            $logData->logout_time = (!is_null($logData->logout_time))
+                                                ? $logData->logout_time : 'Closed Browser'
+                                        ]);
+                                    }
+                                }
+                                fputcsv($file, ['']);
+
+                                fputcsv($file, ['--- PAUSE/RESUME ACTIVITY ---']);
+                                fputcsv($file, ['Activity', 'Time', 'Reason']);
+                                if (!empty($details['pause_resume_activity']) && count($details['pause_resume_activity']) > 0) {
+                                    foreach ($details['pause_resume_activity'] as $pauseResumeActivity) {
+                                        fputcsv($file, [
+                                            $pauseResumeActivity->user_status,
+                                            $pauseResumeActivity->time,
+                                            $pauseResumeActivity->pause_code_id ?? ''
+                                        ]);
+                                    }
+                                } else {
+                                    fputcsv($file, ['No Data']);
+                                }
+                                fputcsv($file, ['']);
+
+
+                                fputcsv($file, ['--- TOTAL INCOMING/OUTGOING ---']);
+                                fputcsv($file, ['Total Incoming', 'Total Outgoing']);
+                                fputcsv($file, [
+                                    $details['i_call_data']->total,
+                                    $details['o_call_data']->total,
+                                ]);
+
+                                // Add separator before next main row
+                                fputcsv($file, ['']);
+                                fputcsv($file, ['--- END OF DETAILED DATA ---']);
+                                fputcsv($file, ['']);
+                            }
+                        } catch (Exception $e) {
+                            // Log error but continue with next record
+                            generateLogs('error', "Error fetching detailed data for user $userId on $date: " . $e->getMessage());
+                            fputcsv($file, ['Error loading detailed activity data']);
+                            fputcsv($file, ['']);
+                        }
+                    }
+                }
+
+                fclose($file);
+            };
+
+            return new StreamedResponse($callback, ResponseHTTP::HTTP_OK, $headers);
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@exportReportToCsv: ' . $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
+}

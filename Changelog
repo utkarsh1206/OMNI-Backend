@@ -1,3 +1,57 @@
+2025-04-24 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : b7ab394e
+	* Version : Dev
+	* Laravel : Introduce user-specific call event broadcasting. Refactors call event broadcasting to use user-specific private channels based on domain and user ID. Extracts user ID and domain from JWT in webhook requests to target broadcasts. Adds distinct events (`CallInitiated`, `CallConnected`, `CallHangup`) for different call lifecycle stages. Defines a new private channel format (`{domain}-{id}-call-events`) for these targeted updates. Replaces previous generic type-based broadcasting for these specific call events.
+
+2025-04-24 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 1bcbb20
+	* Version : Dev
+	* Laravel : 
+	 Implemented User Activity Report Functionality
+        Created comprehensive user activity reporting system
+        Developed methods to track and aggregate:
+            Login/logout times and durations
+            Pause/resume activities
+            Call statistics (incoming/outgoing)
+            Daily user activities
+        Implemented time calculations for various metrics
+
+    Key Features Developed:
+        getReport() - Main report generation with date filtering
+        getData() - Detailed user activity data aggregation
+        exportReportToCsv() - Full CSV export functionality
+        Multiple supporting private methods for specific data queries
+
+    Data Points Tracked:
+        Login sessions and durations
+        Pause/resume times and reasons
+        Call metrics (count, duration, averages)
+        Daily activity summaries
+        Ready/available time calculations
+		
+    Technical Implementation Details:
+        Used Carbon for precise time calculations
+        Implemented complex SQL queries with proper grouping
+        Added thorough error handling and logging
+        Optimized database queries with proper indexing
+        Implemented CSV streaming for large data exports
+
+    Quality Assurance:
+        Added input validation for date ranges
+        Implemented proper exception handling
+        Added comprehensive logging
+        Optimized memory usage for large data sets
+        Ensured timezone-aware datetime handling
+
+	Additional Notes
+		The implementation provides both API responses and CSV exports
+		All methods include proper error handling
+		The code follows existing project patterns and standards
+
 2025-04-23 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :

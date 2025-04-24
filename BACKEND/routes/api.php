@@ -84,6 +84,7 @@ use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\IncomingCallController;
 use App\Http\Controllers\Api\ApiConfigurationTypeController;
 use App\Http\Controllers\Api\CallLogReportController;
+use App\Http\Controllers\Api\UserActivityReportController;
 
 require base_path('routes/externalUse.php');
 
@@ -306,6 +307,12 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::get('status-summary', [CallLogReportController::class, 'getStatusSummary']);
         Route::get('usergroup-summary', [CallLogReportController::class, 'getByUserGroup']);
         Route::get('user-summary', [CallLogReportController::class, 'getCallsByAgent']);
+    });
+
+    Route::prefix('user-activity-report')->group(function () {
+        Route::get('list', [UserActivityReportController::class, 'list']);
+        Route::get('user-activity', [UserActivityReportController::class, 'userActivity']);
+        Route::get('csv', [UserActivityReportController::class, 'exportCsv']);
     });
 });
 
