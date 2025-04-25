@@ -292,10 +292,10 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('start-conf', [StartConfApiController::class, 'startConfApi']);
     });
 
-    Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);
-    Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
-    Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
-    Route::post('call-history', [WebhookCallController::class, 'callHistory']);
+    // Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);
+    // Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
+    // Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
+    // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
 
     Route::get('get-messages', [MessageController::class, 'getMessages']);
     Route::post('message', [MessageController::class, 'storeMessage']);
@@ -330,5 +330,10 @@ Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(fu
 });
 
 Route::post('/ext-api/login', [LoginApiController::class, 'agentLoginApi']);
+
+Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);
+Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
+Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
+Route::post('call-history', [WebhookCallController::class, 'callHistory']);
 
 Route::apiResource('pause-code', 'App\Http\Controllers\Api\PauseCodeController');

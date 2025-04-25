@@ -8,6 +8,7 @@ use App\Events\CallInitiated;
 use App\Models\NeoxCallLog;
 use App\Models\NeoxTempCallLog;
 use App\Events\DialCenterData;
+use Illuminate\Support\Facades\DB;
 
 class WebhookCallRepository
 {
@@ -37,15 +38,34 @@ class WebhookCallRepository
     }
 
     // Update or create call history
-    public function updateOrCreateCallHistory($data)
+    public function updateOrCreateCallHistory($data, $connection)
     {
-        return NeoxCallLog::updateOrCreate(
-            [
-                'call_unique_id' => $data['call_unique_id'],
-                'call_date' => $data['call_date'],
-                'called_phone_number' => $data['called_phone_number'],
-            ],
-            $data
-        );
+        $existing = $connection->table('neox_call_logs')
+            ->where('call_unique_id', $data['call_unique_id'])
+            ->where('call_date', $data['call_date'])
+            ->where('called_phone_number', $data['called_phone_number'])
+            ->first();
+
+        if ($existing) {
+            // Update the existing record
+            $connection->table('neox_call_logs')
+                ->where('id', $existing->id)
+                ->update($data);
+
+            // Return the updated record
+            $record = $connection->table('neox_call_logs')
+                ->where('id', $existing->id)
+                ->first();
+        } else {
+            // Insert new record and get inserted ID
+            $insertedId = $connection->table('neox_call_logs')->insertGetId($data);
+
+            // Return the inserted record
+            $record = $connection->table('neox_call_logs')
+                ->where('id', $insertedId)
+                ->first();
+        }
+
+        return $record;
     }
 }

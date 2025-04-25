@@ -25,12 +25,12 @@ class WebhookCallRequest extends FormRequest
     {
         return [
             'call_unique_id' => 'required|string',
-            'campaign_id' => 'required|string',
+            'campaign_id' => 'nullable|string',
             'caller_username' => 'required|string',
-            'caller_user_extension' => 'required|integer',
-            'user_group' => 'required|string',
+            'caller_user_extension' => 'nullable|integer',
+            'user_group' => 'nullable|string',
             'inbound_group_id' => 'nullable|string',
-            'called_phone_number' => 'nullable|string',
+            'called_phone_number' => 'required|string',
         ];
     }
 

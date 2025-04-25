@@ -30,7 +30,6 @@ class WebhookCallController extends Controller
      *     description="Logs the initiation of a call",
      *     operationId="callInitiated",
      *     tags={"Webhook Calls"},
-     *     security={{"bearerAuth": {}}},
      *     @OA\RequestBody(
      *         required=true,
      *         description="Logs the initiation of a call.",
@@ -82,6 +81,7 @@ class WebhookCallController extends Controller
     // Handle call initiation
     public function callInitiated(WebhookCallRequest $request)
     {
+        generateLogs('info', "\nInitiate Called\n");
         return $this->handleCallRequest($request, 'call_initiated');
     }
 
@@ -92,7 +92,6 @@ class WebhookCallController extends Controller
      *     description="Logs the connected of a call",
      *     operationId="callConnected",
      *     tags={"Webhook Calls"},
-     *     security={{"bearerAuth": {}}},
      *     @OA\RequestBody(
      *         required=true,
      *         description="Logs the connected of a call.",
@@ -144,6 +143,7 @@ class WebhookCallController extends Controller
     // Handle call connection
     public function callConnected(WebhookCallRequest $request)
     {
+        generateLogs('info', "\nCall Connected\n");
         return $this->handleCallRequest($request, 'call_connected');
     }
 
@@ -155,7 +155,6 @@ class WebhookCallController extends Controller
      *     description="Logs the hangup of a call",
      *     operationId="callHangup",
      *     tags={"Webhook Calls"},
-     *     security={{"bearerAuth": {}}},
      *     @OA\RequestBody(
      *         required=true,
      *         description="Logs the hangup of a call.",
@@ -207,6 +206,7 @@ class WebhookCallController extends Controller
     // Handle call hangup
     public function callHangup(WebhookCallRequest $request)
     {
+        generateLogs('info', "\nCall HangedUp\n");
         return $this->handleCallRequest($request, 'call_hangup');
     }
 
@@ -217,7 +217,6 @@ class WebhookCallController extends Controller
      *     description="Logs the history of a call",
      *     operationId="callHistory",
      *     tags={"Webhook Calls"},
-     *     security={{"bearerAuth": {}}},
      *     @OA\RequestBody(
      *         required=true,
      *         description="Logs the history of a call.",
@@ -280,9 +279,11 @@ class WebhookCallController extends Controller
             $callType = $this->determineCallTypeFromHistory($request);
             $data = $this->prepareHistoryData($request, $callType);
 
-            // Update or create call history using the repository
-            $callHistory = $this->webhookCallRepository->updateOrCreateCallHistory($data);
+            $domain_name = $request->domain_name;
+            $connection = getDbConnection($domain_name);
 
+            // Update or create call history using the repository
+            $callHistory = $this->webhookCallRepository->updateOrCreateCallHistory($data, $connection);
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $callHistory,
@@ -297,15 +298,21 @@ class WebhookCallController extends Controller
     private function handleCallRequest(Request $request, string $type)
     {
         try {
-            $authHeader = $request->header('Authorization');
-            if ($authHeader && str_starts_with($authHeader, 'Bearer ')) {
-                $token = str_replace('Bearer ', '', $authHeader);
-                $payload = extractPayload($token);
+            // $authHeader = $request->header('Authorization');
+            // if ($authHeader && str_starts_with($authHeader, 'Bearer ')) {
+            //     $token = str_replace('Bearer ', '', $authHeader);
+            //     $payload = extractPayload($token);
 
-                $agentId = $payload['id'];
-                $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $payload['domain']));
-            }
+            //     $agentId = $payload['id'];
+            //     $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $payload['domain']));
+            // }
+            $agentId = $request->id; // agent name is in the request Grab agent id from it
+            $domain_name = $request->domain_name;
+            $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $domain_name));
+
             if ($request->has('call_unique_id')) {
+
+                getDbConnection($domain_name);
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
                 $callLog = $this->saveCallLogs($data, $agentId, $domain);
@@ -327,7 +334,7 @@ class WebhookCallController extends Controller
     // Determine call type (incoming or outgoing)
     private function determineCallType(Request $request)
     {
-        return $request->has('inbound_group_id') ? 'incoming' : 'outgoing';
+        return $request->filled('inbound_group_id') ? 'incoming' : 'outgoing';
     }
 
     // Determine call type for history based on unique ID prefix

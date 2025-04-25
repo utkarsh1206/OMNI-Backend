@@ -79,6 +79,7 @@ class LoginController extends Controller
      */
     public function login(LoginRequest $request)
     {
+        generateLogs('info', 'Login Called');
         try {
             $validator = $request->validated();
             return $this->loginRepository->login($request, $validator);
