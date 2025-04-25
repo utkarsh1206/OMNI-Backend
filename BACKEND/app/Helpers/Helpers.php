@@ -176,8 +176,8 @@ if (!function_exists('getDbConnection')) {
                 'engine' => null,
             ]);
 
-            // return DB::connection($newConnectionName);
-            return DB::setDefaultConnection($newConnectionName);
+            return DB::connection($newConnectionName);
+            // return DB::setDefaultConnection($newConnectionName);
         }
         return null;
     }

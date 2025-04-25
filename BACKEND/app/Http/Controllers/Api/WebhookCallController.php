@@ -275,6 +275,7 @@ class WebhookCallController extends Controller
     // Handle call history
     public function callHistory(Request $request)
     {
+        generateLogs('info', "\n History Called\n");
         if ($request->has('call_unique_id')) {
             $callType = $this->determineCallTypeFromHistory($request);
             $data = $this->prepareHistoryData($request, $callType);
