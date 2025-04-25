@@ -85,6 +85,7 @@ use App\Http\Controllers\Api\IncomingCallController;
 use App\Http\Controllers\Api\ApiConfigurationTypeController;
 use App\Http\Controllers\Api\CallLogReportController;
 use App\Http\Controllers\Api\UserActivityReportController;
+use App\Http\Controllers\Api\ExportController;
 
 require base_path('routes/externalUse.php');
 
@@ -110,6 +111,9 @@ Route::middleware(['auth:api'])->group(function () {
 });
 
 Route::middleware(['jwt.auth'])->group(function () {
+
+    Route::get('export-database', [ExportController::class, 'export']);
+
     Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
     Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
 
