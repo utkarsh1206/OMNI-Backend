@@ -13,7 +13,7 @@ class AuthTokenMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        // try {
+        try {
             getDbConnection($request->id);
             $currentRoute =  request()->path();
             if (in_array($currentRoute, ["api/chatbot-room-id"])) {
@@ -35,9 +35,9 @@ class AuthTokenMiddleware
           
            
             return $next($request);
-        // } catch (Exception $e) {
-        //     generateLogs('error', 'Access Token Middleware : ', $e->getMessage());
-        //     return response()->json(['error' => 'Access Token Failed: ' . $e->getMessage()], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
-        // }
+        } catch (Exception $e) {
+            generateLogs('error', 'Access Token Middleware : ', $e->getMessage());
+            return response()->json(['error' => 'Access Token Failed: ' . $e->getMessage()], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

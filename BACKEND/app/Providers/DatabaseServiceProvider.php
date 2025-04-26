@@ -41,7 +41,7 @@ class DatabaseServiceProvider extends ServiceProvider
             }
         }
         $currentRoute = $path = request()->path();
-        if (!in_array($currentRoute, ["api/chatbot-room-id"])) {
+        if (!in_array($currentRoute, ["api/chatbot-room-id","chatbot-room-id"])) {
             $details = Detail::where('domain', $domain)->first();
             if ($details) {
                 $connectionDetails = [
