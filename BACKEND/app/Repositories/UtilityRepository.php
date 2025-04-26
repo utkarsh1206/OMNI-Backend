@@ -30,24 +30,24 @@ class UtilityRepository
             if (!file_exists($backupFolder)) {
                 mkdir($backupFolder, 0755, true);
             }
-            
+
             $tables = DB::select('SHOW TABLES');
             $tableKey = 'Tables_in_' . $database;
 
             $sqlContent = '';
-            
+
             foreach ($tables as $table) {
                 $tableName = $table->$tableKey;
-    
+
                 // Get the CREATE TABLE statement
                 $createTableRow = DB::selectOne("SHOW CREATE TABLE `$tableName`");
                 $createTableStatement = $createTableRow->{'Create Table'};
-    
+
                 $sqlContent .= "-- ----------------------------\n";
                 $sqlContent .= "-- Table structure for `$tableName`\n";
                 $sqlContent .= "-- ----------------------------\n";
                 $sqlContent .= $createTableStatement . ";\n\n";
-    
+
                 // Get the data of the table
                 $rows = DB::table($tableName)->get();
                 foreach ($rows as $row) {
@@ -56,7 +56,7 @@ class UtilityRepository
                     $values = implode(', ', array_map(function ($value) {
                         return DB::getPdo()->quote($value);
                     }, array_values($row)));
-    
+
                     $sqlContent .= "INSERT INTO `$tableName` (`$columns`) VALUES ($values);\n";
                 }
                 $sqlContent .= "\n\n";
@@ -87,15 +87,16 @@ class UtilityRepository
                 'CREATED' => now(),
             ];
             // Log or store in DB if needed
-            generateLogs('info', 'Database export complete:  '.json_encode(['activityData' => $activityData]));
+            generateLogs('info', 'Database export complete:  ' . json_encode(['activityData' => $activityData]));
 
             Download::create([
                 'user_id' => $this->authId,
                 'file_name' => $filename,
                 'type' => 'Export'
-            ]);    
+            ]);
 
-            return response()->download($filePath, $filename);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.export_success'));
+
             // return response()->streamDownload(function () use ($filePath) {
             //     echo file_get_contents($filePath);
             // }, $filename, [
@@ -115,7 +116,18 @@ class UtilityRepository
 
     public function import()
     {
-        
+        try {
+            Download::create([
+                'user_id' => $this->authId,
+                'file_name' => 'Dummy',
+                'type' => 'Import'
+            ]);
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.import_success'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in Database Import: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
     }
 
     public function importUtility(Request $request)
@@ -130,22 +142,31 @@ class UtilityRepository
 
             // Start the query for tenants
             $query = Download::select('id', 'file_name', 'user_id')->where('type', $type);
-            
+
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {
                 $query->where(function ($q) use ($searchTerm) {
-                    $q->where('name', 'like', '%' . $searchTerm . '%');
+                    $q->where('file_name', 'like', '%' . $searchTerm . '%');
                 });
             }
-            
+
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-            
-            $usergroup = $page === config('omni.ALL_PAGE')
+
+            $data = $page === config('omni.ALL_PAGE')
                 ? $query->get()
                 : $query->paginate($perPage);
-            
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.data_fetch'));
+
+                $data->getCollection()->transform(function ($item) use ($type) {
+                    if (strtolower($type) === 'import') {
+                        // Remove only 'full_file_path' for Import
+                        $item->setHidden(['user','full_file_path']);
+                    }
+                    // Username always exists
+                    return $item;
+                });
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_fetch'));
         } catch (Exception $e) {
             generateLogs('error', 'Error in Database List : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
