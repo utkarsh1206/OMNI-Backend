@@ -23,7 +23,7 @@ class IngroupListRequest extends FormRequest
     {
         return [
             'user' => 'required|string',
-            'pass' => 'required|string',
+            'pass' => 'nullable|string',
             'campaign_id' => 'required|string',
         ];
     }

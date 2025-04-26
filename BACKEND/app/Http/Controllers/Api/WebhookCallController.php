@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\WebhookCallRequest;
 use App\Http\Response\CustomApiResponse;
+use App\Models\Users;
 use App\Repositories\WebhookCallRepository;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class WebhookCallController extends Controller
 {
@@ -299,24 +301,20 @@ class WebhookCallController extends Controller
     private function handleCallRequest(Request $request, string $type)
     {
         try {
-            // $authHeader = $request->header('Authorization');
-            // if ($authHeader && str_starts_with($authHeader, 'Bearer ')) {
-            //     $token = str_replace('Bearer ', '', $authHeader);
-            //     $payload = extractPayload($token);
-
-            //     $agentId = $payload['id'];
-            //     $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $payload['domain']));
-            // }
-            $agentId = $request->id; // agent name is in the request Grab agent id from it
+            $agentName = $request->caller_username;
             $domain_name = $request->domain_name;
             $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $domain_name));
 
             if ($request->has('call_unique_id')) {
 
-                getDbConnection($domain_name);
+                $data = getDbConnection($domain_name);
+                DB::setDefaultConnection($data->getName());
+
+                $agentId = Users::select('id')->where('username', $agentName)->first();
+
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
-                $callLog = $this->saveCallLogs($data, $agentId, $domain);
+                $callLog = $this->saveCallLogs($data, $agentId->id, $domain);
 
                 return $this->apiResponse->getResponseStructure(
                     trans('message.success'),
