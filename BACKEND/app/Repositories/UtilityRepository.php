@@ -7,6 +7,8 @@ use App\Http\Response\CustomApiResponse;
 use App\Models\Download;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class UtilityRepository
 {
@@ -46,10 +48,17 @@ class UtilityRepository
                 $sqlContent .= "-- ----------------------------\n";
                 $sqlContent .= "-- Table structure for `$tableName`\n";
                 $sqlContent .= "-- ----------------------------\n";
+                $sqlContent .= "DROP TABLE IF EXISTS `$tableName`;\n";
                 $sqlContent .= $createTableStatement . ";\n\n";
 
                 // Get the data of the table
                 $rows = DB::table($tableName)->get();
+                if ($rows->isNotEmpty()) {
+                    $sqlContent .= "-- ----------------------------\n";
+                    $sqlContent .= "-- Data for table `$tableName`\n";
+                    $sqlContent .= "-- ----------------------------\n";
+                }
+
                 foreach ($rows as $row) {
                     $row = (array) $row;
                     $columns = implode('`, `', array_keys($row));
@@ -93,7 +102,7 @@ class UtilityRepository
                 'file_name' => $filename,
                 'file_size' => $fileSize,
             ];
-            
+
             $this->store($fileDetails, 'Export');
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.export_success'));
@@ -115,16 +124,77 @@ class UtilityRepository
         return $this->databaseListing($request, 'Export');
     }
 
-    public function import()
+    public function import(Request $request)
     {
         try {
-            $fileDetails = [
-                'file_name' => 'Dummy',
-                'file_size' => '915.16 KB',
+            // Get the uploaded file
+            $file = $request->file('import_file');
+            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $file->getClientOriginalExtension();
+            $timestamp = now()->format('Ymd_His');
+
+            // New filename: user_fileName_TIMESTAMP.sql
+            $newFilename = $originalName . '_' . $timestamp . '.' . $extension;
+
+            $importPath = storage_path('app/import');
+
+            // Create the directory if it doesn't exist
+            if (!File::exists($importPath)) {
+                File::makeDirectory($importPath, 0755, true);
+            }
+
+            // Store file in storage/app/import
+            $filePath = $file->storeAs('import', $newFilename);
+            $fullFilePath = storage_path('app/' . $filePath);
+
+            // Read and execute SQL queries line by line
+            $templine = '';
+            foreach (File::lines($fullFilePath) as $line) {
+                $trimmedLine = trim($line);
+
+                // Skip comments and empty lines
+                if (Str::startsWith($trimmedLine, '--') || $trimmedLine === '') {
+                    continue;
+                }
+
+                $templine .= $line;
+
+                // Execute when a statement ends
+                if (Str::endsWith(trim($line), ';')) {
+                    DB::unprepared($templine);
+                    $templine = '';
+                }
+            }
+
+            // Calculate file size
+            $fileSizeBytes = filesize($fullFilePath);
+            $fileSize = $fileSizeBytes > 1048576
+                ? number_format($fileSizeBytes / 1048576, 2) . ' MB'
+                : number_format($fileSizeBytes / 1024, 2) . ' KB';
+
+            // Prepare activity log
+            $activityData = [
+                'EDIT_ID' => md5(rand()),
+                'USER_ID' => $this->authId,
+                'DESCRIPTION' => 'Database Import',
+                'ACTIVITY_DATETIME' => now(),
+                'ACTIVITY_TYPE' => 'Import',
+                'IS_SUPERADMIN' => 'Yes',
+                'FILE_SIZE' => $fileSize,
+                'IS_DELETE' => 'No',
+                'FILES' => $newFilename,
+                'CREATED' => now(),
             ];
+
+            generateLogs('info', 'Database import complete: ' . json_encode(['activityData' => $activityData]));
             
+            $fileDetails = [
+                'file_name' => $newFilename,
+                'file_size' => $fileSize,
+            ];
+
             $this->store($fileDetails, 'Import');
-            
+
             return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.import_success'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in Database Import: ', $ex->getMessage());

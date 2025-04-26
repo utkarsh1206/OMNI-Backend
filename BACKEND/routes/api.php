@@ -117,7 +117,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 //      Route::get('export-database', [ExportController::class, 'export']);
         Route::get('export-database', [UtilityController::class, 'export']);
         Route::get('export-listing', [UtilityController::class, 'exportUtility']);
-        Route::get('import-database', [UtilityController::class, 'import']);
+        Route::post('import-database', [UtilityController::class, 'import']);
         Route::get('import-listing', [UtilityController::class, 'importUtility']);
     });
     

@@ -8,8 +8,7 @@ use App\Models\AuthToken;
 use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
-Use App\Models\Detail;
-use Illuminate\Support\Facades\DB;
+
 class AuthTokenRepository
 {
     private $apiResponse;
