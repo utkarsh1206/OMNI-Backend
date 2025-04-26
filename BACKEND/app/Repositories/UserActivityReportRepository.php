@@ -131,7 +131,7 @@ class UserActivityReportRepository
             $incoming = $this->getCallHistoryData('incoming', $user_name, $date);
             $outgoing = $this->getCallHistoryData('outgoing', $user_name, $date);
             $ready_data = $this->getReadyData($user_id, $date);
-            $dash_data = $this->getReportData($user_id, '', '', '', $date);
+            $dash_data = $this->getReportData($user_id, '', $date);
             $todaysLoginData = $this->getTodaysLoginTime($request);
             $pause_resume_activity = $this->getActivityPauseData($user_id, $date);
             $daily_user_activity = $this->getDailyUserActivity($user_id, $date);
@@ -272,7 +272,10 @@ class UserActivityReportRepository
     private function getReadyData($user_id, $date)
     {
         try {
-            return PauseResumeUserLog::selectRaw('SEC_TO_TIME(AVG(TIME_TO_SEC(total_resume_time))) AS ready_avg, SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))) AS ready')
+            return PauseResumeUserLog::selectRaw(
+                "TIME_FORMAT(SEC_TO_TIME(AVG(TIME_TO_SEC(total_resume_time))), '%H:%i:%s') AS ready_avg, 
+                 TIME_FORMAT(SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))), '%H:%i:%s') AS ready"
+            )
                 ->where('user_id', $user_id)
                 ->whereDate('created_at', $date)
                 ->first();
@@ -380,62 +383,80 @@ class UserActivityReportRepository
     /**
      * Get the report data
      */
-    public function getReportData($userId, $campaignId = '', $fromDate = '', $toDate = '')
+    public function getReportData($userId, $campaignId = '', $date)
     {
         try {
             $subConditions = [];
-            $joinConditions = [];
+            $loginConditions = [];
 
-            if ($fromDate && $toDate) {
-                $dateRange = "created_at BETWEEN '{$fromDate}' AND '{$toDate}'";
-                $subConditions[] = $dateRange;
-                $joinConditions[] = $dateRange;
+            if ($date) {
+                $dateCondition = "DATE(created_at) = '{$date}'";
+                $subConditions[] = $dateCondition;
+                $loginConditions[] = "login_date = '{$date}'";
             }
 
             $subConditions[] = "u.id = {$userId}";
 
             if (!empty($campaignId)) {
                 $subConditions[] = "campaign_id = '{$campaignId}'";
-                $joinConditions[] = "campaign_id = '{$campaignId}'";
+                $loginConditions[] = "campaign_id = '{$campaignId}'";
             }
 
             $subCondStr = ' AND ' . implode(' AND ', $subConditions);
-            $joinCondStr = !empty($joinConditions) ? ' AND ' . implode(' AND ', $joinConditions) : '';
+            $loginCondStr = !empty($loginConditions) ? ' AND ' . implode(' AND ', $loginConditions) : '';
 
             $result = DB::table('users as u')
-                ->leftJoin('user_login_logs as ul', DB::raw("ul.user_id"), '=', DB::raw("u.id {$joinCondStr}"))
+                ->leftJoin('user_login_logs as ul', function ($join) use ($loginCondStr) {
+                    $join->on('ul.user_id', '=', 'u.id');
+                    if (!empty($loginCondStr)) {
+                        $join->whereRaw(ltrim($loginCondStr, ' AND '));
+                    }
+                })
                 ->selectRaw("
                 (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}) as calls,
                 (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.call_type = 'outgoing' AND nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}) as outgoing_call,
                 (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.call_type = 'incoming' AND nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}) as incoming_call,
                 (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.type = 'CALL_CONNECTED' AND nl.caller_username = u.username {$subCondStr}) as answered,
-                IFNULL((SELECT SEC_TO_TIME(ROUND(SUM(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}), 0) as total_talk,
-                IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}), 0) as talk_avg,
+                IFNULL((SELECT SEC_TO_TIME(ROUND(SUM(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}), '00:00:00') as total_talk,
+                IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}), '00:00:00') as talk_avg,
                 COUNT(ul.id) as login_count,
                 IF(MIN(ul.login_date) IS NOT NULL, CONCAT(MIN(ul.login_date), ' ', MIN(ul.login_time)), 'Not Logged') as first_login,
                 IF(MAX(ul.login_date) IS NOT NULL, CONCAT(MAX(ul.login_date), ' ', MAX(ul.login_time)), 'Not Logged') as last_log,
-                IF(MAX(ul.logout_date) IS NOT NULL, CONCAT(MAX(ul.logout_date), ' ', MAX(ul.login_time)), 'Not Logged') as last_logout,
-                IFNULL((SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(SEC_TO_TIME(logout_time)) - TIME_TO_SEC(SEC_TO_TIME(login_time)))) 
-                        FROM user_login_logs 
-                        WHERE user_id = u.id AND logout_time != '00:00:00' {$subCondStr} 
-                        GROUP BY user_id), 0) as total_log_time,
+                IF(MAX(ul.logout_date) IS NOT NULL, CONCAT(MAX(ul.logout_date), ' ', MAX(ul.logout_time)), 'Not Logged') as last_logout,
+                IFNULL((
+                    SELECT SEC_TO_TIME(SUM(
+                        TIMESTAMPDIFF(
+                            SECOND,
+                            STR_TO_DATE(CONCAT(login_date, ' ', login_time), '%Y-%m-%d %H:%i:%s'),
+                            STR_TO_DATE(CONCAT(logout_date, ' ', logout_time), '%Y-%m-%d %H:%i:%s')
+                        )
+                    ))
+                    FROM user_login_logs
+                    WHERE user_id = u.id
+                    AND logout_time != '00:00:00'
+                    " . ($date ? "AND login_date = '{$date}'" : "") . "
+                ), 0) as total_log_time,
                 IFNULL((SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(total_pause_time))) 
                         FROM pause_resume_user_logs 
-                        WHERE user_id = u.id {$subCondStr} 
-                        GROUP BY user_id), 0) as pause_time,
+                        WHERE user_id = u.id 
+                        " . ($date ? "AND DATE(created_at) = '{$date}'" : "") . " 
+                        GROUP BY user_id), '00:00:00') as pause_time,
                 IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(TIME_TO_SEC(total_pause_time)))) 
                         FROM pause_resume_user_logs 
-                        WHERE user_id = u.id {$subCondStr} 
-                        GROUP BY user_id), 0) as pause_time_avg,
+                        WHERE user_id = u.id 
+                        " . ($date ? "AND DATE(created_at) = '{$date}'" : "") . " 
+                        GROUP BY user_id), '00:00:00') as pause_time_avg,
                 IFNULL((SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))) 
                         FROM pause_resume_user_logs 
-                        WHERE user_id = u.id {$subCondStr} 
-                        GROUP BY user_id), 0) as resume_time,
+                        WHERE user_id = u.id 
+                        " . ($date ? "AND DATE(created_at) = '{$date}'" : "") . " 
+                        GROUP BY user_id), '00:00:00') as resume_time,
                 IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(TIME_TO_SEC(total_resume_time)))) 
                         FROM pause_resume_user_logs 
-                        WHERE user_id = u.id {$subCondStr} 
-                        GROUP BY user_id), 0) as resume_time_avg
-            ")
+                        WHERE user_id = u.id 
+                        " . ($date ? "AND DATE(created_at) = '{$date}'" : "") . " 
+                        GROUP BY user_id), '00:00:00') as resume_time_avg
+                ")
                 ->where('u.id', $userId)
                 ->groupBy('u.id', 'u.username')
                 ->orderByDesc('u.id')
