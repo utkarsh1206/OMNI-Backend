@@ -1797,14 +1797,14 @@
                 "tags": [
                     "External Use"
                 ],
-                "summary": "Generate or retrieve a valid auth token",
+                "summary": "Retrieve a valid auth token",
                 "description": "This endpoint returns an existing valid auth token if available, or generates a new one. Requires a valid UUID that exists in the `details` table.",
                 "operationId": "generateAuthToken",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "query",
-                        "description": "UUID from the `uin` column of the details table",
+                        "description": "UUID",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -18943,12 +18943,7 @@
                             }
                         }
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             }
         },
         "/api/call-connected": {
@@ -19067,12 +19062,7 @@
                             }
                         }
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             }
         },
         "/api/call-hangup": {
@@ -19191,12 +19181,7 @@
                             }
                         }
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             }
         },
         "/api/call-history": {
@@ -19343,12 +19328,7 @@
                             }
                         }
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             }
         }
     },
