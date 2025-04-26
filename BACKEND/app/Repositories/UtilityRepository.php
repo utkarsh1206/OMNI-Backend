@@ -82,6 +82,7 @@ class UtilityRepository
             // Activity logging
             $activityData = [
                 "EDIT_ID" => md5(rand()),
+                'DOMAIN' => $this->domain,
                 'USER_ID' => $this->authId,
                 'DESCRIPTION' => 'Database export',
                 'ACTIVITY_DATETIME' => now(),
@@ -175,6 +176,7 @@ class UtilityRepository
             // Prepare activity log
             $activityData = [
                 'EDIT_ID' => md5(rand()),
+                'DOMAIN' => $this->domain,
                 'USER_ID' => $this->authId,
                 'DESCRIPTION' => 'Database Import',
                 'ACTIVITY_DATETIME' => now(),
