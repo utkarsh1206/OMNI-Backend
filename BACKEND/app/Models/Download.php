@@ -11,6 +11,7 @@ class Download extends Model
 
     protected $fillable = [
         'file_name',
+        'file_size',
         'user_id',
         'type',
     ];

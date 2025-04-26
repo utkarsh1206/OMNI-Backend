@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('downloads', function (Blueprint $table) {
             $table->id();
             $table->string('file_name');
+            $table->string('file_size');
             $table->integer("user_id");
             $table->enum('type', ['Export', 'Import'])->default('Export');
             $table->timestamps();

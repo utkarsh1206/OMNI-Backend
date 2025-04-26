@@ -89,11 +89,12 @@ class UtilityRepository
             // Log or store in DB if needed
             generateLogs('info', 'Database export complete:  ' . json_encode(['activityData' => $activityData]));
 
-            Download::create([
-                'user_id' => $this->authId,
+            $fileDetails = [
                 'file_name' => $filename,
-                'type' => 'Export'
-            ]);
+                'file_size' => $fileSize,
+            ];
+            
+            $this->store($fileDetails, 'Export');
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.export_success'));
 
@@ -117,12 +118,13 @@ class UtilityRepository
     public function import()
     {
         try {
-            Download::create([
-                'user_id' => $this->authId,
+            $fileDetails = [
                 'file_name' => 'Dummy',
-                'type' => 'Import'
-            ]);
-
+                'file_size' => '915.16 KB',
+            ];
+            
+            $this->store($fileDetails, 'Import');
+            
             return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.import_success'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in Database Import: ', $ex->getMessage());
@@ -141,7 +143,7 @@ class UtilityRepository
             $searchTerm = $request->input('search', '');
 
             // Start the query for tenants
-            $query = Download::select('id', 'file_name', 'user_id')->where('type', $type);
+            $query = Download::select('id', 'file_name', 'file_size', 'user_id')->where('type', $type);
 
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {
@@ -157,19 +159,34 @@ class UtilityRepository
                 ? $query->get()
                 : $query->paginate($perPage);
 
-                $data->getCollection()->transform(function ($item) use ($type) {
-                    if (strtolower($type) === 'import') {
-                        // Remove only 'full_file_path' for Import
-                        $item->setHidden(['user','full_file_path']);
-                    }
-                    // Username always exists
-                    return $item;
-                });
+            $data->getCollection()->transform(function ($item) use ($type) {
+                if (strtolower($type) === 'import') {
+                    // Remove only 'full_file_path' for Import
+                    $item->setHidden(['user', 'full_file_path']);
+                }
+                // Username always exists
+                return $item;
+            });
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_fetch'));
         } catch (Exception $e) {
             generateLogs('error', 'Error in Database List : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
+
+    private function store($file, $type)
+    {
+        try {
+            return Download::create([
+                'file_name' => $file['file_name'],
+                'file_size' => $file['file_size'],
+                'user_id' => $this->authId,
+                'type' => $type
+            ]);
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in Storing Database Details: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 }
