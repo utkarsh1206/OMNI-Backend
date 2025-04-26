@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\AuthTokenRepository;
-use App\Http\Requests\GenerateAuthTokenRequest;
+use App\Models\Detail;
+use Illuminate\Http\Request;
 
 class AuthTokenController extends Controller
 {
@@ -67,8 +68,8 @@ class AuthTokenController extends Controller
      *     )
      * )
      */
-    public function index(GenerateAuthTokenRequest $request)
+    public function index(Request $request, Detail $detail)
     {
-        return $this->authTokenRepository->list($request);
+        return $this->authTokenRepository->list($request,$detail);
     }
 }

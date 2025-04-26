@@ -9,6 +9,7 @@ use App\Models\ChatBotProvider;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use App\Models\Detail;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class ApiConfigurationRepository
@@ -68,6 +69,7 @@ class ApiConfigurationRepository
     public function store($request)
     {
         try {
+           
             if($request->api_config_type_id == 1)
             {
                 $smsProviers = SmsProvider::Create([
@@ -82,14 +84,16 @@ class ApiConfigurationRepository
                 $smsProviers = ChatBotProvider::Create([
                     "name" => $request->provider_name,
                 ]);
-                $webhookUrl = url('api/chatboot-webhook?source=' . $request->provider_name . "&tenant=".auth()->user()->domain?? '');
+                establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
+                $detailsInfo =Detail::where("domain",auth()->user()->domain)->first();
+                $uid = $detailsInfo->uin ?? '';
+                $webhookUrl = url("api/chatboot-webhook?id=".$uid."&source=".$request->provider_name);
                 $requestConfig[0]['web_hook_url'] = $webhookUrl;
 
-                $webhookUrl = url('api/chatboot-webhook-auth?source=' . $request->provider_name . "&tenant=".auth()->user()->domain?? '');
+                $webhookUrl = url("api/chatbot-room-id?id=".$uid."&source=" . $request->provider_name);
                 $requestConfig[0]['web_hook_auth_url'] = $webhookUrl;
             }
-           
-
+            getDbConnection($detailsInfo->domain);
             if (count($requestConfig) > 0) {
                 foreach ($requestConfig as $config) {
                     foreach ($config as $key => $value) {

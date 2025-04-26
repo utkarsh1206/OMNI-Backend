@@ -11,6 +11,8 @@ use App\Models\Tenant;
 use App\Observers\TenantObserver;
 use App\Observers\LiveAgentObserver;
 use App\Models\LiveAgents;
+use Illuminate\Support\Facades\Route;
+use App\Models\Detail;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Route::bind('uinId', function ($value) {
+            return Detail::where('uin', $value)->firstOrFail();
+        });
         Supportticket::observe(SupportTicketObserver::class);
         SupportTicketNotification::observe(SupportTicketNotificationObserver::class);
         Tenant::observe(TenantObserver::class);

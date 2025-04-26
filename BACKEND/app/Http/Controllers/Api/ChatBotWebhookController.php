@@ -23,8 +23,7 @@ class ChatBotWebhookController extends Controller
     
     public function index(Request $request)
     {
-        generateLogs("info", "chatwebhook Log :",$request->all());
-
+     
         if($request->source == "chat360"){ 
             $response = $this->chat360Service->login();   
             $chatHistory = $this->chat360Service->getChatHistory($response["access"], $request->roomId);
@@ -32,7 +31,7 @@ class ChatBotWebhookController extends Controller
         }
     }
 
-    public function fetchMessageFromRoom(ChatBotRoomId $request)
+    public function fetchMessageFromRoom(Request $request)
     {
         return $this->chatBotWebhookRepository->fetchMessageFromRoom($request);
     }

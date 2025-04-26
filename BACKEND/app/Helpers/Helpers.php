@@ -152,7 +152,7 @@ if (!function_exists('getDbConnection')) {
         // Get the database name associated with the domain from 'details' table
         $details = DB::table('details')->where('domain', $domainName)
             ->orWhere('uin', $domainName)->first();
-
+      
         if ($details) {
             $connectionDetails = [
                 'database' => $details->db,
@@ -175,9 +175,9 @@ if (!function_exists('getDbConnection')) {
                 'strict' => true,
                 'engine' => null,
             ]);
-
+             DB::setDefaultConnection($newConnectionName);
             return DB::connection($newConnectionName);
-            // return DB::setDefaultConnection($newConnectionName);
+            
         }
         return null;
     }
