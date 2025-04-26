@@ -390,6 +390,9 @@ class WebhookCallController extends Controller
             'call_term_reason' => $request->input('call_term_reason'),
             'comments' => $request->input('comments'),
             'call_recording_url' => $request->input('call_recording_url') ?? null,
+            'cust_call_time' => Carbon::parse($request->cust_call_time)->format('Y-m-d H:i:s'),
+            'aband_call_time' => $request->input('aband_call_time') ?? null,
+            'call_did_pattern' => $request->input('call_did_pattern') ?? null,
             'type' => 'call_history',
             'call_type' => $callType,
             'json_data' => json_encode($request->all())
