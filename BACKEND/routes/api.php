@@ -85,7 +85,8 @@ use App\Http\Controllers\Api\IncomingCallController;
 use App\Http\Controllers\Api\ApiConfigurationTypeController;
 use App\Http\Controllers\Api\CallLogReportController;
 use App\Http\Controllers\Api\UserActivityReportController;
-use App\Http\Controllers\Api\ExportController;
+//use App\Http\Controllers\Api\ExportController;
+use App\Http\Controllers\Api\UtilityController;
 
 require base_path('routes/externalUse.php');
 
@@ -112,9 +113,16 @@ Route::middleware(['auth:api'])->group(function () {
 
 Route::middleware(['jwt.auth'])->group(function () {
 
-    Route::get('export-database', [ExportController::class, 'export']);
-
+    Route::prefix('/utility')->group(function () {
+//      Route::get('export-database', [ExportController::class, 'export']);
+        Route::get('export-database', [UtilityController::class, 'export']);
+        Route::get('export-listing', [UtilityController::class, 'exportUtility']);
+        Route::get('import-database', [UtilityController::class, 'import']);
+        Route::get('import-listing', [UtilityController::class, 'importUtility']);
+    });
+    
     Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
+    
     Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
 
     Route::apiResource('audit-logs', AuditController::class);

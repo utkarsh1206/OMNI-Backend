@@ -14,4 +14,32 @@ class Download extends Model
         'user_id',
         'type',
     ];
+
+    protected $hidden = ['user'];
+    
+    protected $appends = ['username', 'full_file_path'];
+
+    /**
+     * Relationship with User
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Accessor to get the username from related user
+     */
+    public function getUsernameAttribute()
+    {
+        return $this->user ? $this->user->username : null;
+    }
+
+    /**
+     * Accessor to get the full file path
+     */
+    public function getFullFilePathAttribute()
+    {
+        return storage_path('app/exports/' . $this->file_name);
+    }
 }
