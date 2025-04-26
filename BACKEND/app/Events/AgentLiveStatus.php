@@ -10,19 +10,21 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class DialCenterData implements ShouldBroadcastNow
+class AgentLiveStatus implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $dialerData;
+    private $agentLiveData, $domain, $authId;
 
     /**
      * Create a new event instance.
      */
     public function __construct($data)
     {
-        $this->dialerData = $data;
-        generateLogs('info', 'broadcast Data: ' . json_encode(['dialerData' => $this->dialerData]));
+        $this->agentLiveData = $data;
+        $this->domain = auth()->user()->domain;
+        $this->authId = auth()->user()->id;
+        generateLogs('info', 'broadcast Data: ' . json_encode(['AgentLiveStatus' => $this->agentLiveData]));
     }
 
     /**
@@ -32,17 +34,17 @@ class DialCenterData implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        generateLogs('info', 'Channel Name: ' . json_encode(['Channel' => "dialer_{$this->dialerData['type']}"]));
+        generateLogs('info', 'Channel Name: ' . json_encode(['Channel' =>"{$this->domain}-{$this->authId}-agent-status"]));
         return [
-            new PrivateChannel("dialer_{$this->dialerData['type']}"),
+            new PrivateChannel("{$this->domain}-{$this->authId}-agent-status"),
         ];
     }
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: ' . json_encode(['dialerData' => $this->dialerData]));
+        generateLogs('info', 'broadcastWith Data: ' . json_encode(['AgentLiveStatus' => $this->agentLiveData]));
         return [
-            'dialCenter' => $this->dialerData,
+            'AgentLiveStatus' => $this->agentLiveData,
         ];
     }
 }

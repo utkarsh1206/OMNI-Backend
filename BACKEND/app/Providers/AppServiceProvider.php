@@ -9,6 +9,8 @@ use App\Observers\SupportTicketNotificationObserver;
 use App\Models\SupportTicketNotification;
 use App\Models\Tenant;
 use App\Observers\TenantObserver;
+use App\Observers\LiveAgentObserver;
+use App\Models\LiveAgents;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,5 +29,6 @@ class AppServiceProvider extends ServiceProvider
         Supportticket::observe(SupportTicketObserver::class);
         SupportTicketNotification::observe(SupportTicketNotificationObserver::class);
         Tenant::observe(TenantObserver::class);
+        LiveAgents::observe(LiveAgentObserver::class);
     }
 }
