@@ -302,7 +302,8 @@ class WebhookCallController extends Controller
     private function handleCallRequest(Request $request, string $type)
     {
         try {
-            $agentName = $request->caller_username;
+            generateLogs('info', "Request data" . $request);
+            // $agentName = $request->caller_username;
             $domain_name = $request->domain_name;
             $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $domain_name));
 
@@ -311,21 +312,32 @@ class WebhookCallController extends Controller
                 $data = getDbConnection($domain_name);
                 DB::setDefaultConnection($data->getName());
 
-                $agentId = Users::select('id')->where('username', $agentName)->first();
+                // $agentId = Users::select('id')->where('username', $agentName)->first();
 
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
 
+                $agentName = $request->caller_username;
+                $agentId = Users::select('id')->where('username', $agentName)->first();
+
                 if ($type !== 'call_initiated') {
-                    generateLogs('info', 'inside if + agent_id ' . $agentId);
+                    generateLogs('info', 'inside if + caller_uername: ' . $request->caller_username);
+                    
+                    
+                    generateLogs('info', 'Agent ID: ' . $agentId->id);
+                    generateLogs('info', 'caller_user_extenstion: ' . $data['caller_user_extension']);
 
-                    $liveAgent = LiveAgents::where('user_id', $agentId)
-                        ->where('extension', $data['caller_user_extension'])
-                        ->first();
-
-                    if ($liveAgent) {
-                        $liveAgent->status = $data['user_status'];
-                        $liveAgent->save();
+                    if($agentId) {
+                        generateLogs('info', "Inside agentId IF block");
+                        $liveAgent = LiveAgents::where('user_id', $agentId->id)
+                            ->where('extension', $data['caller_user_extension'])
+                            ->first();
+                            generateLogs('info', "Inside agentId IF block" . json_encode($liveAgent));
+                        if ($liveAgent) {
+                            $liveAgent->status = $data['user_status'];
+                            $liveAgent->save();
+                        }
+                        generateLogs('info', "after agentId IF block");
                     }
                 }
 
