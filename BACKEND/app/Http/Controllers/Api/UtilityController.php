@@ -109,63 +109,6 @@ class UtilityController extends Controller
         return $this->utilityRepository->exportUtility($request);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/utility/import-database",
-     *     tags={"Utility"},
-     *     summary="Import Database",
-     *     description="Uploads a `.sql` file and imports its contents into the database.",
-     *     operationId="importDatabase",
-     *     requestBody=@OA\RequestBody(
-     *         required=true,
-     *         content={
-     *             "multipart/form-data": {
-     *                 "schema": {
-     *                     "type": "object",
-     *                     "required": {"import_file"},
-     *                     "properties": {
-     *                         "import_file": {
-     *                             "type": "string",
-     *                             "format": "binary",
-     *                             "description": "The SQL file to be imported. Must have .sql extension."
-     *                         }
-     *                     }
-     *                 }
-     *             }
-     *         }
-     *     ),
-     *     responses={
-     *         @OA\Response(
-     *             response=200,
-     *             description="Database imported successfully.",
-     *             @OA\JsonContent(
-     *                 type="object",
-     *                 @OA\Property(property="status", type="boolean", example=true),
-     *                 @OA\Property(property="message", type="string", example="Database imported successfully."),
-     *                 @OA\Property(property="data", type="array", @OA\Items(type="object"))
-     *             )
-     *         ),
-     *         @OA\Response(
-     *             response=422,
-     *             description="Validation error (wrong file or no file uploaded)",
-     *             @OA\JsonContent(
-     *                 type="object",
-     *                 @OA\Property(property="message", type="string", example="The import file must be a file of type: sql."),
-     *                 @OA\Property(property="errors", type="object")
-     *             )
-     *         ),
-     *         @OA\Response(
-     *             response=500,
-     *             description="Server error",
-     *             @OA\JsonContent(
-     *                 type="object",
-     *                 @OA\Property(property="status", type="boolean", example=false),
-     *                 @OA\Property(property="message", type="string", example="Something went wrong while importing the database.")
-     *             )
-     *         )
-     *     }
-     * )
-     */
     public function import(ImportDatabaseRequest $request)
     {
         return $this->utilityRepository->import($request);

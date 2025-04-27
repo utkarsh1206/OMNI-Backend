@@ -159,10 +159,15 @@ class HoldApiRepository
     {
         try {
             $status = ($callStatus === 'Hold') ? 'Hold' : 'call';
-            
-            LiveAgents::where('user_id', $user->id)
+
+            $liveAgent = LiveAgents::where('user_id', $user->id)
                 ->where('extension', $request->phone)
-                ->update(['status' => $status]);
+                ->first();
+
+            if ($liveAgent) {
+                $liveAgent->status = $status;
+                $liveAgent->save();
+            }
         } catch (Exception $e) {
             generateLogs('error', "Error in updateAgentStatus: ", $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);

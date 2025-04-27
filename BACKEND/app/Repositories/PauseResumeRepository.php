@@ -25,8 +25,6 @@ class PauseResumeRepository
             $logEntry = PauseResumeUserLog::create($logData);
 
             // Update agent status
-            // LiveAgents::where('user_id', $userId)->where('extension', $extension)->update(['status' => $action]);
-
             $liveAgent = LiveAgents::where('user_id', $userId)
                 ->where('extension', $extension)
                 ->first();

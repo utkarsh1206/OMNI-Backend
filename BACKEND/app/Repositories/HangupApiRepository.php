@@ -114,9 +114,18 @@ class HangupApiRepository
     private function updateAgentStatus($user, $request)
     {
         try {
-            LiveAgents::where('user_id', $user->id)
+            // LiveAgents::where('user_id', $user->id)
+            //     ->where('extension', $request->phone)
+            //     ->update(['status' => 'Disposition']);
+            
+            $liveAgent = LiveAgents::where('user_id', $user->id)
                 ->where('extension', $request->phone)
-                ->update(['status' => 'Disposition']);
+                ->first();
+
+            if ($liveAgent) {
+                $liveAgent->status = 'Disposition';
+                $liveAgent->save();
+            }     
         } catch (Exception $e) {
             generateLogs('error', "Error in updateAgentStatus: ", $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
