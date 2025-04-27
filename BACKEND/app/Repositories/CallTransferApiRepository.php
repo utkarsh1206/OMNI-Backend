@@ -80,6 +80,10 @@ class CallTransferApiRepository
 
     private function buildTransferLogData($request, $liveAgent, $transferTo, $transferToType)
     {
+        $type = 'INTERNAL';
+        if ($request->filled('transfer_target_phone_number')) {
+            $type = "EXTERNAL";
+        }
         return [
             'user_id'           => $request->id,
             'campaign_id'       => $request->campaign_id,
