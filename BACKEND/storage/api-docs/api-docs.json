@@ -18990,6 +18990,80 @@
                 }
             }
         },
+        "/api/utility/import": {
+            "post": {
+                "tags": [
+                    "Utility"
+                ],
+                "summary": "Import database SQL file",
+                "description": "Imports the provided SQL file into the database and logs the import activity.",
+                "operationId": "importDatabase",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "import_file"
+                                ],
+                                "properties": {
+                                    "import_file": {
+                                        "description": "The SQL file to import into the database.",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Database imported successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Database has been imported successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "error": "Error description"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/utility/import-listing": {
             "get": {
                 "tags": [

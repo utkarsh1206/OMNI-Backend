@@ -109,6 +109,46 @@ class UtilityController extends Controller
         return $this->utilityRepository->exportUtility($request);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/utility/import",
+     *     tags={"Utility"},
+     *     summary="Import database SQL file",
+     *     description="Imports the provided SQL file into the database and logs the import activity.",
+     *     operationId="importDatabase",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"import_file"},
+     *                 @OA\Property(
+     *                     property="import_file",
+     *                     type="string",
+     *                     format="binary",
+     *                     description="The SQL file to import into the database."
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Database imported successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="status", type="string", example="Database has been imported successfully!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Something went wrong"),
+     *             @OA\Property(property="errors", type="object", example={"error": "Error description"})
+     *         )
+     *     )
+     * )
+     */
     public function import(ImportDatabaseRequest $request)
     {
         return $this->utilityRepository->import($request);
