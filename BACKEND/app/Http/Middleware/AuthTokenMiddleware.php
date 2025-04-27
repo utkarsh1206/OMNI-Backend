@@ -31,9 +31,6 @@ class AuthTokenMiddleware
                 }
                 $request->attributes->set('auth_token', $authToken);
             }
-
-          
-           
             return $next($request);
         } catch (Exception $e) {
             generateLogs('error', 'Access Token Middleware : ', $e->getMessage());
