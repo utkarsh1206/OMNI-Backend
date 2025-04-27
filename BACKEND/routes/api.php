@@ -325,6 +325,7 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::get('list', [UserActivityReportController::class, 'list']);
         Route::get('user-activity', [UserActivityReportController::class, 'userActivity']);
         Route::get('csv', [UserActivityReportController::class, 'exportCsv']);
+        Route::get('graph', [UserActivityReportController::class, 'graphData']);
     });
 });
 

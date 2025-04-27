@@ -754,4 +754,54 @@ class UserActivityReportRepository
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
+
+    public function getGraphsRecord(Request $request)
+    {
+        try {
+            $start_date = Carbon::parse($request->input('start_date'));
+            $end_date = Carbon::parse($request->input('end_date'));
+
+            // Pause Count Query
+            $pauseCount = PauseResumeUserLog::selectRaw('count(id) as total')
+                ->where('user_status', 'Pause')
+                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()])
+                ->first();
+
+            // Resume Count Query
+            $resumeCount = PauseResumeUserLog::selectRaw('count(id) as total')
+                ->where('user_status', 'Resume')
+                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()])
+                ->first();
+
+            $i_count = DB::table('neox_call_logs')
+                ->selectRaw('count(id) as total')
+                ->whereRaw(" call_type = 'incoming'")
+                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()])
+                ->first();
+
+            // Outgoing Call Count
+            $o_count = DB::table('neox_call_logs')
+                ->selectRaw('count(id) as total')
+                ->whereRaw(" call_type = 'outgoing'")
+                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()])
+                ->first();
+
+            // Return the counts as a JSON response
+            $data = [
+                'pause_count' => $pauseCount->total,
+                'resume_count' => $resumeCount->total,
+                'incoming_count' => $i_count->total,
+                'outgoing_count' => $o_count->total,
+            ];
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $data,
+                trans('message.data_fetch')
+            );
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in UserActivityReportRepository@getGraphsRecord: ' . $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
 }

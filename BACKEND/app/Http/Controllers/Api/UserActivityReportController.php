@@ -29,4 +29,9 @@ class UserActivityReportController extends Controller
     {
         return $this->report->exportReportToCsv($request);
     }
+
+    public function graphData(Request $request)
+    {
+        return $this->report->getGraphsRecord($request);
+    }
 }

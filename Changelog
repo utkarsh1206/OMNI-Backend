@@ -1,3 +1,10 @@
+2025-04-27 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : git rev-parse --short HEAD
+	* Version : Dev
+	* REACTJS : Created GUI for UserActivity reports with graphs,, pagination and CSV and listing with onclic view Activity modal open with users based on date users all activity.
+
 2025-04-24 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :
