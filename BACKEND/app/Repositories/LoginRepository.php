@@ -89,7 +89,7 @@ class LoginRepository
                         LiveAgents::create([
                             'user_id' => $userData['id'],
                             'extension' => $request->phone,
-                            'status' => 'online',
+                            'status' => 'pause',
                             'status_last_updated_at' => $timeNow,
                             'login_time' => $timeNow,
                             'ready_hr' => $timeNow,
