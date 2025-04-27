@@ -175,7 +175,7 @@ if (!function_exists('getDbConnection')) {
                 'strict' => true,
                 'engine' => null,
             ]);
-             DB::setDefaultConnection($newConnectionName);
+            // DB::setDefaultConnection($newConnectionName);
             return DB::connection($newConnectionName);
             
         }
