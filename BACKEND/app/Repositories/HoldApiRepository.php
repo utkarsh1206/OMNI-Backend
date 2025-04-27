@@ -158,7 +158,7 @@ class HoldApiRepository
     private function updateAgentStatus($user, $request, $callStatus)
     {
         try {
-            $status = ($callStatus === 'Hold') ? 'Hold' : 'call';
+            $status = ($callStatus === 'Hold') ? 'Hold' : 'incall';
 
             $liveAgent = LiveAgents::where('user_id', $user->id)
                 ->where('extension', $request->phone)
