@@ -94,7 +94,7 @@ class CallTransferApiRepository
             'transfer_to'       => $transferTo,
             'transfer_to_type'  => $transferToType,
             'call_route_data'   => $request->call_route_data,
-            'transfer_type'     => $request->type,
+            'transfer_type'     => $type,
             'call_direction'    => $liveAgent->call_direction,
         ];
     }
