@@ -36,7 +36,7 @@ class AgentLiveStatus implements ShouldBroadcastNow
     {
         generateLogs('info', 'Channel Name: ' . json_encode(['Channel' =>"{$this->domain}-{$this->authId}-agent-status"]));
         return [
-            new PrivateChannel("{$this->domain}-{$this->authId}-agent-status"),
+            new Channel("{$this->domain}-{$this->authId}-agent-status"),
         ];
     }
 
