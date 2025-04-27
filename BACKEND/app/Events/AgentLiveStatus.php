@@ -4,7 +4,6 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -23,7 +22,6 @@ class AgentLiveStatus implements ShouldBroadcastNow
     {
         $this->agentLiveData = $data;
         $this->domain = auth()->user()->domain;
-        $this->authId = auth()->user()->id;
         generateLogs('info', 'broadcast Data: ' . json_encode(['AgentLiveStatus' => $this->agentLiveData]));
     }
 
@@ -34,9 +32,9 @@ class AgentLiveStatus implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        generateLogs('info', 'Channel Name: ' . json_encode(['Channel' =>"{$this->domain}-{$this->authId}-agent-status"]));
+        generateLogs('info', 'Channel Name: ' . json_encode(['Channel' =>"{$this->domain}-agent-status"]));
         return [
-            new Channel("{$this->domain}-{$this->authId}-agent-status"),
+            new Channel("{$this->domain}-agent-status"),
         ];
     }
 

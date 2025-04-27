@@ -195,11 +195,21 @@ class DisposCallApiRepository
     {
         try {
             $status = ($liveCallData->call_direction === 'in_call') ? 'Pause' : 'Resume';
-
-            LiveAgents::where('user_id', $user->id)
+            // LiveAgents::where('user_id', $user->id)
+            //     ->where('extension', $request->phone)
+            //     ->where('uniqueid', $liveCallData->uniqueid)
+            //     ->update(['status' => $status]);
+            
+            $liveAgent = LiveAgents::where('user_id', $user->id)
                 ->where('extension', $request->phone)
                 ->where('uniqueid', $liveCallData->uniqueid)
-                ->update(['status' => $status]);
+                ->first();
+
+            if ($liveAgent) {
+                $liveAgent->status = $status;
+                $liveAgent->save();
+            }    
+
         } catch (Exception $e) {
             generateLogs('error', "Error in updateAgentStatus: ", $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);

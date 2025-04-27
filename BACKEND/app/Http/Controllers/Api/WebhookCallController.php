@@ -11,6 +11,7 @@ use App\Repositories\WebhookCallRepository;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use App\Models\LiveAgents;
 
 class WebhookCallController extends Controller
 {
@@ -314,6 +315,20 @@ class WebhookCallController extends Controller
 
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
+
+                if ($type !== 'call_initiated') {
+                    generateLogs('info', 'inside if + agent_id ' . $agentId);
+
+                    $liveAgent = LiveAgents::where('user_id', $agentId)
+                        ->where('extension', $data['caller_user_extension'])
+                        ->first();
+
+                    if ($liveAgent) {
+                        $liveAgent->status = $data['user_status'];
+                        $liveAgent->save();
+                    }
+                }
+
                 $callLog = $this->saveCallLogs($data, $agentId->id, $domain);
 
                 return $this->apiResponse->getResponseStructure(
@@ -356,6 +371,14 @@ class WebhookCallController extends Controller
     // Prepare the common data for call log
     private function prepareCallData(Request $request, string $type, string $callType)
     {
+        $status = null;
+
+        if ($type === 'call_connected') {
+            $status = 'incall';
+        } elseif ($type === 'call_hangup') {
+            $status = 'disconnect';
+        }
+
         return [
             'call_unique_id' => $request->input('call_unique_id'),
             'campaign_id' => $request->input('campaign_id'),
@@ -368,6 +391,7 @@ class WebhookCallController extends Controller
             'type' => $type,
             'call_type' => $callType,
             'json_data' => json_encode($request->all()),
+            'user_status' => $status,
         ];
     }
 
@@ -417,11 +441,6 @@ class WebhookCallController extends Controller
     // Handle sending error response
     private function sendErrorResponse()
     {
-        // return response()->json([
-        //     'error_code' => 'STL-0X311',
-        //     'msg' => 'Not accessible for outer source',
-        // ], 400);
-
         return $this->apiResponse->getResponseStructure(
             trans('message.error'),
             null,

@@ -4,6 +4,7 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -32,7 +33,7 @@ class ChatMessagesStored implements ShouldBroadcastNow
     {
         generateLogs('info', 'Channel Name: '.json_encode(['Channel' => "fetch_message_history"]));
         return [
-            new PrivateChannel("fetch_message_history"),
+            new Channel("fetch_message_history"),
         ];
     }
 
