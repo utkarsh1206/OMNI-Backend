@@ -228,7 +228,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('update-tenantpassword', [UserController::class, 'updatepassword']);
 
     Route::get('my-profile', [UserController::class, 'myprofile']);
-    Route::put('my-profile', [UserController::class, 'update']);
+    Route::put('my-profile/{user}', [UserController::class, 'update']);
 
     Route::get('/branding', [UserController::class, 'getBranding']);
 
