@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserGroupRequest;
 use Illuminate\Http\Request;
-use App\Models\Usergroup;
+use App\Models\UserGroup;
 use App\Repositories\UserGroupRepository;
 
 class UserGroupController extends Controller
@@ -197,7 +197,7 @@ class UserGroupController extends Controller
      *     )
      * )
      */
-    public function show(Usergroup $usergroup)
+    public function show(UserGroup $usergroup)
     {
         return $this->userGroupRepository->show($usergroup);
     }
@@ -265,7 +265,7 @@ class UserGroupController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, Usergroup $usergroup)
+    public function update(Request $request, UserGroup $usergroup)
     {
         return $this->userGroupRepository->update($request, $usergroup);
     }
@@ -316,7 +316,7 @@ class UserGroupController extends Controller
      *     )
      * )
      */
-    public function destroy(Usergroup $usergroup)
+    public function destroy(UserGroup $usergroup)
     {
         return $this->userGroupRepository->delete($usergroup);
     }
