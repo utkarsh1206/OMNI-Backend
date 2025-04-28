@@ -40,7 +40,7 @@ class LoginRepository
         $domain = $request->input('domain');
         if ($validator["flag"] == 1 || $validator["flag"] == 2) {
             if (isLicenseExpired($request)) {
-               // return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
+                return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
             }
 
             if (!$domain) {
