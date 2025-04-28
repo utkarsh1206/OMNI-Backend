@@ -87,7 +87,7 @@ class CallLogReportRepository
      */
     private function fetchCallLogs($query, $page)
     {
-        $perPage = config('omni.PER_PAGE');
+        $perPage = config('omni.REPORT_DATA_PER_PAGE');
         if ($page === config('omni.ALL_PAGE')) {
             return $this->formatCallLogs($query->get());
         } else {

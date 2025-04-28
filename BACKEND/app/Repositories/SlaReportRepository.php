@@ -25,7 +25,7 @@ class SlaReportRepository
     public function generateReport(Request $request)
     {
         try {
-            $perPage = $request->input('perPage', config('omni.PER_PAGE'));
+            $perPage = $request->input('perPage', config('omni.REPORT_DATA_PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             $ticketsquery = SupportTicket::with([

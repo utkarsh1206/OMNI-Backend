@@ -30,7 +30,7 @@ class TicketReportRepository
             $query = $this->applyFilters($query, $request, $payload);
 
             // Paginate the results
-            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $perPage = $request->input('per_page', config('omni.REPORT_DATA_PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             if ($page === config('omni.ALL_PAGE')) {
