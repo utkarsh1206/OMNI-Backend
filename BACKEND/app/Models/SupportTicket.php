@@ -37,7 +37,9 @@ class SupportTicket extends Model
         "alert_before_response_notification_time",
         "resolved_time",
         "alert_before_resolve_notification_time",
-        "is_escalated"
+        "is_escalated",
+        "category_id",
+        "usergroup_id"
     ];
 
     public function assignedUser()
