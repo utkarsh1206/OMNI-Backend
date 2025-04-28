@@ -64,15 +64,15 @@ class CallLogReportRepository
      */
     private function buildCallLogQuery(Request $request)
     {
-        if (!$request->filled(['start_date', 'end_date'])) {
+        if (!$request->filled(['startDate', 'endDate'])) {
             return null;
         }
 
         return NeoxCallLog::query()
             ->where('type', 'CALL_HISTORY')
             ->whereBetween(DB::raw('DATE(call_date)'), [
-                Carbon::parse($request->start_date)->toDateString(),
-                Carbon::parse($request->end_date)->toDateString()
+                Carbon::parse($request->startDate)->toDateString(),
+                Carbon::parse($request->endDate)->toDateString()
             ])
             ->when($request->filled('campaign_id'), function ($query) use ($request) {
                 $query->where('campaign_id', $request->campaign_id);
