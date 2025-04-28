@@ -112,6 +112,12 @@ Route::middleware(['auth:api'])->group(function () {
 });
 
 Route::middleware(['jwt.auth'])->group(function () {
+    Route::post('license_update', [LicenseUpdateController::class, 'updateLicense']);
+    Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
+    Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
+});
+
+Route::middleware(['jwt.auth'])->group(function () {
 
     Route::prefix('/utility')->group(function () {
         //      Route::get('export-database', [ExportController::class, 'export']);
