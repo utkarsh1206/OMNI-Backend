@@ -34,7 +34,7 @@ class UserActivityReportRepository
     {
         try {
             // Validate required datetime filters
-            if (!$request->has(['start_date', 'end_date'])) {
+            if (!$request->has(['startDate', 'endDate'])) {
                 return $this->apiResponse->getResponseStructure(
                     trans('message.error'),
                     null,
@@ -43,8 +43,8 @@ class UserActivityReportRepository
             }
 
             // Parse start and end datetimes
-            $startDatetime = Carbon::parse($request->start_date);
-            $endDatetime = Carbon::parse($request->end_date);
+            $startDatetime = Carbon::parse($request->startDate);
+            $endDatetime = Carbon::parse($request->endDate);
 
             // Build the base query
             $query = UserLoginLog::with('user')
@@ -515,7 +515,7 @@ class UserActivityReportRepository
     {
         try {
             // Validate required datetime filters
-            if (!$request->has(['start_date', 'end_date'])) {
+            if (!$request->has(['startDate', 'endDate'])) {
                 return $this->apiResponse->getResponseStructure(
                     trans('message.error'),
                     null,
@@ -524,8 +524,8 @@ class UserActivityReportRepository
             }
 
             // Get the main report data (same as getReport method)
-            $startDatetime = Carbon::parse($request->start_date);
-            $endDatetime = Carbon::parse($request->end_date);
+            $startDatetime = Carbon::parse($request->startDate);
+            $endDatetime = Carbon::parse($request->endDate);
 
             $query = UserLoginLog::with('user')
                 ->whereBetween('created_at', [$startDatetime, $endDatetime]);
@@ -758,8 +758,8 @@ class UserActivityReportRepository
     public function getGraphsRecord(Request $request)
     {
         try {
-            $start_date = Carbon::parse($request->input('start_date'));
-            $end_date = Carbon::parse($request->input('end_date'));
+            $start_date = Carbon::parse($request->input('startDate'));
+            $end_date = Carbon::parse($request->input('endDate'));
 
             // Pause Count Query
             $pauseCount = PauseResumeUserLog::selectRaw('count(id) as total')
