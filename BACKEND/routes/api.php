@@ -114,20 +114,20 @@ Route::middleware(['auth:api'])->group(function () {
 Route::middleware(['jwt.auth'])->group(function () {
 
     Route::prefix('/utility')->group(function () {
-//      Route::get('export-database', [ExportController::class, 'export']);
+        //      Route::get('export-database', [ExportController::class, 'export']);
         Route::get('export-database', [UtilityController::class, 'export']);
         Route::get('export-listing', [UtilityController::class, 'exportUtility']);
         Route::post('import-database', [UtilityController::class, 'import']);
         Route::get('import-listing', [UtilityController::class, 'importUtility']);
     });
-    
+
     Route::put('/tenant-license/{id}', [TenantLicenseController::class, 'update']);
-    
+
     Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
 
     Route::apiResource('audit-logs', AuditController::class);
 
-    Route::post('save-user-provider', [SmsProviderController::class, 'saveUserProvider']);
+    Route::post('save-user-provider', [SmsProviderController::class, 'saveUserProvider']);  // not in frontend yet
 
     Route::post('logout', [LoginController::class, 'logout']);
 
@@ -137,19 +137,19 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::apiResource('tenantrole', TenantRoleController::class);
 
-    Route::get('cron-commands', [CronCommandController::class, 'index']);
+    // Route::get('cron-commands', [CronCommandController::class, 'index']);
 
     Route::apiResource('cron-configurations', CronConfigurationController::class);
 
-    Route::get('cron-expressions', [CronExpressionController::class, 'index']);
+    // Route::get('cron-expressions', [CronExpressionController::class, 'index']);
 
     Route::get('tenantrole-list', [TenantRoleController::class, 'list']);
 
-    Route::get('tenantrole-menu', [TenantRoleController::class, 'menu']);
+    Route::get('tenantrole-menu', [TenantRoleController::class, 'menu']);   // not in frontend yet
 
-    Route::get('tenant-dashboard', [TenantController::class, 'dashboard']);
+    Route::get('tenant-dashboard', [TenantController::class, 'dashboard']); // not in frontend yet
 
-    Route::apiResource('sms-providers', SmsProviderController::class);
+    Route::apiResource('sms-providers', SmsProviderController::class);  // not in frontend yet
 
     Route::apiResource('api-configurations', ApiConfigurationController::class);
 
@@ -161,7 +161,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('countries', [CountryController::class, 'index']);
 
-    Route::get('nameprefixes', [NamePrefixController::class, 'index']);
+    Route::get('nameprefixes', [NamePrefixController::class, 'index']);     // not in frontend yet
 
     Route::get('occupations', [OccupationController::class, 'index']);
 
@@ -177,7 +177,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('campaigns', [CampaignListController::class, 'index']);
 
-    Route::get('ingroups', [IngroupListController::class, 'index']);
+    Route::get('ingroups', [IngroupListController::class, 'index']);    // not in frontend yet
 
     Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
 
@@ -185,7 +185,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::post('note', [NoteController::class, 'store']);
 
-    Route::post('send-email', [EmailController::class, 'sendEmail']);
+    Route::post('send-email', [EmailController::class, 'sendEmail']);   // not in frontend yet
 
     Route::post('insert-update-custom', [UpdateCustomFieldController::class, 'index']);
 
@@ -208,12 +208,12 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('products', ProductController::class);
 
     // Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
-    Route::apiResource('email-logs', EmailLogController::class);
+    // Route::apiResource('email-logs', EmailLogController::class);
 
     Route::apiResource('api-configuration-types', ApiConfigurationTypeController::class);
-    Route::apiResource('api-configurations', ApiConfigurationController::class);
+    // Route::apiResource('api-configurations', ApiConfigurationController::class);    
 
-    Route::apiResource('sms-providers', SmsProviderController::class);
+    Route::apiResource('sms-providers', SmsProviderController::class);      // not in frontend yet
 
     Route::apiResource('lists', EcdialListsController::class);
 
@@ -228,6 +228,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('update-tenantpassword', [UserController::class, 'updatepassword']);
 
     Route::get('my-profile', [UserController::class, 'myprofile']);
+    Route::put('my-profile/{user}', [UserController::class, 'update']);
 
     Route::get('/branding', [UserController::class, 'getBranding']);
 
@@ -243,9 +244,9 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::post('/upload-lead-csv/{list_id}', [ImportLeadController::class, 'uploadLeadCsv']);
 
-    Route::get('/custom-leads/{list_id}', [CustomLeadController::class, 'index']);  // Get all leads for a list
+    Route::get('/custom-leads/{list_id}', [CustomLeadController::class, 'index']);  // Get all leads for a list     
 
-    Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']); // Get a single lead by ID
+    Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']); // Get a single lead by ID      
 
     Route::post('/custom-leads/{list_id}', [CustomLeadController::class, 'create']);
 
@@ -290,14 +291,14 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('pause-resume', [PauseResumeApiController::class, 'pauseResumeApi']);
         Route::post('hangup', [HangupApiController::class, 'hangupApi']);
         Route::post('dispos-call', [DisposCallApiController::class, 'disposCallApi']);
-        Route::post('dial-next', [DialNextCallApiController::class, 'dialNextCallApi']);
-        Route::post('add-party', [AddPartyApiController::class, 'addPartyApi']);
+        Route::post('dial-next', [DialNextCallApiController::class, 'dialNextCallApi']);    // not in frontend yet
+        Route::post('add-party', [AddPartyApiController::class, 'addPartyApi']);    // not in frontend yet
         Route::post('call-tansfer', [CallTransferApiController::class, 'callTransferApi']);
         Route::post('disconnect-conf', [DisconnectConfApiController::class, 'disconnectConfApi']);
-        Route::post('leave-conf', [LeaveConfApiController::class, 'leaveConfApi']);
+        Route::post('leave-conf', [LeaveConfApiController::class, 'leaveConfApi']); // not in frontend yet
         Route::post('record-call', [RecordApiController::class, 'callRecordingApi']);
-        Route::post('remove-party', [RemovePartyApiController::class, 'removePartyApi']);
-        Route::post('start-conf', [StartConfApiController::class, 'startConfApi']);
+        Route::post('remove-party', [RemovePartyApiController::class, 'removePartyApi']);   // not in frontend yet
+        Route::post('start-conf', [StartConfApiController::class, 'startConfApi']); // not in frontend yet
     });
 
     // Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);
@@ -305,11 +306,11 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
     // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
 
-    Route::get('get-messages', [MessageController::class, 'getMessages']);
-    Route::post('message', [MessageController::class, 'storeMessage']);
+    Route::get('get-messages', [MessageController::class, 'getMessages']);  // not in frontend yet
+    Route::post('message', [MessageController::class, 'storeMessage']); // not in frontend yet
 
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {
-        Route::get('neox-call-incoming', [IncomingCallController::class, 'checkIncoming']);
+        Route::get('neox-call-incoming', [IncomingCallController::class, 'checkIncoming']); // not in frontend yet
     });
 
     Route::prefix('call-log-report')->group(function () {
@@ -317,7 +318,7 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::get('csv', [CallLogReportController::class, 'exportCsv']);
         Route::get('chart-summary', [CallLogReportController::class, 'getChartSummary']);
         Route::get('status-summary', [CallLogReportController::class, 'getStatusSummary']);
-        Route::get('usergroup-summary', [CallLogReportController::class, 'getByUserGroup']);
+        Route::get('usergroup-summary', [CallLogReportController::class, 'getByUserGroup']);    // not in frontend yet
         Route::get('user-summary', [CallLogReportController::class, 'getCallsByAgent']);
     });
 
@@ -329,20 +330,35 @@ Route::middleware(['jwt.auth'])->group(function () {
     });
 });
 
+Route::get('countries', [CountryController::class, 'index']);
+Route::get('states', [StateController::class, 'index']);
+Route::get('cities', [CityController::class, 'index']);
+
 Route::post('/ext-api/camp-list', [CampaignApiController::class, 'campaignListApi']);
 Route::post('/ext-api/camp-list-all', [CampaignApiController::class, 'campaignListAllApi']);
 Route::post('/ext-api/camp-list-filtered', [CampaignApiController::class, 'campaignListFilteredApi']);
 
 Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
     Route::post('ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
-    Route::post('refresh-logout', [LogoutRefreshApiController::class, 'agentLogoutRefreshApi']);
+    Route::post('refresh-logout', [LogoutRefreshApiController::class, 'agentLogoutRefreshApi']);    // not in frontend yet
 });
 
 Route::post('/ext-api/login', [LoginApiController::class, 'agentLoginApi']);
 
-Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);
-Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
-Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
-Route::post('call-history', [WebhookCallController::class, 'callHistory']);
+Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  // -not to be used in frontend
+Route::post('call-connected', [WebhookCallController::class, 'callConnected']); // -not to be used in frontend
+Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);   // -not to be used in frontend
+Route::post('call-history', [WebhookCallController::class, 'callHistory']); // -not to be used in frontend
 
 Route::apiResource('pause-code', 'App\Http\Controllers\Api\PauseCodeController');
+
+Route::get('cron-commands', [CronCommandController::class, 'index']);
+Route::get('cron-expressions', [CronExpressionController::class, 'index']);
+
+
+/**
+ * missing urls
+ * 1. dispositions
+ * 2. chats
+ * 3. chats/{id}/messages
+ */
