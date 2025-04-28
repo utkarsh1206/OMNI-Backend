@@ -119,6 +119,7 @@ class CallLogReportRepository
                 'call_dispo_status' => $log->call_dispo_status,
                 'call_term_reason' => $log->call_term_reason,
                 'call_recording_url' => $log->call_recording_url,
+                'comments' => $log->comments
             ];
         });
     }
@@ -165,6 +166,7 @@ class CallLogReportRepository
             'Status',
             'Disposition Status',
             'Term Reason',
+            'Comments',
             'Recording URL',
         ];
 
@@ -207,6 +209,7 @@ class CallLogReportRepository
                 $log->call_status,
                 $log->call_dispo_status,
                 $log->call_term_reason,
+                $log->comments,
                 $log->call_recording_url,
             ];
         })->toArray();
