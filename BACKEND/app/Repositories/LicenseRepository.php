@@ -21,13 +21,9 @@ class LicenseRepository
     {
         try {
             $userId = Auth::user()->id;
-            $license = Admins::where('id', $userId)->find();
+            $license = Admins::find($userId);
             $license->license_key = $request->license_key;
             $license->save();
-            logMessage("debug", "License updated", [
-                'user_id' => $userId,
-                'license_key' => $license->license_key
-            ]);
 
             return response()->json([
                 'code' => 0,

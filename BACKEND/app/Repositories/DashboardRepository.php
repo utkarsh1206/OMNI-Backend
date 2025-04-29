@@ -72,11 +72,31 @@ class DashboardRepository
                 ->get()
                 ->keyBy('default_priority');
 
-            // Tickets by department
-            $ticketsByDepartment = SupportTicket::where($conditionalFilter)->select(DB::raw('department_id, COUNT(*) as count'))
+            // // Tickets by department
+            // $ticketsByDepartment = SupportTicket::where($conditionalFilter)->select(DB::raw('department_id, COUNT(*) as count'))
+            //     ->groupBy('department_id')
+            //     ->get()
+            //     ->keyBy('department_id');
+
+            $ticketsByDepartment = SupportTicket::where($conditionalFilter)
+                ->select('department_id', DB::raw('COUNT(*) as count'))
                 ->groupBy('department_id')
+                ->get();
+
+            // Get department names
+            $departments = Department::whereIn('id', $ticketsByDepartment->pluck('department_id'))
                 ->get()
-                ->keyBy('department_id');
+                ->keyBy('id');
+
+            // Map department names
+            $ticketsByDepartment = $ticketsByDepartment->map(function ($ticket) use ($departments) {
+                return [
+                    'department_id' => $ticket->department_id,
+                    'department_name' => $departments->get($ticket->department_id)->name ?? 'Unknown Department',
+                    'count' => $ticket->count,
+                ];
+            });
+
 
             // // Pending tickets by agent (assign_to_id represents agent)
             // $pendingTicketsByAgent = SupportTicket::whereNotIn('default_status', ['Resolved', 'Closed'])
