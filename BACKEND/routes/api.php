@@ -105,17 +105,11 @@ Route::get('callCDR', [CallCDRListController::class, 'getCallCDRList']);
 Route::get('custome-field/header', [CustomFieldController::class, 'custumFieldHeader']);
 Route::get('custome-field/value', [CustomFieldController::class, 'custumFieldvalue']);
 
-Route::middleware(['auth:api'])->group(function () {
+// Route::middleware(['auth:api'])->group(function () {
     Route::post('license_update', [LicenseUpdateController::class, 'updateLicense']);
     Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
     Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
-});
-
-Route::middleware(['jwt.auth'])->group(function () {
-    Route::post('license_update', [LicenseUpdateController::class, 'updateLicense']);
-    Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
-    Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
-});
+// });
 
 Route::middleware(['jwt.auth'])->group(function () {
 
