@@ -25,10 +25,10 @@ class SlaReportRepository
     public function generateReport(Request $request)
     {
         try {
-            $perPage = $request->input('perPage', config('omni.REPORT_DATA_PER_PAGE'));
+            $perPage = $request->input('perPage', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
-            $ticketsquery = SupportTicket::with([
+            $ticketsQuery = SupportTicket::with([
                 'notifications' => function ($query) {
                     $query->select(
                         'support_ticket_id',
@@ -51,58 +51,95 @@ class SlaReportRepository
 
             $payload = $this->extractPayload($request);
 
-            $ticketsquery = $this->applyFilters($ticketsquery, $request, $payload);
+            $ticketsQuery = $this->applyFilters($ticketsQuery, $request, $payload);
 
-            $ticketsquery = $page == config('omni.ALL_PAGE') ? $ticketsquery->get() : $ticketsquery->paginate($perPage);
+            if ($page == config('omni.ALL_PAGE')) {
+                $tickets = $ticketsQuery->get();
 
-            // Step 2: Get SLA IDs for incidents
-            $incidentIds = $ticketsquery->pluck('incident_id')->unique();
-            $incidentSLA = IncidentType::whereIn('id', $incidentIds)
-                ->pluck('sla_id', 'id'); // ['incident_id' => sla_id]
+                // Process all records
+                $incidentIds = $tickets->pluck('incident_id')->unique();
+                $incidentSLA = IncidentType::whereIn('id', $incidentIds)
+                    ->pluck('sla_id', 'id');
 
-            // Step 3: Get Resolve Time from SLA Targets
-            $slaIds = $incidentSLA->values()->unique();
-            $slaTargets = SlaTarget::whereIn('sla_id', $slaIds)
-                ->get()
-                ->groupBy(function ($item) {
-                    return $item->sla_id . '_' . $item->priority_type;
-                }); // Create a mapping ['slaId_priority' => resolve_time]
+                $slaIds = $incidentSLA->values()->unique();
+                $slaTargets = SlaTarget::whereIn('sla_id', $slaIds)
+                    ->get()
+                    ->groupBy(function ($item) {
+                        return $item->sla_id . '_' . $item->priority_type;
+                    });
 
-            // Step 4: Merge Data in PHP
-            $ticketsquery->transform(function ($ticket) use ($incidentSLA, $slaTargets) {
-                $slaId = $incidentSLA[$ticket->incident_id] ?? null;
-                $resolveTime = $slaId ? ($slaTargets[$slaId . '_' . $ticket->priority] ?? null) : null;
-                $resolveTimeMinutes = $resolveTime ? $resolveTime->first()->resolve_time_value : null;
+                $formattedTickets = $tickets->map(function ($ticket) use ($incidentSLA, $slaTargets) {
+                    return $this->formatTicketWithSLA($ticket, $incidentSLA, $slaTargets);
+                });
 
-                // Convert minutes to HH:MM:SS
-                if ($resolveTimeMinutes !== null) {
-                    $hours = floor($resolveTimeMinutes / 60);
-                    $minutes = $resolveTimeMinutes % 60;
-                    $seconds = 0; // Defaulting to 0 seconds
-                    $ticket->resolve_time_value = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-                } else {
-                    $ticket->resolve_time_value = null;
-                }
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.success'),
+                    $formattedTickets,
+                    trans('message.data_fetch')
+                );
+            } else {
+                // Get paginated results first
+                $paginatedTickets = $ticketsQuery->paginate($perPage);
 
-                return $ticket;
-            });
+                // Process only the current page items
+                $incidentIds = $paginatedTickets->getCollection()->pluck('incident_id')->unique();
+                $incidentSLA = IncidentType::whereIn('id', $incidentIds)
+                    ->pluck('sla_id', 'id');
 
-            $ticketsquery = $page == config('omni.ALL_PAGE') ? $ticketsquery : $ticketsquery->items();
+                $slaIds = $incidentSLA->values()->unique();
+                $slaTargets = SlaTarget::whereIn('sla_id', $slaIds)
+                    ->get()
+                    ->groupBy(function ($item) {
+                        return $item->sla_id . '_' . $item->priority_type;
+                    });
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $ticketsquery, trans('message.data_fetch'));
+                // Transform the collection while keeping pagination
+                $transformedCollection = $paginatedTickets->getCollection()->map(function ($ticket) use ($incidentSLA, $slaTargets) {
+                    return $this->formatTicketWithSLA($ticket, $incidentSLA, $slaTargets);
+                });
+
+                // Set the transformed collection back to the paginator
+                $paginatedTickets->setCollection($transformedCollection);
+
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.success'),
+                    $paginatedTickets,
+                    trans('message.data_fetch')
+                );
+            }
         } catch (Exception $ex) {
             generateLogs('error', 'Error in Sla Report List : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
-        // return response()->json([
-        //     'data' => $page !== 'all' ? $ticketsquery->items() : $ticketsquery,
-        //     'meta' => $page !== 'all' ? [
-        //         'current_page' => $ticketsquery->currentPage(),
-        //         'last_page' => $ticketsquery->lastPage(),
-        //         'perPage' => $ticketsquery->perPage(),
-        //         'total' => $ticketsquery->total(),
-        //     ] : null,
-        // ]);
+    }
+
+    private function formatTicketWithSLA($ticket, $incidentSLA, $slaTargets)
+    {
+        $slaId = $incidentSLA[$ticket->incident_id] ?? null;
+        $resolveTime = $slaId ? ($slaTargets[$slaId . '_' . $ticket->priority] ?? null) : null;
+        $resolveTimeMinutes = $resolveTime ? $resolveTime->first()->resolve_time_value : null;
+
+        // Convert minutes to HH:MM:SS
+        $resolveTimeFormatted = null;
+        if ($resolveTimeMinutes !== null) {
+            $hours = floor($resolveTimeMinutes / 60);
+            $minutes = $resolveTimeMinutes % 60;
+            $resolveTimeFormatted = sprintf('%02d:%02d:00', $hours, $minutes);
+        }
+
+        return [
+            'id' => $ticket->id,
+            'ticket_id' => $ticket->ticket_id,
+            'category' => $ticket->category,
+            'priority' => $ticket->priority,
+            'opened_date' => $ticket->opened_date,
+            'sla_compliance' => $ticket->sla_compliance,
+            'user_name' => $ticket->user_name,
+            'incident_id' => $ticket->incident_id,
+            'resolve_time_value' => $resolveTimeFormatted,
+            'actual_resolved_time' => $ticket->actual_resolved_time,
+            'resolved_date' => $ticket->notifications->first()->resolved_date ?? null
+        ];
     }
 
     public function prioritySLA(Request $request)

@@ -9,7 +9,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Account extends Model
 {
     use HasFactory, SoftDeletes;
-    // public $timestamps = false;
+
+    protected $hidden = ['product', 'department'];
+
+    protected $appends = ['product_name', 'department_name'];
 
     protected $fillable = [
         'product_id',
@@ -51,4 +54,24 @@ class Account extends Model
         'landline_no',
         'company_email',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function getProductNameAttribute()
+    {
+        return $this->product ? $this->product->name : null;
+    }
+
+    public function getDepartmentNameAttribute()
+    {
+        return $this->department ? $this->department->name : null;
+    }
 }

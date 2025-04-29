@@ -33,6 +33,9 @@ class UserActivityReportRepository
     public function getReport(Request $request)
     {
         try {
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
             // Validate required datetime filters
             if (!$request->has(['startDate', 'endDate'])) {
                 return $this->apiResponse->getResponseStructure(
@@ -47,60 +50,56 @@ class UserActivityReportRepository
             $endDatetime = Carbon::parse($request->endDate);
 
             // Build the base query
-            $query = UserLoginLog::with('user')
-                ->whereBetween('created_at', [$startDatetime, $endDatetime]);
+            $query = UserLoginLog::select([
+                'user_id',
+                'login_date',
+                DB::raw("SUM(TIMESTAMPDIFF(SECOND, CONCAT(login_date, ' ', login_time), CONCAT(logout_date, ' ', logout_time))) as total_seconds"),
+                DB::raw("COUNT(*) as login_count")
+            ])
+                ->whereNotNull('logout_time')
+                ->whereBetween('login_date', [$startDatetime, $endDatetime])
+                ->groupBy('login_date', 'user_id')
+                ->with('user')
+                ->orderByDesc('login_date');
 
-            // Optional user filter
-            if ($request->filled('user_id')) {
-                $query->where('user_id', $request->user_id);
-            }
+            // Handle different response formats
+            if ($page == config('omni.ALL_PAGE')) {
+                $transformedData = $query->get()
+                    ->groupBy('login_date')
+                    ->map(function ($group) {
+                        return $group->map(function ($item) {
+                            return [
+                                'user_id' => $item->user_id,
+                                'user_name' => $item->user->username ?? null,
+                                'total_duration' => gmdate('H:i:s', $item->total_seconds),
+                                'login_count' => $item->login_count
+                            ];
+                        });
+                    });
+            } else {
+                // For paginated response
+                $paginatedData = $query->paginate($perPage);
 
-            // Fetch logs
-            $logs = $query->get();
-
-            // If no logs, return response
-            if ($logs->isEmpty()) {
-                return $this->apiResponse->getResponseStructure(
-                    trans('message.error'),
-                    null,
-                    trans('message.record_not_found')
+                // Transform the items while maintaining pagination structure
+                $transformedData = $paginatedData->setCollection(
+                    $paginatedData->getCollection()
+                        ->groupBy('login_date')
+                        ->map(function ($group) {
+                            return $group->map(function ($item) {
+                                return [
+                                    'user_id' => $item->user_id,
+                                    'user_name' => $item->user->username ?? null,
+                                    'total_duration' => gmdate('H:i:s', $item->total_seconds),
+                                    'login_count' => $item->login_count
+                                ];
+                            });
+                        })
                 );
-            }
-
-            // Group by login_date and user
-            $groupedData = $logs->groupBy(['login_date', 'user_id']);
-
-            // Prepare final report data
-            $reportData = [];
-
-            foreach ($groupedData as $date => $users) {
-                foreach ($users as $userId => $entries) {
-                    $totalDuration = 0;
-
-                    foreach ($entries as $log) {
-                        if ($log->login_time && $log->logout_time) {
-                            try {
-                                $loginTime = Carbon::parse("{$log->login_date} {$log->login_time}");
-                                $logoutTime = Carbon::parse("{$log->logout_date} {$log->logout_time}");
-                                $totalDuration += $loginTime->diffInSeconds($logoutTime);
-                            } catch (Exception $e) {
-                                return $this->apiResponse->handleAndResponseException($e);
-                            }
-                        }
-                    }
-
-                    $reportData[$date][] = [
-                        'user_id' => $userId,
-                        'user_name' => optional($entries->first()->user)->username,
-                        'total_duration' => gmdate('H:i:s', $totalDuration),
-                        'login_count' => $entries->count(),
-                    ];
-                }
             }
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
-                $reportData,
+                $transformedData,
                 trans('message.data_fetch')
             );
         } catch (Exception $e) {

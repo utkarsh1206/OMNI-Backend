@@ -26,15 +26,15 @@ class CallLogReportRepository
     public function getCallReport(Request $request)
     {
         try {
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
             $query = $this->buildCallLogQuery($request);
-            if (!$query) {
-                return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.record_not_found'));
-            }
 
-            $query->orderBy('id', 'desc');
-            $formatted = $this->fetchCallLogs($query, $request->input('page'));
+            // Pagination or get all results
+            $callLogs = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $formatted, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $callLogs, trans('message.data_fetch'));
         } catch (Exception $e) {
             generateLogs('error', 'Error in getCallReport: ' . $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -48,10 +48,7 @@ class CallLogReportRepository
     {
         try {
             $callLogs = $this->buildCallLogQuery($request)->get();
-            if ($callLogs->isEmpty()) {
-                return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.record_not_found'));
-            }
-
+            
             return $this->generateCsvExport($callLogs);
         } catch (Exception $e) {
             generateLogs('error', 'Error in exportCsvData: ' . $e->getMessage());
@@ -64,72 +61,55 @@ class CallLogReportRepository
      */
     private function buildCallLogQuery(Request $request)
     {
-        if (!$request->filled(['startDate', 'endDate'])) {
+        $filters = [
+            'startDate' => $request->input('startDate', null),
+            'endDate' => $request->input('endDate', null),
+            'campaign_id' => $request->input('campaign_id', null),
+            'agent' => $request->input('agent', null),
+        ];
+
+        // If startDate and endDate are not provided, return null
+        if (is_null($filters['startDate']) || is_null($filters['endDate'])) {
             return null;
         }
 
-        return NeoxCallLog::query()
+        $query = NeoxCallLog::query()
+            ->select([
+                'call_unique_id',
+                'campaign_id',
+                'inbound_group_id',
+                'user_group',
+                DB::raw('DATE_FORMAT(call_date, "%Y-%m-%d %H:%i:%s") as call_date'),
+                'call_type',
+                'caller_username',
+                'caller_user_extension',
+                'called_phone_number',
+                'call_did_pattern',
+                DB::raw('SEC_TO_TIME(call_total_duration) as call_total_duration'),
+                DB::raw('SEC_TO_TIME(call_talk_duration) as call_talk_duration'),
+                'call_status',
+                'call_dispo_status',
+                'call_term_reason',
+                'comments',
+                'call_recording_url',
+            ])
             ->where('type', 'CALL_HISTORY')
             ->whereBetween(DB::raw('DATE(call_date)'), [
-                Carbon::parse($request->startDate)->toDateString(),
-                Carbon::parse($request->endDate)->toDateString()
+                Carbon::parse($filters['startDate'])->toDateString(),
+                Carbon::parse($filters['endDate'])->toDateString()
             ])
-            ->when($request->filled('campaign_id'), function ($query) use ($request) {
-                $query->where('campaign_id', $request->campaign_id);
-            })
-            ->when($request->filled('agent'), function ($query) use ($request) {
-                $query->where('caller_username', $request->agent);
-            });
-    }
+            ->orderBy('id', 'desc');
 
-    /**
-     * Fetches the call logs either paginated or all records.
-     */
-    private function fetchCallLogs($query, $page)
-    {
-        $perPage = config('omni.REPORT_DATA_PER_PAGE');
-        if ($page === config('omni.ALL_PAGE')) {
-            return $this->formatCallLogs($query->get());
-        } else {
-            $paginated = $query->paginate($perPage);
-            return $this->formatCallLogs($paginated->items());
+        // Apply filters if present
+        if (!empty($filters['campaign_id'])) {
+            $query->where('campaign_id', $filters['campaign_id']);
         }
-    }
 
-    /**
-     * Formats the call logs for the API response.
-     */
-    protected function formatCallLogs($logs)
-    {
-        return collect($logs)->map(function ($log) {
-            return [
-                'call_unique_id' => $log->call_unique_id,
-                'campaign_id' => $log->campaign_id,
-                'inbound_group_id' => $log->inbound_group_id,
-                'user_group' => $log->user_group,
-                'call_date' => $this->formatDate($log->call_date),
-                'call_type' => $log->call_type,
-                'caller_username' => $log->caller_username,
-                'caller_user_extension' => $log->caller_user_extension,
-                'called_phone_number' => $log->called_phone_number,
-                'call_did_pattern' => $log->call_did_pattern,
-                'call_total_duration' => $this->formatDuration($log->call_total_duration),
-                'call_talk_duration' => $this->formatDuration($log->call_talk_duration),
-                'call_status' => $log->call_status,
-                'call_dispo_status' => $log->call_dispo_status,
-                'call_term_reason' => $log->call_term_reason,
-                'call_recording_url' => $log->call_recording_url,
-                'comments' => $log->comments
-            ];
-        });
-    }
+        if (!empty($filters['agent'])) {
+            $query->where('caller_username', $filters['agent']);
+        }
 
-    /**
-     * Formats the date.
-     */
-    protected function formatDate($dateTimeString)
-    {
-        return Carbon::parse($dateTimeString)->format('Y-m-d H:i:s');
+        return $query;
     }
 
     /**
@@ -198,7 +178,7 @@ class CallLogReportRepository
                 $log->campaign_id,
                 $log->inbound_group_id,
                 $log->user_group,
-                $this->formatDate($log->call_date),
+                Carbon::parse($log->call_date)->format('Y-m-d H:i:s'),
                 $log->call_type,
                 $log->caller_username,
                 $log->caller_user_extension,

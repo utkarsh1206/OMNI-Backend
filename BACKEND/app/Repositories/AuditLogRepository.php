@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\ActivityLog;
 use Exception;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class AuditLogRepository
 {
@@ -28,9 +29,20 @@ class AuditLogRepository
                 $query = ActivityLog::where('user_id', auth()->user()->id);
             }
 
+            if (!$request->filled('startDate') || !$request->filled('endDate')) {
+                return response()->json([
+                    'error' => trans("message.record_not_found"),
+                ], ResponseHTTP::HTTP_NOT_FOUND);
+            }
+
+            if ($request->filled('startDate') && $request->filled('endDate')) {
+                $query->whereBetween('created_at', [$request->startDate, $request->endDate]);
+            }
+
             // Paginate the results
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
             $result = $page === config('omni.ALL_PAGE') ? $query->get() : $query->orderBy('created_at', 'desc')->paginate($perPage);
             // Return the response with pagination meta
             return $this->apiResponse->getResponseStructure(trans('message.success'), $result, trans('message.data_fetch'));
