@@ -6,7 +6,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SendEmail extends Mailable implements ShouldQueue
+class SendEmail extends Mailable
 {
     use SerializesModels;
 
@@ -41,8 +41,6 @@ class SendEmail extends Mailable implements ShouldQueue
                 }
             }
         }
-
-
         return $email;
     }
 }
