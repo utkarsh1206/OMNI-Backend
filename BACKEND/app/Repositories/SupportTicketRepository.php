@@ -346,9 +346,8 @@ class SupportTicketRepository
 
             // Log ticket creation
             $this->createTicket($supportTicket, "Ticket Created", $apiUser->first_name . " " . $apiUser->last_name . " has created the ticket", $apiUser);
+            $apiUser->mobile = "+919033767367";
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
-
-            // Send email
             $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.support_ticket_create_msg'));
@@ -534,7 +533,6 @@ class SupportTicketRepository
     private function sendSms($apiUser, $type, $phone, $supportticket)
     {
         $smsInfo = new SmsService;
-
         $templateInfo = SmsTemplate::where("name", $type)->first();
         $templateName = $templateInfo->name ?? '';
         $template = $templateInfo->content ?? '';
@@ -610,19 +608,18 @@ class SupportTicketRepository
     private function sendSupportEmail(Request $request, array $mail_attachment_urls, int $ticketId, int $assignToId)
     {
         setEmailConfig();
-
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         $sender_email = $emailConfig->sender_email ?? config('mail.from.address');
-
-        Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
-
+        establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
+        $result = Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
+        getDbConnection(auth()->user()->domain);
         logEmail([
             "user_id" => $assignToId,
             "email_template_id" => 0,
             "from_email" => $sender_email,
             "module_name" => "Support Ticket",
             "entity_id" => $ticketId,
-            "status" => "sent",
+            "status" => $result ? "Sent" : "Failed",
         ]);
     }
 }
