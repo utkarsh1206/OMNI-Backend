@@ -85,7 +85,6 @@ use App\Http\Controllers\Api\IncomingCallController;
 use App\Http\Controllers\Api\ApiConfigurationTypeController;
 use App\Http\Controllers\Api\CallLogReportController;
 use App\Http\Controllers\Api\UserActivityReportController;
-//use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\UtilityController;
 
 require base_path('routes/externalUse.php');
@@ -105,11 +104,11 @@ Route::get('callCDR', [CallCDRListController::class, 'getCallCDRList']);
 Route::get('custome-field/header', [CustomFieldController::class, 'custumFieldHeader']);
 Route::get('custome-field/value', [CustomFieldController::class, 'custumFieldvalue']);
 
-// Route::middleware(['auth:api'])->group(function () {
-    Route::post('license_update', [LicenseUpdateController::class, 'updateLicense']);
-    Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
-    Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
-// });
+Route::middleware(['auth:api'])->group(function () {
+    Route::post('/license_update', [LicenseUpdateController::class, 'updateLicense']);
+});
+Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
+Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
 
 Route::middleware(['jwt.auth'])->group(function () {
 

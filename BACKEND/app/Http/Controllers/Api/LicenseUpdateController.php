@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\AccountRequest;
+use App\Http\Requests\LicenseUpdateRequest;
 use App\Http\Controllers\Controller;
 use App\Repositories\LicenseRepository;
 
@@ -66,7 +66,7 @@ class LicenseUpdateController extends Controller
      *     )
      * )
      */
-    public function updateLicense(AccountRequest $request)
+    public function updateLicense(LicenseUpdateRequest $request)
     {
         return $this->licenseRepository->updateLicense($request);
     }
