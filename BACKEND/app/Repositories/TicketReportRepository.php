@@ -23,27 +23,61 @@ class TicketReportRepository
     public function ticketReport(Request $request)
     {
         try {
-            $query = SupportTicket::with(['notifications', 'assignedAgent']);
+            $query = SupportTicket::query()->with([
+                'notifications' => function ($query) {
+                    $query->select(['id', 'support_ticket_id', 'status', 'created_at', 'created_by']);
+                },
+                'assignedAgent' => function ($query) {
+                    $query->select(['id', 'username']);
+                }
+            ]);
+
+            // Select all required fields explicitly
+            $query->select([
+                'id',
+                'support_ticket_id',
+                'default_type',
+                'default_priority',
+                'default_status',
+                'created_at',
+                'updated_at',
+                'description',
+                'is_escalated',
+                'assign_to_id'
+            ]);
+
+            // Paginate the results
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             $payload = $this->extractPayload($request);
 
             $query = $this->applyFilters($query, $request, $payload);
 
-            // Paginate the results
-            $perPage = $request->input('per_page', config('omni.REPORT_DATA_PER_PAGE'));
-            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-
-            if ($page === config('omni.ALL_PAGE')) {
-                // If 'page' is 'all', retrieve all records without pagination
+            if ($page == config('omni.ALL_PAGE')) {
                 $tickets = $query->get();
-                // $mappedTickets = $this->formatTickets($tickets->items());
-                $mappedTickets = $this->formatTickets($tickets);
+                $formattedTickets = $this->formatTickets($tickets);
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.success'),
+                    $formattedTickets,
+                    trans('message.data_fetch')
+                );
             } else {
-                // Paginate the results
                 $tickets = $query->paginate($perPage);
 
-                $mappedTickets = $this->formatTickets($tickets->items());
+                // Get the original paginator instance
+                $formattedItems = $this->formatTickets($tickets->items());
+
+                // Replace the original items with formatted ones while keeping pagination data
+                $tickets->setCollection(collect($formattedItems));
+
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.success'),
+                    $tickets,
+                    trans('message.data_fetch')
+                );
             }
+
             return $this->apiResponse->getResponseStructure(trans('message.success'), $mappedTickets, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error during Ticket Report : ', $ex->getMessage());
