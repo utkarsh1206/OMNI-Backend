@@ -24,6 +24,7 @@ class AccountRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'department_id' => 'required|string',
+            'product_id' => 'required',
             'company_name' => '',
             'contact_person_first_name' => '',
             'contact_person_last_name' => '',
