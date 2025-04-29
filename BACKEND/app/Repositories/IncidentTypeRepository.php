@@ -52,7 +52,7 @@ class IncidentTypeRepository
                 $query->where('sla_id', $sla_id);  // Filter by priority
             }
 
-            $incidentType = $page == config('omni.ALL_PAGE') ? $query->with('category.department', 'slaSettings')->get() : $query->with('category.department', 'slaSettings')->paginate($perPage);
+            $incidentType = $page == config('omni.ALL_PAGE') ? $query->with('category.department', 'slaSetting')->get() : $query->with('category.department', 'slaSetting')->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.fetch_data'));
         } catch (QueryException $e) {
             generateLogs('error', 'Error in generating failed Incident type : ', $e->getMessage());
@@ -126,7 +126,7 @@ class IncidentTypeRepository
     public function show($id)
     {
         try {
-            $incidentType = IncidentType::with('category.department', 'slaSettings')->find($id);
+            $incidentType = IncidentType::with('category.department', 'slaSetting')->find($id);
 
             if (!$incidentType) {
                 return response()->json([

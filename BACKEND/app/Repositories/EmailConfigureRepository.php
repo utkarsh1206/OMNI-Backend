@@ -6,11 +6,10 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\EmailConfigure;
-use Illuminate\Database\QueryException;
+use Exception;
 
 class EmailConfigureRepository
 {
-
     private $apiResponse;
 
     public function __construct(CustomApiResponse $customApiResponse)
@@ -20,12 +19,12 @@ class EmailConfigureRepository
 
     public function list(Request $request)
     {
-
         try {
             $searchTerm = $request->input('search', '');
 
             // Start the query for tenants
-            $query = EmailConfigure::query();
+            $query = EmailConfigure::select('id', 'type', 'product_id', 'department_id', 'assign_method',
+            'sender_name', 'sender_email', 'smtp_user','imap_user')->with(['product:id,name', 'department:id,name']);
 
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {
@@ -52,7 +51,7 @@ class EmailConfigureRepository
             $email_configure = $query->paginate($perPage);
             // Return the response
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.fetch_data'));
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating Email Configure List: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -62,9 +61,10 @@ class EmailConfigureRepository
     {
 
         try {
-            $emailConfig = EmailConfigure::create($request->validated());
+            $input = $request->all();
+            $emailConfig = EmailConfigure::create($input);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $emailConfig, trans('message.email_configure_created'), ResponseHTTP::HTTP_CREATED);
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating Email Configure Store: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -74,9 +74,10 @@ class EmailConfigureRepository
     public function update(Request $request, $email_configure)
     {
         try {
-            $email_configure->update($request->validated());
+            $update = $request->all();
+            $email_configure->update($update);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.email_configure_updated'));
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating Email Configure Update: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -88,7 +89,7 @@ class EmailConfigureRepository
         try {
             $email_configure->delete();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.email_configure_deleted'));
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating Email Configure Delete: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -98,7 +99,7 @@ class EmailConfigureRepository
     {
         try {
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.fetch_data'));
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error in generating Email Configure Show: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }

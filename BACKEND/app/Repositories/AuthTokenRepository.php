@@ -21,8 +21,8 @@ class AuthTokenRepository
 
     public function list(Request $request,$detail)
     {
-        // try {
-             getDbConnection($detail->domain);
+        try {
+            getDbConnection($detail->domain);
             
             $checkToken = AuthToken::select('token')->where('expire_at', '>', Carbon::now())
             ->first();
@@ -38,10 +38,10 @@ class AuthTokenRepository
             }
            
             return $this->apiResponse->getResponseStructure(trans('message.success'), $authToken, trans('message.data_fetch'));
-        // } catch (Exception $ex) {
-        //     generateLogs('error', 'Error in generating Auth Token Listing: ', $ex->getMessage());
-        //     return $this->apiResponse->handleAndResponseException($ex);
-        // }
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Auth Token Listing: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
     }
 
 }

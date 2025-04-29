@@ -8,11 +8,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EmailConfigure extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
+
+    protected $hidden = ['product', 'department'];
+
+    protected $appends = ['product_name', 'depart_name'];
+
     protected $fillable = [
         'type',
         'product_id',
-        'campaign_id',
+        'department_id',
         'inbound_id',
         'smtp_host',
         'smtp_port',
@@ -29,4 +34,24 @@ class EmailConfigure extends Model
         'assign_method',
         'signature',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function getProductNameAttribute()
+    {
+        return $this->product ? $this->product->name : null;
+    }
+
+    public function getDepartNameAttribute()
+    {
+        return $this->department ? $this->department->name : null;
+    }
 }

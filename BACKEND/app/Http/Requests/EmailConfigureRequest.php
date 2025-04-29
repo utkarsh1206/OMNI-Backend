@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class EmailConfigureRequest extends FormRequest
 {
@@ -27,6 +29,25 @@ class EmailConfigureRequest extends FormRequest
             'imap_host' => 'required',
             'imap_port' => 'required',
             'sender_email' => 'required|unique:email_configures',
+            'product_id' => 'required|exists:products,id',
+            'department_id' => 'required|exists:departments,id',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(
+            response()->json([
+                'error' => 'Validation failed',
+                'messages' => $validator->errors(),
+            ])
+        );
     }
 }

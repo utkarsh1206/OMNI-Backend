@@ -40,13 +40,44 @@ class EmailConfigureController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="List of email configurations",
+     *         description="Successful response",
      *         @OA\JsonContent(
-     *             @OA\Property(property="meta", type="object",
-     *                 @OA\Property(property="current_page", type="integer"),
-     *                 @OA\Property(property="last_page", type="integer"),
-     *                 @OA\Property(property="per_page", type="integer"),
-     *                 @OA\Property(property="total", type="integer")
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Data fetched successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="data", type="array",
+     *                     @OA\Items(
+     *                         @OA\Property(property="id", type="integer", example=1),
+     *                         @OA\Property(property="type", type="string", example="SMTP"),
+     *                         @OA\Property(property="product_id", type="integer", example=101),
+     *                         @OA\Property(property="department_id", type="integer", example=5),
+     *                         @OA\Property(property="assign_method", type="string", example="round_robin"),
+     *                         @OA\Property(property="sender_name", type="string", example="Support Team"),
+     *                         @OA\Property(property="sender_email", type="string", example="support@example.com"),
+     *                         @OA\Property(property="smtp_user", type="string", example="smtp_user@example.com"),
+     *                         @OA\Property(property="imap_user", type="string", example="imap_user@example.com"),
+     *                         @OA\Property(
+     *                             property="product",
+     *                             type="object",
+     *                             @OA\Property(property="id", type="integer", example=101),
+     *                             @OA\Property(property="name", type="string", example="CRM")
+     *                         ),
+     *                         @OA\Property(
+     *                             property="department",
+     *                             type="object",
+     *                             @OA\Property(property="id", type="integer", example=5),
+     *                             @OA\Property(property="name", type="string", example="Support")
+     *                         )
+     *                     )
+     *                 ),
+     *                 @OA\Property(property="total", type="integer", example=50),
+     *                 @OA\Property(property="last_page", type="integer", example=5),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="from", type="integer", example=1),
+     *                 @OA\Property(property="to", type="integer", example=10)
      *             )
      *         )
      *     ),
@@ -74,6 +105,8 @@ class EmailConfigureController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"type", "smtp_host", "smtp_port", "smtp_user", "smtp_password"},
+     *             @OA\Property(property="product_id", type="integer", example="1"),
+     *             @OA\Property(property="department_id", type="integer", example="2"),
      *             @OA\Property(property="type", type="string", example="SMTP"),
      *             @OA\Property(property="smtp_host", type="string", example="smtp.example.com"),
      *             @OA\Property(property="smtp_port", type="integer", example=587),
@@ -175,6 +208,8 @@ class EmailConfigureController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             @OA\Property(property="type", type="string", example="SMTP"),
+     *             @OA\Property(property="product_id", type="integer", example="1"),
+     *             @OA\Property(property="department_id", type="integer", example="2"),
      *             @OA\Property(property="smtp_host", type="string", example="smtp.example.com"),
      *             @OA\Property(property="smtp_port", type="integer", example=587),
      *             @OA\Property(property="smtp_user", type="string", example="user@example.com"),
