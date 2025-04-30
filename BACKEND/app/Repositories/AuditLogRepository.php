@@ -35,8 +35,20 @@ class AuditLogRepository
                 ], ResponseHTTP::HTTP_NOT_FOUND);
             }
 
-            if ($request->filled('startDate') && $request->filled('endDate')) {
-                $query->whereBetween('created_at', [$request->startDate, $request->endDate]);
+            $query->whereBetween('created_at', [$request->startDate, $request->endDate]);
+
+            if ($request->filled('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+
+            // Optional filter: module
+            if ($request->filled('module')) {
+                $query->where('module', 'like', '%' . $request->module . '%');
+            }
+
+            // Optional filter: action
+            if ($request->filled('action')) {
+                $query->where('action', 'like', '%' . $request->action . '%');
             }
 
             // Paginate the results
