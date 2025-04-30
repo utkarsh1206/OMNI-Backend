@@ -37,18 +37,21 @@ class AuditLogRepository
 
             $query->whereBetween('created_at', [$request->startDate, $request->endDate]);
 
-            if ($request->filled('user_id')) {
-                $query->where('user_id', $request->user_id);
+            if ($request->filled('username')) {
+                $query->whereHas('userInfo', function($q) use ($request) {
+                    $q->where('first_name', 'like', '%' . $request->username . '%')
+                      ->orWhere('last_name', 'like', '%' . $request->username . '%');
+                });
             }
 
             // Optional filter: module
-            if ($request->filled('module')) {
-                $query->where('module', 'like', '%' . $request->module . '%');
+            if ($request->filled('module_name')) {
+                $query->where('action', 'like', '%' . $request->module_name . '%');
             }
 
             // Optional filter: action
             if ($request->filled('action')) {
-                $query->where('action', 'like', '%' . $request->action . '%');
+                $query->where('request_method', 'like', '%' . $request->action . '%');
             }
 
             // Paginate the results
