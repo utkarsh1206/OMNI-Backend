@@ -145,7 +145,7 @@ class UserRepository
                     'userGroup' => $userGroup->name,
                 ];
                 $url = "https://{$ip}/Neox_ContactCenter_API/crud/user/create.php";
-                $userCreate = sendHttpRequest($url, 'POST', $neoxBody);
+                sendHttpRequest($url, 'POST', $neoxBody);
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.users_created'), ResponseHTTP::HTTP_CREATED);
