@@ -1,7 +1,17 @@
+2025-04-30 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : bc8b8489
+	* Version : Dev
+	* Laravel: Synchronize phone and user operations with Neox API. Integrates Neox API calls into phone and user repositories. Sends requests to the corresponding Neox API endpoints when:
+	- A phone is created or deleted.
+	- A user is created or deleted.
+	This ensures data consistency between the application and the external Neox system. Adds error handling for potential API communication issues.
+
 2025-04-27 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
-	* Previous Commit ID : git rev-parse --short HEAD
+	* Previous Commit ID : 
 	* Version : Dev
 	* REACTJS : Created GUI for UserActivity reports with graphs,, pagination and CSV and listing with onclic view Activity modal open with users based on date users all activity.
 

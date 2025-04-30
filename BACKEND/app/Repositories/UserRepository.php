@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Illuminate\Database\QueryException;
 use App\Models\Users;
 use App\Models\Tenant;
+use App\Models\UserGroup;
+use Exception;
 use Illuminate\Support\Facades\Hash;
 
 class UserRepository
@@ -131,9 +133,27 @@ class UserRepository
                 "gender" => $request->gender
             ]);
 
+            $config = getNeoxConfig();
+            $ip = $config['neox_local_ip'];
+
+            $userGroup = UserGroup::find($request->usergroup_id);
+            if ($userGroup) {
+                $neoxBody = [
+                    'userId' => $request->username,
+                    'password' => $request->password,
+                    'fullName' => $request->first_name . ' ' . $request->last_name,
+                    'userGroup' => $userGroup->name,
+                ];
+                $url = "https://{$ip}/Neox_ContactCenter_API/crud/user/create.php";
+                $userCreate = sendHttpRequest($url, 'POST', $neoxBody);
+            }
+
             return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.users_created'), ResponseHTTP::HTTP_CREATED);
         } catch (QueryException $e) {
             generateLogs('error', 'Error during User Store : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $e) {
+            generateLogs('error', 'Error sending Neox API request : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -178,10 +198,30 @@ class UserRepository
     public function delete($user)
     {
         try {
+            $username = $user->username; // Capture before delete
             $user->delete();
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $user, trans('message.users_deleted'));
+
+            // Fetch config and build webhook URL
+            $config = getNeoxConfig();
+            $ip = $config['neox_local_ip'];
+            $url = "https://{$ip}/Neox_ContactCenter_API/crud/user/delete.php";
+
+            // Prepare payload
+            $data = ['userId' => $username];
+
+            // Send HTTP request to webhook
+            sendHttpRequest($url, 'DELETE', $data);
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $user,
+                trans('message.users_deleted')
+            );
         } catch (QueryException $e) {
             generateLogs('error', 'Error during Delete User : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in sending User Delete Neox API : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
@@ -201,7 +241,7 @@ class UserRepository
         try {
             $token = $request->bearerToken();
             if ($token != "") {
-                $payload = extractPayload($token) ;
+                $payload = extractPayload($token);
                 $users = Users::findOrFail($payload['id']);
                 if (!Hash::check($request->old_password, $users->password)) {
                     return response()->json(['error' => trans("message.old_password_incorrect")], ResponseHTTP::HTTP_FORBIDDEN);

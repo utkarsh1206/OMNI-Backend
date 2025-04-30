@@ -58,8 +58,24 @@ class PhoneRepository
             $validatedData['voicemail_id'] = $validatedData['extension'];
             $validatedData['active'] = "Y";
 
+            // Retrieve configuration
+            $config = getNeoxConfig();
+
+            $ip = $config['neox_local_ip'];
+
+            $url = "https://{$ip}/api/admin/actions/v2/phone_create.php";
+            // $validatedData = $request->validated();
+
+            sendHttpRequest($url, 'POST', $validatedData);
+
             $phone = Phone::create($validatedData);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $phone, trans('message.phone_created'), ResponseHTTP::HTTP_ACCEPTED);
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $phone,
+                trans('message.phone_created'),
+                ResponseHTTP::HTTP_ACCEPTED
+            );
         } catch (Exception $e) {
             generateLogs('error', 'Error in generating Phone Store : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -92,6 +108,15 @@ class PhoneRepository
             if (!$phone) {
                 return response()->json(['message' => trans("message.phone_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
             }
+
+            $config = getNeoxConfig();
+
+            $ip = $config['neox_local_ip'];
+
+            $url = "https://{$ip}/api/admin/actions/v2/phone_delete.php";
+
+            $data = ['extension' => $extension];
+            sendHttpRequest($url, 'POST', $data);
 
             $phone->delete();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phone, trans('message.phone_deleted'));
