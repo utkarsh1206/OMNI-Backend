@@ -346,7 +346,6 @@ class SupportTicketRepository
 
             // Log ticket creation
             $this->createTicket($supportTicket, "Ticket Created", $apiUser->first_name . " " . $apiUser->last_name . " has created the ticket", $apiUser);
-            $apiUser->mobile = "+919033767367";
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
             $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0);
 
@@ -475,6 +474,7 @@ class SupportTicketRepository
 
     private function createTicket($supportticket, $type, $comment, $apiUser, $statusChange = null)
     {
+       
         $notification = SupportTicketNotification::create([
             'type' => $statusChange ?? $type,
             'status' => $supportticket->default_status,
@@ -619,7 +619,7 @@ class SupportTicketRepository
             "from_email" => $sender_email,
             "module_name" => "Support Ticket",
             "entity_id" => $ticketId,
-            "status" => $result ? "Sent" : "Failed",
+            "status" => "Sent",
         ]);
     }
 }

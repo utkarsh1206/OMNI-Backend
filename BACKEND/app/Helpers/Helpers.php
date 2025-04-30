@@ -320,15 +320,33 @@ if (!function_exists('sendHttpRequest')) {
     if (! function_exists('uploadAttachment')) {
         function uploadAttachment(Request $request, $fieldName = 'attachment', $directory = 'attachments')
         {
+       
             if ($request->hasFile($fieldName)) {
                 $attachment = $request->file($fieldName);
-                $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
-                $filePath = $attachment->storeAs($directory, $filename, 'public');
+                if(is_array($attachment))
+                {
+                    foreach($attachment as $value)
+                    {
+                            
+                        $filename = now()->format('Y_m_d_H_i_s') . '.' . $value->getClientOriginalExtension();
+                        $filePath = $value->storeAs($directory, $filename, 'public');
+                        return [
+                            'fileName' => $filename,
+                            'path' => $filePath
+                        ];
+                    }
+                }   
+                else
+                {
+                    $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
+                    $filePath = $attachment->storeAs($directory, $filename, 'public');
 
-                return [
-                    'fileName' => $filename,
-                    'path' => $filePath
-                ];
+                    return [
+                        'fileName' => $filename,
+                        'path' => $filePath
+                    ];
+                }
+                
             }
             return null;
         }

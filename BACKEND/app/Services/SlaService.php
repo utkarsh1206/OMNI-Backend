@@ -271,7 +271,7 @@ class SlaService
             support_ticket_id,
             created_at AS current_status_created_at,
             LEAD(status) OVER (PARTITION BY support_ticket_id ORDER BY created_at ASC) AS next_status,
-            LEAD(created_at) OVER (PARTITION BY support_ticket_id ORDER BY created_at ASC) AS next_status_created_at FROM `support_ticket_notification`
+            LEAD(created_at) OVER (PARTITION BY support_ticket_id ORDER BY created_at ASC) AS next_status_created_at FROM `support_ticket_notifications`
         )
         SELECT
             support_ticket_id,
