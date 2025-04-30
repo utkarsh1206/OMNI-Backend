@@ -174,6 +174,11 @@ return [
     //Import
     'export_success'=>  'Database Exported successfully !',
     'import_success'=>  'Database Imported successfully !',
+    //Evaluation
+    'review_update' => 'Review updated successfully.',
+    'question_create' => 'Question created successfully.',
+    'question_update' => 'Question updated successfully.',
+    'question_delete' => 'Question deleted successfully.',
 ]   
 ?>
 

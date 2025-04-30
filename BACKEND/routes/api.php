@@ -84,6 +84,8 @@ use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\IncomingCallController;
 use App\Http\Controllers\Api\ApiConfigurationTypeController;
 use App\Http\Controllers\Api\CallLogReportController;
+use App\Http\Controllers\Api\EvaluationCallReviewController;
+use App\Http\Controllers\Api\EvaluationQuestionController;
 use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
 
@@ -327,6 +329,9 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::get('csv', [UserActivityReportController::class, 'exportCsv']);
         Route::get('graph', [UserActivityReportController::class, 'graphData']);
     });
+
+    Route::apiResource('evaluation-questions', EvaluationQuestionController::class);
+    Route::post('evaluation-review', [EvaluationCallReviewController::class, 'store']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);

@@ -1,3 +1,25 @@
+2025-04-30 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 3c9dd7a
+	* Version : Dev
+	* Laravel:
+	Question Module::
+	Implemented a CRUD API in Laravel for question creation with support for multiple question types: TEXT, RADIO, DROPDOWN, and MULTI.
+	For TEXT type questions, no answers need to be added during creation.
+	For RADIO, DROPDOWN, and MULTI types, answers are required to be added as part of the question creation process.
+	The API supports all basic CRUD operations for managing questions and their associated answer options.
+	list(): Retrieves a list of questions with pagination and filtering by search/status.
+	store(): Creates a new evaluation question.
+	find(): Retrieves a single evaluation question.
+	update(): Updates an existing evaluation question.
+	delete(): Deletes a specific evaluation question.
+
+	Questions Review::
+	Implemented review submission functionality
+	Retrieves active questions 
+	Stores the review in the EvaluationCallReview model, including the questions, answers, call rating, and additional comments.
+
 2025-04-30 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :
