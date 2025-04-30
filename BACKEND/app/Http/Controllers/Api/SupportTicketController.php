@@ -477,7 +477,7 @@ class SupportTicketController extends Controller
      *     )
      * )
      */
-    public function statusUpdate(Request $request, SupportTicket $supportTicket)
+    public function statusUpdate(Request $request, $supportTicket)
     {
         return $this->slaReportRepository->statusUpdate($request, $supportTicket);
     }

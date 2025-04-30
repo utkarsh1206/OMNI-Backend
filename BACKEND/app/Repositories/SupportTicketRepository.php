@@ -407,9 +407,11 @@ class SupportTicketRepository
         }
     }
 
-    public function statusUpdate(Request $request, Supportticket $supportTicket)
+    public function statusUpdate(Request $request, $id)
     {
         try {
+            $supportTicket = Supportticket::find($id);
+
             $apiUser = auth()->user();
             $type = "";
             $comment = "";
@@ -585,6 +587,7 @@ class SupportTicketRepository
             'attachment' => json_encode($attachment_urls),
             'incident_id' => $request->incident_id ?? 0,
             'account_id' => $request->account_id ?? 0,
+            'category_id' => $request->category_id ?? 0
         ];
     }
 
