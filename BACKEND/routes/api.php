@@ -330,8 +330,11 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::get('graph', [UserActivityReportController::class, 'graphData']);
     });
 
-    Route::apiResource('evaluation-questions', EvaluationQuestionController::class);
-    Route::post('evaluation-review', [EvaluationCallReviewController::class, 'store']);
+    Route::prefix('evaluation')->group(function () {
+        Route::apiResource('questions', EvaluationQuestionController::class);
+        Route::post('store-review', [EvaluationCallReviewController::class, 'store']);
+        Route::get('get-review', [EvaluationCallReviewController::class, 'getReview']);
+    });
 });
 
 Route::get('countries', [CountryController::class, 'index']);

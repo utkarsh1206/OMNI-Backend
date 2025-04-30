@@ -74,4 +74,42 @@ class EvaluationCallReviewRepository
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
+
+    /**
+     * Get review based on user and call ID.
+     *
+     * @param array $data
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getReview($data)
+    {
+        try {
+            $userId = $data['user_id'];
+            $callId = $data['call_id'];
+
+            // Retrieve the review data for the given user and call ID
+            $review = EvaluationCallReview::where('user_id', $userId)
+                ->where('callerid', $callId)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            // Check if review exists
+            if (!$review) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    trans('message.record_not_found')
+                );
+            }
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $review,
+                trans('message.data_fetch')
+            );
+        } catch (Exception $e) {
+            generateLogs("error", "Error retrieving review: " . $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
 }

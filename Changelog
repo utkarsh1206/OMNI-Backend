@@ -1,6 +1,13 @@
 2025-04-30 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
+	* Previous Commit ID : a785e4e
+	* Version : Dev
+	* Laravel: Added swagger for Evaluation Questions and Reviewed questions.
+
+2025-04-30 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
 	* Previous Commit ID : 3c9dd7a
 	* Version : Dev
 	* Laravel:

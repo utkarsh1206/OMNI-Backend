@@ -22,12 +22,12 @@ class EcdialEvaluationQuestion extends Model
     // Relationship with creator
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by')->select('id', 'username');
     }
 
     // Relationship with updater
     public function updater()
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsTo(User::class, 'updated_by')->select('id', 'username');
     }
 }

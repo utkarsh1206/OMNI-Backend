@@ -6255,24 +6255,114 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of email configurations",
+                        "description": "Successful response",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "meta": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        },
+                                        "data": {
                                             "properties": {
                                                 "current_page": {
-                                                    "type": "integer"
+                                                    "type": "integer",
+                                                    "example": 1
                                                 },
-                                                "last_page": {
-                                                    "type": "integer"
-                                                },
-                                                "per_page": {
-                                                    "type": "integer"
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "example": "SMTP"
+                                                            },
+                                                            "product_id": {
+                                                                "type": "integer",
+                                                                "example": 101
+                                                            },
+                                                            "department_id": {
+                                                                "type": "integer",
+                                                                "example": 5
+                                                            },
+                                                            "assign_method": {
+                                                                "type": "string",
+                                                                "example": "round_robin"
+                                                            },
+                                                            "sender_name": {
+                                                                "type": "string",
+                                                                "example": "Support Team"
+                                                            },
+                                                            "sender_email": {
+                                                                "type": "string",
+                                                                "example": "support@example.com"
+                                                            },
+                                                            "smtp_user": {
+                                                                "type": "string",
+                                                                "example": "smtp_user@example.com"
+                                                            },
+                                                            "imap_user": {
+                                                                "type": "string",
+                                                                "example": "imap_user@example.com"
+                                                            },
+                                                            "product": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 101
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "CRM"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            },
+                                                            "department": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 5
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "Support"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
                                                 },
                                                 "total": {
-                                                    "type": "integer"
+                                                    "type": "integer",
+                                                    "example": 50
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "from": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "to": {
+                                                    "type": "integer",
+                                                    "example": 10
                                                 }
                                             },
                                             "type": "object"
@@ -6321,6 +6411,14 @@
                                     "smtp_password"
                                 ],
                                 "properties": {
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "department_id": {
+                                        "type": "integer",
+                                        "example": "2"
+                                    },
                                     "type": {
                                         "type": "string",
                                         "example": "SMTP"
@@ -6526,6 +6624,14 @@
                                     "type": {
                                         "type": "string",
                                         "example": "SMTP"
+                                    },
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "department_id": {
+                                        "type": "integer",
+                                        "example": "2"
                                     },
                                     "smtp_host": {
                                         "type": "string",
@@ -7036,6 +7142,598 @@
                     },
                     "500": {
                         "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/evaluation/store-review": {
+            "post": {
+                "tags": [
+                    "Evaluation"
+                ],
+                "summary": "Store a new evaluation call review",
+                "description": "Stores a new evaluation for a given call, agent, and campaign.",
+                "operationId": "313edc43fdb37283dcb89ea4a10e37dc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "callId": {
+                                        "description": "The ID of the call being reviewed.",
+                                        "type": "integer"
+                                    },
+                                    "user_id": {
+                                        "description": "The ID of the agent.",
+                                        "type": "integer"
+                                    },
+                                    "campaign_id": {
+                                        "description": "The ID of the campaign associated with the call.",
+                                        "type": "integer"
+                                    },
+                                    "question_ids": {
+                                        "description": "Comma-separated list of question IDs included in the evaluation.",
+                                        "type": "string"
+                                    },
+                                    "selected_answers": {
+                                        "description": "Comma-separated list of selected answers for the questions.",
+                                        "type": "string"
+                                    },
+                                    "additional_comments": {
+                                        "description": "Additional comments provided by the reviewer.",
+                                        "type": "string"
+                                    },
+                                    "call_rating": {
+                                        "description": "Rating of the call (1-5).",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully stored the review",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "description": "The stored review data.",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message description"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/evaluation/get-review": {
+            "get": {
+                "tags": [
+                    "Evaluation"
+                ],
+                "summary": "Retrieve an evaluation review by user and call ID",
+                "description": "Retrieves the evaluation review for a specific agent and call.",
+                "operationId": "c076cd08c3f65609d2f327ef1d0ec1bd",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "description": "The ID of the agent.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "call_id",
+                        "in": "query",
+                        "description": "The ID of the call for which the review is being retriewed.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the review",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "description": "The retrieved review data.",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Review not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not Found"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Review not found for the given user and call ID"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error message description"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/evaluation/questions": {
+            "get": {
+                "tags": [
+                    "Evaluation"
+                ],
+                "summary": "Get a list of evaluation questions",
+                "description": "Returns a paginated or full list of evaluation questions based on filters",
+                "operationId": "cdfaf650e7f37576a9f2ebfbb16fe3b2",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search query for the question text",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by question status (e.g. 'active', 'inactive')",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of results per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the list of evaluation questions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data has been fetched successfully!"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Data fetch successful"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Evaluation"
+                ],
+                "summary": "Create a new evaluation question",
+                "description": "Stores a new evaluation question with specified details.",
+                "operationId": "d2880426e8d0f0f1eaf68841e572d085",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "question": {
+                                        "description": "The text of the evaluation question",
+                                        "type": "string"
+                                    },
+                                    "question_type": {
+                                        "description": "The type of question (e.g., MULTI, RADIO, TEXT)",
+                                        "type": "string"
+                                    },
+                                    "answers": {
+                                        "description": "List of possible answers for MULTI, RADIO, or DROPDOWN types",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "status": {
+                                        "description": "Status of the question (default is 'active')",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully created a new evaluation question",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Question created successfully!"
+                                        },
+                                        "data": {
+                                            "description": "The created question data",
+                                            "type": "object"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Question creation successful"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/evaluation/questions/{id}": {
+            "get": {
+                "tags": [
+                    "Evaluation"
+                ],
+                "summary": "Find a specific evaluation question",
+                "description": "Retrieves a specific evaluation question by its ID.",
+                "operationId": "1cca7bac13e859b5040890a2595a7c34",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the evaluation question",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the evaluation question",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data has been fetched successfully!"
+                                        },
+                                        "data": {
+                                            "description": "The evaluation question data",
+                                            "type": "object"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Data fetch successful"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Evaluation question not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not Found"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Evaluation question not found with this ID"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Evaluation"
+                ],
+                "summary": "Update an existing evaluation question",
+                "description": "Update an evaluation question by its ID with new data.",
+                "operationId": "127e6a46fe38dd94b92ee2af5493f581",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the evaluation question to be updated",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "question": {
+                                        "description": "The text of the evaluation question",
+                                        "type": "string"
+                                    },
+                                    "question_type": {
+                                        "description": "The type of question (e.g., MULTI, RADIO, TEXT)",
+                                        "type": "string"
+                                    },
+                                    "answers": {
+                                        "description": "List of possible answers for MULTI, RADIO, or DROPDOWN types",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "status": {
+                                        "description": "Status of the question",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated the evaluation question",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Question updated successfully!"
+                                        },
+                                        "data": {
+                                            "description": "The updated question data",
+                                            "type": "object"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Question updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Evaluation question not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not Found"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Evaluation question not found with this ID"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Evaluation"
+                ],
+                "summary": "Delete an evaluation question",
+                "description": "Deletes an evaluation question by its ID.",
+                "operationId": "8ed88967b64d68ab18a35d576c1f48b7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the evaluation question to be deleted",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted the evaluation question",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Question deleted successfully!"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Question deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Evaluation question not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not Found"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Evaluation question not found with this ID"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -19869,6 +20567,10 @@
         {
             "name": "Email Logs",
             "description": "Email Logs"
+        },
+        {
+            "name": "Evaluation",
+            "description": "Evaluation"
         },
         {
             "name": "Hangup",

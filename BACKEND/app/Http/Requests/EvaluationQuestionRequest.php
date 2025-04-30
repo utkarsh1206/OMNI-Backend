@@ -24,7 +24,7 @@ class EvaluationQuestionRequest extends FormRequest
      */
     public function rules(): array
     {
-        $id = $this->route('evaluation_question'); // Get the ID from the route (works for /evaluation-questions/{id})
+        $id = $this->route('question'); // Get the ID from the route (works for /evaluation-questions/{id})
 
         return [
             'question' => [

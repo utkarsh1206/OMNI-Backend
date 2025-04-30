@@ -7,6 +7,7 @@ use App\Models\EcdialEvaluationQuestion;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class EvaluationQuestionRepository
 {
@@ -77,10 +78,18 @@ class EvaluationQuestionRepository
         }
     }
 
-    public function find($evaliationQuetions)
+    public function find($id)
     {
         try {
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $evaliationQuetions, trans('message.data_fetch'));
+            $question = EcdialEvaluationQuestion::with(['creator', 'updater'])->find($id);
+
+            if (!$question) {
+                return response()->json([
+                    'message' => trans("message.record_not_found"),
+                ], ResponseHTTP::HTTP_NOT_FOUND);
+            }
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $question, trans('message.data_fetch'));
         } catch (Exception $e) {
             generateLogs('error', 'Error in fetching Evaluation Question: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
