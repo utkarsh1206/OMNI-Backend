@@ -234,8 +234,17 @@ class MailTemplateSeeder extends Seeder
                 'status' => 'Active',
                
                 'is_allow' => 'No',
+            ],  
+            [
+                'title' => 'Support Ticket Created',
+                'type' => 'created_ticket',
+                'subject' => 'Your ticket {ticket_number} has been created',
+                'mail_for' => 'request',
+                'body' => '<p><strong>Dear {customer_name},</strong></p>\r\n\r\n<p>We have successfully received your support request. Your ticket number is <strong>{ticket_number}</strong>.</p>\r\n\r\n<p><p>Our support team is reviewing your request and will get back to you shortly</p>\r\n\r\n<p>Also, if you wish to connect with us directly, please call us on <strong><a href=\"tel:+91- {company_no}\">+91 - {company_number}</a></strong> or write to us at <strong><a href=\"mailto:support@ezeedesk.com\">{company_email}</a></strong></p>\r\n\r\n<p>We are excited to have you onboard!</p>\r\n\r\n<p>{signature}</p>\r\n',
+                'status' => 'Active',
+               
+                'is_allow' => 'No',
             ],
-            
-        ]);
+        ]); 
     }
 }

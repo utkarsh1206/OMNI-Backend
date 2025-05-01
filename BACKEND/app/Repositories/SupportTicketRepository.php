@@ -341,8 +341,21 @@ class SupportTicketRepository
             $supportTicketId = now()->format('dmy') . $supportTicket->id;
             $supportTicket->update(['support_ticket_id' => $supportTicketId]);
 
+            $mailTemplate = MailTemplate::where('type', 'created_ticket')->first();
+            if ($mailTemplate) {
+                $templateData = [
+                    '{customer_name}' => $apiUser->first_name . ' ' . $apiUser->last_name,
+                    '{ticket_number}' => $supportTicketId,
+                    '{company_email}' => 'support@ezeedesk.com',
+                    '{signature}' => 'The Ezeedesk Team',
+                ];
+            
+                $mailTemplate->subject = strtr($mailTemplate->subject, $templateData);
+                $mailTemplate->body = strtr($mailTemplate->body, $templateData);
+            }
+
             // Create mail details
-            MailDetail::create($this->buildMailData($request, $apiUser, $attachment_urls, $supportTicketId));
+            MailDetail::create($this->buildMailData($request, $apiUser, $attachment_urls, $supportTicketId, $mailTemplate));
 
             // Log ticket creation
             $this->createTicket($supportTicket, "Ticket Created", $apiUser->first_name . " " . $apiUser->last_name . " has created the ticket", $apiUser);
@@ -608,14 +621,22 @@ class SupportTicketRepository
         ];
     }
 
-    private function sendSupportEmail(Request $request, array $mail_attachment_urls, int $ticketId, int $assignToId)
+    private function sendSupportEmail(Request $request, array $mail_attachment_urls, int $ticketId, int $assignToId, array $mailTemplate = null)
     {
         setEmailConfig();
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
+        
         $sender_email = $emailConfig->sender_email ?? config('mail.from.address');
+        
         establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
-        $result = Mail::to($request->to_emails)->send(new SendEmail($request->subject, $request->description, $mail_attachment_urls));
+        
+        $subject = $mailTemplate['subject'] ?? $request->subject;
+        $body = $mailTemplate['body'] ?? $request->description;
+
+        $result = Mail::to($request->to_emails)->send(new SendEmail($subject, $body, $mail_attachment_urls));
+        
         getDbConnection(auth()->user()->domain);
+        
         logEmail([
             "user_id" => $assignToId,
             "email_template_id" => 0,
