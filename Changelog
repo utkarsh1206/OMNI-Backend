@@ -1,3 +1,10 @@
+2025-05-01 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : f703ed8c
+	* Version : Dev
+	* Laravel: Refactor permissions and add lead import validation. Simplifies JWT custom claims generation for user permissions, removing nested loops and correcting the check logic. Introduces pre-insertion validation for imported lead data (First Name, Last Name, Mobile, Email). Separates valid and invalid rows during import processing. Updates import results to include details of invalid rows and their specific validation errors. Restructures tenant role permission data retrieval to group permissions by section.
+
 2025-04-30 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

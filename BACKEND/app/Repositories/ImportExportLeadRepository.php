@@ -39,17 +39,47 @@ class ImportExportLeadRepository
     public function prepareDataForInsertion(array $csvData, array $expectedHeaders)
     {
         $validData = [];
+        $invalidData = [];
 
         foreach ($csvData as $index => $row) {
-            $rowData = array_combine($expectedHeaders, array_map('trim', $row));
+            $rowAssoc = array_combine($expectedHeaders, array_map('trim', $row));
+            $errors = [];
 
-            $validData[] = $rowData;
+            // Validation rules
+            if (isset($rowAssoc['First Name']) && !preg_match('/^[a-zA-Z\s\-]+$/', $rowAssoc['First Name'])) {
+                $errors[] = 'Invalid First Name';
+            }
+
+            if (isset($rowAssoc['Last Name']) && !preg_match('/^[a-zA-Z\s\-]+$/', $rowAssoc['Last Name'])) {
+                $errors[] = 'Invalid Last Name';
+            }
+
+            if (isset($rowAssoc['Mobile']) && !preg_match('/^\d{10}$/', $rowAssoc['Mobile'])) {
+                $errors[] = 'Invalid Mobile';
+            }
+
+            if (isset($rowAssoc['Email']) && !filter_var($rowAssoc['Email'], FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Invalid Email';
+            }
+
+            if (empty($errors)) {
+                $validData[] = $rowAssoc;
+            } else {
+                $invalidData[] = [
+                    'row' => $rowAssoc,
+                    'errors' => $errors
+                ];
+            }
         }
 
-        return $validData;
+        return [
+            'valid' => $validData,
+            'invalid' => $invalidData
+        ];
     }
 
-    public function insertDataIntoTable($list_id, array $validData, $fileName, $fileType)
+
+    public function insertDataIntoTable($list_id, array $validData, array $invalidData, $fileName, $fileType)
     {
         $tableName = "custom_lead_" . $list_id;
 
@@ -90,9 +120,10 @@ class ImportExportLeadRepository
         }
 
         $data = [
-            'imported_data' => $importedData, // Include the detailed import status data
+            'imported_data' => $importedData,
+            'invalid_data' => $invalidData, // Add failed rows with reasons
             'inserted_count' => $insertedCount,
-            'failed_count' => $failedCount
+            'failed_count' => $failedCount + count($invalidData) // include validation failures
         ];
 
         // Log the import history
@@ -144,9 +175,11 @@ class ImportExportLeadRepository
             }
 
             unset($csvData[0]);
-            $validData = $this->prepareDataForInsertion($csvData, $expectedHeaders);
+            $processedData = $this->prepareDataForInsertion($csvData, $expectedHeaders);
+            $validData = $processedData['valid'];
+            $invalidData = $processedData['invalid'];
 
-            return $this->insertDataIntoTable($list_id, $validData, $fileName, $fileType);
+            return $this->insertDataIntoTable($list_id, $validData, $invalidData, $fileName, $fileType);
         } catch (\Exception $e) {
             generateLogs('error', 'Error in processCsvFile failed : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
