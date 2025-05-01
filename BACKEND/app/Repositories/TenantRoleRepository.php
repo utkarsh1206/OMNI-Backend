@@ -93,7 +93,11 @@ class TenantRoleRepository
             $permissions = DB::table('omnichannel.menu_permissions')->get();
             if (!empty($permissions)) {
                 foreach ($permissions as $permission_value) {
-                    $final_permission_array[$permission_value->module_name] = explode(",", $permission_value->roles);
+                    $section = $permission_value->section;
+                    $module = $permission_value->module_name;
+                    $roles = explode(",", $permission_value->roles);
+
+                    $final_permission_array[$section][$module] = $roles;
                 }
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $final_permission_array, trans('message.data_fetch'));
