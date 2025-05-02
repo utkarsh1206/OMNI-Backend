@@ -179,6 +179,8 @@ return [
     'question_create' => 'Question created successfully.',
     'question_update' => 'Question updated successfully.',
     'question_delete' => 'Question deleted successfully.',
+    //CallBack
+    'callback_create' => 'Call Back created successfully.',
 ]   
 ?>
 

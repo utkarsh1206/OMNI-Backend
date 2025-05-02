@@ -88,6 +88,7 @@ use App\Http\Controllers\Api\EvaluationCallReviewController;
 use App\Http\Controllers\Api\EvaluationQuestionController;
 use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
+use App\Http\Controllers\Api\CallBackController;
 
 require base_path('routes/externalUse.php');
 
@@ -335,6 +336,8 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('store-review', [EvaluationCallReviewController::class, 'store']);
         Route::get('get-review', [EvaluationCallReviewController::class, 'getReview']);
     });
+
+    Route::apiResource('call-backs', CallBackController::class);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
