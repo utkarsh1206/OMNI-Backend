@@ -5,8 +5,6 @@ namespace App\Repositories;
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use Exception;
-Use App\Models\Detail;
-use Illuminate\Support\Facades\DB;
 use App\Services\Chat360Service;
 use Carbon\Carbon;
 use App\Models\Message;
@@ -19,7 +17,7 @@ class ChatbotWebhookRepository
     private $chat360Service;
 
     public function __construct(CustomApiResponse $customApiResponse, 
-    Chat360Service $chat360Service,)
+    Chat360Service $chat360Service)
     {
         $this->apiResponse = $customApiResponse;
         $this->chat360Service = $chat360Service;
