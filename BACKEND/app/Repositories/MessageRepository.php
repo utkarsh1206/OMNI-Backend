@@ -21,10 +21,9 @@ class MessageRepository
     {
         try {
             $userId = auth()->user()->id;
-        
-            $messages  = Message::where("user_id", $userId);
-            $messages = $messages->get();
-        
+           // where("user_id", $userId)->
+            $messages  = Message::get();
+          
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Message Listing: ', $ex->getMessage());
@@ -36,14 +35,14 @@ class MessageRepository
     {
         // File upload logic is remaining here. We need to make file upload logic in common place
         try {
-            $userId = $request->input('user_id');
             $file = uploadAttachment($request,"attachment","attachment");
             $message = Message::Create([
+                "user_id" => auth()->user()->id,
                 "text" => $request->text,
-                "user_id" => $userId,
-                "attachment" => $file['path']
+                "is_read" => 'unread',
+                "attachment" => $file['path'] ?? null,
+                "sender" => 'agent',
             ]);
-            SendMessage::dispatch($message);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in storing Message: ', $ex->getMessage());

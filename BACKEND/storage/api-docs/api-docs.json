@@ -10134,7 +10134,7 @@
                 }
             }
         },
-        "/api/messages": {
+        "/api/get-messages": {
             "get": {
                 "tags": [
                     "Messages"
@@ -10149,13 +10149,83 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "Data fetched successfully"
+                                            "example": "Data has been fetched successfully !"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    },
+                                                    "text": {
+                                                        "type": "string",
+                                                        "example": "What's your Name?"
+                                                    },
+                                                    "attachment": {
+                                                        "type": "string",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    },
+                                                    "is_read": {
+                                                        "type": "string",
+                                                        "example": "unread"
+                                                    },
+                                                    "room_id": {
+                                                        "type": "string",
+                                                        "example": "367731a6-7f9b-431b-8432-8e958c71c17e"
+                                                    },
+                                                    "sender": {
+                                                        "type": "string",
+                                                        "example": "bot"
+                                                    },
+                                                    "external_message_time": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-03-12 13:06:46"
+                                                    },
+                                                    "node_type": {
+                                                        "type": "string",
+                                                        "example": "USERNAME"
+                                                    },
+                                                    "session_id": {
+                                                        "type": "string",
+                                                        "example": "47497830-512b-4f07-ae7b-7602dfa38a8b"
+                                                    },
+                                                    "first_name": {
+                                                        "type": "string",
+                                                        "example": "System"
+                                                    },
+                                                    "last_name": {
+                                                        "type": "string",
+                                                        "example": "Message"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-04-24T19:32:02.000000Z"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-04-24T19:32:02.000000Z"
+                                                    },
+                                                    "attachment_url": {
+                                                        "type": "string",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
                                         }
                                     },
                                     "type": "object"
@@ -10209,32 +10279,34 @@
                         "bearerAuth": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/send-message": {
             "post": {
                 "tags": [
                     "Messages"
                 ],
                 "summary": "Store a new message",
-                "description": "Creates a new message for a specific user.",
+                "description": "Creates a new message for a specific user. Supports file attachment.",
                 "operationId": "storeMessage",
                 "requestBody": {
                     "description": "Message data to be stored",
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "text",
-                                    "user_id"
+                                    "text"
                                 ],
                                 "properties": {
                                     "text": {
                                         "type": "string",
                                         "example": "This is a message"
                                     },
-                                    "user_id": {
-                                        "type": "integer",
-                                        "example": 1
+                                    "attachment": {
+                                        "description": "Optional file to be attached",
+                                        "type": "string",
+                                        "format": "binary"
                                     }
                                 },
                                 "type": "object"
@@ -10249,13 +10321,41 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
                                         "message": {
                                             "type": "string",
                                             "example": "Message created successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "text": {
+                                                    "type": "string",
+                                                    "example": "This is a message"
+                                                },
+                                                "attachment": {
+                                                    "type": "string",
+                                                    "example": "uploads/messages/file.jpg",
+                                                    "nullable": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-03T10:00:00Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-03T10:00:00Z"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"

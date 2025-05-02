@@ -136,7 +136,7 @@ class Users extends Authenticatable implements JWTSubject
         $decoded_permissions = json_decode($permission, true);
         if (!empty($decoded_permissions)) {
             foreach ($decoded_permissions as $permission_key => $permission_value) {
-                if ($permission_value['allowed'] == 1) {
+                if (isset($permission_value['allowed']) && $permission_value['allowed'] == 1) {
                     $view_name = DB::table('omnichannel.menu_permissions')
                         ->where('module_name', $permission_key)
                         ->value('view_name');
@@ -155,7 +155,7 @@ class Users extends Authenticatable implements JWTSubject
                 'email' => $this->email,
                 'role_id' => $this->role_id,
                 'domain' => $postData['domain'],
-                'permission' => json_encode($permission_array),
+            //    'permission' => json_encode($permission_array),
             ];
 
             if ($postData['flag'] == 2) {

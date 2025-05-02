@@ -110,6 +110,7 @@ Route::get('custome-field/value', [CustomFieldController::class, 'custumFieldval
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/license_update', [LicenseUpdateController::class, 'updateLicense']);
 });
+
 Route::get('/decode-license', [LicenseController::class, 'decodeLicense']);
 Route::get('/encode-license', [LicenseController::class, 'encodeLicense']);
 
@@ -266,6 +267,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Ticket Report
     Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
     Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);
+
     Route::prefix('/ticket/summary')->group(function () {
         Route::get('category', [TicketReportController::class, 'categorySummary']);
         Route::get('priority', [TicketReportController::class, 'prioritySummary']);
@@ -309,7 +311,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
 
     Route::get('get-messages', [MessageController::class, 'getMessages']);  // not in frontend yet
-    Route::post('message', [MessageController::class, 'storeMessage']); // not in frontend yet
+    Route::post('send-message', [MessageController::class, 'storeMessage']); // not in frontend yet
 
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::get('neox-call-incoming', [IncomingCallController::class, 'checkIncoming']); // not in frontend yet
