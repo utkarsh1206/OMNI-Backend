@@ -2032,10 +2032,6 @@
                                         "type": "integer",
                                         "example": 303
                                     },
-                                    "user_id": {
-                                        "type": "integer",
-                                        "example": 404
-                                    },
                                     "call_back_time": {
                                         "type": "string",
                                         "format": "date-time",

@@ -16,11 +16,23 @@ class CallBackRepository
     {
         $this->apiResponse = $customApiResponse;
     }
-    
+
     public function store($request)
     {
         try {
-            $callBack = CallBack::create($request);
+            $input = [
+                'lead_id' => $request->lead_id,
+                'list_id' => $request->list_id,
+                'campaign_id' => $request->campaign_id,
+                'user_id' => auth()->user()->id,
+                'call_back_time' => $request->call_back_time,
+                'recipient' => $request->recipient,
+                'comments' => $request->comments,
+                'user_group' => $request->user_group,
+                'lead_status' => $request->lead_status,
+                'last_modified_user' => $request->last_modified_user,
+            ];
+            $callBack = CallBack::create($input);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $callBack, trans('message.callback_create'));
         } catch (Exception $e) {
             generateLogs('error', 'Error in Storing CallBack : ', $e->getMessage());

@@ -38,7 +38,6 @@ class CallBackController extends Controller
      *                 @OA\Property(property="lead_id", type="integer", example=101),
      *                 @OA\Property(property="list_id", type="integer", example=202),
      *                 @OA\Property(property="campaign_id", type="integer", example=303),
-     *                 @OA\Property(property="user_id", type="integer", example=404),
      *                 @OA\Property(property="call_back_time", type="string", format="date-time", example="2025-05-03T14:30:00Z"),
      *                 @OA\Property(property="recipient", type="string", enum={"Useronly", "Anyone"}, example="Useronly"),
      *                 @OA\Property(property="comments", type="string", example="Please call in the afternoon"),
