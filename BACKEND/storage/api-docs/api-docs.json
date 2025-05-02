@@ -1997,6 +1997,196 @@
                 }
             }
         },
+        "/api/call-backs": {
+            "post": {
+                "tags": [
+                    "CallBacks"
+                ],
+                "summary": "Create a new call back",
+                "description": "Create a new call back entry with the provided lead and scheduling details.",
+                "operationId": "createCallBack",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "lead_id",
+                                    "list_id",
+                                    "campaign_id",
+                                    "user_id",
+                                    "call_back_time",
+                                    "recipient",
+                                    "comments"
+                                ],
+                                "properties": {
+                                    "lead_id": {
+                                        "type": "integer",
+                                        "example": 101
+                                    },
+                                    "list_id": {
+                                        "type": "integer",
+                                        "example": 202
+                                    },
+                                    "campaign_id": {
+                                        "type": "integer",
+                                        "example": 303
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 404
+                                    },
+                                    "call_back_time": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-05-03T14:30:00Z"
+                                    },
+                                    "recipient": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Useronly",
+                                            "Anyone"
+                                        ],
+                                        "example": "Useronly"
+                                    },
+                                    "comments": {
+                                        "type": "string",
+                                        "example": "Please call in the afternoon"
+                                    },
+                                    "user_group": {
+                                        "type": "string",
+                                        "example": "sales"
+                                    },
+                                    "lead_status": {
+                                        "type": "string",
+                                        "example": "CALLBK"
+                                    },
+                                    "last_modified_user": {
+                                        "type": "string",
+                                        "example": "agent01"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Call back successfully created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "lead_id": {
+                                                    "type": "integer",
+                                                    "example": 101
+                                                },
+                                                "list_id": {
+                                                    "type": "integer",
+                                                    "example": 202
+                                                },
+                                                "campaign_id": {
+                                                    "type": "integer",
+                                                    "example": 303
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 404
+                                                },
+                                                "call_back_time": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-03T14:30:00Z"
+                                                },
+                                                "recipient": {
+                                                    "type": "string",
+                                                    "example": "Useronly"
+                                                },
+                                                "comments": {
+                                                    "type": "string",
+                                                    "example": "Please call in the afternoon"
+                                                },
+                                                "user_group": {
+                                                    "type": "string",
+                                                    "example": "sales"
+                                                },
+                                                "lead_status": {
+                                                    "type": "string",
+                                                    "example": "CALLBK"
+                                                },
+                                                "last_modified_user": {
+                                                    "type": "string",
+                                                    "example": "agent01"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-02T12:00:00Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-02T12:00:00Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/call-log-report/list": {
             "get": {
                 "tags": [
@@ -20444,6 +20634,9 @@
         }
     },
     "tags": [
+        {
+            "name": "CallBacks"
+        },
         {
             "name": "Call Log Report",
             "description": "APIs for call log reporting, export and summaries"
