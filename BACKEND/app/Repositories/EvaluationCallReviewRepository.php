@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Http\Response\CustomApiResponse;
 use App\Models\EcdialEvaluationQuestion;
 use App\Models\EvaluationCallReview;
+use App\Models\Users;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 
@@ -84,8 +85,10 @@ class EvaluationCallReviewRepository
     public function getReview($data)
     {
         try {
-            $userId = $data['user_id'];
+            $userName = $data['user_id'];
             $callId = $data['call_id'];
+      
+            $userId = Users::where('username', $userName)->value('id');
 
             // Retrieve the review data for the given user and call ID
             $review = EvaluationCallReview::where('user_id', $userId)
