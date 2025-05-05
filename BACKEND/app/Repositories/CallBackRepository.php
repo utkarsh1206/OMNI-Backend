@@ -23,7 +23,7 @@ class CallBackRepository
             $input = [
                 'lead_id' => $request->lead_id,
                 'list_id' => $request->list_id,
-                'campaign_id' => $request->campaign_id,
+                'campaign_id' => null, // $request->campaign_id,
                 'user_id' => auth()->user()->id,
                 'call_back_time' => $request->call_back_time,
                 'recipient' => $request->recipient,

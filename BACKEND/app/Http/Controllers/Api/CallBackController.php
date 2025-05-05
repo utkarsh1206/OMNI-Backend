@@ -32,7 +32,7 @@ class CallBackController extends Controller
      *             @OA\Schema(
      *                 type="object",
      *                 required={
-     *                     "lead_id", "list_id", "campaign_id", "user_id", 
+     *                     "lead_id", "list_id", "user_id", 
      *                     "call_back_time", "recipient", "comments"
      *                 },
      *                 @OA\Property(property="lead_id", type="integer", example=101),

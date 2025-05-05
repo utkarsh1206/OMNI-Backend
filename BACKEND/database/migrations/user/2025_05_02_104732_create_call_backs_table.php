@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('lead_id');
             $table->integer('list_id');
-            $table->integer('campaign_id');
+            $table->integer('campaign_id')->nullable();
             $table->integer('user_id');
             $table->datetime('call_back_time');
             $table->enum('recipient', ['Useronly', 'Anyone'])->default('Useronly');
