@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('mail_template', function (Blueprint $table) {
-            $table->dropColumn('is_delete');
+            // $table->dropColumn('is_delete');
             $table->softDeletes(); 
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('mail_template', function (Blueprint $table) {
-            $table->boolean('is_delete')->default(false);
+            // $table->boolean('is_delete')->default(false);
             $table->dropSoftDeletes();
         });
     }

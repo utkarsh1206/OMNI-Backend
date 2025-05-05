@@ -155,7 +155,7 @@ class Users extends Authenticatable implements JWTSubject
                 'email' => $this->email,
                 'role_id' => $this->role_id,
                 'domain' => $postData['domain'],
-            //    'permission' => json_encode($permission_array),
+                'permission' => json_encode($permission_array),
             ];
 
             if ($postData['flag'] == 2) {

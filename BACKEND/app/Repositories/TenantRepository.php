@@ -163,7 +163,8 @@ class TenantRepository
             'tenant_role_id',
             'title',
             'footer_content',
-            'footer_url'
+            'footer_url',
+            'domain_name'
         ]);
 
         // Hash the password only if it's present in the request

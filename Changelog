@@ -1,3 +1,10 @@
+2025-05-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : a1af37f3
+	* Version : Dev
+	* Laravel: Refactor migrations and enhance data models. Includes user permissions in the user data array. Adds the domain name field to the tenant repository query. Modifies the `mail_template` soft delete migration to retain the `is_delete` column alongside `deleted_at`. Comments out a potentially redundant `mail_template` migration. Comments out core fields (`user_id`, `text`, `attachment`) in the `messages` table migration. Applies a prefix unique index to the `question` column in the `ecdial_evaluation_questions` migration to support the TEXT data type.
+
 2025-05-05 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
