@@ -235,6 +235,14 @@ class MenuPermissionsSeeder extends Seeder
                 'created_at' => $timestamp,
                 'updated_at' => $timestamp,
             ],
+            [
+                'module_name' => 'evaluation',
+                'view_name' => 'viewEvaluation',
+                'roles' => 'allowed',
+                'section' => 'module',
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
         ]);
     }
 }
