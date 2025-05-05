@@ -29,6 +29,9 @@ class EvaluationCallReviewRepository
 
             $loggedInUser = Auth::user()->username ?? null;
 
+            $answers = $data['selected_answers'];
+            $questionIds = array_keys($answers);
+
             $questionsText = EcdialEvaluationQuestion::where('status', 'active')
                 ->whereIn('id', explode(',', $data['question_ids']))
                 ->pluck('question', 'id')
@@ -37,21 +40,22 @@ class EvaluationCallReviewRepository
             // Process questions
             $questionIds = explode(',', $data['question_ids']);
             $questions = [];
-
+            $allAnswers = [];
 
             foreach ($questionIds as $questionId) {
                 if (isset($questionsText[$questionId])) {
                     $questions[] = $questionsText[$questionId];
+
+                    // join multi-answers with comma inside each question
+                    $joinedAnswers = implode(',', $answers[$questionId]);
+
+                    $allAnswers[] = $joinedAnswers;
                 }
             }
 
             // Combine questions with #$#$ separator
             $allQuestions = implode("#$#$", $questions);
-
-            // For answers, just replace commas with #$#$
-            $allAnswers = isset($data['selected_answers'])
-                ? str_replace(",", "#$#$", $data['selected_answers'])
-                : '';
+            $allAnswersStr = implode("#$#$", $allAnswers);
 
             //Insert into database
             $review = EvaluationCallReview::create([
@@ -59,7 +63,7 @@ class EvaluationCallReviewRepository
                 'user_id' => $agent,
                 'campaign_id' => $campaign,
                 'questions' => $allQuestions,
-                'selected_answer' => $allAnswers,
+                'selected_answer' => $allAnswersStr,
                 'comment' => $additionalComments,
                 'call_rating' => $callRating ?? '0',
                 'created_by' => $loggedInUser,
@@ -87,7 +91,7 @@ class EvaluationCallReviewRepository
         try {
             $userName = $data['user_id'];
             $callId = $data['call_id'];
-      
+
             $userId = Users::where('username', $userName)->value('id');
 
             // Retrieve the review data for the given user and call ID
