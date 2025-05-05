@@ -59,7 +59,7 @@ class EvaluationQuestionRequest extends FormRequest
             response()->json([
                 'error' => 'Validation failed',
                 'messages' => $validator->errors(),
-            ])
+            ], 400)
         );
     }
 }
