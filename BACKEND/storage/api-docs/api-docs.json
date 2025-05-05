@@ -17328,6 +17328,95 @@
                 }
             }
         },
+        "/api/transcript": {
+            "post": {
+                "tags": [
+                    "Transcript"
+                ],
+                "summary": "Generate or retrieve call transcript PDF",
+                "operationId": "transcriptApi",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "file_path"
+                                ],
+                                "properties": {
+                                    "file_path": {
+                                        "description": "Full file path or just the file name (default path will be added if only filename is provided)",
+                                        "type": "string",
+                                        "example": "indeng.wav"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "generated_pdf_url": {
+                                            "type": "string",
+                                            "example": "/storage/transcripts/response_indeng.pdf"
+                                        },
+                                        "details": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Transcript generation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Failed to generate transcript."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/update-custom-field": {
             "put": {
                 "tags": [
@@ -20968,6 +21057,10 @@
         {
             "name": "Ticket Report",
             "description": "Ticket Report"
+        },
+        {
+            "name": "Transcript",
+            "description": "Transcript"
         },
         {
             "name": "Custom Fields",

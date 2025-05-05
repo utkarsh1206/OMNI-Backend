@@ -89,6 +89,7 @@ use App\Http\Controllers\Api\EvaluationQuestionController;
 use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
+use App\Http\Controllers\Api\TranscriptApiController;
 
 require base_path('routes/externalUse.php');
 
@@ -340,6 +341,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     });
 
     Route::apiResource('call-backs', CallBackController::class);
+    Route::post('transcript', [TranscriptApiController::class, 'transcriptApi']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);

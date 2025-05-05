@@ -1,3 +1,16 @@
+2025-05-05 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 0c34de8
+	* Version : Dev
+	* Laravel: Implemented the functionality for generating and retrieving call transcript PDFs in the TranscriptApiController. The process includes validating input, calling an external API for transcript generation, and creating a PDF from the returned transcript details. If the PDF already exists, it returns the existing file. Otherwise, a new PDF is generated and saved in the storage, and the public URL is returned.
+
+	Integrated external API for transcript generation.
+	PDF generation using Barryvdh\DomPDF\Facade\Pdf.
+	Added validation for file path input.
+	Implemented error handling and response formatting.
+	Added Swagger documentation for the API endpoint to provide detailed description and request/response models.
+
 2025-05-01 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :
