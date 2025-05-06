@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\DB;
 use App\Models\EmailConfigure;
 use App\Models\MailTemplate;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use Exception;
 use App\Mail\SendEmail;
 
