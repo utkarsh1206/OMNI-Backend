@@ -57,6 +57,16 @@ class EvaluationCallReviewRepository
             $allQuestions = implode("#$#$", $questions);
             $allAnswersStr = implode("#$#$", $allAnswers);
 
+            // Check if the same user and callId already exist
+            $existingReview = EvaluationCallReview::where('callerid', $callId)
+                ->where('user_id', $agent)
+                ->first();
+
+            // If review already exists, return a response indicating so
+            if ($existingReview) {
+                return response()->json(['error' => 'Review already exists for this call.'], 400);
+            }
+
             //Insert into database
             $review = EvaluationCallReview::create([
                 'callerid' => $callId,
