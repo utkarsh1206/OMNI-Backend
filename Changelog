@@ -1,6 +1,13 @@
 2025-05-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :
+	* Previous Commit ID : 616adb86
+	* Version : Dev
+	* Laravel: Adds Role-Based Access Control (RBAC) and tenant creation check. Implements a system for managing user roles and permissions. Introduces models, controllers, and migrations for Roles, Actions, and Tenant Modules. Adds functionality to assign roles to users and check permissions via `hasPermission`. Adds an API endpoint to check if creating a new tenant is allowed based on license limits. Updates API documentation for new endpoints and webhook payload changes.
+
+2025-05-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
 	* Previous Commit ID : a1af37f3
 	* Version : Dev
 	* Laravel: Refactor migrations and enhance data models. Includes user permissions in the user data array. Adds the domain name field to the tenant repository query. Modifies the `mail_template` soft delete migration to retain the `is_delete` column alongside `deleted_at`. Comments out a potentially redundant `mail_template` migration. Comments out core fields (`user_id`, `text`, `attachment`) in the `messages` table migration. Applies a prefix unique index to the `question` column in the `ecdial_evaluation_questions` migration to support the TEXT data type.

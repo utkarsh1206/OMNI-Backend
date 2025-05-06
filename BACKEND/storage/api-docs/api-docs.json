@@ -16045,6 +16045,53 @@
                 }
             }
         },
+        "/api/tenants/check-creation": {
+            "get": {
+                "tags": [
+                    "Tenants"
+                ],
+                "summary": "Check if tenant creation is allowed",
+                "operationId": "9ab5c1f2d4c3dca1b25ae49c1d4a746f",
+                "responses": {
+                    "200": {
+                        "description": "Check result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "allowed": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tenant creation is allowed."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "License invalid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "License is invalid or missing."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/tenant-license/{id}": {
             "put": {
                 "tags": [
@@ -20287,6 +20334,10 @@
                                     "called_phone_number": {
                                         "type": "string",
                                         "example": "567890"
+                                    },
+                                    "domain_name": {
+                                        "type": "string",
+                                        "example": "TestTenant13.com"
                                     }
                                 },
                                 "type": "object"
