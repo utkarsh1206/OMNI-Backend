@@ -22,12 +22,18 @@ class EvaluationCallReviewRepository
     {
         try {
             $callId = $data['callId'];
-            $agent = $data['user_id'];
+            $userName = $data['user_id'];
             $campaign = $data['campaign_id'];
             $additionalComments = $data['additional_comments'];
             $callRating = $data['call_rating'];
 
             $loggedInUser = Auth::user()->username ?? null;
+
+            $agent = Users::where('username', $userName)->value('id');
+
+             if (!$agent) {
+                return response()->json(['error' => 'User not found.'], 400);
+            }
 
             $answers = $data['selected_answers'];
             $questionIds = array_keys($answers);
