@@ -36,6 +36,14 @@ class MenuPermissionsSeeder extends Seeder
                 'updated_at' => $timestamp,
             ],
             [
+                'module_name' => 'user_roles',
+                'view_name' => 'viewUserRoles',
+                'roles' => 'allowed',
+                'section' => 'module',
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
+            [
                 'module_name' => 'support_ticket',
                 'view_name' => 'viewSupportTicket',
                 'roles' => 'allowed',

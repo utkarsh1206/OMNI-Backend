@@ -1,3 +1,10 @@
+2025-05-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 4558383d
+	* Version : Dev
+	* Laravel : Standardizes permission management using module and action IDs. Transitions role permission assignment from string-based names to specific IDs for modules (`tenant_module_id`) and actions (`action_ids`). This enhances data integrity and simplifies permission handling. Introduces new API endpoints to provide lists of available tenant modules and actions, supporting the new ID-based system. Updates JWT custom claims to include the structured ID-based permissions, ensuring more precise user entitlements. Adds database migrations and seeders for `actions` and `tenant_modules`, including essential default data.Refines `RoleController` with updated default pagination and a standardized JSON response for deletion.
+
 2025-05-07 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

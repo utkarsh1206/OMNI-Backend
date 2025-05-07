@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\CustomFieldController;
 use App\Http\Controllers\Api\UpdateCustomFieldController;
 use App\Http\Controllers\Api\AgentActivityController;
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\ActionController;
 use App\Http\Controllers\Api\AddPartyApiController;
 use App\Http\Controllers\Api\IndustryTypeController;
 use App\Http\Controllers\Api\BusinessTypeController;
@@ -94,6 +95,7 @@ use App\Http\Controllers\Api\PriorityController;
 use App\Http\Controllers\Api\TranscriptApiController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\TenantModuleController;
 
 require base_path('routes/externalUse.php');
 
@@ -393,6 +395,9 @@ Route::prefix('user-roles')->group(function () {
     Route::put('{user}/roles',  [UserRoleController::class, 'update']);
 });
 
+
+Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
+Route::get('/actions', [ActionController::class, 'index']);
 
 /**
  * missing urls

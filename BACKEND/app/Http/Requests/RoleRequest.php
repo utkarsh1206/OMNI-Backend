@@ -15,9 +15,13 @@ class RoleRequest extends FormRequest
             'display_name' => 'required|string',
             'description' => 'nullable|string',
             'status'      => 'boolean',
+            // 'permissions' => 'required|array|min:1',
+            // 'permissions.*.module'  => 'required|string',
+            // 'permissions.*.actions' => 'required|array|min:1',
             'permissions' => 'required|array|min:1',
-            'permissions.*.module'  => 'required|string',
-            'permissions.*.actions' => 'required|array|min:1',
+            'permissions.*.tenant_module_id' => 'required|integer|exists:tenant_modules,id',
+            'permissions.*.action_ids'       => 'required|array|min:1',
+            'permissions.*.action_ids.*'     => 'required|integer|exists:actions,id',
         ];
     }
 }
