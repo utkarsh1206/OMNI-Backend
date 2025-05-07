@@ -74,7 +74,7 @@ class AgentMessageRepository
             $file = uploadAttachment($request, "attachment", "attachment");
             $message = Message::Create([
                 "user_id" => auth()->user()->id,
-                "receiver_id" => $request->id,
+                "receiver_id" => $request->agent_id,
                 "text" => $request->text,
                 "is_read" => 'unread',
                 "type" => 'agent_chat',

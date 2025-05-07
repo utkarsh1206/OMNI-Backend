@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Repositories\AgentMessageRepository;
-use App\Http\Requests\MessageRequest;
+use App\Http\Requests\AgentMessageRequest;
 
 class AgentMessageController extends Controller
 {
@@ -125,8 +125,19 @@ class AgentMessageController extends Controller
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 type="object",
-     *                 required={"text"},
-     *                 @OA\Property(property="text", type="string", example="This is a message"),
+     *                 required={"text", "agent_id"},
+     *                 @OA\Property(
+     *                     property="agent_id",
+     *                     type="integer",
+     *                     example=33,
+     *                     description="The ID of the agent receiving the message"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="text",
+     *                     type="string",
+     *                     example="This is a message",
+     *                     description="Text content of the message"
+     *                 ),
      *                 @OA\Property(
      *                     property="attachment",
      *                     type="string",
@@ -174,7 +185,7 @@ class AgentMessageController extends Controller
      *     )
      * )
      */
-    public function storeMessage(MessageRequest $request)
+    public function storeMessage(AgentMessageRequest $request)
     {
         return $this->messageRepository->storeMessage($request);
     }
