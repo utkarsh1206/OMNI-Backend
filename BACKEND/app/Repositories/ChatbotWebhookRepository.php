@@ -62,6 +62,7 @@ class ChatbotWebhookRepository
                     $chatMessage[] = [
                         //'id' => $msg['currentId'] ?? Str::uuid()->toString(),
                         'user_id' => null,
+                        'type' => 'user_chat',
                         'attachment' => null,
                         'text' => strip_tags($messageText),
                         'room_id' => $msg['room_id'] ?? $chatHistory['room_id'],

@@ -78,7 +78,6 @@ class Chat360Service
     public function sendMessage(string $type, array $payload)
     {
         try {
-
             $message = [
                 'api_key' => $this->apiKey,
                 'from' => 'dummyData',       // Replace with dynamic value if needed

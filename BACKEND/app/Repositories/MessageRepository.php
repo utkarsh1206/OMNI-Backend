@@ -28,7 +28,7 @@ class MessageRepository
         try {
             $userId = auth()->user()->id;
             // where("user_id", $userId)->
-            $messages  = Message::get();
+            $messages  = Message::where("type", "user_chat")->get();
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
         } catch (Exception $ex) {
@@ -46,6 +46,7 @@ class MessageRepository
                 "user_id" => auth()->user()->id,
                 "text" => $request->text,
                 "is_read" => 'unread',
+                "type" => 'user_chat',
                 "attachment" => $file['path'] ?? null,
                 "sender" => 'agent',
             ]);
