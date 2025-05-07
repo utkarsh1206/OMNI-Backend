@@ -186,13 +186,22 @@ class Users extends Authenticatable implements JWTSubject
             // New permission format using IDs
             $permissions = [];
 
-            foreach ($this->roles as $role) {
-                $rolePermissions = DB::table('role_action')
-                    ->where('role_id', $role->id)
-                    ->get(['tenant_module_id', 'action_id']);
+            // foreach ($this->roles as $role) {
+            //     $rolePermissions = DB::table('role_action')
+            //         ->where('role_id', $role->id)
+            //         ->get(['tenant_module_id', 'action_id']);
 
-                foreach ($rolePermissions as $perm) {
-                    $permissions[$perm->tenant_module_id][] = $perm->action_id;
+            //     foreach ($rolePermissions as $perm) {
+            //         $permissions[$perm->tenant_module_id][] = $perm->action_id;
+            //     }
+            // }
+
+
+            foreach ($this->roles as $role) {
+                foreach ($role->tenantModules as $module) {
+                    foreach ($module->actions as $action) {
+                        $permissions[$module->name][] = $action->name;
+                    }
                 }
             }
 
