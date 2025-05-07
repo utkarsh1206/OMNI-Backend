@@ -21,7 +21,8 @@ class AgentMessageController extends Controller
      *     path="/api/get-agent-status",
      *     summary="Get status of all users",
      *     description="Returns a list of agents along with their availability status based on presence in live_agents table.",
-     *     tags={"Agents"},
+     *     tags={"Agent Message"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -60,7 +61,7 @@ class AgentMessageController extends Controller
      *     path="/api/get-agent-messages/{agent_id}",
      *     summary="Fetch chat messages between current user and given agent",
      *     description="Returns all messages where the current user is either the sender or receiver and the given agent is the other party.",
-     *     tags={"Agent Messages"},
+     *     tags={"Agent Message"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="agent_id",
@@ -113,8 +114,7 @@ class AgentMessageController extends Controller
      *     path="/api/send-agent-messages",
      *     summary="Store a new message",
      *     description="Creates a new message for a specific user. Supports file attachment.",
-     *     operationId="storeMessage",
-     *     tags={"Messages"},
+     *     security={{"bearerAuth":{}}},
      *     security={{
      *         "bearerAuth": {}
      *     }},
