@@ -11,10 +11,12 @@ return [
    'ALL_PAGE' => env('ALL_PAGE', 'all'),
    
    'CHAT_360_EMAIL' => env('CHAT360_EMAIL','sales@chat360.io'),
-   'CHAT_360_PASSWORD' => env('CHAT_360_PASSWORD','Chat@123sales'),
-   'CHAT_360_ROOM_ID' => env('CHAT_360_ROOM_ID','367731a6-7f9b-431b-8432-8e958c71c17e'),
-   'CHAT_360_API_KEY' => env('CHAT_360_API_KEY','tZmtDOWE.lrHqrYPuNHPBxvwruHvKfCoQUCW7LId0'),
+   'CHAT_360_PASSWORD' => env('CHAT_360_PASSWORD','Sdr#@1234'),
+   'CHAT_360_ROOM_ID' => env('CHAT_360_ROOM_ID','23001ab4-e5cf-4755-b5e0-dec25bb753b0'),
+   'CHAT_360_API_KEY' => env('CHAT_360_API_KEY','t0HiHfFn.DBswDPdxcrQLeCt7bhpkciR2k7gRBwlN'),
    'CHAT_360_URL' => env('CHAT_360_URL','https://app.chat360.io/'),
+   'CHAT_FROM_PHONE' => env('CHAT_FROM_PHONE', 918799952622),
+   'CHAT_TO_PHONE' => env('CHAT_TO_PHONE', 919111882178), 
 
    'REPORT_DATA_PER_PAGE' => 50,
 ];

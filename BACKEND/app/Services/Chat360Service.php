@@ -12,6 +12,8 @@ class Chat360Service
     protected $url;
     protected $apiKey;
     protected $roomId;
+    protected $fromPhone;
+    protected $toPhone;
 
     public function __construct()
     {
@@ -20,6 +22,8 @@ class Chat360Service
         $this->url =  config('omni.CHAT_360_URL');
         $this->apiKey = config('omni.CHAT_360_API_KEY');
         $this->roomId = config('omni.CHAT_360_ROOM_ID');
+        $this->fromPhone = config('omni.CHAT_FROM_PHONE');
+        $this->toPhone = config('omni.CHAT_TO_PHONE');
     }
 
     public function login()
@@ -80,8 +84,8 @@ class Chat360Service
         try {
             $message = [
                 'api_key' => $this->apiKey,
-                'from' => 'dummyData',       // Replace with dynamic value if needed
-                'to' => 'dummyData',         // Replace with dynamic value if needed
+                'from' => $this->fromPhone,       // Replace with dynamic value if needed
+                'to' => $this->toPhone,         // Replace with dynamic value if needed
                 'recipient_type' => 'individual',
                 'type' => $type,
             ];
