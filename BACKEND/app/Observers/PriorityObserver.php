@@ -33,9 +33,7 @@ class PriorityObserver
 
             if ($action !== 'delete') {
                 $masterData = DB::table('priorities')->where('name', $priority->name)->first();
-
                 if (!$masterData) {
-                    // Log error if no master data is found
                     generateLogs("error", "Priority not found in master table", $priority->name);
                     return;
                 }
@@ -79,6 +77,12 @@ class PriorityObserver
                                     'description' => $priority->description,
                                     'status' => $priority->status,
                                 ]);
+                        } else {
+                            generateLogs("warning", "Priority missing in tenant DB during update", [
+                                'tenant_db' => $newConnectionName,
+                                'master_id' => $priority->id,
+                                'priority_name' => $priority->name,
+                            ]);
                         }
                     } else if ($action === 'delete') {
                         // Delete logic
@@ -92,8 +96,18 @@ class PriorityObserver
                                 ->table('priorities')
                                 ->where('id', $existingPriority->id)
                                 ->delete();
+                        } else {
+                            generateLogs("warning", "Priority missing in tenant DB during delete", [
+                                'tenant_db' => $newConnectionName,
+                                'master_id' => $priority->id,
+                                'priority_name' => $priority->name,
+                            ]);
                         }
                     }
+                } else {
+                    generateLogs("warning", "Priorities table missing in tenant DB", [
+                        'tenant_db' => $newConnectionName,
+                    ]);
                 }
             }
         }
