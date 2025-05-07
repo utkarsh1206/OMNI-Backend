@@ -16378,6 +16378,53 @@
                 }
             }
         },
+        "/api/tenants/check-creation": {
+            "get": {
+                "tags": [
+                    "Tenants"
+                ],
+                "summary": "Check if tenant creation is allowed",
+                "operationId": "9ab5c1f2d4c3dca1b25ae49c1d4a746f",
+                "responses": {
+                    "200": {
+                        "description": "Check result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "allowed": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tenant creation is allowed."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "License invalid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "License is invalid or missing."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/tenant-license/{id}": {
             "put": {
                 "tags": [
@@ -17659,6 +17706,95 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/transcript": {
+            "post": {
+                "tags": [
+                    "Transcript"
+                ],
+                "summary": "Generate or retrieve call transcript PDF",
+                "operationId": "transcriptApi",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "file_path"
+                                ],
+                                "properties": {
+                                    "file_path": {
+                                        "description": "Full file path or just the file name (default path will be added if only filename is provided)",
+                                        "type": "string",
+                                        "example": "indeng.wav"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "generated_pdf_url": {
+                                            "type": "string",
+                                            "example": "/storage/transcripts/response_indeng.pdf"
+                                        },
+                                        "details": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Transcript generation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Failed to generate transcript."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/update-custom-field": {
@@ -20531,6 +20667,10 @@
                                     "called_phone_number": {
                                         "type": "string",
                                         "example": "567890"
+                                    },
+                                    "domain_name": {
+                                        "type": "string",
+                                        "example": "TestTenant13.com"
                                     }
                                 },
                                 "type": "object"
@@ -21305,6 +21445,10 @@
         {
             "name": "Ticket Report",
             "description": "Ticket Report"
+        },
+        {
+            "name": "Transcript",
+            "description": "Transcript"
         },
         {
             "name": "Custom Fields",

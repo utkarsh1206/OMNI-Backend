@@ -156,6 +156,7 @@ class Users extends Authenticatable implements JWTSubject
                 'role_id' => $this->role_id,
                 'domain' => $postData['domain'],
                 //    'permission' => json_encode($permission_array),
+                'permission' => json_encode($permission_array),
             ];
 
             if ($postData['flag'] == 2) {
@@ -177,5 +178,27 @@ class Users extends Authenticatable implements JWTSubject
         return Attribute::get(function () {
             return $this->liveAgent ? 'available' : 'offline';
         });
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id');
+    }
+
+    /**
+     * Check if user has a given module-action
+     */
+    public function hasPermission(string $moduleName, string $actionName): bool
+    {
+        $mod = TenantModule::where('name', $moduleName)->first();
+        if (! $mod) {
+            return false;
+        }
+
+        return $this->roles()
+            ->whereHas('actions', function ($q) use ($actionName, $mod) {
+                $q->where('name', $actionName)
+                    ->wherePivot('tenant_module_id', $mod->id);
+            })->exists();
     }
 }

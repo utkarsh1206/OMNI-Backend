@@ -90,6 +90,9 @@ use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
+use App\Http\Controllers\Api\TranscriptApiController;
+use App\Http\Controllers\Api\UserRoleController;
+use App\Http\Controllers\Api\RoleController;
 
 require base_path('routes/externalUse.php');
 
@@ -152,6 +155,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('tenantrole-menu', [TenantRoleController::class, 'menu']);   // not in frontend yet
 
     Route::get('tenant-dashboard', [TenantController::class, 'dashboard']); // not in frontend yet
+
+    Route::get('check-tenant-creation', [TenantController::class, 'checkTenantCreationAllowed']);
 
     Route::apiResource('sms-providers', SmsProviderController::class);  // not in frontend yet
 
@@ -341,10 +346,11 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::prefix('evaluation')->group(function () {
         Route::apiResource('questions', EvaluationQuestionController::class);
         Route::post('store-review', [EvaluationCallReviewController::class, 'store']);
-        Route::get('get-review', [EvaluationCallReviewController::class, 'getReview']);
+        Route::post('get-review', [EvaluationCallReviewController::class, 'getReview']);
     });
 
     Route::apiResource('call-backs', CallBackController::class);
+    Route::post('transcript', [TranscriptApiController::class, 'transcriptApi']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
@@ -371,6 +377,19 @@ Route::apiResource('pause-code', 'App\Http\Controllers\Api\PauseCodeController')
 
 Route::get('cron-commands', [CronCommandController::class, 'index']);
 Route::get('cron-expressions', [CronExpressionController::class, 'index']);
+
+Route::prefix('roles')->group(function () {
+    Route::get('/', [RoleController::class, 'index']);
+    Route::post('/', [RoleController::class, 'store']);
+    Route::get('{role}', [RoleController::class, 'show']);
+    Route::put('{role}', [RoleController::class, 'update']);
+    Route::delete('{role}', [RoleController::class, 'destroy']);
+});
+
+Route::prefix('user-roles')->group(function () {
+    Route::get('/',             [UserRoleController::class, 'index']);
+    Route::put('{user}/roles',  [UserRoleController::class, 'update']);
+});
 
 
 /**

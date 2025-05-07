@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->integer("user_id");
-            $table->longText("text");
-            $table->text("attachment");
+            // $table->integer("user_id");
+            // $table->longText("text");
+            // $table->text("attachment");
             $table->enum('is_read', ['unread', 'read'])->default('unread');
             $table->timestamps();
         });

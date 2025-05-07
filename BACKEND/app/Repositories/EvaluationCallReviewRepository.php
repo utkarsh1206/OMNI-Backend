@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Http\Response\CustomApiResponse;
 use App\Models\EcdialEvaluationQuestion;
 use App\Models\EvaluationCallReview;
+use App\Models\Users;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,12 +22,21 @@ class EvaluationCallReviewRepository
     {
         try {
             $callId = $data['callId'];
-            $agent = $data['user_id'];
+            $userName = $data['user_id'];
             $campaign = $data['campaign_id'];
             $additionalComments = $data['additional_comments'];
             $callRating = $data['call_rating'];
 
             $loggedInUser = Auth::user()->username ?? null;
+
+            $agent = Users::where('username', $userName)->value('id');
+
+             if (!$agent) {
+                return response()->json(['error' => 'User not found.'], 400);
+            }
+
+            $answers = $data['selected_answers'];
+            $questionIds = array_keys($answers);
 
             $questionsText = EcdialEvaluationQuestion::where('status', 'active')
                 ->whereIn('id', explode(',', $data['question_ids']))
@@ -36,21 +46,32 @@ class EvaluationCallReviewRepository
             // Process questions
             $questionIds = explode(',', $data['question_ids']);
             $questions = [];
-
+            $allAnswers = [];
 
             foreach ($questionIds as $questionId) {
                 if (isset($questionsText[$questionId])) {
                     $questions[] = $questionsText[$questionId];
+
+                    // join multi-answers with comma inside each question
+                    $joinedAnswers = implode(',', $answers[$questionId]);
+
+                    $allAnswers[] = $joinedAnswers;
                 }
             }
 
             // Combine questions with #$#$ separator
             $allQuestions = implode("#$#$", $questions);
+            $allAnswersStr = implode("#$#$", $allAnswers);
 
-            // For answers, just replace commas with #$#$
-            $allAnswers = isset($data['selected_answers'])
-                ? str_replace(",", "#$#$", $data['selected_answers'])
-                : '';
+            // Check if the same user and callId already exist
+            $existingReview = EvaluationCallReview::where('callerid', $callId)
+                ->where('user_id', $agent)
+                ->first();
+
+            // If review already exists, return a response indicating so
+            if ($existingReview) {
+                return response()->json(['error' => 'Review already exists for this call.'], 400);
+            }
 
             //Insert into database
             $review = EvaluationCallReview::create([
@@ -58,7 +79,7 @@ class EvaluationCallReviewRepository
                 'user_id' => $agent,
                 'campaign_id' => $campaign,
                 'questions' => $allQuestions,
-                'selected_answer' => $allAnswers,
+                'selected_answer' => $allAnswersStr,
                 'comment' => $additionalComments,
                 'call_rating' => $callRating ?? '0',
                 'created_by' => $loggedInUser,
@@ -84,8 +105,10 @@ class EvaluationCallReviewRepository
     public function getReview($data)
     {
         try {
-            $userId = $data['user_id'];
+            $userName = $data['user_id'];
             $callId = $data['call_id'];
+
+            $userId = Users::where('username', $userName)->value('id');
 
             // Retrieve the review data for the given user and call ID
             $review = EvaluationCallReview::where('user_id', $userId)

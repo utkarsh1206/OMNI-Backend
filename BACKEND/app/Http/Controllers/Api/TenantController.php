@@ -645,4 +645,52 @@ class TenantController extends Controller
     {
         return $this->tenantRepository->dashboard();
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/check-tenant-creation",
+     *     summary="Check if tenant creation is allowed",
+     *     tags={"Tenants"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Check result",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="allowed", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Tenant creation is allowed.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="License invalid",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="License is invalid or missing.")
+     *         )
+     *     )
+     * )
+     */
+    public function checkTenantCreationAllowed(Request $request)
+    {
+        generateLogs('info', 'request ' . $request);
+        $licenseResponse = $this->licenseController->decodeLicense($request);
+        $licenseData = $licenseResponse->getData(true);
+        generateLogs('info', 'License Data ' . json_encode($licenseData));
+        if (!isset($licenseData['number_of_enterprise'])) {
+            return response()->json(['error' => trans("message.license_invalid")], 400);
+        }
+
+        $currentTenantsCount = Tenant::query()->count();
+        $maxTenantsAllowed = $licenseData['number_of_enterprise'];
+
+        if ($currentTenantsCount >= $maxTenantsAllowed) {
+            return response()->json([
+                'allowed' => false,
+                'message' => trans("message.max_tenant_allow") . $maxTenantsAllowed
+            ], 200);
+        }
+
+        return response()->json([
+            'allowed' => true,
+            'message' => trans("message.tenant_creation_allowed")
+        ], 200);
+    }
 }
