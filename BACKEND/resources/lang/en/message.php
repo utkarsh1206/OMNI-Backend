@@ -181,6 +181,10 @@ return [
     'question_delete' => 'Question deleted successfully.',
     //CallBack
     'callback_create' => 'Call Back created successfully.',
+    //Priority
+    'priority_created' => 'Priority created successfully.',
+    'priority_updated' => 'Priority updated successfully.',
+    'priority_deleted' => 'Priority deleted successfully.',
 ]   
 ?>
 

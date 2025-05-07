@@ -90,6 +90,7 @@ use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
+use App\Http\Controllers\Api\PriorityController;
 use App\Http\Controllers\Api\TranscriptApiController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\RoleController;
@@ -351,6 +352,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::apiResource('call-backs', CallBackController::class);
     Route::post('transcript', [TranscriptApiController::class, 'transcriptApi']);
+    Route::apiResource('priorities', PriorityController::class);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
