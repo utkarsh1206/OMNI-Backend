@@ -8,8 +8,8 @@ use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Tenantrole;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Users extends Authenticatable implements JWTSubject
 {
@@ -155,7 +155,7 @@ class Users extends Authenticatable implements JWTSubject
                 'email' => $this->email,
                 'role_id' => $this->role_id,
                 'domain' => $postData['domain'],
-            //    'permission' => json_encode($permission_array),
+                //    'permission' => json_encode($permission_array),
             ];
 
             if ($postData['flag'] == 2) {
@@ -165,5 +165,17 @@ class Users extends Authenticatable implements JWTSubject
 
             return $claims;
         }
+    }
+
+    public function liveAgent()
+    {
+        return $this->hasOne(LiveAgents::class, 'user_id');
+    }
+
+    protected function status(): Attribute
+    {
+        return Attribute::get(function () {
+            return $this->liveAgent ? 'available' : 'offline';
+        });
     }
 }

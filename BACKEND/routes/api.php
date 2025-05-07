@@ -89,6 +89,7 @@ use App\Http\Controllers\Api\EvaluationQuestionController;
 use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
+use App\Http\Controllers\Api\AgentMessageController;
 
 require base_path('routes/externalUse.php');
 
@@ -312,6 +313,10 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('get-messages', [MessageController::class, 'getMessages']);  // not in frontend yet
     Route::post('send-message', [MessageController::class, 'storeMessage']); // not in frontend yet
+
+    Route::get('get-agent-status', [AgentMessageController::class, 'getStatus']);
+    Route::get('get-agent-messages', [AgentMessageController::class, 'getMessages']);
+    Route::post('send-agent-messages', [AgentMessageController::class, 'getMessages']);
 
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::get('neox-call-incoming', [IncomingCallController::class, 'checkIncoming']); // not in frontend yet

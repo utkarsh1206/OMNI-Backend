@@ -38,7 +38,7 @@ class LiveAgents extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Users::class, 'user_id');
     }
 
     public function campaign()
