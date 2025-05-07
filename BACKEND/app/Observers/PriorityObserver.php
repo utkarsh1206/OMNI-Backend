@@ -34,12 +34,12 @@ class PriorityObserver
             if ($action !== 'delete') {
                 $masterData = DB::table('priorities')->where('name', $priority->name)->first();
                 if (!$masterData) {
-                    generateLogs("error", "Priority not found in master table", $priority->name);
+                    generateLogs("error", "Priority not found in master table");
                     return;
                 }
             }
 
-            $details = DB::table('details')->get();
+            $details = DB::table('omnichannel.details')->get();
 
             foreach ($details as $detail) {
                 $newConnectionName = $detail->db;
@@ -47,6 +47,7 @@ class PriorityObserver
 
                 if (Schema::connection($newConnectionName)->hasTable('priorities')) {
                     if ($action === 'create') {
+                        generateLogs("info", "after create if");
                         $existingPriority = DB::connection($newConnectionName)
                             ->table('priorities')
                             ->where('name', $priority->name)
@@ -78,11 +79,11 @@ class PriorityObserver
                                     'status' => $priority->status,
                                 ]);
                         } else {
-                            generateLogs("warning", "Priority missing in tenant DB during update", [
+                            generateLogs("warning", "Priority missing in tenant DB during update". json_encode([
                                 'tenant_db' => $newConnectionName,
                                 'master_id' => $priority->id,
                                 'priority_name' => $priority->name,
-                            ]);
+                            ]));
                         }
                     } else if ($action === 'delete') {
                         // Delete logic
@@ -97,17 +98,17 @@ class PriorityObserver
                                 ->where('id', $existingPriority->id)
                                 ->delete();
                         } else {
-                            generateLogs("warning", "Priority missing in tenant DB during delete", [
+                            generateLogs("warning", "Priority missing in tenant DB during delete". json_encode([
                                 'tenant_db' => $newConnectionName,
                                 'master_id' => $priority->id,
                                 'priority_name' => $priority->name,
-                            ]);
+                            ]));
                         }
                     }
                 } else {
-                    generateLogs("warning", "Priorities table missing in tenant DB", [
+                    generateLogs("warning", "Priorities table missing in tenant DB". json_encode([
                         'tenant_db' => $newConnectionName,
-                    ]);
+                    ]));
                 }
             }
         }
