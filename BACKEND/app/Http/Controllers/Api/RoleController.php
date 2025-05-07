@@ -13,29 +13,60 @@ class RoleController extends Controller
 {
     public function index(Request $request)
     {
-        $roles = Role::with(['tenantModules', 'actions'])->paginate($request->per_page ?? 15);
+        $roles = Role::with(['tenantModules', 'actions'])->paginate($request->per_page ?? 10);
         return response()->json($roles);
     }
 
     public function store(RoleRequest $request)
     {
         $role = Role::create($request->validated());
+        // foreach ($request->permissions as $perm) {
+        //     $module = TenantModule::firstOrCreate([
+        //         'name' => $perm['module']
+        //     ], [
+        //         'display_name' => $perm['module']
+        //     ]);
+
+        //     foreach ($perm['actions'] as $actionName) {
+        //         $action = Action::firstOrCreate([
+        //             'name' => $actionName
+        //         ], [
+        //             'display_name' => $actionName
+        //         ]);
+
+        //         $role->actions()->attach($action->id, [
+        //             'tenant_module_id' => $module->id
+        //         ]);
+        //     }
+        // }
+
+        // foreach ($request->permissions as $perm) {
+        //     $module = TenantModule::where('name', $perm['module'])->first();
+        //     if (! $module) continue;
+
+        //     foreach ($perm['actions'] as $actionName) {
+        //         $action = Action::where('name', $actionName)->first();
+        //         if (! $action) continue;
+
+        //         $role->actions()->attach($action->id, [
+        //             'tenant_module_id' => $module->id
+        //         ]);
+        //     }
+        // }
+
         foreach ($request->permissions as $perm) {
-            $module = TenantModule::firstOrCreate([
-                'name' => $perm['module']
-            ], [
-                'display_name' => $perm['module']
-            ]);
+            $moduleId = $perm['tenant_module_id'];
+            $actionIds = $perm['action_ids'];
 
-            foreach ($perm['actions'] as $actionName) {
-                $action = Action::firstOrCreate([
-                    'name' => $actionName
-                ], [
-                    'display_name' => $actionName
-                ]);
+            // Optional: validate IDs exist
+            $module = TenantModule::find($moduleId);
+            if (! $module) continue;
 
-                $role->actions()->attach($action->id, [
-                    'tenant_module_id' => $module->id
+            $validActions = Action::whereIn('id', $actionIds)->pluck('id')->toArray();
+
+            foreach ($validActions as $actionId) {
+                $role->actions()->attach($actionId, [
+                    'tenant_module_id' => $moduleId
                 ]);
             }
         }
@@ -53,22 +84,39 @@ class RoleController extends Controller
         $role->update($request->validated());
         $role->actions()->detach();
 
+        // foreach ($request->permissions as $perm) {
+        //     $module = TenantModule::firstOrCreate([
+        //         'name' => $perm['module']
+        //     ], [
+        //         'display_name' => $perm['module']
+        //     ]);
+
+        //     foreach ($perm['actions'] as $actionName) {
+        //         $action = Action::firstOrCreate([
+        //             'name' => $actionName
+        //         ], [
+        //             'display_name' => $actionName
+        //         ]);
+
+        //         $role->actions()->attach($action->id, [
+        //             'tenant_module_id' => $module->id
+        //         ]);
+        //     }
+        // }
+
         foreach ($request->permissions as $perm) {
-            $module = TenantModule::firstOrCreate([
-                'name' => $perm['module']
-            ], [
-                'display_name' => $perm['module']
-            ]);
+            $moduleId = $perm['tenant_module_id'];
+            $actionIds = $perm['action_ids'];
 
-            foreach ($perm['actions'] as $actionName) {
-                $action = Action::firstOrCreate([
-                    'name' => $actionName
-                ], [
-                    'display_name' => $actionName
-                ]);
+            // Optional: validate IDs exist
+            $module = TenantModule::find($moduleId);
+            if (! $module) continue;
 
-                $role->actions()->attach($action->id, [
-                    'tenant_module_id' => $module->id
+            $validActions = Action::whereIn('id', $actionIds)->pluck('id')->toArray();
+
+            foreach ($validActions as $actionId) {
+                $role->actions()->attach($actionId, [
+                    'tenant_module_id' => $moduleId
                 ]);
             }
         }
@@ -78,8 +126,7 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
-        generateLogs('info', 'inside delete function');
         $role->delete();
-        return response()->json('Role deleted Successfuly', 204);
+        return response()->json(['message' => 'Role deleted Successfully'], 200);
     }
 }
