@@ -315,7 +315,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('send-message', [MessageController::class, 'storeMessage']); // not in frontend yet
 
     Route::get('get-agent-status', [AgentMessageController::class, 'getStatus']);
-    Route::get('get-agent-messages', [AgentMessageController::class, 'getMessages']);
+    Route::get('get-agent-messages/{agent_id}', [AgentMessageController::class, 'getMessages']);
     Route::post('send-agent-messages', [AgentMessageController::class, 'getMessages']);
 
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {

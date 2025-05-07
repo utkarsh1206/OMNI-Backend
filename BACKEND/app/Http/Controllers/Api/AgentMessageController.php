@@ -57,67 +57,55 @@ class AgentMessageController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/get-agent-messages",
-     *     summary="Get messages for the authenticated user",
-     *     description="Fetches all messages for the currently authenticated user.",
-     *     operationId="getMessages",
-     *     tags={"Messages"},
-     *     security={{
-     *         "bearerAuth": {}
-     *     }},
+     *     path="/api/get-agent-messages/{agent_id}",
+     *     summary="Fetch chat messages between current user and given agent",
+     *     description="Returns all messages where the current user is either the sender or receiver and the given agent is the other party.",
+     *     tags={"Agent Messages"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="agent_id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the agent to fetch messages with",
+     *         @OA\Schema(type="integer", example=42)
+     *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successful retrieval of messages",
+     *         description="Messages retrieved successfully",
      *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="message", type="string", example="Data has been fetched successfully !"),
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Data fetched successfully."),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
      *                 @OA\Items(
-     *                     type="object",
-     *                     @OA\Property(property="id", type="integer", example=1),
-     *                     @OA\Property(property="user_id", type="integer", nullable=true, example=null),
-     *                     @OA\Property(property="text", type="string", example="What's your Name?"),
-     *                     @OA\Property(property="attachment", type="string", nullable=true, example=null),
+     *                     @OA\Property(property="id", type="integer", example=101),
+     *                     @OA\Property(property="user_id", type="integer", example=1),
+     *                     @OA\Property(property="receiver_id", type="integer", example=42),
+     *                     @OA\Property(property="text", type="string", example="Hello Agent!"),
      *                     @OA\Property(property="is_read", type="string", example="unread"),
-     *                     @OA\Property(property="room_id", type="string", example="367731a6-7f9b-431b-8432-8e958c71c17e"),
-     *                     @OA\Property(property="sender", type="string", example="bot"),
-     *                     @OA\Property(property="external_message_time", type="string", format="date-time", example="2025-03-12 13:06:46"),
-     *                     @OA\Property(property="node_type", type="string", example="USERNAME"),
-     *                     @OA\Property(property="session_id", type="string", example="47497830-512b-4f07-ae7b-7602dfa38a8b"),
-     *                     @OA\Property(property="first_name", type="string", example="System"),
-     *                     @OA\Property(property="last_name", type="string", example="Message"),
-     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-04-24T19:32:02.000000Z"),
-     *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-04-24T19:32:02.000000Z"),
-     *                     @OA\Property(property="attachment_url", type="string", nullable=true, example=null)
+     *                     @OA\Property(property="type", type="string", example="agent_chat"),
+     *                     @OA\Property(property="attachment", type="string", nullable=true, example=null),
+     *                     @OA\Property(property="sender", type="string", example="agent"),
+     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-07T08:15:00Z")
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
-     *         response=400,
-     *         description="Bad Request",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Invalid request")
-     *         )
-     *     ),
-     *     @OA\Response(
      *         response=500,
-     *         description="Internal Server Error",
+     *         description="Server error",
      *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An unexpected error occurred."),
+     *             @OA\Property(property="data", type="string", example=null)
      *         )
      *     )
      * )
      */
-    public function getMessages(Request $request)
+    public function getMessages($agentId)
     {
-        return $this->messageRepository->getMessages($request);
+        return $this->messageRepository->getMessages($agentId);
     }
 
     /**
