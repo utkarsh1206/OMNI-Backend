@@ -114,10 +114,8 @@ class AgentMessageController extends Controller
      *     path="/api/send-agent-messages",
      *     summary="Store a new message",
      *     description="Creates a new message for a specific user. Supports file attachment.",
+      *    tags={"Agent Message"},
      *     security={{"bearerAuth":{}}},
-     *     security={{
-     *         "bearerAuth": {}
-     *     }},
      *     @OA\RequestBody(
      *         required=true,
      *         description="Message data to be stored",

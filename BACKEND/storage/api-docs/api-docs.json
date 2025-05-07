@@ -1278,6 +1278,9 @@
         },
         "/api/send-agent-messages": {
             "post": {
+                "tags": [
+                    "Agent Message"
+                ],
                 "summary": "Store a new message",
                 "description": "Creates a new message for a specific user. Supports file attachment.",
                 "operationId": "9462e4a01d280819051ed4d7b51cca9e",
@@ -16378,13 +16381,13 @@
                 }
             }
         },
-        "/api/tenants/check-creation": {
+        "/api/check-tenant-creation": {
             "get": {
                 "tags": [
                     "Tenants"
                 ],
                 "summary": "Check if tenant creation is allowed",
-                "operationId": "9ab5c1f2d4c3dca1b25ae49c1d4a746f",
+                "operationId": "cc79b38d31aca2a28f5488d8bf26d40b",
                 "responses": {
                     "200": {
                         "description": "Check result",
