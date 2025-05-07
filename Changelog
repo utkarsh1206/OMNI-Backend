@@ -1,3 +1,20 @@
+2025-05-07 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 0a10ac8
+	* Version : Dev
+	* Laravel: This implementation provides a fully functional RESTful API for managing priorities within a Laravel application. It includes:
+    PriorityController: Handles API requests (CRUD operations) and delegates logic to the repository, with complete OpenAPI (Swagger) annotations for API documentation.
+    PriorityRequest: Manages validation rules for creating and updating priorities, including dynamic validation for unique names on update.
+    PriorityObserver: Implements multi-tenant synchronization by automatically syncing priority records across multiple tenant databases whenever a priority is created, updated, or deleted in the master database.
+    PriorityRepository: Encapsulates business logic for data handling and database operations, returning responses in a consistent custom API response structure and logging errors if exceptions occur.
+
+	Key features:
+		Follows repository pattern for better separation of concerns
+		Uses observers to maintain data integrity across multiple databases (multi-tenant)
+		Supports search, filtering, and pagination in listing priorities
+		Generates structured API documentation with OpenAPI/Swagger annotations
+
 2025-05-06 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :
