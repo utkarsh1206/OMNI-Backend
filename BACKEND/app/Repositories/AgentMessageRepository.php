@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 use App\Models\Users;
+use App\Events\ReceiveMessages;
 
 class AgentMessageRepository
 {
@@ -75,13 +76,16 @@ class AgentMessageRepository
             $message = Message::Create([
                 "user_id" => auth()->user()->id,
                 "receiver_id" => $request->agent_id,
+                "type" => 'agent_chat',
                 "text" => $request->text,
                 "is_read" => 'unread',
-                "type" => 'agent_chat',
                 "attachment" => $file['path'] ?? null,
                 "sender" => 'agent',
             ]);
 
+            if($message) {
+                broadcast(new ReceiveMessages($message));
+            }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in storing Message: ', $ex->getMessage());

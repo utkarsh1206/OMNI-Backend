@@ -27,7 +27,6 @@ class MessageRepository
     {
         try {
             $userId = auth()->user()->id;
-            // where("user_id", $userId)->
             $messages  = Message::where("type", "user_chat")->get();
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
@@ -42,6 +41,7 @@ class MessageRepository
         // File upload logic is remaining here. We need to make file upload logic in common place
         try {
             $file = uploadAttachment($request, "attachment", "attachment");
+        
             $message = Message::Create([
                 "user_id" => auth()->user()->id,
                 "text" => $request->text,
