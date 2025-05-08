@@ -17,6 +17,8 @@ class Users extends Authenticatable implements JWTSubject
 
     protected $table = 'users';
 
+    protected $appends = ['user_role_id'];
+
     protected $fillable = [
         // "tenant_id",
         "type",
@@ -210,7 +212,7 @@ class Users extends Authenticatable implements JWTSubject
                 $actions = array_values(array_unique($actions));
             }
 
-            $claims['permissions'] = $permissions;
+            $claims['permission'] = json_encode($permissions);
 
             // Optional campaign & phone
             if (!empty($postData['campaign'])) {
@@ -261,12 +263,12 @@ class Users extends Authenticatable implements JWTSubject
         return $this->hasOne(LiveAgents::class, 'user_id');
     }
 
-    protected function status(): Attribute
-    {
-        return Attribute::get(function () {
-            return $this->liveAgent ? 'available' : 'offline';
-        });
-    }
+    // protected function status(): Attribute
+    // {
+    //     return Attribute::get(function () {
+    //         return $this->liveAgent ? 'available' : 'offline';
+    //     });
+    // }
 
     public function roles()
     {
@@ -288,5 +290,10 @@ class Users extends Authenticatable implements JWTSubject
                 $q->where('name', $actionName)
                     ->wherePivot('tenant_module_id', $mod->id);
             })->exists();
+    }
+
+    public function getUserRoleIdAttribute()
+    {
+        return $this->roles()->first()?->id;
     }
 }

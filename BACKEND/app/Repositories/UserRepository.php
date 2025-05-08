@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Http\Controllers\Api\LicenseController;
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
+use App\Models\Role;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Illuminate\Database\QueryException;
 use App\Models\Users;
@@ -133,6 +134,11 @@ class UserRepository
                 "gender" => $request->gender
             ]);
 
+            if ($request->filled('user_role_id')) {
+                $roles = Role::find([$request->user_role_id]);
+                $users->roles()->sync($roles);
+            }
+
             $config = getNeoxConfig();
             $ip = $config['neox_local_ip'];
 
@@ -187,6 +193,10 @@ class UserRepository
                 "address" => $request->address,
                 "gender" => $request->gender
             ]);
+            if ($request->filled('user_role_id')) {
+                $roles = Role::find([$request->user_role_id]);
+                $user->roles()->sync($roles);
+            }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $user, trans('message.users_updated'));
         } catch (QueryException $e) {
             generateLogs('error', 'Error during Update User : ', $e->getMessage());

@@ -25,6 +25,7 @@ class UtilityRepository
     {
         try {
             $database = $this->domain ?? 'omnichannel';
+            $database = strtolower(str_replace(".", "_", $database));
             $backupFolder = storage_path('app/exports');
             $filename = 'db_backup_' . now()->format('Ymd_His') . '.sql';
             $filePath = $backupFolder . '/' . $filename;
@@ -215,7 +216,7 @@ class UtilityRepository
             $searchTerm = $request->input('search', '');
 
             // Start the query for tenants
-            $query = Download::select('id', 'file_name', 'file_size', 'user_id')->where('type', $type);
+            $query = Download::select('id', 'file_name', 'file_size', 'user_id', 'created_at')->where('type', $type);
 
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {

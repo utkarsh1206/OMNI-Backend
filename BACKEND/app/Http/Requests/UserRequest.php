@@ -24,6 +24,7 @@ class UserRequest extends FormRequest
         return [
             'username' => 'required|unique:users',
             'email' => 'required|unique:users',
+            'user_role_id' => 'nullable|exists:roles,id'
         ];
     }
 }
