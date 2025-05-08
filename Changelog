@@ -1,3 +1,23 @@
+2025-05-08 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : e34f02b
+	* Version : Dev
+	* Laravel: Implemented API endpoints for managing ticket types. This includes functionality to:
+    Retrieve all ticket types with optional filters and pagination.
+    Create a new ticket type.
+    View a specific ticket type by ID.
+    Update an existing ticket type.
+    Delete a ticket type.
+	API responses are structured and include Swagger annotations for API documentation generation.
+	Created validation logic for ticket type-related API requests.
+	The repository handles CRUD operations.
+	Created the TicketTypeObserver to listen for changes in the TicketType model (create, update, delete) and synchronize the changes across tenant databases. The observer:
+    Syncs ticket types between the master database and all tenant databases upon creation, update, or deletion.
+    Handles dynamic database connections for each tenant.
+    Logs issues if a table or ticket type is missing in the tenant's database.
+    Ensures data consistency across multi-tenant systems.
+
 2025-05-07 Utkarsh Rokade<utkarsh.rokade@stl.tech> 
 	* NEWS
 	* Jira ID :

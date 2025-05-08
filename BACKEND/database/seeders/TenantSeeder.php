@@ -17,7 +17,8 @@ class TenantSeeder extends Seeder
             SmsTemplateSeeder::class,
             ApiConfigurationTypeSeeder::class,
             PrioritySeeder::class,
-            TenantModulesSeeder::class
+            TenantModulesSeeder::class,
+            TicketTypesSeeder::class
          ]);
     }
 }

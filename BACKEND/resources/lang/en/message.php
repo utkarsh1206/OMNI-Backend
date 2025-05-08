@@ -185,6 +185,10 @@ return [
     'priority_created' => 'Priority created successfully.',
     'priority_updated' => 'Priority updated successfully.',
     'priority_deleted' => 'Priority deleted successfully.',
+    //Ticket Types
+    'ticket_type_created' => 'Ticket Type created successfully.',
+    'ticket_type_updated' => 'Ticket Type updated successfully.',
+    'ticket_type_deleted' => 'Ticket Type deleted successfully.',
 ]   
 ?>
 

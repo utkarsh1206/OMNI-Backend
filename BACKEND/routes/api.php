@@ -96,6 +96,7 @@ use App\Http\Controllers\Api\TranscriptApiController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\TenantModuleController;
+use App\Http\Controllers\Api\TicketTypeController;
 
 require base_path('routes/externalUse.php');
 
@@ -355,6 +356,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('call-backs', CallBackController::class);
     Route::post('transcript', [TranscriptApiController::class, 'transcriptApi']);
     Route::apiResource('priorities', PriorityController::class);
+    Route::apiResource('ticket-types', TicketTypeController::class);
 });
 
 Route::get('countries', [CountryController::class, 'index']);

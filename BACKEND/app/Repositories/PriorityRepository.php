@@ -45,7 +45,7 @@ class PriorityRepository
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $priorities,
-                trans('message.fetch_data')
+                trans('message.data_fetch')
             );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in PriorityRepository@list : ', $ex->getMessage());
@@ -111,7 +111,7 @@ class PriorityRepository
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $priority,
-                trans('message.fetch_data')
+                trans('message.data_fetch')
             );
         } catch (Exception $e) {
             generateLogs('error', 'Error in Priority Show : ', $e->getMessage());

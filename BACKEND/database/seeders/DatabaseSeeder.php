@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             StatesSeeder::class,
             CitySeeder::class,
             PrioritySeeder::class,
+            TicketTypesSeeder::class
         ]);
     }
 }

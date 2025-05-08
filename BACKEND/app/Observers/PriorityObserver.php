@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Detail;
 use App\Models\Priority;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +46,15 @@ class PriorityObserver
                 $newConnectionName = $detail->db;
                 $this->setupTenantConnection($newConnectionName, $detail->username, $detail->password);
 
-                if (Schema::connection($newConnectionName)->hasTable('priorities')) {
+                // Skip if table doesn't exist
+                if (!Schema::connection($newConnectionName)->hasTable('priorities')) {
+                    generateLogs("warning", "priorities table missing in tenant DB" . json_encode([
+                        'tenant_db' => $newConnectionName
+                    ]));
+                    continue;
+                }
+
+                try {
                     if ($action === 'create') {
                         generateLogs("info", "after create if");
                         $existingPriority = DB::connection($newConnectionName)
@@ -79,7 +88,7 @@ class PriorityObserver
                                     'status' => $priority->status,
                                 ]);
                         } else {
-                            generateLogs("warning", "Priority missing in tenant DB during update". json_encode([
+                            generateLogs("warning", "Priority missing in tenant DB during update" . json_encode([
                                 'tenant_db' => $newConnectionName,
                                 'master_id' => $priority->id,
                                 'priority_name' => $priority->name,
@@ -98,17 +107,20 @@ class PriorityObserver
                                 ->where('id', $existingPriority->id)
                                 ->delete();
                         } else {
-                            generateLogs("warning", "Priority missing in tenant DB during delete". json_encode([
+                            generateLogs("warning", "Priority missing in tenant DB during delete" . json_encode([
                                 'tenant_db' => $newConnectionName,
                                 'master_id' => $priority->id,
                                 'priority_name' => $priority->name,
                             ]));
                         }
                     }
-                } else {
-                    generateLogs("warning", "Priorities table missing in tenant DB". json_encode([
+                } catch (Exception $e) {
+                    generateLogs("warning", "Failed to sync ticket type to tenant" . json_encode([
                         'tenant_db' => $newConnectionName,
+                        'name' => $priority->name,
+                        'master_id' => $priority->id,
                     ]));
+                    continue;
                 }
             }
         }
