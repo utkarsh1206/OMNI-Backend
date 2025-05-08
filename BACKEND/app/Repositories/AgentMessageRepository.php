@@ -24,7 +24,6 @@ class AgentMessageRepository
     public function getStatus()
     {
         try {
-
             $agents = Users::with('liveAgent')
                 ->where('type', 3)
                 ->get(['id', 'first_name', 'last_name', 'email'])
@@ -32,7 +31,7 @@ class AgentMessageRepository
                     return [
                         'id' => $user->id,
                         'name' => $user->first_name . ' ' . $user->last_name,
-                        'status' => $user->status,
+                        'online_status' => $user->online_status, 
                     ];
                 });
 

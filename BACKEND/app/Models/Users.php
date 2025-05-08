@@ -17,8 +17,8 @@ class Users extends Authenticatable implements JWTSubject
 
     protected $table = 'users';
 
-    protected $appends = ['user_role_id'];
-
+    protected $appends = ['user_role_id', 'online_status'];
+  
     protected $fillable = [
         // "tenant_id",
         "type",
@@ -263,16 +263,15 @@ class Users extends Authenticatable implements JWTSubject
         return $this->hasOne(LiveAgents::class, 'user_id');
     }
 
-    // protected function status(): Attribute
-    // {
-    //     return Attribute::get(function () {
-    //         return $this->liveAgent ? 'available' : 'offline';
-    //     });
-    // }
-
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id');
+    }
+
+    // Virtual attribute to determine online status
+    public function getOnlineStatusAttribute(): string
+    {
+        return $this->liveAgent ? 'online' : 'offline';
     }
 
     /**
@@ -281,6 +280,7 @@ class Users extends Authenticatable implements JWTSubject
     public function hasPermission(string $moduleName, string $actionName): bool
     {
         $mod = TenantModule::where('name', $moduleName)->first();
+    
         if (! $mod) {
             return false;
         }
