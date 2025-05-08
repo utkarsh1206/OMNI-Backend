@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Facades\Storage;
 class Download extends Model
 {
     use HasFactory;
@@ -41,6 +41,6 @@ class Download extends Model
      */
     public function getFullFilePathAttribute()
     {
-        return storage_path('app/exports/' . $this->file_name);
+        return url('storage'.DIRECTORY_SEPARATOR.'exports'.DIRECTORY_SEPARATOR.$this->file_name); 
     }
 }

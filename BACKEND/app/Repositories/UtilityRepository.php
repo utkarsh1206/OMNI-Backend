@@ -26,7 +26,7 @@ class UtilityRepository
         try {
             $database = $this->domain ?? 'omnichannel';
             $database = strtolower(str_replace(".", "_", $database));
-            $backupFolder = storage_path('app/exports');
+            $backupFolder = storage_path('app/public/exports');
             $filename = 'db_backup_' . now()->format('Ymd_His') . '.sql';
             $filePath = $backupFolder . '/' . $filename;
 
@@ -130,25 +130,25 @@ class UtilityRepository
     {
         try {
             // Get the uploaded file
-            $file = $request->file('import_file');
-            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-            $extension = $file->getClientOriginalExtension();
-            $timestamp = now()->format('Ymd_His');
+            // $file = $request->file('import_file');
+            // $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            // $extension = $file->getClientOriginalExtension();
+            // $timestamp = now()->format('Ymd_His');
 
-            // New filename: user_fileName_TIMESTAMP.sql
-            $newFilename = $originalName . '_' . $timestamp . '.' . $extension;
+            // // New filename: user_fileName_TIMESTAMP.sql
+            // $newFilename = $originalName . '_' . $timestamp . '.' . $extension;
 
-            $importPath = storage_path('app/import');
+            $importPath = storage_path('app'.DIRECTORY_SEPARATOR.'import');
 
             // Create the directory if it doesn't exist
             if (!File::exists($importPath)) {
                 File::makeDirectory($importPath, 0755, true);
             }
 
-            // Store file in storage/app/import
-            $filePath = $file->storeAs('import', $newFilename);
-            $fullFilePath = storage_path('app/' . $filePath);
-
+            $file = uploadAttachment($request, 'import_file', 'import');    
+           
+            $fullFilePath = storage_path('app/public'. DIRECTORY_SEPARATOR . $file['path']);
+            
             // Read and execute SQL queries line by line
             $templine = '';
             foreach (File::lines($fullFilePath) as $line) {
@@ -185,14 +185,14 @@ class UtilityRepository
                 'IS_SUPERADMIN' => 'Yes',
                 'FILE_SIZE' => $fileSize,
                 'IS_DELETE' => 'No',
-                'FILES' => $newFilename,
+                'FILES' => $$file['fileName'],
                 'CREATED' => now(),
             ];
 
             generateLogs('info', 'Database import complete: ' . json_encode(['activityData' => $activityData]));
             
             $fileDetails = [
-                'file_name' => $newFilename,
+                'file_name' => $$file['fileName'],
                 'file_size' => $fileSize,
             ];
 
@@ -200,6 +200,7 @@ class UtilityRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.import_success'));
         } catch (Exception $ex) {
+            dd($ex->getMessage());
             generateLogs('error', 'Error in Database Import: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
