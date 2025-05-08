@@ -39,7 +39,7 @@ class TicketTypeObserver
                 }
             }
 
-            $details = DB::table('details')->get();
+            $details = DB::table('omnichannel.details')->get();
 
             foreach ($details as $detail) {
                 $newConnectionName = $detail->db;
