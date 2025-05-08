@@ -24,7 +24,8 @@ class ImportDatabaseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'import_file' => 'required|file|mimes:sql',
+            // 'import_file' => 'required|file|mimes:sql',
+            'import_file' => 'required|file|mimetypes:text/plain,text/x-sql,application/octet-stream',
         ];
     }
 
