@@ -10,4 +10,9 @@ class Priority extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'description', 'status', 'master_id'];
+
+    public function supportTickets()
+    {
+        return $this->hasMany(SupportTicket::class, 'default_priority');
+    }
 }

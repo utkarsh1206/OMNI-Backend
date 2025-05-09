@@ -73,4 +73,14 @@ class SupportTicket extends Model
     {
         return $this->belongsTo(Department::class, 'department_id', 'id');
     }
+
+    public function priority()
+    {
+        return $this->belongsTo(Priority::class, 'default_priority');
+    }
+
+    public function ticketType()
+    {
+        return $this->belongsTo(TicketType::class, 'default_types');
+    }
 }
