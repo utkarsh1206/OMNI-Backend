@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use App\Models\EmailConfigure;
+use App\Models\Product;
 use Exception;
 
 class EmailConfigureRepository
@@ -21,10 +22,22 @@ class EmailConfigureRepository
     {
         try {
             $searchTerm = $request->input('search', '');
+            $productName = $request->input('name', '');
+            $smtpUser = $request->input('user', '');
+            $imapUser = $request->input('iuser', '');
 
             // Start the query for tenants
-            $query = EmailConfigure::select('id', 'type', 'product_id', 'department_id', 'assign_method',
-            'sender_name', 'sender_email', 'smtp_user','imap_user')->with(['product:id,name', 'department:id,name']);
+            $query = EmailConfigure::select(
+                'id',
+                'type',
+                'product_id',
+                'department_id',
+                'assign_method',
+                'sender_name',
+                'sender_email',
+                'smtp_user',
+                'imap_user'
+            )->with(['product:id,name', 'department:id,name']);
 
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {
@@ -46,11 +59,29 @@ class EmailConfigureRepository
                         ->orWhere('signature', 'like', '%' . $searchTerm . '%');
                 });
             }
+
+            if (!empty($productName)) {
+                $productId = Product::where('name', 'like', "%$productName%")->value('id');
+                if ($productId !== null) {
+                    $query->where('product_id', $productId);
+                } else {
+                    $query->where('product_id', $productName);
+                }
+            }
+
+            if ($smtpUser) {
+                $query->where('smtp_user', 'like', "%$smtpUser%");
+            }
+
+            if ($imapUser) {
+                $query->where('imap_user', 'like', "%$imapUser%");
+            }
+
             // Paginate the results
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $email_configure = $query->paginate($perPage);
             // Return the response
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.fetch_data'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.data_fetch'));
         } catch (Exception $e) {
             generateLogs('error', 'Error in generating Email Configure List: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -98,7 +129,7 @@ class EmailConfigureRepository
     public function show($email_configure)
     {
         try {
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.fetch_data'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.data_fetch'));
         } catch (Exception $e) {
             generateLogs('error', 'Error in generating Email Configure Show: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);

@@ -36,6 +36,7 @@ class TenantModulesSeeder extends Seeder
             // 'Phones',
             // 'Live Agents',
             // 'Settings',
+            'Agent Chat',
         ];
 
         $now = Carbon::now();
