@@ -219,14 +219,14 @@ class MenuPermissionsSeeder extends Seeder
                 'created_at' => $timestamp,
                 'updated_at' => $timestamp,
             ],
-            [
-                'module_name' => 'agent_chat',
-                'view_name' => 'sendAgentChat',
-                'roles' => 'allowed',
-                'section' => 'service',
-                'created_at' => $timestamp,
-                'updated_at' => $timestamp,
-            ],
+            // [
+            //     'module_name' => 'agent_chat',
+            //     'view_name' => 'sendAgentChat',
+            //     'roles' => 'allowed',
+            //     'section' => 'service',
+            //     'created_at' => $timestamp,
+            //     'updated_at' => $timestamp,
+            // ],
             [
                 'module_name' => 'thirdparty_integration',
                 'view_name' => 'thirdpartyIntegration',
@@ -246,6 +246,14 @@ class MenuPermissionsSeeder extends Seeder
             [
                 'module_name' => 'evaluation',
                 'view_name' => 'viewEvaluation',
+                'roles' => 'allowed',
+                'section' => 'module',
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
+            [
+                'module_name' => 'agent_chat',
+                'view_name' => 'viewAgentChat',
                 'roles' => 'allowed',
                 'section' => 'module',
                 'created_at' => $timestamp,
