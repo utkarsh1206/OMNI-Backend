@@ -54,4 +54,9 @@ class EmailConfigure extends Model
     {
         return $this->department ? $this->department->name : null;
     }
+
+    public function ticketType()
+    {
+        return $this->belongsTo(TicketType::class)->select('id', 'type');
+    }
 }
