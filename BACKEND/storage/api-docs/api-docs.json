@@ -1183,9 +1183,17 @@
                                                         "type": "string",
                                                         "example": "John Doe"
                                                     },
-                                                    "status": {
+                                                    "online_status": {
                                                         "type": "string",
-                                                        "example": "available"
+                                                        "example": "online"
+                                                    },
+                                                    "last_message": {
+                                                        "type": "string",
+                                                        "example": "Hello, I need help."
+                                                    },
+                                                    "last_message_time": {
+                                                        "type": "string",
+                                                        "example": "2025-05-07 07:17:04"
                                                     }
                                                 },
                                                 "type": "object"
@@ -15441,13 +15449,13 @@
                                         "type": "integer",
                                         "example": 1
                                     },
-                                    "status": {
-                                        "type": "string",
-                                        "example": "open"
+                                    "priority_id": {
+                                        "type": "integer",
+                                        "example": 2
                                     },
-                                    "priority": {
-                                        "type": "string",
-                                        "example": "high"
+                                    "ticket_type_id": {
+                                        "type": "integer",
+                                        "example": 1
                                     },
                                     "to_emails": {
                                         "type": "array",
@@ -15799,17 +15807,13 @@
                                         "type": "integer",
                                         "example": 5
                                     },
-                                    "default_type": {
-                                        "type": "string",
-                                        "example": "issue"
+                                    "priority_id": {
+                                        "type": "integer",
+                                        "example": 2
                                     },
-                                    "default_priority": {
-                                        "type": "string",
-                                        "example": "high"
-                                    },
-                                    "default_status": {
-                                        "type": "string",
-                                        "example": "in_progress"
+                                    "ticket_type_id": {
+                                        "type": "integer",
+                                        "example": 1
                                     },
                                     "subject": {
                                         "type": "string",

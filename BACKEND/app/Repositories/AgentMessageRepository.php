@@ -2,18 +2,16 @@
 
 namespace App\Repositories;
 
-use Illuminate\Http\Request;
 use App\Models\Message;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 use App\Models\Users;
 use App\Events\ReceiveMessages;
+use Carbon\Carbon;
 
 class AgentMessageRepository
 {
     private $apiResponse;
-
-    private $chat360Service;
 
     public function __construct(
         CustomApiResponse $customApiResponse,
@@ -28,10 +26,21 @@ class AgentMessageRepository
                 ->where('type', 3)
                 ->get(['id', 'first_name', 'last_name', 'email'])
                 ->map(function ($user) {
+                    $lastMessage = Message::where(function ($query) use ($user) {
+                        $query->where('user_id', $user->id)
+                            ->orWhere('receiver_id', $user->id);
+                    })
+                        ->orderByDesc('created_at')
+                        ->first();
+
                     return [
                         'id' => $user->id,
                         'name' => $user->first_name . ' ' . $user->last_name,
-                        'online_status' => $user->online_status, 
+                        'online_status' => $user->online_status,
+                        'last_message' => $lastMessage->text ?? null,
+                        'last_message_time' => $lastMessage && $lastMessage->created_at
+                            ? Carbon::parse($lastMessage->created_at)->format('Y-m-d H:i:s')
+                            : null,
                     ];
                 });
 
@@ -82,7 +91,7 @@ class AgentMessageRepository
                 "sender" => 'agent',
             ]);
 
-            if($message) {
+            if ($message) {
                 broadcast(new ReceiveMessages($message));
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));

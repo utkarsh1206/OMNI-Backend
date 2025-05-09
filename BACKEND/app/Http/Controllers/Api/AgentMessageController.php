@@ -35,7 +35,9 @@ class AgentMessageController extends Controller
      *                 @OA\Items(
      *                     @OA\Property(property="id", type="integer", example=5),
      *                     @OA\Property(property="name", type="string", example="John Doe"),
-     *                     @OA\Property(property="status", type="string", example="available")
+     *                     @OA\Property(property="online_status", type="string", example="online"),
+     *                     @OA\Property(property="last_message", type="string", example="Hello, I need help."),
+     *                     @OA\Property(property="last_message_time", type="string", example="2025-05-07 07:17:04")
      *                 )
      *             )
      *         )
