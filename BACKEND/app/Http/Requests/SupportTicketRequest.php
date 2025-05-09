@@ -25,6 +25,8 @@ class SupportTicketRequest extends FormRequest
             'product_id' => 'required',
             'to_emails' => 'required',
             'subject' => 'required',
+            'priority_id' => 'required|exists:priorities,id',
+            'ticket_type_id' => 'required|exists:ticket_types,id',
         ];
     }
 }
