@@ -81,7 +81,7 @@ class EmailConfigureRepository
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $email_configure = $query->paginate($perPage);
             // Return the response
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.fetch_data'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.data_fetch'));
         } catch (Exception $e) {
             generateLogs('error', 'Error in generating Email Configure List: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -129,7 +129,7 @@ class EmailConfigureRepository
     public function show($email_configure)
     {
         try {
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.fetch_data'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $email_configure, trans('message.data_fetch'));
         } catch (Exception $e) {
             generateLogs('error', 'Error in generating Email Configure Show: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
