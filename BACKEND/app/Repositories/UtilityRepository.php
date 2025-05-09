@@ -200,7 +200,6 @@ class UtilityRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.import_success'));
         } catch (Exception $ex) {
-            dd($ex->getMessage());
             generateLogs('error', 'Error in Database Import: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }

@@ -54,7 +54,8 @@ class RoleController extends Controller
         //     }
         // }
 
-        foreach ($request->permissions as $perm) {
+        // foreach ($request->permissions as $perm) {
+        foreach ($request->get('permissions', []) as $perm) {
             $moduleId = $perm['tenant_module_id'];
             $actionIds = $perm['action_ids'];
 
@@ -104,7 +105,8 @@ class RoleController extends Controller
         //     }
         // }
 
-        foreach ($request->permissions as $perm) {
+        // foreach ($request->permissions as $perm) {
+        foreach ($request->get('permissions', []) as $perm) {
             $moduleId = $perm['tenant_module_id'];
             $actionIds = $perm['action_ids'];
 
