@@ -60,15 +60,49 @@ class UtilityRepository
                     $sqlContent .= "-- ----------------------------\n";
                 }
 
-                foreach ($rows as $row) {
+                $batchSize = 10;
+                $batch = [];
+                $columns = [];
+                $now = now()->format('Y-m-d H:i:s');
+                
+                foreach ($rows as $index => $row) {
                     $row = (array) $row;
-                    $columns = implode('`, `', array_keys($row));
-                    $values = implode(', ', array_map(function ($value) {
-                        return DB::getPdo()->quote($value);
-                    }, array_values($row)));
 
-                    $sqlContent .= "INSERT INTO `$tableName` (`$columns`) VALUES ($values);\n";
+                    if (array_key_exists('created_at', $row)) {
+                        $row['created_at'] = $row['created_at'] ?? $now;
+                    }
+                    if (array_key_exists('updated_at', $row)) {
+                        $row['updated_at'] = $row['updated_at'] ?? $now;
+                    }
+
+                    if (empty($columns)) {
+                        $columns = array_keys($row);
+                    }
+
+                    $escapedValues = array_map(function ($value) {
+                        return DB::getPdo()->quote($value);
+                    }, array_values($row));
+
+                    $batch[] = '(' . implode(', ', $escapedValues) . ')';
+
+                    // Write batch when full or on last item
+                    if (count($batch) === $batchSize || $index === $rows->count() - 1) {
+                        $columnsList = '`' . implode('`, `', $columns) . '`';
+                        $sqlContent .= "INSERT INTO `$tableName` ($columnsList) VALUES\n";
+                        $sqlContent .= implode(",\n", $batch) . ";\n";
+                        $batch = [];
+                    }
                 }
+
+                // foreach ($rows as $row) {
+                //     $row = (array) $row;
+                //     $columns = implode('`, `', array_keys($row));
+                //     $values = implode(', ', array_map(function ($value) {
+                //         return DB::getPdo()->quote($value);
+                //     }, array_values($row)));
+
+                //     $sqlContent .= "INSERT INTO `$tableName` (`$columns`) VALUES ($values);\n";
+                // }
                 $sqlContent .= "\n\n";
             }
 
@@ -109,12 +143,6 @@ class UtilityRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.export_success'));
 
-            // return response()->streamDownload(function () use ($filePath) {
-            //     echo file_get_contents($filePath);
-            // }, $filename, [
-            //     'Content-Type' => 'application/sql',
-            //     'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            // ])->deleteFileAfterSend(true);
         } catch (Exception $ex) {
             generateLogs('error', 'Error in Database Export: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -200,6 +228,7 @@ class UtilityRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.import_success'));
         } catch (Exception $ex) {
+            dd($ex->getMessage());
             generateLogs('error', 'Error in Database Import: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
