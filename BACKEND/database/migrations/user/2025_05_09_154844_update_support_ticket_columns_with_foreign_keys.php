@@ -14,7 +14,7 @@ return new class extends Migration
        Schema::table('support_tickets', function (Blueprint $table) {
             // Modify columns: from string to unsignedBigInteger
             $table->unsignedBigInteger('default_priority')->nullable()->change();
-            $table->unsignedBigInteger('default_types')->nullable()->change();
+            $table->unsignedBigInteger('default_type')->nullable()->change();
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
         Schema::table('support_tickets', function (Blueprint $table) {
             // Revert back to string
             $table->string('default_priority')->nullable()->change();
-            $table->string('default_types')->nullable()->change();
+            $table->string('default_type')->nullable()->change();
         });
     }
 };

@@ -85,7 +85,7 @@ class SupportTicket extends Model
 
     public function ticketType()
     {
-        return $this->belongsTo(TicketType::class, 'default_types');
+        return $this->belongsTo(TicketType::class, 'default_type');
     }
 
     public function contact()
