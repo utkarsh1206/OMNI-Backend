@@ -3,22 +3,26 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Role;
+use App\Repositories\UserRoleRepository;
 use App\Models\Users;
 use Illuminate\Http\Request;
 
 class UserRoleController extends Controller
 {
+    protected $userRoleRepository;
+
+    public function __construct(UserRoleRepository $userRoleRepository)
+    {
+        $this->userRoleRepository = $userRoleRepository;
+    }
+
     public function index(Request $request)
     {
-        $users = Users::with('roles')->paginate($request->per_page ?? 10);
-        return response()->json($users);
+        return $this->userRoleRepository->getAllUsersWithRoles($request->per_page ?? 10);
     }
 
     public function update(Request $request, Users $user)
     {
-        $roles = Role::find($request->user_role_id);
-        $user->roles()->sync($roles);
-        return response()->json($user->load('roles'));
+        return $this->userRoleRepository->updateUserRoles($user, $request->user_role_id);
     }
 }
