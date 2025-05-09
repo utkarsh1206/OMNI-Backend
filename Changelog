@@ -1,3 +1,13 @@
+2025-05-09 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 17c221f
+	* Version : Dev
+	* Laravel: Implemented dynamic priority dropdown in Incident Type form (priorities now fetched via API call)
+	Updated filter functionality to align with dynamic priorities
+	Priorities displayed are now fetched in real-time from the API instead of being hardcoded
+	Improved flexibility and ensures UI reflects the latest priority settings from the backend
+
 2025-05-08 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
