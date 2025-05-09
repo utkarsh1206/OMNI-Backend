@@ -52,11 +52,6 @@ class IncidentTypeRepository
                 });
             }
 
-            $priorityId = null;
-            if (!empty($priority)) {
-                $priorityId = Priority::where('name', $priority)->first()->id ?? null;
-            }
-
             if ($name) {
                 $query->where('name', $name);
             }
@@ -65,8 +60,7 @@ class IncidentTypeRepository
                 if ($categoryId) {
                     $query->where('category_id', $categoryId);
                 } else {
-                    // Optional: make query return empty if category not found
-                    $query->whereNull('category_id');  // Ensures no result
+                    $query->where('category_id', $category_id);
                 }
             }
 
@@ -75,6 +69,8 @@ class IncidentTypeRepository
                 $priorityId = Priority::where('name', 'like', "%$priority%")->first()->id ?? null;
                 if ($priorityId !== null) {
                     $query->where('priority_id', $priorityId);
+                } else {
+                    $query->where('priority_id', $priority);
                 }
             }
 
@@ -84,6 +80,8 @@ class IncidentTypeRepository
                     $query->whereHas('category.department', function ($q) use ($departmentId) {
                         $q->where('id', $departmentId);
                     });
+                } else {
+                    $query->where('department_id', $department_id);
                 }
             }
 
@@ -92,7 +90,7 @@ class IncidentTypeRepository
                 if ($slaId) {
                     $query->where('sla_id', $slaId);
                 } else {
-                    $query->whereNull('sla_id');
+                    $query->where('sla_id', $sla_id);
                 }
             }
 
