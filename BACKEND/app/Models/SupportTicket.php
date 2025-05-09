@@ -11,6 +11,10 @@ class SupportTicket extends Model
 {
     use SoftDeletes;
 
+    protected $appends = ['contact_name', 'assigned_agent_name'];
+
+    protected $hidden = ['contact', 'assignedAgent'];
+
     protected $fillable = [
         //"tenant_id",
         "id",
@@ -81,6 +85,43 @@ class SupportTicket extends Model
 
     public function ticketType()
     {
-        return $this->belongsTo(TicketType::class, 'default_types');
+        return $this->belongsTo(TicketType::class, 'default_type');
+    }
+
+    public function contact()
+    {
+        return $this->belongsTo(Contact::class, 'contact_id', 'id');
+    }
+
+    public function getContactNameAttribute()
+    {
+        // return $this->contact?->name;
+
+        if (!$this->contact) {
+            return null;
+        }
+
+        $parts = array_filter([
+            $this->contact->name_prefix,
+            $this->contact->first_name,
+            $this->contact->last_name,
+        ]);
+
+        return implode(' ', $parts);
+    }
+
+    public function getAssignedAgentNameAttribute()
+    {
+        if (!$this->assignedAgent) {
+            return null;
+        }
+
+        $parts = array_filter([
+            $this->assignedAgent->name_prefix,
+            $this->assignedAgent->first_name,
+            $this->assignedAgent->last_name,
+        ]);
+
+        return implode(' ', $parts);
     }
 }

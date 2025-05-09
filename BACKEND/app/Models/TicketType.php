@@ -13,6 +13,6 @@ class TicketType extends Model
 
     public function supportTickets()
     {
-        return $this->hasMany(SupportTicket::class, 'default_types');
+        return $this->hasMany(SupportTicket::class, 'default_type');
     }
 }

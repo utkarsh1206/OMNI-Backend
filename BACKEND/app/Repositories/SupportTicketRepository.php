@@ -49,7 +49,7 @@ class SupportTicketRepository
             }
 
             // Start the query for tenants
-            $query = supportticket::query()->with(['department', 'priority:id,name', 'ticketType:id,type']);
+            $query = SupportTicket::query()->with(['department', 'priority:id,name', 'ticketType:id,type']);
 
             if ($roleId == 3) {
                 $query->where('assign_to_id', $userId); // Filter by the logged-in user's ID
@@ -362,8 +362,8 @@ class SupportTicketRepository
             'inbound_group_id' => $request->inbound_group_id ?? 0,
             'contact_id' => $request->contact_id ?? 0,
             'assign_to_id' => $request->assign_to_id ?? 0,
-            'default_type' => $request->ticket_type_id ?? 0,
-            'default_priority' => $request->priority_id ?? 0,
+            'default_type' => $request->default_type ?? 0,
+            'default_priority' => $request->default_priority ?? 0,
             'default_status' => $request->default_status ?? '',
             'subject' => $request->subject ?? '',
             'department_id' => $request->department_id ?? '',

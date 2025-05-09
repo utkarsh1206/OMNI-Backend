@@ -12,8 +12,8 @@ class PrioritySeeder extends Seeder
      */
     public function run(): void
     {
-         // Truncate the table before seeding
-         Priority::truncate();
+        // Truncate the table before seeding
+        Priority::truncate();
 
         $priorities = [
             ['name' => 'High', 'description' => 'Tasks that need immediate attention', 'status' => 'active'],

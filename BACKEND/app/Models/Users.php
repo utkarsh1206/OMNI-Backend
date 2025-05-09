@@ -17,8 +17,9 @@ class Users extends Authenticatable implements JWTSubject
 
     protected $table = 'users';
 
-    protected $appends = ['user_role_id', 'online_status'];
-  
+    protected $appends = ['user_role_id', 'online_status', 'usergroup_name'];
+    protected $hidden = ['usergroup'];
+
     protected $fillable = [
         // "tenant_id",
         "type",
@@ -280,7 +281,7 @@ class Users extends Authenticatable implements JWTSubject
     public function hasPermission(string $moduleName, string $actionName): bool
     {
         $mod = TenantModule::where('name', $moduleName)->first();
-    
+
         if (! $mod) {
             return false;
         }
@@ -295,5 +296,15 @@ class Users extends Authenticatable implements JWTSubject
     public function getUserRoleIdAttribute()
     {
         return $this->roles()->first()?->id;
+    }
+
+    public function usergroup()
+    {
+        return $this->belongsTo(UserGroup::class, 'usergroup_id');
+    }
+
+    public function getUsergroupNameAttribute()
+    {
+        return $this->usergroup?->name;
     }
 }
