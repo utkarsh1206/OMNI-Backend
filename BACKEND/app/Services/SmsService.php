@@ -30,17 +30,17 @@ class SmsService implements ShouldQueue
         //     throw new Exception('No SMS gateway selected for this user.');
         // }
 
-        if ($userGateway->provider_id) {
+        if ($userGateway && $userGateway->provider_id) {
             $providerId = $userGateway->provider_id;
             // Based on the provider, call the respective API
             switch ($userGateway->provider->name) {
                 case 'twilio':
-                    $configArr = ApiConfiguration::where(["provider_id"=>$providerId,"api_config_type_id"=>1])->pluck("config_value", "config_key");
+                    $configArr = ApiConfiguration::where(["provider_id" => $providerId,"api_config_type_id" => 1])->pluck("config_value", "config_key");
                     return $this->sendWithTwilio($message, $toPhone, $configArr);
                 case 'custom':
                     $configArr = [];
 
-                    $configurations = ApiConfiguration::where(["provider_id"=>$providerId,"api_config_type_id"=>1])->pluck("config_value", "config_key");
+                    $configurations = ApiConfiguration::where(["provider_id" => $providerId,"api_config_type_id" =>1 ])->pluck("config_value", "config_key");
                     if ($configurations->count()) {
                         $configArr =  $configurations->toArray();
                     }
