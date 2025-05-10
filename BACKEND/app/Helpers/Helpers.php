@@ -178,7 +178,6 @@ if (!function_exists('getDbConnection')) {
             ]);
             // DB::setDefaultConnection($newConnectionName);
             return DB::connection($newConnectionName);
-            
         }
         return null;
     }
@@ -321,14 +320,12 @@ if (!function_exists('sendHttpRequest')) {
     if (! function_exists('uploadAttachment')) {
         function uploadAttachment(Request $request, $fieldName = 'attachment', $directory = 'attachments')
         {
-       
+
             if ($request->hasFile($fieldName)) {
                 $attachment = $request->file($fieldName);
-                if(is_array($attachment))
-                {
-                    foreach($attachment as $value)
-                    {
-                            
+                if (is_array($attachment)) {
+                    foreach ($attachment as $value) {
+
                         $filename = now()->format('Y_m_d_H_i_s') . '.' . $value->getClientOriginalExtension();
                         $filePath = $value->storeAs($directory, $filename, 'public');
                         return [
@@ -336,9 +333,7 @@ if (!function_exists('sendHttpRequest')) {
                             'path' => $filePath
                         ];
                     }
-                }   
-                else
-                {
+                } else {
                     $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
                     $filePath = $attachment->storeAs($directory, $filename, 'public');
 
@@ -347,7 +342,6 @@ if (!function_exists('sendHttpRequest')) {
                         'path' => $filePath
                     ];
                 }
-                
             }
             return null;
         }

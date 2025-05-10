@@ -21,8 +21,8 @@ class AgentLiveStatus implements ShouldBroadcastNow
     public function __construct($data)
     {
         $this->agentLiveData = $data;
-        // $this->domain = auth()->user()->domain;
-        $this->domain = 'tenant2000_com';
+        $this->domain = convertToLower(auth()->user()->domain);
+        // $this->domain = 'tenant2000_com';
         generateLogs('info', 'broadcast Data: ' . json_encode(['AgentLiveStatus' => $this->agentLiveData]));
     }
 
