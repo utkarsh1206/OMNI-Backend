@@ -103,7 +103,7 @@ class UserRepository
             // Check if the limit is reached
             if ($currentAgentCount >= $maxAgents) {
                 return response()->json([
-                    'message' => trans("message.user_limit_reached"),
+                    'error' => trans("message.user_limit_reached"),
                 ], ResponseHTTP::HTTP_BAD_REQUEST);
             }
 
