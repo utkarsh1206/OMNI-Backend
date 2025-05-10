@@ -16,7 +16,7 @@ class StoreCallBackRequest extends FormRequest
         return [
             'lead_id' => 'required|integer',
             'list_id' => 'required|integer',
-            'campaign_id' => 'required|integer',
+            // 'campaign_id' => '',
             'call_back_time' => 'required|date',
             'recipient' => 'required|in:Useronly,Anyone',
             'comments' => 'required|string',
