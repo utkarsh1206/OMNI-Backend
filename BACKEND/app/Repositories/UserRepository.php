@@ -6,13 +6,12 @@ use App\Http\Controllers\Api\LicenseController;
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Role;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
-use Illuminate\Database\QueryException;
 use App\Models\Users;
 use App\Models\Tenant;
 use App\Models\UserGroup;
 use Exception;
 use Illuminate\Support\Facades\Hash;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class UserRepository
 {
@@ -83,7 +82,7 @@ class UserRepository
 
             $users = $query->get();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.fetch_data'));
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error during User List : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -117,7 +116,7 @@ class UserRepository
                 "email" => $request->email,
                 "username" => $request->username,
                 "password" => bcrypt($request->password),
-                // "domain" => $request->domain,
+                "domain" => auth()->user()->domain,
                 "mobile" => $request->mobile,
                 "status" => $request->status,
                 "role_id" => $request->role_id,
@@ -147,7 +146,7 @@ class UserRepository
                 $neoxBody = [
                     'userId' => $request->username,
                     'password' => $request->password,
-                    'fullName' => $request->first_name . ' ' . $request->last_name,
+                    'fullName' => $request->first_name.' ' .$request->last_name,
                     'userGroup' => $userGroup->name,
                 ];
                 $url = "https://{$ip}/Neox_ContactCenter_API/crud/user/create.php";
@@ -155,9 +154,6 @@ class UserRepository
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.users_created'), ResponseHTTP::HTTP_CREATED);
-        } catch (QueryException $e) {
-            generateLogs('error', 'Error during User Store : ', $e->getMessage());
-            return $this->apiResponse->handleAndResponseException($e);
         } catch (Exception $e) {
             generateLogs('error', 'Error sending Neox API request : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -198,7 +194,7 @@ class UserRepository
                 $user->roles()->sync($roles);
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $user, trans('message.users_updated'));
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error during Update User : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -227,9 +223,6 @@ class UserRepository
                 $user,
                 trans('message.users_deleted')
             );
-        } catch (QueryException $e) {
-            generateLogs('error', 'Error during Delete User : ', $e->getMessage());
-            return $this->apiResponse->handleAndResponseException($e);
         } catch (Exception $e) {
             generateLogs('error', 'Error in sending User Delete Neox API : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -240,7 +233,7 @@ class UserRepository
     {
         try {
             return $this->apiResponse->getResponseStructure(trans('message.success'), $user, trans('message.fetch_data'));
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error during User Show : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -265,7 +258,7 @@ class UserRepository
             } else {
                 return response()->json(['error' => trans("message.user_not_found")], ResponseHTTP::HTTP_FORBIDDEN);
             }
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error during Update Password : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -284,7 +277,7 @@ class UserRepository
             } else {
                 return response()->json(['error' => trans("message.user_not_found")], ResponseHTTP::HTTP_FORBIDDEN);
             }
-        } catch (QueryException $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error during My Profile : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -309,7 +302,7 @@ class UserRepository
                 return response()->json(['error' => trans("message.tenant_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.data_fetch'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             generateLogs('error', 'Error during Get Branding: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
