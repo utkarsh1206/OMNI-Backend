@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Str;
 
 /**
  * Format price with a currency symbol.
@@ -356,6 +357,13 @@ if (!function_exists('sendHttpRequest')) {
         function extractPayload($token)
         {
             return $token ? JWTAuth::setToken($token)->getPayload() : null;
+        }
+    }
+
+    if (! function_exists('convertToLower')) {
+        function convertToLower($value)
+        {
+            return Str::lower($value);
         }
     }
 }

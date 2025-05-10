@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Tenant;
+use App\Models\Detail;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -16,20 +17,25 @@ class TenantObserver
     {
         $lastInsertedId = $tenants->id;
 
-        $databaseName = str_replace(".", "_", request()->domain_name);
+        $databaseName = convertToLower(Str::replace(".", "_", request()->domain_name)."_db");
 
         DB::statement("CREATE DATABASE $databaseName");
-        $details_array = [
-            'db' => str_replace(".", "_", request()->domain_name),
+
+        $tenantDetails = [
+            'db' => $databaseName,
             'domain' => request()->domain_name,
             'uin' => (string) Str::uuid(),
             'username'  => env('DB_USERNAME', 'root'),
             'password'  => env('DB_PASSWORD', 'Sterlite@2025'),
         ];
-        DB::table('details')->insert($details_array);
-        $newConnectionName = str_replace(".", "_", request()->domain_name);
 
-        Config::set("database.connections.$newConnectionName", [
+        Detail::create($tenantDetails);
+
+        // DB::table('details')->insert($details_array);
+
+        // $newConnectionName = str_replace(".", "_", request()->domain_name);
+
+        Config::set("database.connections.$databaseName", [
             'driver'    => 'mysql',
             'host'      => env('DB_HOST', '127.0.0.1'),
             'port'      => env('DB_PORT', '3306'),
@@ -42,12 +48,14 @@ class TenantObserver
             'strict'    => true,
             'engine'    => null,
         ]);
+
         Artisan::call('migrate', [
-            '--database' => $newConnectionName,
-            '--path'     => '/database/migrations/user', // Adjust the path as needed
+            '--database' => $databaseName,
+            '--path'     => '/database/migrations/user', 
             '--force'    => true,
         ]);
-        Users::on($newConnectionName)->create([
+
+        Users::on($databaseName)->create([
             'tenant_id'  => $lastInsertedId,
             'type' => 0,
             'first_name' => request()->first_name,
@@ -62,9 +70,9 @@ class TenantObserver
         ]);
 
         Artisan::call('db:seed', [
-            '--database' => $newConnectionName,
+            '--database' => $databaseName,
             '--class' => 'TenantSeeder',
-            '--force' => true, // Run seeders in production if necessary
+            '--force' => true, 
         ]);
     }
 }
