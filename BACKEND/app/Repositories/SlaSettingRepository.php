@@ -25,7 +25,7 @@ class SlaSettingRepository
     {
         try {
             $searchTerm = $request->input('search', '');
-            $query = SlaSetting::query()->with(['offDays', 'holidays', 'targets']);
+            $query = SlaSetting::query()->with(['offDays', 'holidays', 'targets', 'targets.priority']);
 
             if (!empty($searchTerm)) {
                 $query->where(function ($q) use ($searchTerm) {
@@ -70,7 +70,7 @@ class SlaSettingRepository
 
             DB::commit();
 
-            $response = $this->formatSlaResponse($sla->load(['offDays', 'holidays', 'targets']));
+            $response = $this->formatSlaResponse($sla->load(['offDays', 'holidays', 'targets', 'targets.priority']));
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.sla_setting_create_msg'));
         } catch (Exception $ex) {
@@ -86,7 +86,7 @@ class SlaSettingRepository
     public function show(SlaSetting $slaSetting)
     {
         try {
-            $response = $this->formatSlaResponse($slaSetting->load(['offDays', 'holidays', 'targets']));
+            $response = $this->formatSlaResponse($slaSetting->load(['offDays', 'holidays', 'targets', 'targets.priority']));
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.data_fetch'));
         } catch (Exception $ex) {
@@ -115,7 +115,7 @@ class SlaSettingRepository
 
             DB::commit();
 
-            $response = $this->formatSlaResponse($slaSetting->load(['offDays', 'holidays', 'targets']));
+            $response = $this->formatSlaResponse($slaSetting->load(['offDays', 'holidays', 'targets', 'targets.priority']));
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $response, trans('message.sla_setting_update_msg'));
         } catch (Exception $ex) {
@@ -191,7 +191,7 @@ class SlaSettingRepository
         $targets = [];
         foreach ($slaSetting->targets as $target) {
             $targets[$target->escalation_level][] = [
-                'priority_type' => $target->priority_type,
+                'priority_type' => $target->priority_type ? $target->priority->name : null,
                 'response_time_value' => $target->response_time_value,
                 'alert_before_response_value' => $target->alert_before_response_value,
                 'resolve_time_value' => $target->resolve_time_value,
