@@ -21,10 +21,11 @@ class UtilityRepository
         $this->authId = auth()->user()->id;
     }
 
-    public function export()
+    public function export($request)
     {
         try {
-            $database = auth()->user()->db ?? 'omnichannel';
+            $payload = extractPayload($request->bearerToken());
+            $database = $payload['db'] ?? 'omnichannel';
             $backupFolder = storage_path('app/public/exports');
             $filename = 'db_backup_' . now()->format('Ymd_His') . '.sql';
             $filePath = $backupFolder . '/' . $filename;

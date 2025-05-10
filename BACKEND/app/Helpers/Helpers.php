@@ -219,18 +219,18 @@ if (!function_exists('getNeoxConfig')) {
     }
 }
 
+/**
+ * Send an HTTP request using Laravel's HTTP client
+ *
+ * @param string $url The API URL.
+ * @param string $method The HTTP method (GET, POST, PUT, DELETE, etc.).
+ * @param array $data The data to send with the request (optional).
+ * @param array $headers Custom headers (optional).
+ * @param bool $verifySSL Whether to verify SSL certificate (default: false).
+ * @return array The response body and status code or error message.
+ * @throws \Exception if any error occurs during the HTTP request.
+ */
 if (!function_exists('sendHttpRequest')) {
-    /**
-     * Send an HTTP request using Laravel's HTTP client
-     *
-     * @param string $url The API URL.
-     * @param string $method The HTTP method (GET, POST, PUT, DELETE, etc.).
-     * @param array $data The data to send with the request (optional).
-     * @param array $headers Custom headers (optional).
-     * @param bool $verifySSL Whether to verify SSL certificate (default: false).
-     * @return array The response body and status code or error message.
-     * @throws \Exception if any error occurs during the HTTP request.
-     */
     function sendHttpRequest($url, $method = 'POST', $data = [], $headers = [], $verifySSL = false)
     {
         try {
@@ -285,79 +285,79 @@ if (!function_exists('sendHttpRequest')) {
             ];
         }
     }
+}
 
-    if (!function_exists('generateLogs')) {
+if (!function_exists('generateLogs')) {
 
-        function generateLogs($type, $msg, $error = null)
-        {
-            Log::$type($msg . ($error ? ' ' . $error : ''));
+    function generateLogs($type, $msg, $error = null)
+    {
+        Log::$type($msg . ($error ? ' ' . $error : ''));
+    }
+}
+
+if (!function_exists('logMessage')) {
+    function logMessage($level, $message, $data = [])
+    {
+        switch ($level) {
+            case 'error':
+                Log::error($message, $data);
+                break;
+            case 'info':
+                Log::info($message, $data);
+                break;
+            case 'warning':
+                Log::warning($message, $data);
+                break;
+            case 'debug':
+                Log::debug($message, $data);
+                break;
+            default:
+                Log::info($message, $data);
+                break;
         }
     }
+}
 
-    if (!function_exists('logMessage')) {
-        function logMessage($level, $message, $data = [])
-        {
-            switch ($level) {
-                case 'error':
-                    Log::error($message, $data);
-                    break;
-                case 'info':
-                    Log::info($message, $data);
-                    break;
-                case 'warning':
-                    Log::warning($message, $data);
-                    break;
-                case 'debug':
-                    Log::debug($message, $data);
-                    break;
-                default:
-                    Log::info($message, $data);
-                    break;
-            }
-        }
-    }
+if (! function_exists('uploadAttachment')) {
+    function uploadAttachment(Request $request, $fieldName = 'attachment', $directory = 'attachments')
+    {
 
-    if (! function_exists('uploadAttachment')) {
-        function uploadAttachment(Request $request, $fieldName = 'attachment', $directory = 'attachments')
-        {
+        if ($request->hasFile($fieldName)) {
+            $attachment = $request->file($fieldName);
+            if (is_array($attachment)) {
+                foreach ($attachment as $value) {
 
-            if ($request->hasFile($fieldName)) {
-                $attachment = $request->file($fieldName);
-                if (is_array($attachment)) {
-                    foreach ($attachment as $value) {
-
-                        $filename = now()->format('Y_m_d_H_i_s') . '.' . $value->getClientOriginalExtension();
-                        $filePath = $value->storeAs($directory, $filename, 'public');
-                        return [
-                            'fileName' => $filename,
-                            'path' => $filePath
-                        ];
-                    }
-                } else {
-                    $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
-                    $filePath = $attachment->storeAs($directory, $filename, 'public');
-
+                    $filename = now()->format('Y_m_d_H_i_s') . '.' . $value->getClientOriginalExtension();
+                    $filePath = $value->storeAs($directory, $filename, 'public');
                     return [
                         'fileName' => $filename,
                         'path' => $filePath
                     ];
                 }
+            } else {
+                $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
+                $filePath = $attachment->storeAs($directory, $filename, 'public');
+
+                return [
+                    'fileName' => $filename,
+                    'path' => $filePath
+                ];
             }
-            return null;
         }
+        return null;
     }
+}
 
-    if (! function_exists('extractPayload')) {
-        function extractPayload($token)
-        {
-            return $token ? JWTAuth::setToken($token)->getPayload() : null;
-        }
+if (! function_exists('extractPayload')) {
+    function extractPayload($token)
+    {
+        return $token ? JWTAuth::setToken($token)->getPayload() : null;
     }
+}
 
-    if (! function_exists('convertToLower')) {
-        function convertToLower($value)
-        {
-            return Str::lower($value);
-        }
+if (! function_exists('convertToLower')) {
+    function convertToLower($value)
+    {
+        return Str::lower($value);
     }
 }

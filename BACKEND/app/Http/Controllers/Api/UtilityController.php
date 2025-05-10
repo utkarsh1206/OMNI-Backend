@@ -43,9 +43,9 @@ class UtilityController extends Controller
      *     )
      * )
      */
-    public function export()
+    public function export(Request $request)
     {
-        return $this->utilityRepository->export();
+        return $this->utilityRepository->export($request);
     }
 
     /**
