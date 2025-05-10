@@ -14,7 +14,7 @@ class CallInitiated implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     private $dialerData;
-    private $dialterId;
+    private $dialerId;
     private $dialerDomain;
 
     /**
@@ -23,9 +23,9 @@ class CallInitiated implements ShouldBroadcastNow
     public function __construct($data, $id, $domain)
     {
         $this->dialerData = $data;
-        // $this->dialerDomain = $domain;
+        $this->dialerDomain = $domain;
         $this->dialerId = $id;
-        $this->dialerDomain = 'tenant2000_com';
+        // $this->dialerDomain = 'tenant4000';
         generateLogs('info', 'broadcast Data: ' . json_encode(['dialerData' => $this->dialerData]));
     }
 
