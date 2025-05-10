@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Users extends Authenticatable implements JWTSubject
 {
@@ -18,6 +18,7 @@ class Users extends Authenticatable implements JWTSubject
     protected $table = 'users';
 
     protected $appends = ['user_role_id', 'online_status', 'usergroup_name'];
+
     protected $hidden = ['usergroup'];
 
     protected $fillable = [
@@ -185,6 +186,11 @@ class Users extends Authenticatable implements JWTSubject
             'domain'   => $postData['domain'] ?? null,
         ];
 
+        if($postData['flag'] == 1){
+            $dbName = DB::table('omnichannel.details')->select('db')->where('domain', $postData['domain'])->first();
+            $claims['db'] = $dbName->db;
+        }
+
         if (isset($postData['flag']) && $postData['flag'] == 2) {
             // New permission format using IDs
             $permissions = [];
@@ -198,7 +204,6 @@ class Users extends Authenticatable implements JWTSubject
             //         $permissions[$perm->tenant_module_id][] = $perm->action_id;
             //     }
             // }
-
 
             foreach ($this->roles as $role) {
                 foreach ($role->tenantModules as $module) {
