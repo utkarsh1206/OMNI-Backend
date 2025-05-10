@@ -224,7 +224,7 @@ class SlaSettingController extends Controller
      *                     type="array",
      *                     @OA\Items(
      *                         type="object",
-     *                         @OA\Property(property="priority_type", type="string"),
+     *                         @OA\Property(property="priority_type", type="integer"),
      *                         @OA\Property(property="response_time_value", type="integer"),
      *                         @OA\Property(property="alert_before_response_value", type="integer"),
      *                         @OA\Property(property="resolve_time_value", type="integer"),

@@ -14499,7 +14499,7 @@
                                                 "items": {
                                                     "properties": {
                                                         "priority_type": {
-                                                            "type": "string"
+                                                            "type": "integer"
                                                         },
                                                         "response_time_value": {
                                                             "type": "integer"
@@ -14673,7 +14673,7 @@
                                                 "items": {
                                                     "properties": {
                                                         "priority_type": {
-                                                            "type": "string"
+                                                            "type": "integer"
                                                         },
                                                         "response_time_value": {
                                                             "type": "integer"
