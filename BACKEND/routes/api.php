@@ -268,7 +268,9 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
 
     // Support Ticket
-    Route::apiResource('support-ticket', SupportTicketController::class);
+    // Route::apiResource('support-ticket', SupportTicketController::class);
+    Route::resource('support-ticket', SupportTicketController::class)->except(['update']);
+    Route::post('support-ticket/{support_ticket}', [SupportTicketController::class, 'update']);
     Route::post('update-ticket-status/{supportticket}', [SupportTicketController::class, 'statusUpdate']);
     Route::post('transfer', [SupportTicketTransferController::class, 'store']);
     Route::post('merge', [SupportTicketMergeController::class, 'store']);
