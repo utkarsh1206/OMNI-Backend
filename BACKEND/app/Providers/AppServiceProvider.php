@@ -36,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
             return Detail::where('uin', $value)->firstOrFail();
         });
         Supportticket::observe(SupportTicketObserver::class);
-    //    SupportTicketNotification::observe(SupportTicketNotificationObserver::class);
+        SupportTicketNotification::observe(SupportTicketNotificationObserver::class);
         Tenant::observe(TenantObserver::class);
         LiveAgents::observe(LiveAgentObserver::class);
         Priority::observe(PriorityObserver::class);
