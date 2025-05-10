@@ -8,7 +8,6 @@ use Exception;
 use App\Models\Users;
 use App\Events\ReceiveMessages;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 class AgentMessageRepository
 {
@@ -23,29 +22,60 @@ class AgentMessageRepository
     public function getStatus($request)
     {
         try {
-            $agents = Users::with('liveAgent')
-                ->where('type', 3)
-                ->get(['id', 'first_name', 'last_name', 'email'])
-                ->map(function ($user) {
-                    $lastMessage = Message::where(function ($query) use ($user) {
-                        $query->where('user_id', $user->id)
-                            ->orWhere('receiver_id', $user->id);
-                    })
-                        ->orderByDesc('created_at')
-                        ->first();
+            // $agents = Users::with('liveAgent')
+            //     ->where('type', 3)
+            //     ->get(['id', 'first_name', 'last_name', 'email'])
+            //     ->map(function ($user) {
+            //         $lastMessage = Message::where(function ($query) use ($user) {
+            //             $query->where('user_id', $user->id)
+            //                 ->orWhere('receiver_id', $user->id);
+            //         })
+            //             ->orderByDesc('created_at')
+            //             ->first();
 
-                    return [
-                        'id' => $user->id,
-                        'name' => $user->first_name . ' ' . $user->last_name,
-                        'online_status' => $user->online_status,
-                        'last_message' => $lastMessage->text ?? null,
-                        'last_message_time' => $lastMessage && $lastMessage->created_at
-                            ? Carbon::parse($lastMessage->created_at)->format('Y-m-d H:i:s')
-                            : null,
-                    ];
+            //         return [
+            //             'id' => $user->id,
+            //             'name' => $user->first_name . ' ' . $user->last_name,
+            //             'online_status' => $user->online_status,
+            //             'last_message' => $lastMessage->text ?? null,
+            //             'last_message_time' => $lastMessage && $lastMessage->created_at
+            //                 ? Carbon::parse($lastMessage->created_at)->format('Y-m-d H:i:s')
+            //                 : null,
+            //         ];
+            //     });
+
+            $search = $request->input('search', '');
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+
+            $agentsQuery = Users::with('liveAgent')
+                ->where('type', 3)
+                ->when($search, function ($query) use ($search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('first_name', 'like', "%$search%")
+                            ->orWhere('last_name', 'like', "%$search%")
+                            ->orWhere('email', 'like', "%$search%");
+                    });
                 });
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $agents, trans('message.data_fetch'));
+            // Paginate the results
+            $paginatedAgents = $agentsQuery->paginate($perPage);
+
+            // Enhance each user with latest message info
+            $paginatedAgents->getCollection()->transform(function ($user) {
+                $lastMessage = $user->latest_message;
+
+                return [
+                    'id' => $user->id,
+                    'name' => $user->first_name . ' ' . $user->last_name,
+                    'online_status' => $user->online_status,
+                    'last_message' => $lastMessage->text ?? null,
+                    'last_message_time' => $lastMessage && $lastMessage->created_at
+                        ? Carbon::parse($lastMessage->created_at)->format('Y-m-d H:i:s')
+                        : null,
+                ];
+            });
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $paginatedAgents, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating User Status: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -70,15 +100,15 @@ class AgentMessageRepository
                     });
                 })
                 ->orderBy('created_at', 'desc');
-                
-            if($search) {
+
+            if ($search) {
                 $messages->where('text', 'LIKE', '%' . $search . '%');
             }
 
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
-           
-            $page = $request->input('page', config('omni.DEFAULT_PAGE'));   
-            
+
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
             $chatMessages = $page == config('omni.ALL_PAGE') ? $messages->get() : $messages->paginate($perPage);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $chatMessages, trans('message.data_fetch'));

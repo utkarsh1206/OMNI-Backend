@@ -186,7 +186,7 @@ class Users extends Authenticatable implements JWTSubject
             'domain'   => $postData['domain'] ?? null,
         ];
 
-        if($postData['flag'] == 1){
+        if ($postData['flag'] == 1) {
             $dbName = DB::table('omnichannel.details')->select('db')->where('domain', $postData['domain'])->first();
             $claims['db'] = $dbName->db;
         }
@@ -311,5 +311,16 @@ class Users extends Authenticatable implements JWTSubject
     public function getUsergroupNameAttribute()
     {
         return $this->usergroup?->name;
+    }
+
+    public function getLatestMessageAttribute()
+    {
+        return Message::where('type', 'agent_chat')
+            ->where(function ($query) {
+                $query->where('user_id', $this->id)
+                    ->orWhere('receiver_id', $this->id);
+            })
+            ->orderByDesc('created_at')
+            ->first();
     }
 }
