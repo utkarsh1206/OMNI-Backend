@@ -14,7 +14,7 @@ class TicketTypesSeeder extends Seeder
     public function run(): void
     {
         // Truncate the table before seeding
-        TicketType::truncate();
+        // TicketType::truncate();
 
         $types = [
             ['type' => 'Helps', 'description' => 'Help related tickets', 'status' => 'active'],
