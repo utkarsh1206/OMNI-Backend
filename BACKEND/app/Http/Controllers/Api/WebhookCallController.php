@@ -336,6 +336,10 @@ class WebhookCallController extends Controller
                         generateLogs('info', "Inside agentId IF block" . json_encode($liveAgent));
                         if ($liveAgent) {
                             $liveAgent->status = $data['user_status'];
+                            $liveAgent->uniqueid = $data['call_unique_id'];
+                            $liveAgent->customer = $data['called_phone_number'];
+                            $liveAgent->call_date = $data['call_date'];
+                            $liveAgent->call_direction = 'out_call';
                             $liveAgent->save();
                         }
                         generateLogs('info', "after agentId IF block");
