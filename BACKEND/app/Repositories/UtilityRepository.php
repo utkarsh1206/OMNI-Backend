@@ -25,7 +25,6 @@ class UtilityRepository
     {
         try {
             $database = $this->domain ?? 'omnichannel';
-            $database = convertToLower(str_replace(".", "_", $database));
             $backupFolder = storage_path('app/public/exports');
             $filename = 'db_backup_' . now()->format('Ymd_His') . '.sql';
             $filePath = $backupFolder . '/' . $filename;
