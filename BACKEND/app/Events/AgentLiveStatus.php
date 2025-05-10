@@ -18,7 +18,7 @@ class AgentLiveStatus implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public function __construct($data, $domain)
+    public function __construct($data, $domain = null)
     {
         $this->agentLiveData = $data;
         // $this->domain = convertToLower(auth()->user()->domain);
