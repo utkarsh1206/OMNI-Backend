@@ -20,6 +20,10 @@ class LiveAgentObserver
      */
     public function updated(LiveAgents $liveAgent): void
     {
+        if ($liveAgent->bypassObserver) {
+            return;
+        }
+
         broadcast(new AgentLiveStatus($liveAgent));
     }
 

@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Models\LiveAgents;
+use App\Events\AgentLiveStatus;
 
 class WebhookCallController extends Controller
 {
@@ -335,12 +336,15 @@ class WebhookCallController extends Controller
                             ->first();
                         generateLogs('info', "Inside agentId IF block" . json_encode($liveAgent));
                         if ($liveAgent) {
+                            $liveAgent->bypassObserver = true;
                             $liveAgent->status = $data['user_status'];
                             $liveAgent->uniqueid = $data['call_unique_id'];
                             $liveAgent->customer = $data['called_phone_number'];
                             $liveAgent->call_date = $data['call_date'];
                             $liveAgent->call_direction = 'out_call';
                             $liveAgent->save();
+
+                            broadcast(new AgentLiveStatus($liveAgent, $domain));
                         }
                         generateLogs('info', "after agentId IF block");
                     }

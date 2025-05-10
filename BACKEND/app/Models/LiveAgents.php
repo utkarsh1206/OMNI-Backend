@@ -11,6 +11,8 @@ class LiveAgents extends Model
 
     protected $table = 'live_agents';
 
+    public $bypassObserver = false;
+    
     protected $fillable = [
         'user_id',
         'extension',
