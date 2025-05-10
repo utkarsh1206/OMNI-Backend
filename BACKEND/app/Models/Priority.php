@@ -15,4 +15,9 @@ class Priority extends Model
     {
         return $this->hasMany(SupportTicket::class, 'default_priority');
     }
+
+    public function slaTarget()
+    {
+        return $this->hasMany(SlaTarget::class, 'priority_type');
+    }
 }

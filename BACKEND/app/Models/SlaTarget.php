@@ -18,4 +18,9 @@ class SlaTarget extends Model
         'resolve_time_value',
         'alert_before_resolve_value',
     ];
+
+    public function priority()
+    {
+        return $this->belongsTo(Priority::class, 'priority_type');
+    }
 }
