@@ -25,7 +25,6 @@ class UtilityRepository
     {
         try {
             $database = $this->domain ?? 'omnichannel';
-            $database = strtolower(str_replace(".", "_", $database));
             $backupFolder = storage_path('app/public/exports');
             $filename = 'db_backup_' . now()->format('Ymd_His') . '.sql';
             $filePath = $backupFolder . '/' . $filename;
@@ -94,15 +93,6 @@ class UtilityRepository
                     }
                 }
 
-                // foreach ($rows as $row) {
-                //     $row = (array) $row;
-                //     $columns = implode('`, `', array_keys($row));
-                //     $values = implode(', ', array_map(function ($value) {
-                //         return DB::getPdo()->quote($value);
-                //     }, array_values($row)));
-
-                //     $sqlContent .= "INSERT INTO `$tableName` (`$columns`) VALUES ($values);\n";
-                // }
                 $sqlContent .= "\n\n";
             }
 
