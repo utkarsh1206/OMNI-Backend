@@ -53,7 +53,7 @@ class IncidentTypeRepository
             }
 
             if ($name) {
-                $query->where('name', 'like', '%' . $name);
+                $query->where('name', 'like', "%$name%");
             }
 
             if ($category_id) {

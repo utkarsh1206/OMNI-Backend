@@ -35,7 +35,7 @@ class TicketTypeRepository
             }
 
             if (!empty($type)) {
-                $query->where('type', $type);
+                $query->where('type', 'like', "%$type%");
             }
             if (!empty($status)) {
                 $query->where('status', $status);
