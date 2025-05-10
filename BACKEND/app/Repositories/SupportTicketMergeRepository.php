@@ -49,13 +49,13 @@ class SupportTicketMergeRepository
             $mergedTicket->save();
 
             // Reassign all related mail details to the new ticket
-            MailDetail::where('supportticketid', $mergedTicketId)
-                ->update(['supportticketid' => $targetTicketId]);
+            MailDetail::where('supportticket_id', $mergedTicketId)
+                ->update(['supportticket_id' => $targetTicketId]);
 
             // Create a merge notification on the target ticket
             SupportTicketNotification::create([
                 'type' => 'Merged',
-                'comment' => "Ticket merged with {$mergedTicket->support_ticket_id}",
+                'comment' => "Ticket merged with {$mergedTicket->supportticket_id}",
                 'support_ticket_id' => $targetTicketId,
                 'date' => now()->toDateTimeString(),
             ]);
