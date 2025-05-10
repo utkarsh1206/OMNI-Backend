@@ -8,6 +8,7 @@ use Exception;
 use App\Models\Users;
 use App\Events\ReceiveMessages;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AgentMessageRepository
 {
@@ -19,7 +20,7 @@ class AgentMessageRepository
         $this->apiResponse = $customApiResponse;
     }
 
-    public function getStatus()
+    public function getStatus($request)
     {
         try {
             $agents = Users::with('liveAgent')
@@ -51,9 +52,11 @@ class AgentMessageRepository
         }
     }
 
-    public function getMessages($agentId)
+    public function getMessages($request, $agentId)
     {
         try {
+            $search = $request->input('search', '');
+
             $currentUserId = auth()->user()->id;
 
             $messages = Message::where('type', 'agent_chat')
@@ -66,10 +69,19 @@ class AgentMessageRepository
                             ->where('receiver_id', $currentUserId);
                     });
                 })
-                ->orderBy('created_at', 'asc')
-                ->get();
+                ->orderBy('created_at', 'desc');
+                
+            if($search) {
+                $messages->where('text', 'LIKE', '%' . $search . '%');
+            }
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+           
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));   
+            
+            $chatMessages = $page == config('omni.ALL_PAGE') ? $messages->get() : $messages->paginate($perPage);
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $chatMessages, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Message Listing: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);

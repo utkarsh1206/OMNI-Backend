@@ -1255,6 +1255,36 @@
                             "type": "integer",
                             "example": 42
                         }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of messages per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Text to search for within the message content",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Hiiii"
+                        }
                     }
                 ],
                 "responses": {

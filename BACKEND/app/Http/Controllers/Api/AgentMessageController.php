@@ -72,6 +72,27 @@ class AgentMessageController extends Controller
      *         description="ID of the agent to fetch messages with",
      *         @OA\Schema(type="integer", example=42)
      *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         required=false,
+     *         description="Number of messages per page",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         required=false,
+     *         description="Page number for pagination",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         required=false,
+     *         description="Text to search for within the message content",
+     *         @OA\Schema(type="string", example="Hiiii")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Messages retrieved successfully",
@@ -106,9 +127,9 @@ class AgentMessageController extends Controller
      *     )
      * )
      */
-    public function getMessages($agentId)
+    public function getMessages(Request $request, $agentId)
     {
-        return $this->messageRepository->getMessages($agentId);
+        return $this->messageRepository->getMessages($request, $agentId);
     }
 
     /**
