@@ -13,13 +13,13 @@ class SupportTicketController extends Controller
 {
     protected $slaService;
 
-    private $slaReportRepository;
+    private $supportTicketRepository;
 
     // Constructor to inject the SlaService
-    public function __construct(SlaService $slaService, SupportTicketRepository $slaReportRepository)
+    public function __construct(SlaService $slaService, SupportTicketRepository $supportTicketRepository)
     {
         $this->slaService = $slaService;
-        $this->slaReportRepository = $slaReportRepository;
+        $this->supportTicketRepository = $supportTicketRepository;
     }
 
     /**
@@ -93,7 +93,7 @@ class SupportTicketController extends Controller
      */
     public function index(Request $request)
     {
-        return $this->slaReportRepository->list($request);
+        return $this->supportTicketRepository->list($request);
     }
 
     /**
@@ -163,7 +163,7 @@ class SupportTicketController extends Controller
      */
     public function store(SupportTicketRequest $request)
     {
-        return $this->slaReportRepository->store($request);
+        return $this->supportTicketRepository->store($request);
     }
 
     /**
@@ -235,7 +235,7 @@ class SupportTicketController extends Controller
      */
     public function show(SupportTicket $supportTicket)
     {
-        return $this->slaReportRepository->show($supportTicket);
+        return $this->supportTicketRepository->show($supportTicket);
     }
 
     /**
@@ -343,7 +343,7 @@ class SupportTicketController extends Controller
      */
     public function update(SupportTicketRequest $request, SupportTicket $supportTicket)
     {
-        return $this->slaReportRepository->update($request, $supportTicket);
+        return $this->supportTicketRepository->update($request, $supportTicket);
     }
 
     /**
@@ -377,7 +377,7 @@ class SupportTicketController extends Controller
      */
     public function destroy(SupportTicket $supportTicket)
     {
-        return $this->slaReportRepository->delete($supportTicket);
+        return $this->supportTicketRepository->delete($supportTicket);
     }
 
     /**
@@ -478,6 +478,6 @@ class SupportTicketController extends Controller
      */
     public function statusUpdate(Request $request, $supportTicket)
     {
-        return $this->slaReportRepository->statusUpdate($request, $supportTicket);
+        return $this->supportTicketRepository->statusUpdate($request, $supportTicket);
     }
 }

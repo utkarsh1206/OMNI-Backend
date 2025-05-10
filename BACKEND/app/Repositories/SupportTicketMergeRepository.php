@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
-use App\Models\SupportTicketnotification;
+use App\Models\SupportTicketNotification;
 use App\Models\MailDetail;
 use App\Models\SupportTicket;
 use Exception;
@@ -49,8 +49,8 @@ class SupportTicketMergeRepository
             $mergedTicket->save();
 
             // Reassign all related mail details to the new ticket
-            MailDetail::where('support_ticket_id', $mergedTicketId)
-                ->update(['support_ticket_id' => $targetTicketId]);
+            MailDetail::where('supportticketid', $mergedTicketId)
+                ->update(['supportticketid' => $targetTicketId]);
 
             // Create a merge notification on the target ticket
             SupportTicketNotification::create([
