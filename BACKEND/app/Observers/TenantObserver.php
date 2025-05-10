@@ -17,7 +17,7 @@ class TenantObserver
     {
         $lastInsertedId = $tenants->id;
 
-        $databaseName = convertToLower(Str::replace(".", "_", request()->domain_name)."_db");
+        $databaseName = convertToLower(Str::replace(".", "_", request()->domain_name));
 
         DB::statement("CREATE DATABASE $databaseName");
 
