@@ -40,18 +40,18 @@ class SlaSettingRepository
 
             if ($page === config('omni.ALL_PAGE')) {
                 $slas = $query->get();
-                $slasFormatted = $slas->map(function ($sla) {
-                    return $this->formatSlaResponse($sla);
-                });
+                // $slasFormatted = $slas->map(function ($sla) {
+                //     return $this->formatSlaResponse($sla);
+                // });
             } else {
                 $slas = $query->paginate($perPage);
-                $slasFormatted = $slas->items();
+                // $slasFormatted = $slas->items();
 
-                $slasFormatted = collect($slasFormatted)->map(function ($sla) {
-                    return $this->formatSlaResponse($sla);
-                });
+                // $slasFormatted = collect($slasFormatted)->map(function ($sla) {
+                //     return $this->formatSlaResponse($sla);
+                // });
             }
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $slasFormatted, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $slas, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error fetching SLA settings: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);

@@ -53,8 +53,9 @@ class IncidentTypeRepository
             }
 
             if ($name) {
-                $query->where('name', $name);
+                $query->where('name', 'like', "%$name%");
             }
+
             if ($category_id) {
                 $categoryId = Category::where('name', 'like', "%$category_id%")->value('id');
                 if ($categoryId) {

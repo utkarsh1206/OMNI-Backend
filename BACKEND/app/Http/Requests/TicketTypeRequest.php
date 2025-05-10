@@ -28,7 +28,7 @@ class TicketTypeRequest extends FormRequest
         ];
     
         if ($this->method() === 'PUT' || $this->method() === 'PATCH') {
-            $ticketTypeId = $this->route('id');
+            $ticketTypeId = $this->route('ticket_type')->id;
             
             $rules['type'] = 'sometimes|required|string|max:255|unique:ticket_types,type,' . $ticketTypeId;
             $rules['status'] = 'sometimes|required|in:active,inactive';
