@@ -19,7 +19,7 @@ $allTenants = Tenant::orderBy('id')  // Ensures consistent ordering by the ID co
             // $newConnectionName = str_replace(".", "_", $tenant->domain_name);
             // $databaseName = str_replace(".", "_", $tenant->domain_name);
 
-            $databaseName = convertToLower(Str::replace(".", "_", request()->domain_name));
+            $databaseName = convertToLower(Str::replace(".", "_", $tenant->domain_name));
 
             Config::set("database.connections.$databaseName", [
                 'driver'    => 'mysql',
