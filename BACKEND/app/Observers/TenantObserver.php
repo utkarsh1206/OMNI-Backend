@@ -19,8 +19,6 @@ class TenantObserver
 
         $databaseName = convertToLower(Str::replace(".", "_", request()->domain_name));
 
-        DB::statement("CREATE DATABASE $databaseName");
-
         $tenantDetails = [
             'db' => $databaseName,
             'domain' => request()->domain_name,
@@ -34,6 +32,8 @@ class TenantObserver
         // DB::table('details')->insert($details_array);
 
         // $newConnectionName = str_replace(".", "_", request()->domain_name);
+
+        DB::statement("CREATE DATABASE $databaseName");
 
         Config::set("database.connections.$databaseName", [
             'driver'    => 'mysql',
@@ -49,11 +49,11 @@ class TenantObserver
             'engine'    => null,
         ]);
 
-        Artisan::call('migrate', [
-            '--database' => $databaseName,
-            '--path'     => '/database/migrations/user', 
-            '--force'    => true,
-        ]);
+        // Artisan::call('migrate', [
+        //     '--database' => $databaseName,
+        //     '--path'     => '/database/migrations/user', 
+        //     '--force'    => true,
+        // ]);
 
         Users::on($databaseName)->create([
             'tenant_id'  => $lastInsertedId,
@@ -69,10 +69,10 @@ class TenantObserver
             'role_id' => 1
         ]);
 
-        Artisan::call('db:seed', [
-            '--database' => $databaseName,
-            '--class' => 'TenantSeeder',
-            '--force' => true, 
-        ]);
+        // Artisan::call('db:seed', [
+        //     '--database' => $databaseName,
+        //     '--class' => 'TenantSeeder',
+        //     '--force' => true, 
+        // ]);
     }
 }
