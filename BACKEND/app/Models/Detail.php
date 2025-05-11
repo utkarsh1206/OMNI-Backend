@@ -12,7 +12,7 @@ class Detail extends Model
     protected $fillable = [
         "id",
         "db",
-        "domain ",
+        "domain",
         "uin",
         "username",
         "password",
