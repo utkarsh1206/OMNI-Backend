@@ -117,7 +117,7 @@ class IncomingCallRepository
         if (!$lastStatus) return 'Unknown';
 
         switch ($lastStatus->type) {
-            case 'call_initiated':
+            case 'CALL_INITIATED':
                 $ttt = PauseResumeUserLog::create([
                     "user_id" => $request->id,
                     "campaign_id" => $request->campaign_id,
@@ -126,10 +126,10 @@ class IncomingCallRepository
                 ]);
                 return "In Queue";
 
-            case 'call_connected':
+            case 'CALL_CONNECTED':
                 return "call";
 
-            case 'call_hangup':
+            case 'CALL_HANGUP':
                 return "Disposition";
 
             default:

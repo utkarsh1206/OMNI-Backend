@@ -67,10 +67,23 @@ class DashboardRepository
                 ->keyBy('default_status');
 
             // Tickets by priority
-            $ticketsByPriority = SupportTicket::where($conditionalFilter)->select(DB::raw('default_priority, COUNT(*) as count'))
-                ->groupBy('default_priority')
+            $ticketsByPriority = SupportTicket::with('priority')
+                ->where($conditionalFilter)
                 ->get()
-                ->keyBy('default_priority');
+                ->groupBy('default_priority')
+                ->mapWithKeys(function ($tickets, $priorityId) {
+                    $priority = $tickets->first()->priority;
+
+                    return [
+                        optional($priority)->name ?? 'Unknown' => [
+                            'priority' => $priorityId,
+                            'default_priority' => optional($priority)->name ?? 'Unknown',
+                            'count' => $tickets->count(),
+                            'contact_name' => null,
+                            'assigned_agent_name' => null,
+                        ]
+                    ];
+                });
 
             // // Tickets by department
             // $ticketsByDepartment = SupportTicket::where($conditionalFilter)->select(DB::raw('department_id, COUNT(*) as count'))
@@ -137,10 +150,23 @@ class DashboardRepository
             // $productTypes = Product::whereIn('id', $ticketsByProductType->pluck('product_id'))->get()->keyBy('id');
 
             // Tickets by type
-            $ticketsByType = SupportTicket::where($conditionalFilter)->select('default_type', DB::raw('COUNT(*) as count'))
-                ->groupBy('default_type')
+            $ticketsByType = SupportTicket::with('ticketType')
+                ->where($conditionalFilter)
                 ->get()
-                ->keyBy('default_type');
+                ->groupBy('default_type')
+                ->mapWithKeys(function ($tickets, $typeId) {
+                    $ticketType = $tickets->first()->ticketType;
+
+                    return [
+                        optional($ticketType)->type ?? 'Unknown' => [
+                            'ticket_type_id' => $typeId,
+                            'default_type' => optional($ticketType)->type ?? 'Unknown',
+                            'count' => $tickets->count(),
+                            'contact_name' => null,
+                            'assigned_agent_name' => null,
+                        ]
+                    ];
+                });
 
             // Activity summary (Tickets created today, last 7 days, last 30 days, and updated vs. created)
             $activitySummary = [
