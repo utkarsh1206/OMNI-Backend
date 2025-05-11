@@ -49,11 +49,11 @@ class TenantObserver
             'engine'    => null,
         ]);
 
-        // Artisan::call('migrate', [
-        //     '--database' => $databaseName,
-        //     '--path'     => '/database/migrations/user', 
-        //     '--force'    => true,
-        // ]);
+        Artisan::call('migrate', [
+            '--database' => $databaseName,
+            '--path'     => '/database/migrations/user', 
+            '--force'    => true,
+        ]);
 
         Users::on($databaseName)->create([
             'tenant_id'  => $lastInsertedId,
@@ -69,10 +69,10 @@ class TenantObserver
             'role_id' => 1
         ]);
 
-        // Artisan::call('db:seed', [
-        //     '--database' => $databaseName,
-        //     '--class' => 'TenantSeeder',
-        //     '--force' => true, 
-        // ]);
+        Artisan::call('db:seed', [
+            '--database' => $databaseName,
+            '--class' => 'TenantSeeder',
+            '--force' => true, 
+        ]);
     }
 }
