@@ -22,11 +22,11 @@ class TenantRepository
         try {
             $filters = [
                 'search' => 'searchTerm',
-                'company_name' => 'companyName',
+                'company_name' => 'company_name',
                 'email' => 'email',
                 'mobile' => 'mobile',
-                'domain_name' => 'domainName',
-                'company_code' => 'companyCode',
+                'domain_name' => 'domain_name',
+                'company_code' => 'company_code',
             ];
 
             // Retrieve input values
@@ -60,7 +60,7 @@ class TenantRepository
             // Apply other filters dynamically
             foreach ($filters as $key => $variable) {
                 if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
-                    $query->where($variable, $inputs[$variable]);
+                    $query->where($variable, 'like', '%' . $inputs[$variable] . '%');
                 }
             }
 
