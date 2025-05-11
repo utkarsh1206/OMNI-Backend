@@ -17,7 +17,7 @@ class TenantObserver
     {
         $lastInsertedId = $tenants->id;
 
-        $databaseName = convertToLower(Str::replace(".", "_", request()->domain_name));
+        $databaseName = Str::replace(".", "_", request()->domain_name);
 
         $tenantDetails = [
             'db' => $databaseName,

@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Support\Facades\Artisan;
 use App\Models\CronConfiguration;
 use App\Models\Tenant;
@@ -16,16 +15,15 @@ Artisan::command('app:sla-email-notification', function () {
 $allTenants = Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
     ->chunkById(100, function ($tenants) {
         foreach ($tenants as $tenant) {
-            // $newConnectionName = str_replace(".", "_", $tenant->domain_name);
-            // $databaseName = str_replace(".", "_", $tenant->domain_name);
+            $newConnectionName = Str::replace(".", "_", $tenant->domain_name);
+            
+            $databaseName = Str::replace(".", "_", $tenant->domain_name);
 
-            $databaseName = convertToLower(Str::replace(".", "_", $tenant->domain_name));
-
-            Config::set("database.connections.$databaseName", [
+            Config::set("database.connections.$newConnectionName", [
                 'driver'    => 'mysql',
                 'host'      => env('DB_HOST', '127.0.0.1'),
                 'port'      => env('DB_PORT', '3306'),
-                'database'  => $databaseName,
+                'database'  => $newConnectionName,
                 'username'  => env('DB_USERNAME'),
                 'password'  => env('DB_PASSWORD'),
                 'charset'   => 'utf8mb4',
@@ -34,16 +32,15 @@ $allTenants = Tenant::orderBy('id')  // Ensures consistent ordering by the ID co
                 'strict'    => true,
                 'engine'    => null,
             ]);
-            DB::reconnect($databaseName);
+            DB::reconnect($newConnectionName);
             // Fetch support tickets for each tenant
-            if (Schema::connection($databaseName)->hasTable('cron_configurations')) {
-                $cronConfiguations = CronConfiguration::on($databaseName)->get();
-                CronConfiguration::on($databaseName)->where('status', 'active')->get()->each(function ($cronJob) {
+            if (Schema::connection($newConnectionName)->hasTable('cron_configurations')) {
+                $cronConfiguations = CronConfiguration::on($newConnectionName)->get();
+                CronConfiguration::on($newConnectionName)->where('status', 'active')->get()->each(function ($cronJob) {
                     Artisan::command($cronJob->command_signature, function () use ($cronJob) {
-
                         $this->info("Running cron job: {$cronJob->command_signature}");
                     })
-                        ->cron($cronJob->schedule_expression);
+                    ->cron($cronJob->schedule_expression);
                 });
             }
         }
