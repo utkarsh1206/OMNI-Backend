@@ -186,11 +186,6 @@ class Users extends Authenticatable implements JWTSubject
             'domain'   => $postData['domain'] ?? null,
         ];
 
-        if ($postData['flag'] == 1) {
-            $dbName = DB::table('omnichannel.details')->select('db')->where('domain', $postData['domain'])->first();
-            $claims['db'] = $dbName->db;
-        }
-
         if (isset($postData['flag']) && $postData['flag'] == 2) {
             // New permission format using IDs
             $permissions = [];
@@ -258,6 +253,9 @@ class Users extends Authenticatable implements JWTSubject
             }
 
             $claims['permission'] = json_encode($permission_array);
+
+            $dbName = DB::table('omnichannel.details')->select('db')->where('domain', $postData['domain'])->first();
+            $claims['db'] = $dbName->db;
         }
 
         return $claims;
