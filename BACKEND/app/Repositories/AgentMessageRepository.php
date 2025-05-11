@@ -6,7 +6,7 @@ use App\Models\Message;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 use App\Models\Users;
-use App\Events\ReceiveMessages;
+use App\Events\ReceivedMessages;
 use Carbon\Carbon;
 
 class AgentMessageRepository
@@ -22,30 +22,18 @@ class AgentMessageRepository
     public function getStatus($request)
     {
         try {
-            // $agents = Users::with('liveAgent')
-            //     ->where('type', 3)
-            //     ->get(['id', 'first_name', 'last_name', 'email'])
-            //     ->map(function ($user) {
-            //         $lastMessage = Message::where(function ($query) use ($user) {
-            //             $query->where('user_id', $user->id)
-            //                 ->orWhere('receiver_id', $user->id);
-            //         })
-            //             ->orderByDesc('created_at')
-            //             ->first();
-
-            //         return [
-            //             'id' => $user->id,
-            //             'name' => $user->first_name . ' ' . $user->last_name,
-            //             'online_status' => $user->online_status,
-            //             'last_message' => $lastMessage->text ?? null,
-            //             'last_message_time' => $lastMessage && $lastMessage->created_at
-            //                 ? Carbon::parse($lastMessage->created_at)->format('Y-m-d H:i:s')
-            //                 : null,
-            //         ];
-            //     });
-
             $search = $request->input('search', '');
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+
+            // $agentsQuery = Users::with('liveAgent')
+            //     ->where('type', 3)
+            //     ->when($search, function ($query) use ($search) {
+            //         $query->where(function ($q) use ($search) {
+            //             $q->where('first_name', 'like', "%$search%")
+            //                 ->orWhere('last_name', 'like', "%$search%")
+            //                 ->orWhere('email', 'like', "%$search%");
+            //         });
+            //     });
 
             $agentsQuery = Users::with('liveAgent')
                 ->where('type', 3)
@@ -53,14 +41,19 @@ class AgentMessageRepository
                     $query->where(function ($q) use ($search) {
                         $q->where('first_name', 'like', "%$search%")
                             ->orWhere('last_name', 'like', "%$search%")
-                            ->orWhere('email', 'like', "%$search%");
+                            ->orWhere('email', 'like', "%$search%")
+                            ->orWhereExists(function ($subquery) use ($search) {
+                                $subquery->select('id') // Instead of DB::raw(1)
+                                    ->from('messages')
+                                    ->where('type', 'agent_chat')
+                                    ->whereRaw('messages.user_id = users.id OR messages.receiver_id = users.id')
+                                    ->where('messages.text', 'like', "%$search%");
+                            });
                     });
                 });
 
-            // Paginate the results
             $paginatedAgents = $agentsQuery->paginate($perPage);
 
-            // Enhance each user with latest message info
             $paginatedAgents->getCollection()->transform(function ($user) {
                 $lastMessage = $user->latest_message;
 
@@ -134,7 +127,7 @@ class AgentMessageRepository
             ]);
 
             if ($message) {
-                broadcast(new ReceiveMessages($message));
+                broadcast(new ReceivedMessages($message));
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
         } catch (Exception $ex) {

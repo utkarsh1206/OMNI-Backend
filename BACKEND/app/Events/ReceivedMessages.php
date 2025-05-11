@@ -9,7 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ReceiveMessages implements ShouldBroadcastNow
+class ReceivedMessages implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -39,7 +39,6 @@ class ReceiveMessages implements ShouldBroadcastNow
     {
         generateLogs('info', 'Channel Name: ' . json_encode(['Channel' => "{$this->domain}-{$this->receiverId}-agent-chat"]));
         return [
-            new Channel("agent-chat"),
             new Channel("{$this->domain}-{$this->receiverId}-agent-chat"),
         ];
     }
