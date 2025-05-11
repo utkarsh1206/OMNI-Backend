@@ -7,6 +7,7 @@ use App\Http\Response\CustomApiResponse;
 use App\Models\SupportTicketNotification;
 use App\Models\SupportTicket;
 use Exception;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class SupportTicketTransferRepository
 {
@@ -20,16 +21,14 @@ class SupportTicketTransferRepository
     public function store(Request $request)
     {
         try {
-            SupportTicket::where('id', $request->supportticket_id)
-                ->update(['assign_to_id' => $request->user_id]);
-
             $supportTicket = SupportTicket::where('support_ticket_id', $request->supportticket_id)->first();
 
-            generateLogs("info", "supportTicket data ", json_encode($supportTicket));
             if (!$supportTicket) {
-                // Handle case where ticket isn't found
-                return response()->json(['error' => 'Ticket not found'], 404);
+                return response()->json(['error' => 'Ticket not found'], ResponseHTTP::HTTP_NOT_FOUND);
             }
+
+            $supportTicket->assign_to_id = $request->user_id;
+            $supportTicket->save();
 
             SupportTicketNotification::create([
                 'type' => "Transfer",
