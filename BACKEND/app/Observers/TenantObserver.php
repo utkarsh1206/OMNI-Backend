@@ -17,7 +17,7 @@ class TenantObserver
     {
         $lastInsertedId = $tenants->id;
 
-        $databaseName = convertToLower(Str::replace(".", "_", request()->domain_name));
+        $databaseName = Str::replace(".", "_", request()->domain_name);
 
         $tenantDetails = [
             'db' => $databaseName,
@@ -32,7 +32,7 @@ class TenantObserver
         if ($tenantDetail) {
             DB::statement("CREATE DATABASE $databaseName");
 
-            $newConnectionName = convertToLower(Str::replace(".", "_", request()->domain_name));
+            $newConnectionName = Str::replace(".", "_", request()->domain_name);
 
             Config::set("database.connections.$newConnectionName", [
                 'driver'    => 'mysql',
