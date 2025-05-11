@@ -17,7 +17,7 @@ class TenantObserver
     {
         $lastInsertedId = $tenants->id;
 
-        $databaseName = Str::replace(".", "_", request()->domain_name);
+        $databaseName = convertToLower(Str::replace(".", "_", request()->domain_name));
 
         $tenantDetails = [
             'db' => $databaseName,
@@ -34,7 +34,7 @@ class TenantObserver
 
             $newConnectionName = Str::replace(".", "_", request()->domain_name);
 
-            Config::set("database.connections.$newConnectionName", [
+            Config::set("database.connections.$databaseName", [
                 'driver'    => 'mysql',
                 'host'      => env('DB_HOST', '127.0.0.1'),
                 'port'      => env('DB_PORT', '3306'),
@@ -49,12 +49,12 @@ class TenantObserver
             ]);
 
             Artisan::call('migrate', [
-                '--database' => $newConnectionName,
+                '--database' => $databaseName,
                 '--path'     => '/database/migrations/user', // Adjust the path as needed
                 '--force'    => true,
             ]);
 
-            Users::on($newConnectionName)->create([
+            Users::on($databaseName)->create([
                 'tenant_id'  => $lastInsertedId,
                 'type' => 0,
                 'first_name' => request()->first_name,
@@ -69,7 +69,7 @@ class TenantObserver
             ]);
 
             Artisan::call('db:seed', [
-                '--database' => $newConnectionName,
+                '--database' => $databaseName,
                 '--class' => 'TenantSeeder',
                 '--force' => true, // Run seeders in production if necessary
             ]);
