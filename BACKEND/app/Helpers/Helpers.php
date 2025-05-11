@@ -361,3 +361,37 @@ if (! function_exists('convertToLower')) {
         return Str::lower($value);
     }
 }
+
+if (! function_exists('getIconforNotification')) {
+    function getIconforNotification($type)
+    {
+        $icon =   [
+            "Ticket Created" => "cilUser",
+            "Ticket Transfer" => "cilTransfer",
+            "Ticket Merge" => "cilSync",
+            "Priority Changed" => "cilChevronDoubleUp",
+            "Type Changed" => "cilFire",
+            "Ticket Close" => "cilCheck",
+            "Status Changed" => "cilBolt",
+        ];
+
+        return $icon[$type] ?? "cilAsteriskCircle";
+    }
+}
+
+if (! function_exists('getColorforNotification')) {
+    function getColorforNotification($type)
+    {
+        $color =   [
+            "Ticket Created" => "primary",
+            "Ticket Transfer" => "info",
+            "Ticket Merge" => "warning",
+            "Priority Changed" => "secondary",
+            "Type Changed" => "danger",
+            "Ticket Close" => "success",
+            "Status Changed" => "info",
+        ];
+
+        return $color[$type] ?? "secondary";
+    }
+}

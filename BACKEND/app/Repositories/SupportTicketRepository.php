@@ -263,7 +263,6 @@ class SupportTicketRepository
 
     private function createTicket($supportticket, $type, $comment, $apiUser, $statusChange = null)
     {
-       
         $notification = SupportTicketNotification::create([
             'type' => $statusChange ?? $type,
             'status' => $supportticket->default_status,
@@ -271,8 +270,8 @@ class SupportTicketRepository
             'support_ticket_id' => $supportticket->id,
             'date' => gmdate('Y-m-d H:i:s'),
             'created_by' => $apiUser->id ?? 0,
-            'icon' =>  $statusChange ? $this->getIconforNotification($statusChange) : $this->getIconforNotification($type),
-            'color' =>  $statusChange ? $this->getColorforNotification($statusChange) : $this->getColorforNotification($type),
+            'icon' =>  $statusChange ? getIconforNotification($statusChange) : getIconforNotification($type),
+            'color' =>  $statusChange ? getColorforNotification($statusChange) : getColorforNotification($type),
         ]);
 
         return [
@@ -289,35 +288,35 @@ class SupportTicketRepository
         ];
     }
 
-    private function getColorforNotification($type)
-    {
-        $color =   [
-            "Ticket Created" => "primary",
-            "Ticket Transfer" => "info",
-            "Ticket Merge" => "warning",
-            "Priority Changed" => "secondary",
-            "Type Changed" => "danger",
-            "Ticket Close" => "success",
-            "Status Changed" => "info",
-        ];
+    // private function getColorforNotification($type)
+    // {
+    //     $color =   [
+    //         "Ticket Created" => "primary",
+    //         "Ticket Transfer" => "info",
+    //         "Ticket Merge" => "warning",
+    //         "Priority Changed" => "secondary",
+    //         "Type Changed" => "danger",
+    //         "Ticket Close" => "success",
+    //         "Status Changed" => "info",
+    //     ];
 
-        return $color[$type] ?? "secondary";
-    }
+    //     return $color[$type] ?? "secondary";
+    // }
 
-    private function getIconforNotification($type)
-    {
-        $icon =   [
-            "Ticket Created" => "cilUser",
-            "Ticket Transfer" => "cilTransfer",
-            "Ticket Merge" => "cilSync",
-            "Priority Changed" => "cilChevronDoubleUp",
-            "Type Changed" => "cilFire",
-            "Ticket Close" => "cilCheck",
-            "Status Changed" => "cilBolt",
-        ];
+    // private function getIconforNotification($type)
+    // {
+    //     $icon =   [
+    //         "Ticket Created" => "cilUser",
+    //         "Ticket Transfer" => "cilTransfer",
+    //         "Ticket Merge" => "cilSync",
+    //         "Priority Changed" => "cilChevronDoubleUp",
+    //         "Type Changed" => "cilFire",
+    //         "Ticket Close" => "cilCheck",
+    //         "Status Changed" => "cilBolt",
+    //     ];
 
-        return $icon[$type] ?? "cilAsteriskCircle";
-    }
+    //     return $icon[$type] ?? "cilAsteriskCircle";
+    // }
 
     private function sendSms($apiUser, $type, $phone, $supportticket)
     {
