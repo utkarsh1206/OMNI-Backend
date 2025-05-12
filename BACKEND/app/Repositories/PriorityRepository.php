@@ -34,7 +34,7 @@ class PriorityRepository
             }
 
             if (!empty($name)) {
-                $query->where('name', $name);
+                $query->where('name', 'like', "%$name%");
             }
             if (!empty($status)) {
                 $query->where('status', $status);
