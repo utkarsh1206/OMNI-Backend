@@ -59,9 +59,9 @@ class SlaReportController extends Controller
      *         @OA\Schema(type="string", example="High")
      *     ),
      *     @OA\Parameter(
-     *         name="category",
+     *         name="ticketType",
      *         in="query",
-     *         description="Filter by ticket category",
+     *         description="Filter by ticket type",
      *         required=false,
      *         @OA\Schema(type="string", example="Technical")
      *     ),
@@ -90,7 +90,7 @@ class SlaReportController extends Controller
      *             @OA\Property(property="data", type="array", items=@OA\Items(
      *                 type="object",
      *                 @OA\Property(property="ticket_id", type="string", example="TICKET-12345"),
-     *                 @OA\Property(property="category", type="string", example="Technical"),
+     *                 @OA\Property(property="ticketType", type="string", example="Technical"),
      *                 @OA\Property(property="priority", type="string", example="High"),
      *                 @OA\Property(property="opened_date", type="string", format="date-time", example="2025-03-01T12:00:00"),
      *                 @OA\Property(property="sla_compliance", type="boolean", example=true),
@@ -127,7 +127,7 @@ class SlaReportController extends Controller
      * @OA\Get(
      *     path="/api/sla-priority",
      *     summary="Get the count of escalated support tickets grouped by priority",
-     *     description="This endpoint returns the count of support tickets that are escalated, grouped by their priority level. Supports filtering based on priority, category, SLA compliance, and date range.",
+     *     description="This endpoint returns the count of support tickets that are escalated, grouped by their priority level. Supports filtering based on priority, ticketType, SLA compliance, and date range.",
      *     operationId="prioritySLA",
      *     tags={"SLA Reports"},
      *
@@ -153,9 +153,9 @@ class SlaReportController extends Controller
      *         @OA\Schema(type="string", example="High")
      *     ),
      *     @OA\Parameter(
-     *         name="category",
+     *         name="ticketType",
      *         in="query",
-     *         description="Filter tickets by category",
+     *         description="Filter tickets by type",
      *         required=false,
      *         @OA\Schema(type="string", example="Technical")
      *     ),
@@ -215,10 +215,10 @@ class SlaReportController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/sla-category",
-     *     summary="Get the count of escalated support tickets grouped by category",
-     *     description="This endpoint returns the count of support tickets that are escalated, grouped by their category. Supports filtering based on priority, category, SLA compliance, and date range.",
-     *     operationId="categorySLA",
+     *     path="/api/sla-ticket-type",
+     *     summary="Get the count of escalated support tickets grouped by type",
+     *     description="This endpoint returns the count of support tickets that are escalated, grouped by their ticketType. Supports filtering based on priority, ticketType, SLA compliance, and date range.",
+     *     operationId="ticketTypeSLA",
      *     tags={"SLA Reports"},
      *
      *     @OA\Parameter(
@@ -243,9 +243,9 @@ class SlaReportController extends Controller
      *         @OA\Schema(type="string", example="High")
      *     ),
      *     @OA\Parameter(
-     *         name="category",
+     *         name="ticketType",
      *         in="query",
-     *         description="Filter tickets by category",
+     *         description="Filter tickets by type",
      *         required=false,
      *         @OA\Schema(type="string", example="Technical")
      *     ),
@@ -266,14 +266,14 @@ class SlaReportController extends Controller
      *
      *     @OA\Response(
      *         response=200,
-     *         description="Successfully fetched category-wise ticket count",
+     *         description="Successfully fetched ticketType-wise ticket count",
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="message", type="string", example="Data fetched successfully"),
      *             @OA\Property(property="data", type="array", items=@OA\Items(
      *                 type="object",
-     *                 @OA\Property(property="category", type="string", example="Technical"),
+     *                 @OA\Property(property="ticketType", type="string", example="Technical"),
      *                 @OA\Property(property="ticket_count", type="integer", example=50)
      *             ))
      *         )
@@ -298,16 +298,16 @@ class SlaReportController extends Controller
      *     )
      * )
      */
-    public function categorySLA(Request $request)
+    public function ticketTypeSLA(Request $request)
     {
-        return $this->slaReportRepository->categorySLA($request);
+        return $this->slaReportRepository->ticketTypeSLA($request);
     }
 
     /**
      * @OA\Get(
      *     path="/api/sla-incident",
      *     summary="Get the count of escalated support tickets grouped by incident type",
-     *     description="This endpoint returns the count of escalated support tickets grouped by incident type. Supports filtering based on priority, category, SLA compliance, and date range.",
+     *     description="This endpoint returns the count of escalated support tickets grouped by incident type. Supports filtering based on priority, ticketType, SLA compliance, and date range.",
      *     operationId="incidentSLA",
      *     tags={"SLA Reports"},
      *
@@ -333,9 +333,9 @@ class SlaReportController extends Controller
      *         @OA\Schema(type="string", example="High")
      *     ),
      *     @OA\Parameter(
-     *         name="category",
+     *         name="ticketType",
      *         in="query",
-     *         description="Filter tickets by category",
+     *         description="Filter tickets by type",
      *         required=false,
      *         @OA\Schema(type="string", example="Technical")
      *     ),
@@ -398,7 +398,7 @@ class SlaReportController extends Controller
      * @OA\Get(
      *     path="/api/slareport/csv",
      *     summary="Export support tickets as CSV",
-     *     description="This endpoint allows users to export support ticket data in CSV format. It supports filtering by various parameters such as date range, priority, category, SLA compliance, and user.",
+     *     description="This endpoint allows users to export support ticket data in CSV format. It supports filtering by various parameters such as date range, priority, ticketType, SLA compliance, and user.",
      *     operationId="exportCsv",
      *     tags={"SLA Reports"},
      *
@@ -424,9 +424,9 @@ class SlaReportController extends Controller
      *         @OA\Schema(type="string", example="High")
      *     ),
      *     @OA\Parameter(
-     *         name="category",
+     *         name="ticketType",
      *         in="query",
-     *         description="Filter tickets by category",
+     *         description="Filter tickets by type",
      *         required=false,
      *         @OA\Schema(type="string", example="Technical")
      *     ),

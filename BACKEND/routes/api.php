@@ -294,7 +294,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('slareport', [SlaReportController::class, 'generateReport']);
     Route::get('slareport/csv', [SlaReportController::class, 'exportCsv']);
     Route::get('sla-priority', [SlaReportController::class, 'prioritySLA']);
-    Route::get('sla-category', [SlaReportController::class, 'categorySLA']);
+    Route::get('sla-ticket-type', [SlaReportController::class, 'ticketTypeSLA']);
     Route::get('sla-incident', [SlaReportController::class, 'incidentSLA']);
 
     Route::apiResource('neox-configurations', NeoxConfigurationController::class);

@@ -5,6 +5,7 @@ namespace App\Repositories;
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\IncidentType;
+use App\Models\Priority;
 use App\Models\SlaTarget;
 use App\Models\SupportTicket;
 use Illuminate\Support\Facades\DB;
@@ -35,12 +36,14 @@ class SlaReportRepository
                         DB::raw("MAX(CASE WHEN status = 'Resolved' THEN date ELSE NULL END) as resolved_date")
                     )->groupBy('support_ticket_id');
                 },
+                'priority',
+                'ticketType'
             ])
                 ->select(
                     'support_tickets.id',
                     'support_tickets.support_ticket_id as ticket_id',
-                    'support_tickets.default_type as category',
-                    'support_tickets.default_priority as priority',
+                    'support_tickets.default_type',
+                    'support_tickets.default_priority',
                     'support_tickets.created_at as opened_date',
                     'support_tickets.is_escalated as sla_compliance',
                     'support_tickets.actual_resolved_time',
@@ -130,8 +133,8 @@ class SlaReportRepository
         return [
             'id' => $ticket->id,
             'ticket_id' => $ticket->ticket_id,
-            'category' => $ticket->category,
-            'priority' => $ticket->priority,
+            'ticketType' => $ticket->ticketType->type ?? '',
+            'priority' => $ticket->priority->name ?? '',
             'opened_date' => $ticket->opened_date,
             'sla_compliance' => $ticket->sla_compliance,
             'user_name' => $ticket->user_name,
@@ -146,11 +149,12 @@ class SlaReportRepository
     {
         try {
             $tickets = SupportTicket::select(
-                'default_priority as priority',
+                'priorities.name as priority',
                 DB::raw("COUNT(*) as ticket_count")
             )
-                ->where('is_escalated', 'Yes')
-                ->groupBy('default_priority');
+                ->join('priorities', 'support_tickets.default_priority', '=', 'priorities.id')
+                ->where('support_tickets.is_escalated', 'Yes')
+                ->groupBy('priorities.name');
 
             $payload = $this->extractPayload($request);
 
@@ -165,15 +169,16 @@ class SlaReportRepository
         }
     }
 
-    public function categorySLA(Request $request)
+    public function ticketTypeSLA(Request $request)
     {
         try {
             $tickets = SupportTicket::select(
-                'default_type as category',
+                'ticket_types.type as ticketType',
                 DB::raw("COUNT(*) as ticket_count")
             )
-                ->where('is_escalated', 'Yes')
-                ->groupBy('default_type');
+                ->join('ticket_types', 'support_tickets.default_type', '=', 'ticket_types.id')
+                ->where('support_tickets.is_escalated', 'Yes')
+                ->groupBy('ticket_types.type');
 
             $payload = $this->extractPayload($request);
 
@@ -183,7 +188,7 @@ class SlaReportRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $tickets, trans('message.data_fetch'));
         } catch (Exception $ex) {
-            generateLogs('error', 'Error in Sla categorySLA List : ', $ex->getMessage());
+            generateLogs('error', 'Error in Sla ticketTypeSLA List : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -224,12 +229,14 @@ class SlaReportRepository
                         DB::raw("MAX(CASE WHEN status = 'Resolved' THEN date ELSE NULL END) as resolved_date")
                     )->groupBy('support_ticket_id');
                 },
+                'priority',
+                'ticketType'
             ])
                 ->select(
                     'support_tickets.id',
                     'support_tickets.support_ticket_id as ticket_id',
-                    'support_tickets.default_type as category',
-                    'support_tickets.default_priority as priority',
+                    'support_tickets.default_type',
+                    'support_tickets.default_priority',
                     'support_tickets.created_at as opened_date',
                     'support_tickets.is_escalated as sla_compliance'
                 )
@@ -242,7 +249,7 @@ class SlaReportRepository
             $tickets = $ticketsquery->get();
 
             // Prepare CSV content
-            $headers = ['User Name', 'Ticket ID', 'Category', 'Priority', 'Opened Date', 'Resolved Date', 'SLA Compliance'];
+            $headers = ['User Name', 'Ticket ID', 'Ticket Type', 'Priority', 'Opened Date', 'Resolved Date', 'SLA Compliance'];
 
             $callback = function () use ($headers, $tickets) {
                 $file = fopen('php://output', 'w');
@@ -254,8 +261,8 @@ class SlaReportRepository
                     $row = [
                         $ticket->user_name,
                         $ticket->ticket_id,
-                        $ticket->category,
-                        $ticket->priority,
+                        $ticket->ticketType->type ?? '',
+                        $ticket->priority->name ?? 'm',
                         $openedDate,
                         $resolvedDate ? Carbon::parse($resolvedDate)->toDateTimeString() : null,
                         $ticket->sla_compliance,
@@ -287,8 +294,8 @@ class SlaReportRepository
             $query->where('support_tickets.default_priority', $request->input('priority'));
         }
 
-        if ($request->has('category')) {
-            $query->where('support_tickets.default_type', $request->input('category'));
+        if ($request->has('ticketType')) {
+            $query->where('support_tickets.default_type', $request->input('ticketType'));
         }
 
         if ($request->has('slaCompliance')) {
