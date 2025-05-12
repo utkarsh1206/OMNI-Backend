@@ -95,8 +95,21 @@ class IncidentTypeRepository
                 }
             }
 
-            $incidentType = $page == config('omni.ALL_PAGE') ? $query->with('category.department', 'slaSetting.targets', 'priority:id,name')->get() : $query->with('category.department', 'slaSetting.targets', 'priority:id,name')->paginate($perPage);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.data_fetch'));
+            $incidentType = $page == config('omni.ALL_PAGE') ?
+                $query->with(
+                    'category.department',
+                    'slaSetting.targets:id,sla_id,escalation_level',
+                    'priority:id,name'
+                )->get() : $query->with(
+                    'category.department',
+                    'slaSetting.targets:id,sla_id,escalation_level',
+                    'priority:id,name'
+                )->paginate($perPage);
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $incidentType,
+                trans('message.data_fetch')
+            );
         } catch (QueryException $e) {
             generateLogs('error', 'Error in generating failed Incident type : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
