@@ -34,6 +34,7 @@ class UserRepository
             $status = $request->input('status', '');
             $mobile = $request->input('mobile', '');
             $usergroup_id = $request->input('usergroup_id', '');
+            $level = $request->input('level');
 
             $payload = extractPayload($request->bearerToken());
             // Start the query for tenants
@@ -52,7 +53,8 @@ class UserRepository
                             ->orwhere('first_name', 'like', '%' . $searchTerm . '%')
                             ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
                             ->orWhere('email', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('mobile', 'like', '%' . $searchTerm . '%'); // Add any additional fields as needed
+                            ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('level', 'like', '%' . $searchTerm . '%');
                     });
                 }
 
@@ -70,6 +72,13 @@ class UserRepository
                 }
                 if (!empty($usergroup_id)) {
                     $query->where('usergroup_id', $usergroup_id);
+                }
+                if (!empty($level)) {
+                    if (is_array($level)) {
+                        $query->whereIn('level', $level);
+                    } else {
+                        $query->where('level', $level);
+                    }
                 }
 
                 // Paginate the results
@@ -146,7 +155,7 @@ class UserRepository
                 $neoxBody = [
                     'userId' => $request->username,
                     'password' => $request->password,
-                    'fullName' => $request->first_name.' ' .$request->last_name,
+                    'fullName' => $request->first_name . ' ' . $request->last_name,
                     'userGroup' => $userGroup->name,
                 ];
                 $url = "https://{$ip}/Neox_ContactCenter_API/crud/user/create.php";

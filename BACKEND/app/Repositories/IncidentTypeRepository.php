@@ -89,13 +89,13 @@ class IncidentTypeRepository
             if (!empty($sla_id)) {
                 $slaId = SlaSetting::where('name', 'like', "%$sla_id%")->value('id');
                 if ($slaId) {
-                    $query->where('sla_id', $slaId);
+                    $query->where('id', $slaId);
                 } else {
                     $query->where('sla_id', $sla_id);
                 }
             }
 
-            $incidentType = $page == config('omni.ALL_PAGE') ? $query->with('category.department', 'slaSetting', 'priority:id,name')->get() : $query->with('category.department', 'slaSetting', 'priority:id,name')->paginate($perPage);
+            $incidentType = $page == config('omni.ALL_PAGE') ? $query->with('category.department', 'slaSetting.targets', 'priority:id,name')->get() : $query->with('category.department', 'slaSetting.targets', 'priority:id,name')->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.data_fetch'));
         } catch (QueryException $e) {
             generateLogs('error', 'Error in generating failed Incident type : ', $e->getMessage());
