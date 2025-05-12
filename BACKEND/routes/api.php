@@ -281,7 +281,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);
 
     Route::prefix('/ticket/summary')->group(function () {
-        Route::get('category', [TicketReportController::class, 'categorySummary']);
+        Route::get('ticket-type', [TicketReportController::class, 'ticketTypeSummary']);
         Route::get('priority', [TicketReportController::class, 'prioritySummary']);
         Route::get('status', [TicketReportController::class, 'statusSummary']);
         Route::get('weekday', [TicketReportController::class, 'weekdaySummary']);

@@ -22,6 +22,7 @@ class TicketReportController extends Controller
      *     description="Fetches a list of support tickets with optional filters and pagination. It also supports error handling for invalid requests.",
      *     operationId="ticketReport",
      *     tags={"Ticket Report"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="startDate",
      *         in="query",
@@ -58,10 +59,10 @@ class TicketReportController extends Controller
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
-     *         name="category",
+     *         name="ticketType",
      *         in="query",
      *         required=false,
-     *         description="Filter tickets by category type",
+     *         description="Filter tickets by ticket type",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
@@ -137,11 +138,12 @@ class TicketReportController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/ticket/summary/category",
-     *     summary="Fetch Category Summary for Support Tickets",
-     *     description="Fetches the summary of support tickets grouped by category, including the status breakdown for each category.",
-     *     operationId="categorySummary",
+     *     path="/api/ticket/summary/ticket-type",
+     *     summary="Fetch Ticket type Summary for Support Tickets",
+     *     description="Fetches the summary of support tickets grouped by Ticket type, including the status breakdown for each Ticket type.",
+     *     operationId="ticketTypeSummary",
      *     tags={"Ticket Report"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="startDate",
      *         in="query",
@@ -178,22 +180,22 @@ class TicketReportController extends Controller
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
-     *         name="category",
+     *         name="ticketType",
      *         in="query",
      *         required=false,
-     *         description="Filter tickets by category type",
+     *         description="Filter tickets by Ticket type type",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successfully retrieved category summary data",
+     *         description="Successfully retrieved Ticket type summary data",
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="success", type="string", example="Success"),
      *             @OA\Property(property="data", type="array",
      *                 @OA\Items(
      *                     type="object",
-     *                     @OA\Property(property="Category", type="string"),
+     *                     @OA\Property(property="Ticket Type", type="string"),
      *                     @OA\Property(property="Total Tickets", type="integer"),
      *                     @OA\Property(property="Open", type="integer"),
      *                     @OA\Property(property="Resolved", type="integer"),
@@ -232,9 +234,9 @@ class TicketReportController extends Controller
      *     ),
      * )
      */
-    public function categorySummary(Request $request)
+    public function ticketTypeSummary(Request $request)
     {
-        return $this->ticketReportRepository->categorySummary($request);
+        return $this->ticketReportRepository->ticketTypeSummary($request);
     }
 
     /**
@@ -244,6 +246,7 @@ class TicketReportController extends Controller
      *     description="Fetches the summary of support tickets grouped by priority, with the total ticket count for each priority level.",
      *     operationId="prioritySummary",
      *     tags={"Ticket Report"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="startDate",
      *         in="query",
@@ -280,10 +283,10 @@ class TicketReportController extends Controller
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
-     *         name="category",
+     *         name="ticketType",
      *         in="query",
      *         required=false,
-     *         description="Filter tickets by category type",
+     *         description="Filter tickets by ticket type",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
@@ -342,6 +345,7 @@ class TicketReportController extends Controller
      *     description="Fetches the summary of support tickets grouped by status, with the total ticket count for each status.",
      *     operationId="statusSummary",
      *     tags={"Ticket Report"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="startDate",
      *         in="query",
@@ -378,10 +382,10 @@ class TicketReportController extends Controller
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
-     *         name="category",
+     *         name="ticketType",
      *         in="query",
      *         required=false,
-     *         description="Filter tickets by category type",
+     *         description="Filter tickets by ticket type",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
@@ -440,6 +444,7 @@ class TicketReportController extends Controller
      *     description="Fetches the summary of support tickets grouped by the weekday they were created, showing the total number of tickets for each weekday of the current week.",
      *     operationId="weekdaySummary",
      *     tags={"Ticket Report"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="startDate",
      *         in="query",
@@ -476,10 +481,10 @@ class TicketReportController extends Controller
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
-     *         name="category",
+     *         name="ticketType",
      *         in="query",
      *         required=false,
-     *         description="Filter tickets by category type",
+     *         description="Filter tickets by ticket type",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
@@ -538,6 +543,7 @@ class TicketReportController extends Controller
      *     description="Generates a CSV report of support tickets filtered by various parameters and allows the user to download it.",
      *     operationId="ticketReportDownload",
      *     tags={"Ticket Report"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="startDate",
      *         in="query",
@@ -574,10 +580,10 @@ class TicketReportController extends Controller
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
-     *         name="category",
+     *         name="ticketType",
      *         in="query",
      *         required=false,
-     *         description="Filter tickets by category type",
+     *         description="Filter tickets by ticket type",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
@@ -588,7 +594,7 @@ class TicketReportController extends Controller
      *             @OA\Schema(
      *                 type="string",
      *                 description="CSV file content",
-     *                 example="Ticket ID,Customer Name,Category,Priority,Status,Created Date,Last Updated,Assigned Agent,Resolution Time,Comments,Escalation\n1,John Doe,Technical,High,Open,2025-03-01,2025-03-02,Agent A,2 hours,No,No"
+     *                 example="Ticket ID,Customer Name,Ticket Type,Priority,Status,Created Date,Last Updated,Assigned Agent,Resolution Time,Comments,Escalation\n1,John Doe,Technical,High,Open,2025-03-01,2025-03-02,Agent A,2 hours,No,No"
      *             )
      *         )
      *     ),

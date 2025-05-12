@@ -29,6 +29,12 @@ class TicketReportRepository
                 },
                 'assignedAgent' => function ($query) {
                     $query->select(['id', 'username']);
+                },
+                'priority' => function ($query) {
+                    $query->select(['id', 'name']);
+                },
+                'ticketType' => function ($query) {
+                    $query->select(['id', 'type']);
                 }
             ]);
 
@@ -85,37 +91,30 @@ class TicketReportRepository
         }
     }
 
-    public function categorySummary(Request $request)
+    public function ticketTypeSummary(Request $request)
     {
         try {
             $payload = $this->extractPayload($request);
-            $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
 
-            $categorySummary = $query->select(
-                'support_tickets.default_type',
-                DB::raw('COUNT(*) AS total_tickets'),
-                DB::raw('SUM(CASE WHEN support_tickets.default_status = "Resolved" THEN 1 ELSE 0 END) AS resolved'),
-                DB::raw('SUM(CASE WHEN support_tickets.default_status = "Open" THEN 1 ELSE 0 END) AS open'),
-                DB::raw('SUM(CASE WHEN support_tickets.default_status = "Closed" THEN 1 ELSE 0 END) AS closed'),
-                DB::raw('SUM(CASE WHEN support_tickets.default_status NOT IN ("Resolved", "Open", "Closed") THEN 1 ELSE 0 END) AS pending')
-            )
-                ->groupBy('support_tickets.default_type')
-                ->get();
+            $query = $this->applyFilters(SupportTicket::with('ticketType'), $request, $payload);
+            $tickets = $query->get();
 
-            $formattedCategorySummary = $categorySummary->map(function ($category) {
-                return [
-                    'Category' => $category->default_type,
-                    'Total Tickets' => $category->total_tickets,
-                    'Open' => $category->open,
-                    'Resolved' => $category->resolved,
-                    'Pending' => $category->pending,
-                    'Closed' => $category->closed,
-                ];
-            });
+            // Group by ticketType and calculate summary
+            $ticketTypeSummary = $tickets->groupBy(fn($ticket) => $ticket->ticketType?->type ?? '')
+                ->map(function ($group, $ticketTypeName) {
+                    return [
+                        'Ticket Type' => $ticketTypeName,
+                        'Total Tickets' => $group->count(),
+                        'Open' => $group->where('default_status', 'Open')->count(),
+                        'Resolved' => $group->where('default_status', 'Resolved')->count(),
+                        'Pending' => $group->whereNotIn('default_status', ['Open', 'Resolved', 'Closed'])->count(),
+                        'Closed' => $group->where('default_status', 'Closed')->count(),
+                    ];
+                })->values();
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedCategorySummary, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $ticketTypeSummary, trans('message.data_fetch'));
         } catch (Exception $ex) {
-            generateLogs('error', 'Error during Ticket Category Summary : ', $ex->getMessage());
+            generateLogs('error', 'Error during Ticket Type Summary : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -124,25 +123,22 @@ class TicketReportRepository
     {
         try {
             $payload = $this->extractPayload($request);
-            $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
+            $query = $this->applyFilters(SupportTicket::with('priority'), $request, $payload);
 
-            $prioritySummary = $query->select(
-                'support_tickets.default_priority',
-                DB::raw('COUNT(*) AS Total_Tickets')
-            )
-                ->groupBy('support_tickets.default_priority')
-                ->get();
+            // Get all filtered tickets with priority relationship
+            $tickets = $query->get();
 
-            $formattedPrioritySummary = $prioritySummary->map(function ($priority) {
-                return [
-                    'Priority' => ucfirst($priority->default_priority),
-                    'Total Tickets' => $priority->Total_Tickets ?? 0,
-                ];
-            });
+            // Group by priority name and count
+            $prioritySummary = $tickets->groupBy(fn($ticket) => $ticket->priority?->name ?? '')
+                ->map(fn($group, $priorityName) => [
+                    'Priority' => $priorityName,
+                    'Total Tickets' => $group->count(),
+                ])
+                ->values();
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedPrioritySummary, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $prioritySummary, trans('message.data_fetch'));
         } catch (Exception $ex) {
-            generateLogs('error', 'Error during Ticket Category prioritySummary : ', $ex->getMessage());
+            generateLogs('error', 'Error during Ticket prioritySummary : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -169,7 +165,7 @@ class TicketReportRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedStatusSummary, trans('message.data_fetch'));
         } catch (Exception $ex) {
-            generateLogs('error', 'Error during Ticket Category Status Summary : ', $ex->getMessage());
+            generateLogs('error', 'Error during Ticket Status Summary : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -208,7 +204,7 @@ class TicketReportRepository
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedWeekdaySummary, trans('message.data_fetch'));
         } catch (Exception $ex) {
-            generateLogs('error', 'Error during Ticket Category Weekday Summary : ', $ex->getMessage());
+            generateLogs('error', 'Error during Ticket Weekday Summary : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -221,9 +217,9 @@ class TicketReportRepository
 
             $tickets = $query->get();
 
-            $headers = ['Ticket ID', 'Customer Name', 'Category', 'Priority', 'Status', 'Created Date', 'Last Updated', 'Assigned Agent', 'Resolution Time', 'Comments', 'Escalation'];
+            $headers = ['Ticket ID', 'Customer Name', 'Ticket Type', 'Priority', 'Status', 'Created Date', 'Last Updated', 'Assigned Agent', 'Resolution Time', 'Comments', 'Escalation'];
 
-            $csvData = $this->formatTickets($tickets);
+            $csvData = $this->formatTickets($tickets, true);
 
             $callback = function () use ($headers, $csvData) {
                 $file = fopen('php://output', 'w');
@@ -240,7 +236,7 @@ class TicketReportRepository
                 'Content-Disposition' => 'attachment;filename="ticket_report.csv"',
             ]);
         } catch (Exception $ex) {
-            generateLogs('error', 'Error during Ticket Category Export CSV : ', $ex->getMessage());
+            generateLogs('error', 'Error during Ticket Export CSV : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
@@ -265,8 +261,8 @@ class TicketReportRepository
             $query->where('default_status', $request->input('status'));
         }
 
-        if ($request->has('category')) {
-            $query->where('default_type', $request->input('category'));
+        if ($request->has('ticketType')) {
+            $query->where('default_type', $request->input('ticketType'));
         }
 
         if ($payload && $payload['role_id'] == 3) {
@@ -283,9 +279,9 @@ class TicketReportRepository
         return extractPayload($request->bearerToken());
     }
 
-    private function formatTickets($tickets)
+    private function formatTickets($tickets, $forCsv = false)
     {
-        return collect($tickets)->map(function ($ticket) {
+        return collect($tickets)->map(function ($ticket) use ($forCsv) {
             $resolveNotification = $ticket->notifications
                 ->where('status', 'Resolved')
                 ->sortByDesc('created_at')
@@ -295,20 +291,37 @@ class TicketReportRepository
 
             $customerName = $ticket->notifications->first()?->user->username ?? '';
 
-            return [
-                'id' => $ticket->id,
-                'ticketId' => $ticket->support_ticket_id,
-                'customerName' => $customerName,
-                'category' => $ticket->default_type,
-                'priority' => $ticket->default_priority,
-                'status' => $ticket->default_status,
-                'createdDate' => $ticket->created_at->format('Y-m-d H:i:s'),
-                'lastUpdated' => $ticket->updated_at->format('Y-m-d H:i:s'),
-                'assignedAgent' => $ticket->assignedAgent->username ?? '',
-                'resolutionTime' => $resolveDateTime,
-                'comments' => $ticket->description,
-                'escalation' => $ticket->is_escalated,
-            ];
+            if ($forCsv) {
+                // Return ordered array matching CSV headers
+                return [
+                    $ticket->support_ticket_id,
+                    $customerName,
+                    $ticket->ticketType->type ?? '',
+                    $ticket->priority->name ?? '',
+                    $ticket->default_status,
+                    $ticket->created_at->format('Y-m-d H:i:s'),
+                    $ticket->updated_at->format('Y-m-d H:i:s'),
+                    $ticket->assignedAgent->username ?? '',
+                    $resolveDateTime,
+                    $ticket->description,
+                    $ticket->is_escalated,
+                ];
+            } else {
+                return [
+                    'id' => $ticket->id,
+                    'ticketId' => $ticket->support_ticket_id,
+                    'customerName' => $customerName,
+                    'ticketType' => $ticket->ticketType->type,
+                    'priority' => $ticket->priority->name,
+                    'status' => $ticket->default_status,
+                    'createdDate' => $ticket->created_at->format('Y-m-d H:i:s'),
+                    'lastUpdated' => $ticket->updated_at->format('Y-m-d H:i:s'),
+                    'assignedAgent' => $ticket->assignedAgent->username ?? '',
+                    'resolutionTime' => $resolveDateTime,
+                    'comments' => $ticket->description,
+                    'escalation' => $ticket->is_escalated,
+                ];
+            }
         });
     }
 }

@@ -17733,9 +17733,9 @@
                         }
                     },
                     {
-                        "name": "category",
+                        "name": "ticketType",
                         "in": "query",
-                        "description": "Filter tickets by category type",
+                        "description": "Filter tickets by ticket type",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -17878,17 +17878,22 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/api/ticket/summary/category": {
+        "/api/ticket/summary/ticket-type": {
             "get": {
                 "tags": [
                     "Ticket Report"
                 ],
-                "summary": "Fetch Category Summary for Support Tickets",
-                "description": "Fetches the summary of support tickets grouped by category, including the status breakdown for each category.",
-                "operationId": "categorySummary",
+                "summary": "Fetch Ticket type Summary for Support Tickets",
+                "description": "Fetches the summary of support tickets grouped by Ticket type, including the status breakdown for each Ticket type.",
+                "operationId": "ticketTypeSummary",
                 "parameters": [
                     {
                         "name": "startDate",
@@ -17938,9 +17943,9 @@
                         }
                     },
                     {
-                        "name": "category",
+                        "name": "ticketType",
                         "in": "query",
-                        "description": "Filter tickets by category type",
+                        "description": "Filter tickets by Ticket type type",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -17949,7 +17954,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully retrieved category summary data",
+                        "description": "Successfully retrieved Ticket type summary data",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -17962,7 +17967,7 @@
                                             "type": "array",
                                             "items": {
                                                 "properties": {
-                                                    "Category": {
+                                                    "Ticket Type": {
                                                         "type": "string"
                                                     },
                                                     "Total Tickets": {
@@ -18050,7 +18055,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/ticket/summary/priority": {
@@ -18110,9 +18120,9 @@
                         }
                     },
                     {
-                        "name": "category",
+                        "name": "ticketType",
                         "in": "query",
-                        "description": "Filter tickets by category type",
+                        "description": "Filter tickets by ticket type",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -18210,7 +18220,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/ticket/summary/status": {
@@ -18270,9 +18285,9 @@
                         }
                     },
                     {
-                        "name": "category",
+                        "name": "ticketType",
                         "in": "query",
-                        "description": "Filter tickets by category type",
+                        "description": "Filter tickets by ticket type",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -18370,7 +18385,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/ticket/summary/weekday": {
@@ -18430,9 +18450,9 @@
                         }
                     },
                     {
-                        "name": "category",
+                        "name": "ticketType",
                         "in": "query",
-                        "description": "Filter tickets by category type",
+                        "description": "Filter tickets by ticket type",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -18530,7 +18550,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/ticketReport/csv": {
@@ -18590,9 +18615,9 @@
                         }
                     },
                     {
-                        "name": "category",
+                        "name": "ticketType",
                         "in": "query",
-                        "description": "Filter tickets by category type",
+                        "description": "Filter tickets by ticket type",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -18607,7 +18632,7 @@
                                 "schema": {
                                     "description": "CSV file content",
                                     "type": "string",
-                                    "example": "Ticket ID,Customer Name,Category,Priority,Status,Created Date,Last Updated,Assigned Agent,Resolution Time,Comments,Escalation\\n1,John Doe,Technical,High,Open,2025-03-01,2025-03-02,Agent A,2 hours,No,No"
+                                    "example": "Ticket ID,Customer Name,Ticket Type,Priority,Status,Created Date,Last Updated,Assigned Agent,Resolution Time,Comments,Escalation\\n1,John Doe,Technical,High,Open,2025-03-01,2025-03-02,Agent A,2 hours,No,No"
                                 }
                             }
                         }
@@ -18672,7 +18697,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/ticket-types": {
