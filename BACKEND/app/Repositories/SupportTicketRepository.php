@@ -111,9 +111,9 @@ class SupportTicketRepository
             [$attachment_urls, $mail_attachment_urls] = $this->processAttachments($request);
 
             // Create support ticket
-            $supportTicket = SupportTicket::create($this->buildTicketData($request, $attachment_urls));
-            $supportTicketId = now()->format('dmy') . $supportTicket->id;
-            $supportTicket->update(['support_ticket_id' => $supportTicketId]);
+            $builtTicketData = $this->buildTicketData($request, $attachment_urls);
+            $supportTicket = SupportTicket::create($builtTicketData);
+            $supportTicketId = $builtTicketData['support_ticket_id'];
 
             $mailTemplate = MailTemplate::where('type', 'created_ticket')->first();
             if ($mailTemplate) {
@@ -123,7 +123,7 @@ class SupportTicketRepository
                     '{company_email}' => 'support@ezeedesk.com',
                     '{signature}' => 'The Ezeedesk Team',
                 ];
-            
+
                 $mailTemplate->subject = strtr($mailTemplate->subject, $templateData);
                 $mailTemplate->body = strtr($mailTemplate->body, $templateData);
             }
@@ -398,18 +398,18 @@ class SupportTicketRepository
     {
         setEmailConfig();
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
-        
+
         $sender_email = $emailConfig->sender_email ?? config('mail.from.address');
-        
+
         establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
-        
+
         $subject = $mailTemplate['subject'] ?? $request->subject;
         $body = $mailTemplate['body'] ?? $request->description;
 
         $result = Mail::to($request->to_emails)->send(new SendEmail($subject, $body, $mail_attachment_urls));
-        
+
         getDbConnection(auth()->user()->domain);
-        
+
         logEmail([
             "user_id" => $assignToId,
             "email_template_id" => 0,

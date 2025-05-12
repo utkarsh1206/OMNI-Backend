@@ -38,6 +38,7 @@ class SupportTicketTransferRepository
                 'date' => gmdate('Y-m-d H:i:s'),
                 'icon' =>  getIconforNotification('Ticket Transfer'),
                 'color' =>  getColorforNotification('Ticket Transfer'),
+                'created_by' => auth()->user()->id,
             ]);
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.transfer_ticket'));
         } catch (Exception $e) {
