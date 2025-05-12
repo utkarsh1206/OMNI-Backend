@@ -93,9 +93,14 @@ class SupportTicketRepository
                 $query->where('contact_id', $contact_id);
             }
 
+            $query->orderBy('id', 'desc');
             $supportTicket = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             // Return the response
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $supportTicket,
+                trans('message.data_fetch')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error fetching Support Tickets List : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -152,6 +157,7 @@ class SupportTicketRepository
             [$attachment_urls, $mail_attachment_urls] = $this->processAttachments($request);
 
             $updateData = $this->buildTicketData($request, $attachment_urls);
+            $updateData['support_ticket_id'] = $request->support_ticket_id;
             if (empty($attachment_urls)) {
                 unset($updateData['attachment']);
             }
