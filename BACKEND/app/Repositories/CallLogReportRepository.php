@@ -64,8 +64,8 @@ class CallLogReportRepository
         $filters = [
             'startDate' => $request->input('startDate', null),
             'endDate' => $request->input('endDate', null),
-            'campaign_id' => $request->input('campaign_id', null),
-            'agent' => $request->input('agent', null),
+            'campaign_id' => $request->input('campaign', null),
+            'agent' => $request->input('user', null),
         ];
 
         // If startDate and endDate are not provided, return null
