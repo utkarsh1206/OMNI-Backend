@@ -2,13 +2,13 @@
 
 namespace App\Repositories;
 
-use App\Models\Message;
-use App\Http\Response\CustomApiResponse;
-use Exception;
-use App\Models\Users;
 use App\Events\ReceivedMessages;
+use App\Http\Response\CustomApiResponse;
+use App\Models\Users;
+use App\Models\Message;
+use App\Models\MessageAttachment;
 use Carbon\Carbon;
-
+use Exception;
 class AgentMessageRepository
 {
     private $apiResponse;
@@ -49,11 +49,10 @@ class AgentMessageRepository
                                     ->where('messages.text', 'like', "%$search%");
                             });
                     });
-                });
-
+                })->where('id', '<>', auth()->user()->id);
             $paginatedAgents = $agentsQuery->paginate($perPage);
-
             $paginatedAgents->getCollection()->transform(function ($user) {
+
                 $lastMessage = $user->latest_message;
 
                 return [
@@ -113,7 +112,8 @@ class AgentMessageRepository
     public function storeMessage($request)
     {
         try {
-            $file = uploadAttachment($request, "attachment", "attachment");
+            $files = uploadAttachment($request, "attachment", "attachment");
+
             $message = Message::Create([
                 "user_id" => auth()->user()->id,
                 "receiver_id" => $request->agent_id,
@@ -125,6 +125,18 @@ class AgentMessageRepository
             ]);
 
             if ($message) {
+                if ($files) {
+                    foreach ($files as $file) {
+                        $fileData[] = [
+                            'message_id' => $message->id,
+                            'attachments' => $file['fileName'],
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now(),
+                        ];
+                    }
+                    MessageAttachment::insert($fileData);
+                }
+                $message->load('attachments');
                 broadcast(new ReceivedMessages($message));
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));

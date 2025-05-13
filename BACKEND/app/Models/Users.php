@@ -315,8 +315,7 @@ class Users extends Authenticatable implements JWTSubject
     {
         return Message::where('type', 'agent_chat')
             ->where(function ($query) {
-                $query->where('user_id', $this->id)
-                    ->orWhere('receiver_id', $this->id);
+                $query->Where('receiver_id', $this->id);
             })
             ->orderByDesc('created_at')
             ->first();

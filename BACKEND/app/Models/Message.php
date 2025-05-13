@@ -6,17 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
-    // protected $appends = ['attachment_url'];
-    protected $appends = ['attachment_url', 'user_first_name', 'user_last_name'];
+    protected $appends = ['user_first_name', 'user_last_name', 'attachment_urls'];
 
-    protected $hidden = ['user'];
+    protected $hidden = ['user', 'attachments'];
 
     protected $fillable = [
         'user_id',
         'receiver_id',
         'type',
         'text',
-        'attachment',
         'is_read',
         'room_id',
         'sender',
@@ -26,18 +24,6 @@ class Message extends Model
         'first_name',
         'last_name',
     ];
-
-    public function getAttachmentUrlAttribute()
-    {
-        if (!$this->attachment) {
-            return null;
-        }
-
-        if (filter_var($this->attachment, FILTER_VALIDATE_URL)) {
-            return $this->attachment;
-        }
-        return url($this->attachment);
-    }
 
     public function user()
     {
@@ -52,5 +38,18 @@ class Message extends Model
     public function getUserLastNameAttribute()
     {
         return $this->user ? $this->user->last_name : null;
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(MessageAttachment::class);
+    }
+
+    public function getAttachmentUrlsAttribute()
+    {
+        return $this->attachments->map(function ($attachment) {
+            return asset('storage/attachment/' . $attachment->attachments);
+            // return url('storage'.DIRECTORY_SEPARATOR.'attachment'.DIRECTORY_SEPARATOR.$attachment->attachments); 
+        })->toArray();
     }
 }
