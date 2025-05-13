@@ -103,16 +103,29 @@ class AgentMessageController extends Controller
      *                 property="data",
      *                 type="array",
      *                 @OA\Items(
-     *                     @OA\Property(property="id", type="integer", example=101),
-     *                     @OA\Property(property="user_id", type="integer", example=1),
-     *                     @OA\Property(property="receiver_id", type="integer", example=42),
-     *                     @OA\Property(property="text", type="string", example="Hello Agent!"),
-     *                     @OA\Property(property="is_read", type="string", example="unread"),
-     *                     @OA\Property(property="type", type="string", example="agent_chat"),
-     *                     @OA\Property(property="attachment", type="string", nullable=true, example=null),
-     *                     @OA\Property(property="sender", type="string", example="agent"),
-     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-07T08:15:00Z")
-     *                 )
+     *                         @OA\Property(property="id", type="integer", example=18),
+     *                         @OA\Property(property="user_id", type="integer", example=1),
+     *                         @OA\Property(property="receiver_id", type="integer", example=2),
+     *                         @OA\Property(property="type", type="string", example="agent_chat"),
+     *                         @OA\Property(property="text", type="string", example="This is test message with attachment"),
+     *                         @OA\Property(property="is_read", type="string", example="unread"),
+     *                         @OA\Property(property="room_id", type="integer", nullable=true, example=null),
+     *                         @OA\Property(property="sender", type="string", example="agent"),
+     *                         @OA\Property(property="external_message_time", type="string", example="2025-05-13 23:38:45"),
+     *                         @OA\Property(property="node_type", type="string", nullable=true, example=null),
+     *                         @OA\Property(property="session_id", type="string", nullable=true, example=null),
+     *                         @OA\Property(property="first_name", type="string", nullable=true, example=null),
+     *                         @OA\Property(property="last_name", type="string", nullable=true, example=null),
+     *                         @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-13T18:08:45.000000Z"),
+     *                         @OA\Property(property="updated_at", type="string", format="date-time", example="2025-05-13T18:08:45.000000Z"),
+     *                         @OA\Property(property="user_first_name", type="string", example="ha11"),
+     *                         @OA\Property(property="user_last_name", type="string", example="Doe1"),
+     *                         @OA\Property(
+     *                             property="attachment_urls",
+     *                             type="array",
+     *                             @OA\Items(type="string", example="http://127.0.0.1:8000/storage/attachment/2025_05_13_23_38_45.PNG")
+     *                         )
+     *                     )
      *             )
      *         )
      *     ),
@@ -137,71 +150,82 @@ class AgentMessageController extends Controller
      *     path="/api/send-agent-messages",
      *     summary="Store a new message",
      *     description="Creates a new message for a specific user. Supports file attachment.",
-      *    tags={"Agent Message"},
+     *     tags={"Agent Message"},
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         description="Message data to be stored",
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 type="object",
-     *                 required={"text", "agent_id"},
+     *                 required={"agent_id", "text"},
      *                 @OA\Property(
      *                     property="agent_id",
      *                     type="integer",
-     *                     example=33,
-     *                     description="The ID of the agent receiving the message"
+     *                     description="ID of the recipient agent",
+     *                     example=2
      *                 ),
      *                 @OA\Property(
      *                     property="text",
      *                     type="string",
-     *                     example="This is a message",
-     *                     description="Text content of the message"
+     *                     description="Message text content",
+     *                     example="This is a test message"
      *                 ),
      *                 @OA\Property(
-     *                     property="attachment",
-     *                     type="string",
-     *                     format="binary",
-     *                     description="Optional file to be attached"
+     *                     property="attachment[]",
+     *                     type="array",
+     *                     description="Optional file attachments",
+     *                     @OA\Items(
+     *                         type="string",
+     *                         format="binary"
+     *                     )
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
-     *         response=201,
-     *         description="Message successfully created",
+     *         response=200,
+     *         description="Message stored successfully",
      *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="message", type="string", example="Message created successfully"),
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Message has been created successfully."),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="user_id", type="integer", example=12),
-     *                 @OA\Property(property="text", type="string", example="This is a message"),
-     *                 @OA\Property(property="attachment", type="string", nullable=true, example="uploads/messages/file.jpg"),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-03T10:00:00Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-05-03T10:00:00Z")
+     *                 @OA\Property(property="id", type="integer", example=101),
+     *                 @OA\Property(property="user_id", type="integer", example=1),
+     *                 @OA\Property(property="receiver_id", type="integer", example=2),
+     *                 @OA\Property(property="type", type="string", example="agent_chat"),
+     *                 @OA\Property(property="text", type="string", example="This is a test message"),
+     *                 @OA\Property(property="is_read", type="string", example="unread"),
+     *                 @OA\Property(property="sender", type="string", example="agent"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-13T18:08:45.000000Z"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-05-13T18:08:45.000000Z"),
+     *                 @OA\Property(
+     *                     property="attachment_urls",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="http://127.0.0.1:8000/storage/attachment/file.png")
+     *                 ),
+     *                 @OA\Property(property="user_first_name", type="string", example="John"),
+     *                 @OA\Property(property="user_last_name", type="string", example="Doe")
      *             )
      *         )
      *     ),
      *     @OA\Response(
-     *         response=400,
-     *         description="Bad Request",
+     *         response=422,
+     *         description="Validation error",
      *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Invalid request")
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed."),
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Internal Server Error",
+     *         description="Server error",
      *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="An unexpected error occurred."),
+     *             @OA\Property(property="data", type="string", example=null)
      *         )
      *     )
      * )
