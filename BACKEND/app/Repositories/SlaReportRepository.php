@@ -119,7 +119,7 @@ class SlaReportRepository
     private function formatTicketWithSLA($ticket, $incidentSLA, $slaTargets)
     {
         $slaId = $incidentSLA[$ticket->incident_id] ?? null;
-        $resolveTime = $slaId ? ($slaTargets[$slaId . '_' . $ticket->priority] ?? null) : null;
+        $resolveTime = $slaId ? ($slaTargets[$slaId . '_' . $ticket->priority->id] ?? null) : null;
         $resolveTimeMinutes = $resolveTime ? $resolveTime->first()->resolve_time_value : null;
 
         // Convert minutes to HH:MM:SS
