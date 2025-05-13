@@ -5,7 +5,9 @@ namespace App\Repositories;
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Account;
-use App\Models\User;
+use App\Models\Department;
+use App\Models\Product;
+use App\Models\Users;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
 
@@ -21,41 +23,83 @@ class AccountRepository
     public function list(Request $request)
     {
         try {
-            // Initialize query parameters
             $query = Account::query();
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
+            // Search and filter parameters
+            $searchTerm = $request->input('search', '');
             $filters = [
-                'search' => $request->input('search', ''),
-                'product_id' => $request->input('product_id', ''),
-                'department_id' => $request->input('department_id', ''),
-                'owner_id' => $request->input('owner_id', '')
+                'name' => $request->input('name'),
+                'mobile' => $request->input('mobile'),
+                // 'company_email' => $request->input('company_email'),
+                'website' => $request->input('website'),
+                'product_id' => $request->input('product_id'),
+                'owner_id' => $request->input('owner_id'),
+                'department_id' => $request->input('department_id'),
             ];
 
-            // Apply search filter
-            if (!empty($filters['search'])) {
-                $query->where(function ($q) use ($filters) {
-                    $q->where('name', 'like', "%" . $filters['search'] . "%")
-                        ->orWhere('mobile', 'like', "%" . $filters['search'] . "%");
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                        ->orWhere('mobile', 'like', "%{$searchTerm}%")
+                        // ->orWhere('company_email', 'like', "%{$searchTerm}%")
+                        ->orWhere('website', 'like', "%{$searchTerm}%");
 
-                    // Search for owner by username
-                    $owner = User::where('username', 'like', "%" . $filters['search'] . "%")->first();
+                    // Lookup owner by user name (first or last)
+                    $owner = Users::where('first_name', 'like', "%{$searchTerm}%")
+                        ->orWhere('last_name', 'like', "%{$searchTerm}%")
+                        ->first();
                     if ($owner) {
                         $q->orWhere('owner_id', $owner->id);
+                    }
+
+                    // Lookup department by name
+                    $departmentId = Department::where('name', 'like', "%{$searchTerm}%")->value('id');
+                    if ($departmentId) {
+                        $q->orWhere('department_id', $departmentId);
+                    }
+
+                    // Lookup product by name
+                    $productId = Product::where('name', 'like', "%{$searchTerm}%")->value('id');
+                    if ($productId) {
+                        $q->orWhere('product_id', $productId);
                     }
                 });
             }
 
-            // Apply other filters
-            foreach (['product_id', 'department_id', 'owner_id'] as $filter) {
-                if (!empty($filters[$filter])) {
-                    $query->where($filter, $filters[$filter]);
-                }
+            if (!empty($filters['name'])) {
+                $query->where('name', 'like', "%{$filters['name']}%");
             }
 
-            $accounts = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
-            // Return the response
+            if (!empty($filters['mobile'])) {
+                $query->where('mobile', 'like', "%{$filters['mobile']}%");
+            }
+
+            // if (!empty($filters['company_email'])) {
+            //     $query->where('company_email', 'like', "%{$filters['company_email']}%");
+            // }
+
+            if (!empty($filters['website'])) {
+                $query->where('website', 'like', "%{$filters['website']}%");
+            }
+
+            if (!empty($filters['owner_id'])) {
+                $query->where('owner_id', $filters['owner_id']);
+            }
+
+            if (!empty($filters['product_id'])) {
+                $query->where('product_id', $filters['product_id']);
+            }
+
+            if (!empty($filters['department_id'])) {
+                $query->where('department_id', $filters['department_id']);
+            }
+
+            $accounts = $page == config('omni.ALL_PAGE')
+                ? $query->get()
+                : $query->paginate($perPage);
+
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $accounts,
