@@ -36,7 +36,6 @@ class AgentMessageRepository
             //     });
 
             $agentsQuery = Users::with('liveAgent')
-                ->where('type', 3)
                 ->when($search, function ($query) use ($search) {
                     $query->where(function ($q) use ($search) {
                         $q->where('first_name', 'like', "%$search%")
@@ -113,7 +112,6 @@ class AgentMessageRepository
 
     public function storeMessage($request)
     {
-        // File upload logic is remaining here. We need to make file upload logic in common place
         try {
             $file = uploadAttachment($request, "attachment", "attachment");
             $message = Message::Create([
