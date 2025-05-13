@@ -25,77 +25,182 @@ class UserRepository
         $this->licenseController = $licenseController;
     }
 
+    // public function list(Request $request)
+    // {
+    //     try {
+    //         $searchTerm = $request->input('search', '');
+    //         $name = $request->input('name', '');
+    //         $email = $request->input('email', '');
+    //         $status = $request->input('status', '');
+    //         $mobile = $request->input('mobile', '');
+    //         $usergroup_id = $request->input('usergroup_id', '');
+    //         $level = $request->input('level');
+
+    //         $payload = extractPayload($request->bearerToken());
+    //         // Start the query for tenants
+
+    //         $is_all_users = $request->has('all_user') ? $request->input('all_user') : null;
+
+    //         $query = Users::query();
+
+    //         if ($is_all_users !== 'Y') {
+    //             $query->where('type', '3');
+
+    //             // If there's a search term, apply it to the query
+    //             if (!empty($searchTerm)) {
+    //                 $query->where(function ($q) use ($searchTerm) {
+    //                     $q->where('username', 'like', '%' . $searchTerm . '%')
+    //                         ->orwhere('first_name', 'like', '%' . $searchTerm . '%')
+    //                         ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
+    //                         ->orWhere('email', 'like', '%' . $searchTerm . '%')
+    //                         ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
+    //                         ->orWhere('level', 'like', '%' . $searchTerm . '%');
+    //                 });
+    //             }
+
+    //             if (!empty($name)) {
+    //                 $query->where('first_name', $name)->orWhere('last_name', $name);
+    //             }
+    //             if (!empty($email)) {
+    //                 $query->where('email', $email);
+    //             }
+    //             if (!empty($status)) {
+    //                 $query->where('status', $status);
+    //             }
+    //             if (!empty($mobile)) {
+    //                 $query->where('mobile', $mobile);
+    //             }
+    //             if (!empty($usergroup_id)) {
+    //                 $query->where('usergroup_id', $usergroup_id);
+    //             }
+    //             if (!empty($level)) {
+    //                 if (is_array($level)) {
+    //                     $query->whereIn('level', $level);
+    //                 } else {
+    //                     $query->where('level', $level);
+    //                 }
+    //             }
+
+    //             // Paginate the results
+    //             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+    //             $users = $query->paginate($perPage);
+    //             //  $newToken = JWTAuth::refresh(JWTAuth::getToken());
+    //             // Return the response
+    //             return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.fetch_data'));
+    //         }
+
+    //         $users = $query->get();
+    //         return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.fetch_data'));
+    //     } catch (Exception $e) {
+    //         generateLogs('error', 'Error during User List : ', $e->getMessage());
+    //         return $this->apiResponse->handleAndResponseException($e);
+    //     }
+    // }
+
     public function list(Request $request)
     {
         try {
             $searchTerm = $request->input('search', '');
-            $name = $request->input('name', '');
-            $email = $request->input('email', '');
-            $status = $request->input('status', '');
-            $mobile = $request->input('mobile', '');
-            $usergroup_id = $request->input('usergroup_id', '');
-            $level = $request->input('level');
 
-            $payload = extractPayload($request->bearerToken());
-            // Start the query for tenants
+            // Advanced filters
+            $filters = [
+                'name' => $request->input('name'), // matched against first_name and last_name
+                'username' => $request->input('username'),
+                'email' => $request->input('email'),
+                'status' => $request->input('status'),
+                'mobile' => $request->input('mobile'),
+                'usergroup_id' => $request->input('usergroup_id'),
+                'gender' => $request->input('gender'),
+                // 'user_role_id' => $request->input('user_role_id'),
+                'level' => $request->input('level'),
+            ];
 
-            $is_all_users = $request->has('all_user') ? $request->input('all_user') : null;
-
+            $is_all_users = $request->input('all_user');
             $query = Users::query();
 
             if ($is_all_users !== 'Y') {
                 $query->where('type', '3');
-
-                // If there's a search term, apply it to the query
-                if (!empty($searchTerm)) {
-                    $query->where(function ($q) use ($searchTerm) {
-                        $q->where('username', 'like', '%' . $searchTerm . '%')
-                            ->orwhere('first_name', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('email', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('level', 'like', '%' . $searchTerm . '%');
-                    });
-                }
-
-                if (!empty($name)) {
-                    $query->where('first_name', $name)->orWhere('last_name', $name);
-                }
-                if (!empty($email)) {
-                    $query->where('email', $email);
-                }
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-                if (!empty($mobile)) {
-                    $query->where('mobile', $mobile);
-                }
-                if (!empty($usergroup_id)) {
-                    $query->where('usergroup_id', $usergroup_id);
-                }
-                if (!empty($level)) {
-                    if (is_array($level)) {
-                        $query->whereIn('level', $level);
-                    } else {
-                        $query->where('level', $level);
-                    }
-                }
-
-                // Paginate the results
-                $perPage = $request->input('per_page', config('omni.PER_PAGE'));
-                $users = $query->paginate($perPage);
-                //  $newToken = JWTAuth::refresh(JWTAuth::getToken());
-                // Return the response
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.fetch_data'));
             }
 
-            $users = $query->get();
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.fetch_data'));
+            // ✅ LIVE SEARCH — searches across multiple text fields
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('username', 'like', "%{$searchTerm}%")
+                        ->orWhere('first_name', 'like', "%{$searchTerm}%")
+                        ->orWhere('last_name', 'like', "%{$searchTerm}%")
+                        ->orWhere('email', 'like', "%{$searchTerm}%")
+                        ->orWhere('mobile', 'like', "%{$searchTerm}%");
+                    // ->orWhere('level', 'like', "%{$searchTerm}%");
+
+                    // You can expand this block to include usergroup name, role name, etc., via joins if needed
+                });
+            }
+
+            // ✅ ADVANCED FILTERS — applies only if specific filter field is given
+            if (!empty($filters['name'])) {
+                $name = $filters['name'];
+                $query->where(function ($q) use ($name) {
+                    $q->where('first_name', 'like', "%{$name}%")
+                        ->orWhere('last_name', 'like', "%{$name}%")
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$name}%"]);
+                });
+            }
+
+            if (!empty($filters['username'])) {
+                $query->where('username', 'like', "%{$filters['username']}%");
+            }
+
+            if (!empty($filters['email'])) {
+                $query->where('email', 'like', "%{$filters['email']}%");
+            }
+
+            if (!empty($filters['status'])) {
+                $query->where('status', $filters['status']);
+            }
+
+            if (!empty($filters['mobile'])) {
+                $query->where('mobile', 'like', "%{$filters['mobile']}%");
+            }
+
+            if (!empty($filters['usergroup_id'])) {
+                $query->where('usergroup_id', $filters['usergroup_id']);
+            }
+
+            if (!empty($filters['gender'])) {
+                $query->where('gender', $filters['gender']);
+            }
+
+            // if (!empty($filters['user_role_id'])) {
+            //     $query->where('user_role_id', $filters['user_role_id']);
+            // }
+
+            if (!empty($filters['level'])) {
+                if (is_array($filters['level'])) {
+                    $query->whereIn('level', $filters['level']);
+                } else {
+                    $query->where('level', $filters['level']);
+                }
+            }
+
+            // ✅ PAGINATION
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
+            $users = $page == config('omni.ALL_PAGE')
+                ? $query->get()
+                : $query->paginate($perPage);
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $users,
+                trans('message.fetch_data')
+            );
         } catch (Exception $e) {
             generateLogs('error', 'Error during User List : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
+
 
     public function store(Request $request)
     {
