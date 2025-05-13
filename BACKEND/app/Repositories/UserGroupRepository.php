@@ -21,37 +21,56 @@ class UserGroupRepository
     {
         try {
             $searchTerm = $request->input('search', '');
-            $name = $request->input('name', '');
-            $campaign_id = $request->input('campaign_id', '');
-            $status = $request->input('status', '');
 
-            // Start the query for tenants
+            // Advanced filters
+            $filters = [
+                'name' => $request->input('name'),
+                'department_id' => $request->input('department_id'),
+                'status' => $request->input('status'),
+            ];
+
+            // Start query with optional join if needed for department name search
             $query = UserGroup::query();
 
-            // If there's a search term, apply it to the query
+            // OPTIONAL JOIN for live search on department name
+            // $query->leftJoin('departments', 'user_groups.department_id', '=', 'departments.id')
+            //       ->select('user_groups.*');
+
+            // ✅ LIVE SEARCH — across name, description (and optionally department name)
             if (!empty($searchTerm)) {
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('name', 'like', '%' . $searchTerm . '%')
-                        ->orwhere('description', 'like', '%' . $searchTerm . '%');
+                        ->orWhere('description', 'like', '%' . $searchTerm . '%');
+                    // ->orWhere('departments.name', 'like', '%' . $searchTerm . '%'); // if joined
                 });
             }
 
-            if (!empty($name)) {
-                $query->where('name', $name);
+            // ✅ ADVANCED FILTERS
+            if (!empty($filters['name'])) {
+                $query->where('name', 'like', '%' . $filters['name'] . '%');
             }
-            if (!empty($campaign_id)) {
-                $query->where('campaign_id', $campaign_id);
+
+            if (!empty($filters['department_id'])) {
+                $query->where('department_id', $filters['department_id']);
             }
-            if (!empty($status)) {
-                $query->where('status', $status);
+
+            if (!empty($filters['status'])) {
+                $query->where('status', $filters['status']);
             }
-            // Paginate the results
+
+            // ✅ PAGINATION
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-            $usergroup =   $page === config('omni.ALL_PAGE')
+
+            $usergroups = $page == config('omni.ALL_PAGE')
                 ? $query->get()
                 : $query->paginate($perPage);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.data_fetch'));
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $usergroups,
+                trans('message.data_fetch')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error during User Group Listing : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -92,7 +111,7 @@ class UserGroupRepository
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
-    
+
     public function show(UserGroup $usergroup)
     {
         try {
@@ -102,7 +121,7 @@ class UserGroupRepository
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
-    
+
     public function delete($usergroup)
     {
         try {

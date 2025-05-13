@@ -28,7 +28,8 @@ class DepartmentRepository
             $query = Department::query();
 
             if (!empty($searchTerm)) {
-                $query->where('name', 'like', "%$searchTerm%");
+                $query->where('name', 'like', "%$searchTerm%")
+                    ->orWhere('description', 'like', '%' . $searchTerm . '%');
             }
 
             if (!empty($name)) {
