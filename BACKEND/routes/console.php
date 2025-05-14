@@ -15,8 +15,6 @@ Artisan::command('app:sla-email-notification', function () {
 $allTenants = Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
     ->chunkById(100, function ($tenants) {
         foreach ($tenants as $tenant) {
-            $newConnectionName = Str::replace(".", "_", $tenant->domain_name);
-            
             $databaseName = Str::replace(".", "_", $tenant->domain_name);
 
             Config::set("database.connections.$databaseName", [

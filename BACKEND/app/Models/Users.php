@@ -7,8 +7,6 @@ use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Users extends Authenticatable implements JWTSubject
@@ -311,14 +309,54 @@ class Users extends Authenticatable implements JWTSubject
         return $this->usergroup?->name;
     }
 
+    // public function getLatestMessageAttribute()
+    // {
+    //     $currentUserId = auth()->id();
+    //     $agentId =  $this->id;
+    //     return Message::where('type', 'agent_chat')
+    //         ->where(function ($query) use ($currentUserId, $agentId) {
+    //             $query->where(function ($q) use ($currentUserId, $agentId) {
+    //                 $q->where('user_id', $currentUserId)
+    //                     ->where('receiver_id', $agentId);
+    //             })->orWhere(function ($q) use ($currentUserId, $agentId) {
+    //                 $q->where('user_id', $agentId)
+    //                     ->where('receiver_id', $currentUserId);
+    //             });
+    //         })
+    //         ->orderByDesc('created_at')
+    //         ->first();
+    // }
+
+    // public function getUnreadMessageAttribute()
+    // {
+    //     $currentUserId = auth()->id();
+    //     $agentId =  $this->id;
+
+    //     return Message::where('is_read', 'unread')
+    //         ->where(function ($query) use ($currentUserId, $agentId) {
+    //             $query->where(function ($q) use ($currentUserId, $agentId) {
+    //                 $q->where('user_id', $currentUserId)
+    //                     ->where('receiver_id', $agentId);
+    //             })->orWhere(function ($q) use ($currentUserId, $agentId) {
+    //                 $q->where('user_id', $agentId)
+    //                     ->where('receiver_id', $currentUserId);
+    //             });
+    //         })
+    //         ->count();
+    // }
+
     public function getLatestMessageAttribute()
     {
         return Message::where('type', 'agent_chat')
-            ->where(function ($query) {
-                $query->Where('receiver_id', $this->id);
-                $query->OrWhere('user_id', $this->id);
-            })
-            ->orderByDesc('created_at')
+            ->betweenUsers(auth()->id(), $this->id)
+            ->latest('created_at')
             ->first();
+    }
+
+    public function getUnreadMessageAttribute()
+    {
+        return Message::where('is_read', 'unread')
+            ->betweenUsers(auth()->id(), $this->id)
+            ->count();
     }
 }

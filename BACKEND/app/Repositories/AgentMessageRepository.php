@@ -9,6 +9,7 @@ use App\Models\Message;
 use App\Models\MessageAttachment;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class AgentMessageRepository
 {
@@ -27,6 +28,17 @@ class AgentMessageRepository
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
 
             $agentsQuery = Users::with('liveAgent')
+                ->select('users.*')
+                ->addSelect([
+                    'latest_message_time' => Message::select('created_at')
+                        ->where('type', 'agent_chat')
+                        ->where(function ($query) {
+                            $query->whereColumn('receiver_id', 'users.id')
+                                ->orWhereColumn('user_id', 'users.id');
+                        })
+                        ->orderByDesc('created_at')
+                        ->limit(1)
+                ])
                 ->when($search, function ($query) use ($search) {
                     $query->where(function ($q) use ($search) {
                         $q->where('first_name', 'like', "%$search%")
@@ -40,19 +52,13 @@ class AgentMessageRepository
                                     ->where('messages.text', 'like', "%$search%");
                             });
                     });
-                })->where('id', '<>', auth()->user()->id);
+                })
+                ->where('id', '<>', auth()->user()->id)
+                ->orderByDesc('latest_message_time');
 
             $paginatedAgents = $agentsQuery->paginate($perPage);
-
             $paginatedAgents->getCollection()->transform(function ($user) {
-
-                $unreadCount = Message::where('user_id', auth()->id())
-                    ->where('receiver_id', $user->id)
-                    ->where('is_read', 'unread')
-                    ->count();
-
                 $lastMessage = $user->latest_message;
-
                 return [
                     'id' => $user->id,
                     'name' => $user->first_name . ' ' . $user->last_name,
@@ -61,10 +67,9 @@ class AgentMessageRepository
                     'last_message_time' => $lastMessage && $lastMessage->created_at
                         ? Carbon::parse($lastMessage->created_at)->format('Y-m-d H:i:s') ?? null
                         : null,
-                    'unread_count' => $unreadCount ?? 0,    
+                    'unread_count' => $user->unread_message ?? 0,
                 ];
             });
-
             return $this->apiResponse->getResponseStructure(trans('message.success'), $paginatedAgents, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating User Status: ', $ex->getMessage());

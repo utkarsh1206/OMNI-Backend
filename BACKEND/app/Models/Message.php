@@ -52,4 +52,15 @@ class Message extends Model
             // return url('storage'.DIRECTORY_SEPARATOR.'attachment'.DIRECTORY_SEPARATOR.$attachment->attachments); 
         })->toArray();
     }
+
+    public function scopeBetweenUsers($query, $userId, $receiverId)
+    {
+        return $query->where(function ($q) use ($userId, $receiverId) {
+            $q->where('user_id', $userId)
+                ->where('receiver_id', $receiverId);
+        })->orWhere(function ($q) use ($userId, $receiverId) {
+            $q->where('user_id', $receiverId)
+                ->where('receiver_id', $userId);
+        });
+    }
 }
