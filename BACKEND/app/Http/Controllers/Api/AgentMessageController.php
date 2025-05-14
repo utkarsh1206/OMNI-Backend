@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Repositories\AgentMessageRepository;
 use App\Http\Requests\AgentMessageRequest;
+use App\Http\Requests\AgentMessageReadRequest;
 
 class AgentMessageController extends Controller
 {
@@ -233,5 +234,64 @@ class AgentMessageController extends Controller
     public function storeMessage(AgentMessageRequest $request)
     {
         return $this->messageRepository->storeMessage($request);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/last-read-message",
+     *     summary="Mark messages as read for a given agent",
+     *     description="Updates unread messages where receiver_id matches the agent_id and id is less than or equal to last_message_id.",
+     *     tags={"Agent Message"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"agent_id", "last_message_id"},
+     *             @OA\Property(property="agent_id", type="integer", example=2, description="The ID of the agent"),
+     *             @OA\Property(property="last_message_id", type="integer", example=18, description="The ID of the last message to mark as read")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Messages marked as read successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="updated_count", type="integer", example=2),
+     *             @OA\Property(
+     *                 property="updated_messages",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="id", type="integer", example=10),
+     *                     @OA\Property(property="receiver_id", type="integer", example=2),
+     *                     @OA\Property(property="is_read", type="string", example="unread"),
+     *                     @OA\Property(property="message", type="string", example="Hello Agent")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation failed",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Validation failed"),
+     *             @OA\Property(
+     *                 property="messages",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="agent_id",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="The selected agent_id is invalid.")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function lastReadMessage(AgentMessageReadRequest $request)
+    {
+        return $this->messageRepository->lastReadMessage($request);
     }
 }

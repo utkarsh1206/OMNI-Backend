@@ -1308,7 +1308,7 @@
                                                 "properties": {
                                                     "id": {
                                                         "type": "integer",
-                                                        "example": 101
+                                                        "example": 18
                                                     },
                                                     "user_id": {
                                                         "type": "integer",
@@ -1316,22 +1316,22 @@
                                                     },
                                                     "receiver_id": {
                                                         "type": "integer",
-                                                        "example": 42
-                                                    },
-                                                    "text": {
-                                                        "type": "string",
-                                                        "example": "Hello Agent!"
-                                                    },
-                                                    "is_read": {
-                                                        "type": "string",
-                                                        "example": "unread"
+                                                        "example": 2
                                                     },
                                                     "type": {
                                                         "type": "string",
                                                         "example": "agent_chat"
                                                     },
-                                                    "attachment": {
+                                                    "text": {
                                                         "type": "string",
+                                                        "example": "This is test message with attachment"
+                                                    },
+                                                    "is_read": {
+                                                        "type": "string",
+                                                        "example": "unread"
+                                                    },
+                                                    "room_id": {
+                                                        "type": "integer",
                                                         "example": null,
                                                         "nullable": true
                                                     },
@@ -1339,10 +1339,54 @@
                                                         "type": "string",
                                                         "example": "agent"
                                                     },
+                                                    "external_message_time": {
+                                                        "type": "string",
+                                                        "example": "2025-05-13 23:38:45"
+                                                    },
+                                                    "node_type": {
+                                                        "type": "string",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    },
+                                                    "session_id": {
+                                                        "type": "string",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    },
+                                                    "first_name": {
+                                                        "type": "string",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    },
+                                                    "last_name": {
+                                                        "type": "string",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    },
                                                     "created_at": {
                                                         "type": "string",
                                                         "format": "date-time",
-                                                        "example": "2025-05-07T08:15:00Z"
+                                                        "example": "2025-05-13T18:08:45.000000Z"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-05-13T18:08:45.000000Z"
+                                                    },
+                                                    "user_first_name": {
+                                                        "type": "string",
+                                                        "example": "ha11"
+                                                    },
+                                                    "user_last_name": {
+                                                        "type": "string",
+                                                        "example": "Doe1"
+                                                    },
+                                                    "attachment_urls": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "example": "http://127.0.0.1:8000/storage/attachment/2025_05_13_23_38_45.PNG"
+                                                        }
                                                     }
                                                 },
                                                 "type": "object"
@@ -1395,30 +1439,32 @@
                 "description": "Creates a new message for a specific user. Supports file attachment.",
                 "operationId": "9462e4a01d280819051ed4d7b51cca9e",
                 "requestBody": {
-                    "description": "Message data to be stored",
                     "required": true,
                     "content": {
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "text",
-                                    "agent_id"
+                                    "agent_id",
+                                    "text"
                                 ],
                                 "properties": {
                                     "agent_id": {
-                                        "description": "The ID of the agent receiving the message",
+                                        "description": "ID of the recipient agent",
                                         "type": "integer",
-                                        "example": 33
+                                        "example": 2
                                     },
                                     "text": {
-                                        "description": "Text content of the message",
+                                        "description": "Message text content",
                                         "type": "string",
-                                        "example": "This is a message"
+                                        "example": "This is a test message"
                                     },
-                                    "attachment": {
-                                        "description": "Optional file to be attached",
-                                        "type": "string",
-                                        "format": "binary"
+                                    "attachment[]": {
+                                        "description": "Optional file attachments",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -1427,44 +1473,74 @@
                     }
                 },
                 "responses": {
-                    "201": {
-                        "description": "Message successfully created",
+                    "200": {
+                        "description": "Message stored successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "Message created successfully"
+                                            "example": "Message has been created successfully."
                                         },
                                         "data": {
                                             "properties": {
                                                 "id": {
                                                     "type": "integer",
-                                                    "example": 1
+                                                    "example": 101
                                                 },
                                                 "user_id": {
                                                     "type": "integer",
-                                                    "example": 12
+                                                    "example": 1
+                                                },
+                                                "receiver_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "agent_chat"
                                                 },
                                                 "text": {
                                                     "type": "string",
-                                                    "example": "This is a message"
+                                                    "example": "This is a test message"
                                                 },
-                                                "attachment": {
+                                                "is_read": {
                                                     "type": "string",
-                                                    "example": "uploads/messages/file.jpg",
-                                                    "nullable": true
+                                                    "example": "unread"
+                                                },
+                                                "sender": {
+                                                    "type": "string",
+                                                    "example": "agent"
                                                 },
                                                 "created_at": {
                                                     "type": "string",
                                                     "format": "date-time",
-                                                    "example": "2025-05-03T10:00:00Z"
+                                                    "example": "2025-05-13T18:08:45.000000Z"
                                                 },
                                                 "updated_at": {
                                                     "type": "string",
                                                     "format": "date-time",
-                                                    "example": "2025-05-03T10:00:00Z"
+                                                    "example": "2025-05-13T18:08:45.000000Z"
+                                                },
+                                                "attachment_urls": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "http://127.0.0.1:8000/storage/attachment/file.png"
+                                                    }
+                                                },
+                                                "user_first_name": {
+                                                    "type": "string",
+                                                    "example": "John"
+                                                },
+                                                "user_last_name": {
+                                                    "type": "string",
+                                                    "example": "Doe"
                                                 }
                                             },
                                             "type": "object"
@@ -1475,19 +1551,22 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "422": {
+                        "description": "Validation error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Invalid request"
+                                            "example": "Validation failed."
+                                        },
+                                        "data": {
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -1496,18 +1575,137 @@
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An unexpected error occurred."
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/last-read-message": {
+            "post": {
+                "tags": [
+                    "Agent Message"
+                ],
+                "summary": "Mark messages as read for a given agent",
+                "description": "Updates unread messages where receiver_id matches the agent_id and id is less than or equal to last_message_id.",
+                "operationId": "bc12dacc63bdcdedb131be3c2f96fe16",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "agent_id",
+                                    "last_message_id"
+                                ],
+                                "properties": {
+                                    "agent_id": {
+                                        "description": "The ID of the agent",
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "last_message_id": {
+                                        "description": "The ID of the last message to mark as read",
+                                        "type": "integer",
+                                        "example": 18
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Messages marked as read successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "status": {
                                             "type": "string",
-                                            "example": "error"
+                                            "example": "success"
                                         },
-                                        "message": {
+                                        "updated_count": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "updated_messages": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 10
+                                                    },
+                                                    "receiver_id": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    },
+                                                    "is_read": {
+                                                        "type": "string",
+                                                        "example": "unread"
+                                                    },
+                                                    "message": {
+                                                        "type": "string",
+                                                        "example": "Hello Agent"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
                                             "type": "string",
-                                            "example": "Internal server error"
+                                            "example": "Validation failed"
+                                        },
+                                        "messages": {
+                                            "properties": {
+                                                "agent_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The selected agent_id is invalid."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"

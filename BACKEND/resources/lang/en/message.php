@@ -171,6 +171,7 @@ return [
     'chatbot_delete_success'=>'Chatbot deleted successfully',
     //Message
     'message_created'=>  'Message created successfully !',
+    'message_read'=>  'Message marked as read successfully !',
     //Import
     'export_success'=>  'Database Exported successfully !',
     'import_success'=>  'Database Imported successfully !',

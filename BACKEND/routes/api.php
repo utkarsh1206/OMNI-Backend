@@ -328,6 +328,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('get-agent-status', [AgentMessageController::class, 'getStatus']);
     Route::get('get-agent-messages/{agent_id}', [AgentMessageController::class, 'getMessages']);
     Route::post('send-agent-messages', [AgentMessageController::class, 'storeMessage']);
+    Route::post('last-read-message', [AgentMessageController::class, 'lastReadMessage']);
 
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::get('neox-call-incoming', [IncomingCallController::class, 'checkIncoming']); // not in frontend yet

@@ -9,6 +9,7 @@ use App\Models\Message;
 use App\Models\MessageAttachment;
 use Carbon\Carbon;
 use Exception;
+
 class AgentMessageRepository
 {
     private $apiResponse;
@@ -140,6 +141,21 @@ class AgentMessageRepository
                 broadcast(new ReceivedMessages($message));
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in storing Message: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function lastReadMessage($request)
+    {
+        try {
+            Message::where('is_read', 'unread')
+                ->where('receiver_id', $request->agent_id)
+                ->where('id', '<=', $request->last_message_id)
+                ->update(['is_read' => 'read']);
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.message_read'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in storing Message: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
