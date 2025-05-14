@@ -26,16 +26,6 @@ class AgentMessageRepository
             $search = $request->input('search', '');
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
 
-            // $agentsQuery = Users::with('liveAgent')
-            //     ->where('type', 3)
-            //     ->when($search, function ($query) use ($search) {
-            //         $query->where(function ($q) use ($search) {
-            //             $q->where('first_name', 'like', "%$search%")
-            //                 ->orWhere('last_name', 'like', "%$search%")
-            //                 ->orWhere('email', 'like', "%$search%");
-            //         });
-            //     });
-
             $agentsQuery = Users::with('liveAgent')
                 ->when($search, function ($query) use ($search) {
                     $query->where(function ($q) use ($search) {
