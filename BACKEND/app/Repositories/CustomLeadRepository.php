@@ -73,6 +73,28 @@ class CustomLeadRepository
     private function getAllLeads(Request $request, $query, $columns)
     {
         try {
+            $searchTerm = $request->input('search', '');
+
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('mobile', 'like', "%{$searchTerm}%")
+                        ->orwhere('first_name', 'like', "%{$searchTerm}%")
+                        ->orwhere('last_name', 'like', "%{$searchTerm}%");
+                });
+            }
+
+            // Filter by start and end date (including time)
+            if ($startDate && $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            } elseif ($startDate) {
+                $query->where('created_at', '>=', $startDate);
+            } elseif ($endDate) {
+                $query->where('created_at', '<=', $endDate);
+            }
+
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
             $data = $page == config('omni.ALL_PAGE') ? $query->get()->map(fn($row) => $this->formatLeadData($row, $columns))->toArray() : $query->paginate($perPage);

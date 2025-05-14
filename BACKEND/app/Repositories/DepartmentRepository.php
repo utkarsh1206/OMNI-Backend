@@ -33,7 +33,7 @@ class DepartmentRepository
             }
 
             if (!empty($name)) {
-                $query->where('name', $name);
+                $query->where('name', 'like', "%$name%");
             }
             $departments = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $departments, trans('message.fetch_data'));
