@@ -24,8 +24,17 @@ class AgentMessageRepository
     {
         try {
             $search = $request->input('search', '');
-           
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+
+            // $agentsQuery = Users::with('liveAgent')
+            //     ->where('type', 3)
+            //     ->when($search, function ($query) use ($search) {
+            //         $query->where(function ($q) use ($search) {
+            //             $q->where('first_name', 'like', "%$search%")
+            //                 ->orWhere('last_name', 'like', "%$search%")
+            //                 ->orWhere('email', 'like', "%$search%");
+            //         });
+            //     });
 
             $agentsQuery = Users::with('liveAgent')
                 ->when($search, function ($query) use ($search) {
@@ -46,6 +55,7 @@ class AgentMessageRepository
             $paginatedAgents = $agentsQuery->paginate($perPage);
 
             $paginatedAgents->getCollection()->transform(function ($user) {
+
                 $unreadCount = Message::where('user_id', auth()->id())
                     ->where('receiver_id', $user->id)
                     ->where('is_read', 'unread')
@@ -58,7 +68,9 @@ class AgentMessageRepository
                     'name' => $user->first_name . ' ' . $user->last_name,
                     'online_status' => $user->online_status,
                     'last_message' => $lastMessage->text ?? null,
-                    'last_message_time' => Carbon::parse($lastMessage->created_at)->format('Y-m-d H:i:s') ?? null,
+                    'last_message_time' => $lastMessage && $lastMessage->created_at
+                        ? Carbon::parse($lastMessage->created_at)->format('Y-m-d H:i:s') ?? null
+                        : null,
                     'unread_count' => $unreadCount ?? 0,    
                 ];
             });
@@ -119,6 +131,7 @@ class AgentMessageRepository
                 "is_read" => 'unread',
                 "attachment" => $file['path'] ?? null,
                 "sender" => 'agent',
+                'external_message_time' => Carbon::now()
             ]);
 
             if ($message) {
