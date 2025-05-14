@@ -29,14 +29,15 @@ class CategoryRepository
             $query = Category::query();
 
             if ($name) {
-                $query->where('name', $name);
+                $query->where('name', 'like', "%$name%");
             }
             if ($department_id) {
                 $query->where('department_id', $department_id);
             }
 
             if (!empty($searchTerm)) {
-                $query->where('name', 'like', "%$searchTerm%");
+                $query->where('name', 'like', "%$searchTerm%")
+                    ->orWhere('description', 'like', "%$searchTerm%");
             }
 
             $query =  $query->with('department');

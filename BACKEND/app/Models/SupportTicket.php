@@ -124,4 +124,14 @@ class SupportTicket extends Model
 
         return implode(' ', $parts);
     }
+
+    public function account()
+    {
+        return $this->belongsTo(Account::class, 'account_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
 }

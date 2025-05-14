@@ -27,36 +27,62 @@ class SlaSettingRepository
             $searchTerm = $request->input('search', '');
             $query = SlaSetting::query()->with(['offDays', 'holidays', 'targets', 'targets.priority']);
 
+            // Live Search
             if (!empty($searchTerm)) {
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('name', 'like', "%$searchTerm%")
-                        ->orWhere('start_time', 'like', "%$searchTerm%")
-                        ->orWhere('end_time', 'like', "%$searchTerm%");
+                        ->orWhere('description', 'like', "%$searchTerm%");
                 });
             }
 
+            // Advanced Filters
+            $filters = [
+                'name' => $request->input('name'),
+                'description' => $request->input('description'),
+                'is_24_hours' => $request->input('is_24_hours'),
+                'start_time' => $request->input('start_time'),
+                'end_time' => $request->input('end_time'),
+            ];
+
+            if (!empty($filters['name'])) {
+                $query->where('name', 'like', "%{$filters['name']}%");
+            }
+
+            if (!empty($filters['description'])) {
+                $query->where('description', 'like', "%{$filters['description']}%");
+            }
+
+            if (!is_null($filters['is_24_hours'])) {
+                $query->where('is_24_hours', $filters['is_24_hours']);
+            }
+
+            if (!empty($filters['start_time'])) {
+                $query->where('start_time', '>=', $filters['start_time']);
+            }
+
+            if (!empty($filters['end_time'])) {
+                $query->where('end_time', '<=', $filters['end_time']);
+            }
+
+            // Pagination
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
-            if ($page === config('omni.ALL_PAGE')) {
-                $slas = $query->get();
-                // $slasFormatted = $slas->map(function ($sla) {
-                //     return $this->formatSlaResponse($sla);
-                // });
-            } else {
-                $slas = $query->paginate($perPage);
-                // $slasFormatted = $slas->items();
+            $slas = ($page === config('omni.ALL_PAGE'))
+                ? $query->get()
+                : $query->paginate($perPage);
 
-                // $slasFormatted = collect($slasFormatted)->map(function ($sla) {
-                //     return $this->formatSlaResponse($sla);
-                // });
-            }
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $slas, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $slas,
+                trans('message.data_fetch')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error fetching SLA settings: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
+
 
     public function store(Request $request)
     {

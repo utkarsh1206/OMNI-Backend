@@ -37,10 +37,10 @@ class PhoneRepository
             }
 
             if (!empty($extension)) {
-                $query->where('extension', $extension);
+                $query->where('extension', 'like', "%$extension%");
             }
             if (!empty($login)) {
-                $query->where('login', $login);
+                $query->where('login', 'like', "%$login%");
             }
             $phones = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phones, trans('message.fetch_data'));

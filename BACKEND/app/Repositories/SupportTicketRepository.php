@@ -28,77 +28,140 @@ class SupportTicketRepository
     public function list(Request $request)
     {
         try {
-            // Get the search term from the request
             $searchTerm = $request->input('search', '');
 
-            $ticket_id = $request->input('ticket_id', '');
-            $product_id = $request->input('product_id', '');
-            $subject = $request->input('subject', '');
-            $default_type = $request->input('default$default_type', '');
-            $default_status = $request->input('default_status', '');
-            $default_priority = $request->input('default_priority', '');
-            $assign_to_id = $request->input('assign_to_id', '');
-            $contact_id = $request->input('contact_id', '');
+            // Advanced filters
+            $filters = [
+                'support_ticket_id' => $request->input('ticket_id'),
+                'product_id' => $request->input('product_id'),
+                'subject' => $request->input('subject'),
+                'type' => $request->input('default_type'),
+                'status' => $request->input('default_status'),
+                'priority' => $request->input('default_priority'),
+                'assign_to_id' => $request->input('assign_to_id'),
+                'contact_id' => $request->input('contact_id'),
+                // 'usergroup_id' => $request->input('usergroup_id'),
+                'department_id' => $request->input('department_id'),
+                'account_id' => $request->input('account_id'),
+                'incident_id' => $request->input('incident_id'),
+            ];
 
             $token = $request->bearerToken();
-
             if ($token != "") {
                 $payload = extractPayload($token);
                 $roleId = $payload['role_id'];
                 $userId = $payload['id'];
             }
 
-            // Start the query for tenants
+            // $query = SupportTicket::query()
+            //     ->with([
+            //         // 'product:id,name',
+            //         'priority:id,name',
+            //         'ticketType:id,type',
+            //         'department:id,name',
+            //         'contact:id,first_name,last_name',
+            //         'assignedAgent:id,username',
+            //         // 'account:id,name',
+            //         'incidentType:id,name',
+            //         // 'usergroup:id,name'
+            //     ]);
+
             $query = SupportTicket::query()->with(['department', 'priority:id,name', 'ticketType:id,type']);
 
-            if ($roleId == 3) {
-                $query->where('assign_to_id', $userId); // Filter by the logged-in user's ID
+            if (isset($roleId) && $roleId == 3) {
+                $query->where('assign_to_id', $userId);
             }
 
-            // If there's a search term, apply it to the query
+            // ✅ LIVE SEARCH
             if (!empty($searchTerm)) {
                 $query->where(function ($q) use ($searchTerm) {
-                    $q->where('to_emails', 'like', '%' . $searchTerm . '%')
-                        ->orwhere('subject', 'like', '%' . $searchTerm . '%')
-                        ->orwhere('description', 'like', '%' . $searchTerm . '%');
+                    $q->where('support_ticket_id', 'like', "%{$searchTerm}%")
+                        ->orWhere('subject', 'like', "%{$searchTerm}%")
+                        ->orWhere('description', 'like', "%{$searchTerm}%")
+                        // ->orWhereHas('product', function ($subQ) use ($searchTerm) {
+                        //     $subQ->where('name', 'like', "%{$searchTerm}%");
+                        // })
+                        // ->orWhereHas('priority', function ($subQ) use ($searchTerm) {
+                        //     $subQ->where('name', 'like', "%{$searchTerm}%");
+                        // })
+                        // ->orWhereHas('ticketType', function ($subQ) use ($searchTerm) {
+                        //     $subQ->where('type', 'like', "%{$searchTerm}%");
+                        // })
+                        ->orWhereHas('assignedAgent', function ($subQ) use ($searchTerm) {
+                            $subQ->where('first_name', 'like', "%{$searchTerm}%")
+                                ->orWhere('last_name', 'like', "%{$searchTerm}%")
+                                ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$searchTerm}%"]);
+                        })
+                        ->orWhereHas('contact', function ($subQ) use ($searchTerm) {
+                            $subQ->where('first_name', 'like', "%{$searchTerm}%")
+                                ->orWhere('last_name', 'like', "%{$searchTerm}%")
+                                ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$searchTerm}%"]);
+                        });
                 });
             }
-            // Paginate the results
+
+            // ✅ ADVANCED FILTERS
+            if (!empty($filters['support_ticket_id'])) {
+                $query->where('ticket_id', 'like', "%{$filters['support_ticket_id']}%");
+            }
+
+            if (!empty($filters['product_id'])) {
+                $query->where('product_id', $filters['product_id']);
+            }
+
+            if (!empty($filters['subject'])) {
+                $query->where('subject', 'like', "%{$filters['subject']}%");
+            }
+
+            if (!empty($filters['type'])) {
+                $query->where('default_type', $filters['type']);
+            }
+
+            if (!empty($filters['status'])) {
+                $query->where('default_status', $filters['status']);
+            }
+
+            if (!empty($filters['priority'])) {
+                $query->where('default_priority', $filters['priority']);
+            }
+
+            if (!empty($filters['assign_to_id'])) {
+                $query->where('assign_to_id', $filters['assign_to_id']);
+            }
+
+            if (!empty($filters['contact_id'])) {
+                $query->where('contact_id', $filters['contact_id']);
+            }
+
+            // if (!empty($filters['usergroup_id'])) {
+            //     $query->where('usergroup_id', $filters['usergroup_id']);
+            // }
+
+            if (!empty($filters['department_id'])) {
+                $query->where('department_id', $filters['department_id']);
+            }
+
+            if (!empty($filters['account_id'])) {
+                $query->where('account_id', $filters['account_id']);
+            }
+
+            if (!empty($filters['incident_id'])) {
+                $query->where('incident_id', $filters['incident_id']);
+            }
+
+            // ✅ PAGINATION
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
-            // $supporTticket = $query->paginate($perPage);
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
-            if (!empty($ticket_id)) {
-                $query->where('ticket_id', $ticket_id);
-            }
-            if (!empty($product_id)) {
-                $query->where('product_id', $product_id);
-            }
-            if (!empty($subject)) {
-                $query->where('subject', $subject);
-            }
-            if (!empty($default_type)) {
-                $query->where('default_type', $default_type);
-            }
-            if (!empty($default_status)) {
-                $query->where('default_status', $default_status);
-            }
-            if (!empty($default_priority)) {
-                $query->where('default_priority', $default_priority);
-            }
-            if (!empty($assign_to_id)) {
-                $query->where('assign_to_id', $assign_to_id);
-            }
-            if (!empty($contact_id)) {
-                $query->where('contact_id', $contact_id);
-            }
-
             $query->orderBy('id', 'desc');
-            $supportTicket = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
-            // Return the response
+
+            $supportTickets = $page == config('omni.ALL_PAGE')
+                ? $query->get()
+                : $query->paginate($perPage);
+
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
-                $supportTicket,
+                $supportTickets,
                 trans('message.data_fetch')
             );
         } catch (Exception $ex) {
@@ -106,6 +169,7 @@ class SupportTicketRepository
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
+
 
     public function store(Request $request)
     {
