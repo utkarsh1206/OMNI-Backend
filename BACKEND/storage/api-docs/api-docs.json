@@ -1194,6 +1194,10 @@
                                                     "last_message_time": {
                                                         "type": "string",
                                                         "example": "2025-05-07 07:17:04"
+                                                    },
+                                                    "unread_count": {
+                                                        "type": "integer",
+                                                        "example": 3
                                                     }
                                                 },
                                                 "type": "object"
