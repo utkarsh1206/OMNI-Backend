@@ -131,7 +131,7 @@ class AgentMessageRepository
                 "is_read" => 'unread',
                 "attachment" => $file['path'] ?? null,
                 "sender" => 'agent',
-                'external_message_time' => Carbon::now()
+                'external_message_time' => Carbon::now(),
             ]);
 
             if ($message) {
