@@ -85,15 +85,7 @@ class AgentMessageRepository
             $currentUserId = auth()->user()->id;
 
             $messages = Message::where('type', 'agent_chat')
-                ->where(function ($query) use ($currentUserId, $agentId) {
-                    $query->where(function ($q) use ($currentUserId, $agentId) {
-                        $q->where('user_id', $currentUserId)
-                            ->where('receiver_id', $agentId);
-                    })->orWhere(function ($q) use ($currentUserId, $agentId) {
-                        $q->where('user_id', $agentId)
-                            ->where('receiver_id', $currentUserId);
-                    });
-                })
+                ->betweenUsers($currentUserId, $agentId)
                 ->orderBy('created_at', 'desc');
 
             if ($search) {
