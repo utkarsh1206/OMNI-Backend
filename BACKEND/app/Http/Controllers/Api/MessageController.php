@@ -22,7 +22,7 @@ class MessageController extends Controller
      *     summary="Get messages for the authenticated user",
      *     description="Fetches all messages for the currently authenticated user.",
      *     operationId="getMessages",
-     *     tags={"Messages"},
+     *     tags={"User Messages"},
      *     security={{
      *         "bearerAuth": {}
      *     }},
@@ -87,7 +87,7 @@ class MessageController extends Controller
      *     summary="Store a new message",
      *     description="Creates a new message for a specific user. Supports file attachment.",
      *     operationId="storeMessage",
-     *     tags={"Messages"},
+     *     tags={"User Messages"},
      *     security={{
      *         "bearerAuth": {}
      *     }},
