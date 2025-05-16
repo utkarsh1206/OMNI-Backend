@@ -10957,7 +10957,7 @@
         "/api/get-messages": {
             "get": {
                 "tags": [
-                    "Messages"
+                    "User Messages"
                 ],
                 "summary": "Get messages for the authenticated user",
                 "description": "Fetches all messages for the currently authenticated user.",
@@ -11104,7 +11104,7 @@
         "/api/send-message": {
             "post": {
                 "tags": [
-                    "Messages"
+                    "User Messages"
                 ],
                 "summary": "Store a new message",
                 "description": "Creates a new message for a specific user. Supports file attachment.",
@@ -22956,8 +22956,8 @@
             "description": "Mail Templates"
         },
         {
-            "name": "Messages",
-            "description": "Messages"
+            "name": "User Messages",
+            "description": "User Messages"
         },
         {
             "name": "Name Prefixes",

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
-    return view('welcome');
+    return 'Backend is ready';
 });
 
 Route::get('/download/{filename}', function ($filename) {
