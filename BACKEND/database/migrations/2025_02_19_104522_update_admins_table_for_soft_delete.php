@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::table('admins', function (Blueprint $table) {
             $table->dropColumn('edit_id');
             $table->dropColumn('is_delete');
-            $table->dropColumn('created');
-            $table->dropColumn('modified');
+            // $table->dropColumn('created');
+            // $table->dropColumn('modified');
 
             $table->softDeletes(); 
         });
