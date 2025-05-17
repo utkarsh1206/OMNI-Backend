@@ -57,7 +57,7 @@ class AgentMessageRepository
                 ->orderByDesc('latest_message_time');
 
             $paginatedAgents = $agentsQuery->paginate($perPage);
-            $paginatedAgents->getCollection()->transform(function ($user) {
+            $transformedCollection = $paginatedAgents->getCollection()->transform(function ($user) {
                 $lastMessage = $user->latest_message;
                 return [
                     'id' => $user->id,
@@ -70,6 +70,11 @@ class AgentMessageRepository
                     'unread_count' => $user->unread_message ?? 0,
                 ];
             });
+
+                $sortedCollection = $transformedCollection->sortByDesc(function ($item) {
+                    return $item['last_message_time'] ?? '';
+                })->values(); 
+                $paginatedAgents->setCollection($sortedCollection);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $paginatedAgents, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating User Status: ', $ex->getMessage());
