@@ -508,6 +508,106 @@ class UserController extends Controller
     }
 
     /**
+     * @OA\Put(
+     *     path="/my-profile/{user}",
+     *     summary="Update authenticated user's profile",
+     *     description="Allows an authenticated user to update their profile details.",
+     *     operationId="profileUpdate",
+     *     tags={"Users"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="user",
+     *         in="path",
+     *         required=true,
+     *         description="The ID of the authenticated user.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             example=1
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Profile data to update the authenticated user.",
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 required={"username", "first_name", "last_name", "email", "mobile", "status", "role_id", "usergroup_id", "name_prefix", "level", "date_of_birth", "country_id", "state_id", "city_id", "occupation_id", "pincode", "address", "gender"},
+     *                 @OA\Property(property="username", type="string", example="johndoe"),
+     *                 @OA\Property(property="first_name", type="string", example="John"),
+     *                 @OA\Property(property="last_name", type="string", example="Doe"),
+     *                 @OA\Property(property="email", type="string", example="johndoe@example.com"),
+     *                 @OA\Property(property="mobile", type="string", example="9876543210"),
+     *                 @OA\Property(property="status", type="string", enum={"active", "inactive"}, example="active"),
+     *                 @OA\Property(property="role_id", type="integer", example=2),
+     *                 @OA\Property(property="usergroup_id", type="integer", example=3),
+     *                 @OA\Property(property="name_prefix", type="string", example="Dr."),
+     *                 @OA\Property(property="level", type="integer", example=2),
+     *                 @OA\Property(property="date_of_birth", type="string", format="date", example="1985-06-15"),
+     *                 @OA\Property(property="country_id", type="integer", example=101),
+     *                 @OA\Property(property="state_id", type="integer", example=202),
+     *                 @OA\Property(property="city_id", type="integer", example=303),
+     *                 @OA\Property(property="occupation_id", type="integer", example=404),
+     *                 @OA\Property(property="pincode", type="string", example="654321"),
+     *                 @OA\Property(property="address", type="string", example="456 Elm St, Another City, Another Country"),
+     *                 @OA\Property(property="gender", type="string", enum={"male", "female", "other"}, example="female")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profile updated successfully.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Profile updated successfully."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="username", type="string", example="johndoe"),
+     *                 @OA\Property(property="first_name", type="string", example="John"),
+     *                 @OA\Property(property="last_name", type="string", example="Doe"),
+     *                 @OA\Property(property="email", type="string", example="johndoe@example.com"),
+     *                 @OA\Property(property="mobile", type="string", example="9876543210"),
+     *                 @OA\Property(property="status", type="string", example="active"),
+     *                 @OA\Property(property="role_id", type="integer", example=2),
+     *                 @OA\Property(property="usergroup_id", type="integer", example=3),
+     *                 @OA\Property(property="name_prefix", type="string", example="Dr."),
+     *                 @OA\Property(property="level", type="integer", example=2),
+     *                 @OA\Property(property="date_of_birth", type="string", format="date", example="1985-06-15"),
+     *                 @OA\Property(property="country_id", type="integer", example=101),
+     *                 @OA\Property(property="state_id", type="integer", example=202),
+     *                 @OA\Property(property="city_id", type="integer", example=303),
+     *                 @OA\Property(property="occupation_id", type="integer", example=404),
+     *                 @OA\Property(property="pincode", type="string", example="654321"),
+     *                 @OA\Property(property="address", type="string", example="456 Elm St, Another City, Another Country"),
+     *                 @OA\Property(property="gender", type="string", enum={"male", "female", "other"}, example="female")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request (validation error)."
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized access (invalid token)."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found."
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error."
+     *     )
+     * )
+     */
+    public function profileUpdate(Request $request, $user)
+    {
+        return $this->userRepository->profileUpdate($request, $user);
+    }
+
+    /**
      * @OA\Delete(
      *     path="/users/delete/{user}",
      *     summary="Delete an existing user",

@@ -11,6 +11,7 @@ use App\Models\Users;
 use App\Models\Tenant;
 use App\Models\UserGroup;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
@@ -287,7 +288,7 @@ class UserRepository
                 "last_name" => $request->last_name,
                 "email" => $request->email,
                 "username" => $request->username,
-                "password" => bcrypt($request->password),
+                // "password" => bcrypt($request->password),
                 //"domain" => $request->domain,
                 "mobile" => $request->mobile,
                 "status" => $request->status,
@@ -315,6 +316,46 @@ class UserRepository
         }
     }
 
+    public function profileUpdate(Request $request, $user)
+    {
+        try {
+            $payload = extractPayload($request->bearerToken());
+            $data = getDbConnection($payload['domain']);
+            DB::setDefaultConnection($data->getName());
+
+            $user1 = Users::find($user);
+            generateLogs('info', 'after find user');
+            generateLogs('info', 'retrieved user: ', $user1);
+            $user1->update([
+                // "tenant_id" => $request->tenant_id,
+                "type" => $request->type,
+                "first_name" => $request->first_name,
+                "last_name" => $request->last_name,
+                "email" => $request->email,
+                "username" => $request->username,
+                // "password" => bcrypt($request->password),
+                //"domain" => $request->domain,
+                "mobile" => $request->mobile,
+                "status" => $request->status,
+                "role_id" => $request->role_id,
+                "usergroup_id" => $request->usergroup_id,
+                "name_prefix" => $request->name_prefix,
+                "level" => $request->level,
+                "date_of_birth" => $request->date_of_birth,
+                "country_id" => $request->country_id,
+                "state_id" => $request->state_id,
+                "city_id" => $request->city_id,
+                "occupation_id" => $request->occupation_id,
+                "pincode" => $request->pincode,
+                "address" => $request->address,
+                "gender" => $request->gender
+            ]);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $user1, trans('message.users_updated'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error during Update User : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
 
     public function delete($user)
     {
