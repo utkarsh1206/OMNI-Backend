@@ -143,7 +143,7 @@ if (!function_exists('getDbConnection')) {
      * @param string|null $domainName The domain name to find the database connection details.
      * @return \Illuminate\Database\Connection|null The database connection instance or null if no domain is provided.
      */
-    function getDbConnection($domainName = null)
+    function getDbConnection($domainName = null, $isExternal = false)
     {
         // If no domain name is provided, return the default connection
         if (!$domainName) {
@@ -153,7 +153,7 @@ if (!function_exists('getDbConnection')) {
         // Get the database name associated with the domain from 'details' table
         $details = DB::table('details')->where('domain', $domainName)
             ->orWhere('uin', $domainName)->first();
-
+       
         if ($details) {
             $connectionDetails = [
                 'database' => $details->db,
@@ -176,7 +176,11 @@ if (!function_exists('getDbConnection')) {
                 'strict' => true,
                 'engine' => null,
             ]);
-            // DB::setDefaultConnection($newConnectionName);
+            
+            if($isExternal) {
+                DB::setDefaultConnection($newConnectionName);
+            }
+            
             return DB::connection($newConnectionName);
         }
         return null;
