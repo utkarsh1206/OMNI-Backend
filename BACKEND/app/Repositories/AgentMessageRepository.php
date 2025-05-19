@@ -9,7 +9,6 @@ use App\Models\Message;
 use App\Models\MessageAttachment;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Support\Facades\DB;
 
 class AgentMessageRepository
 {
