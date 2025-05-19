@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use App\Models\Detail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class DatabaseServiceProvider extends ServiceProvider
 {
@@ -25,23 +26,26 @@ class DatabaseServiceProvider extends ServiceProvider
     {
         $domain = $request->input('domain');
         
-        $fullUrl = $request->fullUrl();
         $lastSegment = $request->segment($request->segments() ? count($request->segments()) : 0);
+       
         if ($domain == '' && $lastSegment != 'login') {
             $token = $request->bearerToken();
-          
             if ($token != "") {
                 $payload = extractPayload($token);
-               
                 if ($payload['admin_type'] != 'Super') {
                     $domain = $payload['domain'];
-                    $domain = str_replace("https://", "", $domain);
-                    $domain = str_replace("http://", "", $domain);
+                    $domain = Str::replace("https://", "", $domain);
+                    $domain = Str::replace("http://", "", $domain);
                 }
             }
         }
-        $currentRoute = $path = request()->path();
-        if (!in_array($currentRoute, ["api/chatbot-room-id","chatbot-room-id"])) {
+        
+        $currentRoute = request()->path();
+        $protectedPrefixes = [
+            'api/chatbot-room-id',
+        ];
+        if (!Str::startsWith($currentRoute, $protectedPrefixes)) {
+        // if (!in_array($currentRoute, ["api/chatbot-room-id","chatbot-room-id"])) {
             $details = Detail::where('domain', $domain)->first();
             if ($details) {
                 $connectionDetails = [
@@ -67,13 +71,10 @@ class DatabaseServiceProvider extends ServiceProvider
                         'timeout' => 60 * 5, // 5 minute timeout
                     ]
                 ]);
-
                 Config::set('database.default', 'dynamic');
-
                 DB::purge('dynamic');
                 DB::reconnect('dynamic');
             }
-
         }
     }
 }

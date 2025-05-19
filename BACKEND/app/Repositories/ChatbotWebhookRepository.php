@@ -26,6 +26,7 @@ class ChatbotWebhookRepository
     public function fetchMessageFromRoom(Request $request)
     {
         try {                
+            dd($request->all());
             $chatHistory = $this->chat360Service->getChatHistory();
 
             if ($chatHistory) {
