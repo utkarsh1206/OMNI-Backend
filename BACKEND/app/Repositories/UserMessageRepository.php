@@ -9,7 +9,7 @@ use Exception;
 use App\Jobs\SendMessage;
 use App\Services\Chat360Service;
 
-class MessageRepository
+class UserMessageRepository
 {
     private $apiResponse;
 

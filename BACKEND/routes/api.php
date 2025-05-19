@@ -81,7 +81,7 @@ use App\Http\Controllers\Api\LiveAgentController;
 use App\Http\Controllers\Api\WebhookCallController;
 use App\Http\Middleware\ModifyRequestMiddleware;
 use App\Http\Controllers\Api\LogoutRefreshApiController;
-use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\UserMessageController;
 use App\Http\Controllers\Api\IncomingCallController;
 use App\Http\Controllers\Api\ApiConfigurationTypeController;
 use App\Http\Controllers\Api\CallLogReportController;
@@ -322,8 +322,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
     // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
 
-    Route::get('get-messages', [MessageController::class, 'getMessages']);
-    Route::post('send-message', [MessageController::class, 'storeMessage']);
+    Route::get('get-messages', [UserMessageController::class, 'getMessages']);
+    Route::post('send-message', [UserMessageController::class, 'storeMessage']);
 
     Route::get('get-agent-status', [AgentMessageController::class, 'getStatus']);
     Route::get('get-agent-messages/{agent_id}', [AgentMessageController::class, 'getMessages']);
