@@ -18,8 +18,6 @@ class AuthTokenMiddleware
             $uinId = $request->route('uinId');
             getDbConnection($uinId->domain, true);
             
-            $currentRoute =  request()->path();
-
             $protectedPrefixes = [
                 'api/chatbot-room-id',
             ];
