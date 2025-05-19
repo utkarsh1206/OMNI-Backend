@@ -59,119 +59,6 @@ class Users extends Authenticatable implements JWTSubject
         return $this->getKey(); // Typically the primary key (id)
     }
 
-    // public function getJWTCustomClaims()
-    // {
-    //     $permission = "";
-    //     $permission_array = [];
-
-    //     $postData = Request::all(); // Accessing all post data
-
-    //     $tenantRoleId = DB::table('omnichannel.tenants')
-    //         ->where('domain_name', $postData['domain'])
-    //         ->value('tenant_role_id');
-
-    //     if ($tenantRoleId) {
-    //         $permission = DB::table('omnichannel.tenant_roles')
-    //             ->where('id', $tenantRoleId)
-    //             ->value('permission');
-    //     }
-
-    //     if (!empty(json_decode($permission, true))) {
-    //         foreach (json_decode($permission, true) as $permission_key => $permission_value) {
-    //             if ($permission_value['view'] == 1) {
-    //                 if (!empty(json_decode($permission, true))) {
-    //                     foreach (json_decode($permission, true) as $permission_key => $permission_value) {
-    //                         if ($permission_value['view'] == 1) {
-    //                             $view_name = DB::table('omnichannel.menu_permissions')
-    //                                 ->where('module_name', $permission_key)
-    //                                 ->value('view_name');
-    //                             $permission_array[] = $view_name;
-    //                         }
-    //                     }
-    //                 }
-
-    //                 $campaign = isset($postData['campaign']) ? $postData['campaign'] : null;
-    //                 $phone = isset($postData['phone']) ? $postData['phone'] : null;
-
-    //                 $claims = [
-    //                     'id' => $this->id,
-    //                     'username' => $this->username,
-    //                     'email' => $this->email,
-    //                     'role_id' => $this->role_id,
-    //                     'domain' =>  $postData['domain'],
-    //                     'permission' => json_encode($permission_array),
-    //                 ];
-
-    //                 if ($postData['flag'] == 2) {
-    //                     $claims['campaign'] = $campaign;
-    //                     $claims['phone'] = $phone;
-    //                 }
-
-    //                 // Conditionally add phone to JWT claims if flag == 2
-    //                 // if ($this->addPhoneToJWT) {
-    //                 //     $claims['phone'] = $this->phone;
-    //                 // }
-
-    //                 return $claims;
-    //             }
-    //         }
-    //     }
-    // }
-
-    //working old
-    // public function getJWTCustomClaims()
-    // {
-    //     $permission = "";
-    //     $permission_array = [];
-
-    //     $postData = Request::all(); // Accessing all post data
-
-    //     $tenantRoleId = DB::table('omnichannel.tenants')
-    //         ->where('domain_name', $postData['domain'])
-    //         ->value('tenant_role_id');
-
-    //     if ($tenantRoleId) {
-    //         $permission = DB::table('omnichannel.tenant_roles')
-    //             ->where('id', $tenantRoleId)
-    //             ->value('permission');
-    //     }
-
-    //     $decoded_permissions = json_decode($permission, true);
-    //     if (!empty($decoded_permissions)) {
-    //         foreach ($decoded_permissions as $permission_key => $permission_value) {
-    //             if (isset($permission_value['allowed']) && $permission_value['allowed'] == 1) {
-    //                 $view_name = DB::table('omnichannel.menu_permissions')
-    //                     ->where('module_name', $permission_key)
-    //                     ->value('view_name');
-    //                 if ($view_name) {
-    //                     $permission_array[] = $view_name;
-    //                 }
-    //             }
-    //         }
-
-    //         $campaign = isset($postData['campaign']) ? $postData['campaign'] : null;
-    //         $phone = isset($postData['phone']) ? $postData['phone'] : null;
-
-    //         $claims = [
-    //             'id' => $this->id,
-    //             'username' => $this->username,
-    //             'email' => $this->email,
-    //             'role_id' => $this->role_id,
-    //             'domain' => $postData['domain'],
-    //             //    'permission' => json_encode($permission_array),
-    //             'permission' => json_encode($permission_array),
-    //         ];
-
-    //         if ($postData['flag'] == 2) {
-    //             $claims['campaign'] = $campaign;
-    //             $claims['phone'] = $phone;
-    //         }
-
-    //         return $claims;
-    //     }
-    // }
-    // working old
-
     public function getJWTCustomClaims()
     {
         $postData = Request::all();
@@ -187,16 +74,6 @@ class Users extends Authenticatable implements JWTSubject
         if (isset($postData['flag']) && $postData['flag'] == 2) {
             // New permission format using IDs
             $permissions = [];
-
-            // foreach ($this->roles as $role) {
-            //     $rolePermissions = DB::table('role_action')
-            //         ->where('role_id', $role->id)
-            //         ->get(['tenant_module_id', 'action_id']);
-
-            //     foreach ($rolePermissions as $perm) {
-            //         $permissions[$perm->tenant_module_id][] = $perm->action_id;
-            //     }
-            // }
 
             foreach ($this->roles as $role) {
                 foreach ($role->tenantModules as $module) {
@@ -309,47 +186,11 @@ class Users extends Authenticatable implements JWTSubject
         return $this->usergroup?->name;
     }
 
-    // public function getLatestMessageAttribute()
-    // {
-    //     $currentUserId = auth()->id();
-    //     $agentId =  $this->id;
-    //     return Message::where('type', 'agent_chat')
-    //         ->where(function ($query) use ($currentUserId, $agentId) {
-    //             $query->where(function ($q) use ($currentUserId, $agentId) {
-    //                 $q->where('user_id', $currentUserId)
-    //                     ->where('receiver_id', $agentId);
-    //             })->orWhere(function ($q) use ($currentUserId, $agentId) {
-    //                 $q->where('user_id', $agentId)
-    //                     ->where('receiver_id', $currentUserId);
-    //             });
-    //         })
-    //         ->orderByDesc('created_at')
-    //         ->first();
-    // }
-
-    // public function getUnreadMessageAttribute()
-    // {
-    //     $currentUserId = auth()->id();
-    //     $agentId =  $this->id;
-
-    //     return Message::where('is_read', 'unread')
-    //         ->where(function ($query) use ($currentUserId, $agentId) {
-    //             $query->where(function ($q) use ($currentUserId, $agentId) {
-    //                 $q->where('user_id', $currentUserId)
-    //                     ->where('receiver_id', $agentId);
-    //             })->orWhere(function ($q) use ($currentUserId, $agentId) {
-    //                 $q->where('user_id', $agentId)
-    //                     ->where('receiver_id', $currentUserId);
-    //             });
-    //         })
-    //         ->count();
-    // }
-
     public function getLatestMessageAttribute()
     {
         return Message::where('type', 'agent_chat')
             ->betweenUsers(auth()->id(), $this->id)
-            ->latest('created_at')
+            ->orderByDesc('created_at')
             ->first();
     }
 

@@ -5,11 +5,13 @@ namespace App\Repositories;
 use App\Http\Controllers\Api\LicenseController;
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
+use App\Models\Admins;
 use App\Models\Role;
 use App\Models\Users;
 use App\Models\Tenant;
 use App\Models\UserGroup;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
@@ -286,7 +288,7 @@ class UserRepository
                 "last_name" => $request->last_name,
                 "email" => $request->email,
                 "username" => $request->username,
-                "password" => bcrypt($request->password),
+                // "password" => bcrypt($request->password),
                 //"domain" => $request->domain,
                 "mobile" => $request->mobile,
                 "status" => $request->status,
@@ -314,6 +316,46 @@ class UserRepository
         }
     }
 
+    public function profileUpdate(Request $request, $user)
+    {
+        try {
+            $payload = extractPayload($request->bearerToken());
+            $data = getDbConnection($payload['domain']);
+            DB::setDefaultConnection($data->getName());
+
+            $user1 = Users::find($user);
+            generateLogs('info', 'after find user');
+            generateLogs('info', 'retrieved user: ', $user1);
+            $user1->update([
+                // "tenant_id" => $request->tenant_id,
+                "type" => $request->type,
+                "first_name" => $request->first_name,
+                "last_name" => $request->last_name,
+                "email" => $request->email,
+                "username" => $request->username,
+                // "password" => bcrypt($request->password),
+                //"domain" => $request->domain,
+                "mobile" => $request->mobile,
+                "status" => $request->status,
+                "role_id" => $request->role_id,
+                "usergroup_id" => $request->usergroup_id,
+                "name_prefix" => $request->name_prefix,
+                "level" => $request->level,
+                "date_of_birth" => $request->date_of_birth,
+                "country_id" => $request->country_id,
+                "state_id" => $request->state_id,
+                "city_id" => $request->city_id,
+                "occupation_id" => $request->occupation_id,
+                "pincode" => $request->pincode,
+                "address" => $request->address,
+                "gender" => $request->gender
+            ]);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $user1, trans('message.users_updated'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error during Update User : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
 
     public function delete($user)
     {
@@ -368,6 +410,35 @@ class UserRepository
                 }
                 $users->password = Hash::make($request->new_password);
                 $users->save();
+                return response()->json(['message' => trans("message.password_updated")]);
+            } else {
+                return response()->json(['error' => trans("message.user_not_found")], ResponseHTTP::HTTP_FORBIDDEN);
+            }
+        } catch (Exception $e) {
+            generateLogs('error', 'Error during Update Password : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
+
+    public function updateAdminPassword(Request $request)
+    {
+        try {
+            $token = $request->bearerToken();
+            if ($token != "") {
+                $payload = extractPayload($token);
+                if (!$payload['role_id'] == 0) {
+                    return response()->json(['error' => "message.unauthorized_access"], ResponseHTTP::HTTP_FORBIDDEN);
+                }
+
+                $admin = Admins::findOrFail($payload['id']);
+                if (!Hash::check($request->old_password, $admin->password)) {
+                    return response()->json(['error' => trans("message.old_password_incorrect")], ResponseHTTP::HTTP_FORBIDDEN);
+                }
+                if ($request->new_password != $request->new_password_confirmation) {
+                    return response()->json(['error' => trans("message.password_not_match")], ResponseHTTP::HTTP_FORBIDDEN);
+                }
+                $admin->password = Hash::make($request->new_password);
+                $admin->save();
                 return response()->json(['message' => trans("message.password_updated")]);
             } else {
                 return response()->json(['error' => trans("message.user_not_found")], ResponseHTTP::HTTP_FORBIDDEN);

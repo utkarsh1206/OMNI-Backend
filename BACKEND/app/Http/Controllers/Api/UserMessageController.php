@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Repositories\MessageRepository;
-use App\Http\Requests\MessageRequest;
+use App\Repositories\UserMessageRepository;
+use App\Http\Requests\UserMessageRequest;
 
-class MessageController extends Controller
+class UserMessageController extends Controller
 {
     private $messageRepository;
 
-    public function __construct(MessageRepository $messageRepository)
+    public function __construct(UserMessageRepository $messageRepository)
     {
         $this->messageRepository = $messageRepository;
     }
@@ -147,7 +147,7 @@ class MessageController extends Controller
      *     )
      * )
      */
-    public function storeMessage(MessageRequest $request)
+    public function storeMessage(UserMessageRequest $request)
     {
         return $this->messageRepository->storeMessage($request);
     }
