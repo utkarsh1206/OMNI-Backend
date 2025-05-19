@@ -20,49 +20,48 @@ class ProductRepository
     public function list(Request $request)
     {
         try {
+            $searchTerm = $request->input('search', '');
+
+            // Advanced filters for Product
             $filters = [
-                'search' => 'searchTerm',
-                'name' => 'name',
-                'description' => 'description',
-                'status' => 'status',
+                'name' => $request->input('name'),
+                'description' => $request->input('description'),
+                'status' => $request->input('status'),
             ];
-
-            $inputs = [];
-            foreach ($filters as $key => $variable) {
-                $inputs[$variable] = $request->input($key, '');
-            }
-
-            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
-            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-
-
-            $perPage = (int)$perPage;
-
 
             $query = Product::query();
 
-            if (!empty($inputs['searchTerm'])) {
-                $query->where(function ($q) use ($inputs) {
-                    $searchTerm = $inputs['searchTerm'];
-                    $q->where('name', 'like', "%" . $searchTerm . "%")
-                        ->orWhere('description', 'like', '%' . $searchTerm . '%');
+            // ✅ LIVE SEARCH — searches across multiple text fields
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                        ->orWhere('description', 'like', "%{$searchTerm}%");
                 });
             }
 
-            foreach ($filters as $key => $variable) {
-                if (!empty($inputs[$variable]) && $variable !== 'searchTerm') {
-                    if ($variable === 'status') {
-                        $status = filter_var($inputs[$variable], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-                        if (!is_null($status)) {
-                            $query->where($variable, $status);
-                        }
-                    } else {
-                        $query->where($variable, $inputs[$variable]);
-                    }
+            // ✅ ADVANCED FILTERS — applies only if specific filter field is given
+            if (!empty($filters['name'])) {
+                $query->where('name', 'like', "%{$filters['name']}%");
+            }
+
+            if (!empty($filters['description'])) {
+                $query->where('description', 'like', "%{$filters['description']}%");
+            }
+
+
+            if (!empty($filters['status'])) {
+                $status = filter_var($filters['status'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                if (!is_null($status)) {
+                    $query->where('status', $status);
                 }
             }
 
+            // ✅ PAGINATION
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
             $products = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
+
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $products,

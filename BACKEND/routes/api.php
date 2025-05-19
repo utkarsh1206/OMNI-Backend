@@ -81,7 +81,7 @@ use App\Http\Controllers\Api\LiveAgentController;
 use App\Http\Controllers\Api\WebhookCallController;
 use App\Http\Middleware\ModifyRequestMiddleware;
 use App\Http\Controllers\Api\LogoutRefreshApiController;
-use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\UserMessageController;
 use App\Http\Controllers\Api\IncomingCallController;
 use App\Http\Controllers\Api\ApiConfigurationTypeController;
 use App\Http\Controllers\Api\CallLogReportController;
@@ -101,6 +101,8 @@ use App\Http\Controllers\Api\TicketTypeController;
 require base_path('routes/externalUse.php');
 
 Route::post('login', [LoginController::class, 'login']);
+
+Route::put('update-adminpassword', [UserController::class, 'updateAdminPassword']);
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -190,7 +192,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('campaigns', [CampaignListController::class, 'index']);
 
-    Route::get('ingroups', [IngroupListController::class, 'index']); 
+    Route::get('ingroups', [IngroupListController::class, 'index']);
 
     Route::get('dashboard/ticket_details', [DashboardController::class, 'index']);
 
@@ -241,7 +243,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('update-tenantpassword', [UserController::class, 'updatepassword']);
 
     Route::get('my-profile', [UserController::class, 'myprofile']);
-    Route::put('my-profile/{user}', [UserController::class, 'update']);
+    Route::put('my-profile/{user}', [UserController::class, 'profileUpdate']);
 
     Route::get('/branding', [UserController::class, 'getBranding']);
 
@@ -257,9 +259,9 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::post('/upload-lead-csv/{list_id}', [ImportLeadController::class, 'uploadLeadCsv']);
 
-    Route::get('/custom-leads/{list_id}', [CustomLeadController::class, 'index']);    
+    Route::get('/custom-leads/{list_id}', [CustomLeadController::class, 'index']);
 
-    Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']);  
+    Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']);
 
     Route::post('/custom-leads/{list_id}', [CustomLeadController::class, 'create']);
 
@@ -308,7 +310,7 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('hangup', [HangupApiController::class, 'hangupApi']);
         Route::post('dispos-call', [DisposCallApiController::class, 'disposCallApi']);
         Route::post('dial-next', [DialNextCallApiController::class, 'dialNextCallApi']);
-        Route::post('add-party', [AddPartyApiController::class, 'addPartyApi']); 
+        Route::post('add-party', [AddPartyApiController::class, 'addPartyApi']);
         Route::post('call-tansfer', [CallTransferApiController::class, 'callTransferApi']);
         Route::post('disconnect-conf', [DisconnectConfApiController::class, 'disconnectConfApi']);
         Route::post('leave-conf', [LeaveConfApiController::class, 'leaveConfApi']);
@@ -322,8 +324,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
     // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
 
-    Route::get('get-messages', [MessageController::class, 'getMessages']);
-    Route::post('send-message', [MessageController::class, 'storeMessage']);
+    Route::get('get-messages', [UserMessageController::class, 'getMessages']);
+    Route::post('send-message', [UserMessageController::class, 'storeMessage']);
 
     Route::get('get-agent-status', [AgentMessageController::class, 'getStatus']);
     Route::get('get-agent-messages/{agent_id}', [AgentMessageController::class, 'getMessages']);
@@ -403,5 +405,3 @@ Route::prefix('user-roles')->group(function () {
 
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
-
-
