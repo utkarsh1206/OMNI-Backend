@@ -9,7 +9,6 @@ use App\Models\Message;
 use App\Models\MessageAttachment;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Support\Facades\DB;
 
 class AgentMessageRepository
 {
@@ -33,8 +32,10 @@ class AgentMessageRepository
                     'latest_message_time' => Message::select('created_at')
                         ->where('type', 'agent_chat')
                         ->where(function ($query) {
-                            $query->whereColumn('receiver_id', 'users.id')
-                                ->orWhereColumn('user_id', 'users.id');
+                            // $query->whereColumn('receiver_id', 'users.id')
+                            //     ->orWhereColumn('user_id', 'users.id');
+                            $query->where('receiver_id', auth()->user()->id)
+                                ->orWhere('user_id', auth()->user()->id);
                         })
                         ->orderByDesc('created_at')
                         ->limit(1)
@@ -71,10 +72,10 @@ class AgentMessageRepository
                 ];
             });
 
-                $sortedCollection = $transformedCollection->sortByDesc(function ($item) {
-                    return $item['last_message_time'] ?? '';
-                })->values(); 
-                $paginatedAgents->setCollection($sortedCollection);
+            $sortedCollection = $transformedCollection->sortByDesc(function ($item) {
+                return $item['last_message_time'] ?? '';
+            })->values();
+            $paginatedAgents->setCollection($sortedCollection);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $paginatedAgents, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating User Status: ', $ex->getMessage());

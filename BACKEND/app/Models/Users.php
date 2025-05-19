@@ -186,47 +186,11 @@ class Users extends Authenticatable implements JWTSubject
         return $this->usergroup?->name;
     }
 
-    // public function getLatestMessageAttribute()
-    // {
-    //     $currentUserId = auth()->id();
-    //     $agentId =  $this->id;
-    //     return Message::where('type', 'agent_chat')
-    //         ->where(function ($query) use ($currentUserId, $agentId) {
-    //             $query->where(function ($q) use ($currentUserId, $agentId) {
-    //                 $q->where('user_id', $currentUserId)
-    //                     ->where('receiver_id', $agentId);
-    //             })->orWhere(function ($q) use ($currentUserId, $agentId) {
-    //                 $q->where('user_id', $agentId)
-    //                     ->where('receiver_id', $currentUserId);
-    //             });
-    //         })
-    //         ->orderByDesc('created_at')
-    //         ->first();
-    // }
-
-    // public function getUnreadMessageAttribute()
-    // {
-    //     $currentUserId = auth()->id();
-    //     $agentId =  $this->id;
-
-    //     return Message::where('is_read', 'unread')
-    //         ->where(function ($query) use ($currentUserId, $agentId) {
-    //             $query->where(function ($q) use ($currentUserId, $agentId) {
-    //                 $q->where('user_id', $currentUserId)
-    //                     ->where('receiver_id', $agentId);
-    //             })->orWhere(function ($q) use ($currentUserId, $agentId) {
-    //                 $q->where('user_id', $agentId)
-    //                     ->where('receiver_id', $currentUserId);
-    //             });
-    //         })
-    //         ->count();
-    // }
-
     public function getLatestMessageAttribute()
     {
         return Message::where('type', 'agent_chat')
             ->betweenUsers(auth()->id(), $this->id)
-            ->latest('created_at')
+            ->orderByDesc('created_at')
             ->first();
     }
 

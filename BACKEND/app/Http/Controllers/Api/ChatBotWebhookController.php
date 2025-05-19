@@ -21,16 +21,6 @@ class ChatBotWebhookController extends Controller
         $this->chatBotWebhookRepository = $chatBotWebhookRepository;
     }
     
-    public function index(Request $request)
-    {
-     
-        if($request->source == "chat360"){ 
-            $response = $this->chat360Service->login();   
-            $chatHistory = $this->chat360Service->getChatHistory($response["access"], $request->roomId);
-            dd($chatHistory);
-        }
-    }
-
     public function fetchMessageFromRoom(Request $request)
     {
         return $this->chatBotWebhookRepository->fetchMessageFromRoom($request);
