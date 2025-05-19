@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Http\Controllers\Api\LicenseController;
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
+use App\Models\Admins;
 use App\Models\Role;
 use App\Models\Users;
 use App\Models\Tenant;
@@ -368,6 +369,35 @@ class UserRepository
                 }
                 $users->password = Hash::make($request->new_password);
                 $users->save();
+                return response()->json(['message' => trans("message.password_updated")]);
+            } else {
+                return response()->json(['error' => trans("message.user_not_found")], ResponseHTTP::HTTP_FORBIDDEN);
+            }
+        } catch (Exception $e) {
+            generateLogs('error', 'Error during Update Password : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
+
+    public function updateAdminPassword(Request $request)
+    {
+        try {
+            $token = $request->bearerToken();
+            if ($token != "") {
+                $payload = extractPayload($token);
+                if (!$payload['role_id'] == 0) {
+                    return response()->json(['error' => "message.unauthorized_access"], ResponseHTTP::HTTP_FORBIDDEN);
+                }
+
+                $admin = Admins::findOrFail($payload['id']);
+                if (!Hash::check($request->old_password, $admin->password)) {
+                    return response()->json(['error' => trans("message.old_password_incorrect")], ResponseHTTP::HTTP_FORBIDDEN);
+                }
+                if ($request->new_password != $request->new_password_confirmation) {
+                    return response()->json(['error' => trans("message.password_not_match")], ResponseHTTP::HTTP_FORBIDDEN);
+                }
+                $admin->password = Hash::make($request->new_password);
+                $admin->save();
                 return response()->json(['message' => trans("message.password_updated")]);
             } else {
                 return response()->json(['error' => trans("message.user_not_found")], ResponseHTTP::HTTP_FORBIDDEN);

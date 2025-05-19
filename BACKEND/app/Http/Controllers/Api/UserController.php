@@ -587,7 +587,7 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/users/update-password",
+     *     path="/users/update-tenantpassword",
      *     summary="Update user password",
      *     description="Allows the user to update their password by providing their old password, new password, and password confirmation.",
      *     operationId="updatePassword",
@@ -655,6 +655,78 @@ class UserController extends Controller
     public function updatepassword(Request $request)
     {
         return $this->userRepository->updatePassword($request);
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/users/update-adminpassword",
+     *     summary="Update admin password",
+     *     description="Allows an administrator to update their password by providing their old password, new password, and password confirmation.",
+     *     operationId="updateAdminPassword",
+     *     tags={"Admins"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="old_password", type="string", example="old_admin_password"),
+     *             @OA\Property(property="new_password", type="string", example="new_admin_password"),
+     *             @OA\Property(property="new_password_confirmation", type="string", example="new_admin_password")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Admin password updated successfully.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Password updated successfully.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request (validation error).",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Invalid input data.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized (invalid or missing token).",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Unauthorized access.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden (invalid admin role, incorrect old password, or passwords do not match).",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Invalid admin role.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Admin not found (invalid token or admin does not exist).",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Admin not found.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="An error occurred while updating the admin password.")
+     *         )
+     *     )
+     * )
+     */
+    public function updateAdminPassword(Request $request)
+    {
+        return $this->userRepository->updateAdminPassword($request);
     }
 
     /**

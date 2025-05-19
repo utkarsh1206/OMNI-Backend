@@ -102,6 +102,8 @@ require base_path('routes/externalUse.php');
 
 Route::post('login', [LoginController::class, 'login']);
 
+Route::put('update-adminpassword', [UserController::class, 'updateAdminPassword']);
+
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
 // })->middleware('auth:sanctum');
