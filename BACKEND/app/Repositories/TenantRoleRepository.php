@@ -21,24 +21,53 @@ class TenantRoleRepository
     {
         try {
             $searchTerm = $request->input('search', '');
-            // Start the query for tenants
+
+            // Advanced filters for TenantRole
+            $filters = [
+                'name' => $request->input('name'),
+                'description' => $request->input('description'),
+                'status' => $request->input('status'),
+            ];
+
             $query = TenantRole::query();
-            // If there's a search term, apply it to the query
+
+            // ✅ LIVE SEARCH — searches across multiple text fields
             if (!empty($searchTerm)) {
                 $query->where(function ($q) use ($searchTerm) {
-                    $q->where('name', 'like', '%' . $searchTerm . '%')
-                        ->orwhere('description', 'like', '%' . $searchTerm . '%');
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                        ->orWhere('description', 'like', "%{$searchTerm}%");
                 });
             }
+
+            // ✅ ADVANCED FILTERS — applies only if specific filter field is given
+            if (!empty($filters['name'])) {
+                $query->where('name', 'like', "%{$filters['name']}%");
+            }
+
+            if (!empty($filters['description'])) {
+                $query->where('description', 'like', "%{$filters['description']}%");
+            }
+
+            if (!empty($filters['status'])) {
+                $query->where('status', $filters['status']);
+            }
+
+            // ✅ PAGINATION
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-            $usergroup =   $page === config('omni.ALL_PAGE')
+
+            $tenantRoles = $page == config('omni.ALL_PAGE')
                 ? $query->get()
                 : $query->paginate($perPage);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $usergroup, trans('message.data_fetch'));
-        } catch (Exception $ex) {
-            generateLogs('error', 'Error fetching Support Tickets: ', $ex->getMessage());
-            return $this->apiResponse->handleAndResponseException($ex);
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $tenantRoles,
+                trans('message.data_fetch')
+            );
+        } catch (Exception $e) {
+            generateLogs('error', 'Error during Tenant Role List : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
