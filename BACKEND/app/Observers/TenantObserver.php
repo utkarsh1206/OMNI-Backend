@@ -32,7 +32,7 @@ class TenantObserver
         if ($tenantDetail) {
             DB::statement("CREATE DATABASE $databaseName");
 
-            $newConnectionName = Str::replace(".", "_", request()->domain_name);
+            // $newConnectionName = Str::replace(".", "_", request()->domain_name);
 
             Config::set("database.connections.$databaseName", [
                 'driver'    => 'mysql',
@@ -62,7 +62,7 @@ class TenantObserver
                 'password'   => bcrypt(request()->password),
                 'email'      => request()->email,
                 'username'   => request()->username,
-                'domain'     => $databaseName,
+                'domain'     => request()->domain_name,
                 'mobile'     => request()->mobile,
                 'status' => 'Active',
                 'role_id' => 1
