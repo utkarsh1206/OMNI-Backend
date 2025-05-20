@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Repositories\UserMessageRepository;
 use App\Http\Requests\UserMessageRequest;
+use App\Http\Requests\ChatBotRoomId;
 
 class UserMessageController extends Controller
 {
@@ -14,6 +15,60 @@ class UserMessageController extends Controller
     public function __construct(UserMessageRepository $messageRepository)
     {
         $this->messageRepository = $messageRepository;
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/assign-chat-to-agent",
+     *     summary="Assign chat to agent and store chat history",
+     *     operationId="assignChatToAgent",
+     *     tags={"User Messages"},
+     *     security={{
+     *         "bearerAuth": {}
+     *     }},
+     * 
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"room_id"},
+     *             @OA\Property(property="room_id", type="string", example="abc123"),
+     *         )
+     *     ),
+     * 
+     *     @OA\Response(
+     *         response=200,
+     *         description="Chat messages processed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Data fetched successfully."),
+     *             @OA\Property(property="data", type="object", example=null)
+     *         )
+     *     ),
+     * 
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Invalid input or missing parameters."),
+     *             @OA\Property(property="data", type="object", example=null)
+     *         )
+     *     ),
+     * 
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="An unexpected error occurred."),
+     *             @OA\Property(property="data", type="object", example=null)
+     *         )
+     *     )
+     * )
+     */
+    public function assignChatToAgent(ChatBotRoomId $request)
+    {
+        return $this->messageRepository->assignChatToAgent($request);
     }
 
     /**

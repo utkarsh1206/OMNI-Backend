@@ -15,12 +15,18 @@ class ChatMessagesStored implements ShouldBroadcastNow
 
     private $messageHistory;
 
+    private $domain;
+
+    private $id;
+
     /**
      * Create a new event instance.
      */
     public function __construct($data)
     {
         $this->messageHistory = $data;
+        $this->domain = auth()->user()->domain;
+        $this->id = auth()->user()->id;
         generateLogs('info', 'broadcast Data: '.json_encode(['chatMessagesStored' => $this->messageHistory]));
     }
 
@@ -31,9 +37,14 @@ class ChatMessagesStored implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        generateLogs('info', 'Channel Name: '.json_encode(['Channel' => "fetch_message_history"]));
+        generateLogs(
+            'info',
+            'Channel Name: ' . json_encode([
+                'Channel' => "{$this->domain}-{$this->id}-external-messages"
+            ])
+        );
         return [
-            new Channel("fetch_message_history"),
+            new Channel("{$this->domain}-{$this->id}-external-messages"),
         ];
     }
 
