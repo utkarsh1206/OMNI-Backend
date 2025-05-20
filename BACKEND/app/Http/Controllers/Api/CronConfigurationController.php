@@ -200,7 +200,6 @@ class CronConfigurationController extends Controller
         return $this->cronConfigurationRepository->update($request, $id);
     }
 
-
     /**
      * @OA\Delete(
      *     path="/api/cron-configurations/{id}",
