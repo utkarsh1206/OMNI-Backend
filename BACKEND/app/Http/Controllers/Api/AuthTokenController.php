@@ -70,6 +70,6 @@ class AuthTokenController extends Controller
      */
     public function index(Request $request, Detail $detail)
     {
-        return $this->authTokenRepository->list($request,$detail);
+        return $this->authTokenRepository->list($request, $detail);
     }
 }

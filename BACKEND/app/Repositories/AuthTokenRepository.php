@@ -19,10 +19,10 @@ class AuthTokenRepository
         $this->apiResponse = $customApiResponse;
     }
 
-    public function list(Request $request,$detail)
+    public function list(Request $request, $detail)
     {
         try {
-            getDbConnection($detail->domain);
+            getDbConnection($detail->domain, true);
             
             $checkToken = AuthToken::select('token')->where('expire_at', '>', Carbon::now())
             ->first();

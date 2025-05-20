@@ -8,15 +8,21 @@ use App\Models\AuthToken;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Exception;
+use Illuminate\Support\Str;
 
 class AuthTokenMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
         try {
-            getDbConnection($request->id);
-            $currentRoute =  request()->path();
-            if (in_array($currentRoute, ["api/chatbot-room-id"])) {
+            $uinId = $request->route('uinId');
+            getDbConnection($uinId->domain, true);
+            
+            $protectedPrefixes = [
+                'api/chatbot-room-id',
+            ];
+
+            if (Str::startsWith(request()->path(), $protectedPrefixes)) {
                 $header = $request->header('Token');
                 if (!$header) {
                     return response()->json(['error' => 'Authorization token missing or invalid'], 401);
@@ -25,7 +31,6 @@ class AuthTokenMiddleware
                 $authToken = AuthToken::where('token', $header)
                     ->where('expire_at', '>', Carbon::now())
                     ->first();
-
                 if (!$authToken) {
                     return response()->json(['error' => 'Token invalid or expired'], ResponseHTTP::HTTP_UNAUTHORIZED);
                 }

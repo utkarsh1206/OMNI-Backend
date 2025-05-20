@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\Chat360Service;
-use Illuminate\Http\Request;
+use App\Models\Detail;
 use App\Http\Requests\ChatBotRoomId;
 use App\Repositories\ChatBotWebhookRepository;
 
@@ -21,8 +21,8 @@ class ChatBotWebhookController extends Controller
         $this->chatBotWebhookRepository = $chatBotWebhookRepository;
     }
     
-    public function fetchMessageFromRoom(Request $request)
+    public function fetchMessageFromRoom(ChatBotRoomId $request, Detail $detail)
     {
-        return $this->chatBotWebhookRepository->fetchMessageFromRoom($request);
+        return $this->chatBotWebhookRepository->fetchMessageFromRoom($request, $detail);
     }
 }
