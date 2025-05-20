@@ -8,6 +8,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class AgentLiveStatus implements ShouldBroadcastNow
 {
@@ -21,8 +22,8 @@ class AgentLiveStatus implements ShouldBroadcastNow
     public function __construct($data, $domain = null)
     {
         $this->agentLiveData = $data;
-        // $this->domain = convertToLower(auth()->user()->domain);
-        $this->domain = $domain ?? convertToLower(auth()->user()->domain);
+        // $this->domain = $domain ?? convertToLower(auth()->user()->domain);
+        $this->domain = $domain ?? convertToLower(Str::replace(".", "_", auth()->user()->domain));
         generateLogs('info', 'broadcast Data: ' . json_encode(['AgentLiveStatus' => $this->agentLiveData]));
     }
 
