@@ -24,7 +24,6 @@ class ChatBotRoomId extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|uuid|exists:details,uin',
             'room_id' => 'required',
         ];
     }
@@ -32,9 +31,6 @@ class ChatBotRoomId extends FormRequest
     public function messages(): array
     {
         return [
-            'id.required' => 'The id is missing.',
-            'id.uuid' => 'The id must be a valid UUID.',
-            'id.exists' => 'The id is invalid.',
             'room_id.required'  => 'The room id is missing.',
         ];
     }

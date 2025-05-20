@@ -57,13 +57,13 @@ class Chat360Service
         }
     }
 
-    public function getChatHistory()
+    public function getChatHistory($roomId)
     {
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Basic '.$this->getAccessToken(),
                 'Cookie' => 'csrftoken=P8PSxHtwF5mI9grg1qhGrYtL55ScXbQoruVlnrdZXj8HWNF0pPcp7MDhpXGt1pDR',
-            ])->get($this->url. 'api/clientwidget_updated/chatroom/'.$this->roomId, [
+            ])->get($this->url. 'api/clientwidget_updated/chatroom/'.$roomId, [
                 'api_key' => $this->apiKey,
             ]);
 

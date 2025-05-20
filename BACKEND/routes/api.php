@@ -324,6 +324,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);
     // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
 
+    Route::post('assign-chat-to-agent', [UserMessageController::class, 'assignChatToAgent']);
     Route::get('get-messages', [UserMessageController::class, 'getMessages']);
     Route::post('send-message', [UserMessageController::class, 'storeMessage']);
 
