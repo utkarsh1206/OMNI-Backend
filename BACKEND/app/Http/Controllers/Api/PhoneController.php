@@ -195,9 +195,10 @@ class PhoneController extends Controller
      *     )
      * )
      */
-    public function update(PhoneRequest $request, $extension)
+    public function update(Request $request, $extension)
     {
-        $validatedData = $request->validated();
+       // $validatedData = $request->validated();
+        $validatedData = $request->all();
         return $this->phoneRepository->update($validatedData, $extension);
     }
 
