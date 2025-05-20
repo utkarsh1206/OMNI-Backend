@@ -62,7 +62,7 @@ class TenantObserver
                 'password'   => bcrypt(request()->password),
                 'email'      => request()->email,
                 'username'   => request()->username,
-                'domain'     => $newConnectionName,
+                'domain'     => $databaseName,
                 'mobile'     => request()->mobile,
                 'status' => 'Active',
                 'role_id' => 1
