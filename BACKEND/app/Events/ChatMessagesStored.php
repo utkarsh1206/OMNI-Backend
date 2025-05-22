@@ -9,7 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ChatMessagesStored implements ShouldBroadcastNow
+class ReceivedCustomerMessages implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -40,11 +40,11 @@ class ChatMessagesStored implements ShouldBroadcastNow
         generateLogs(
             'info',
             'Channel Name: ' . json_encode([
-                'Channel' => "{$this->domain}-{$this->id}-external-messages"
+                'Channel' => "{$this->domain}-{$this->id}-customer-chat"
             ])
         );
         return [
-            new Channel("{$this->domain}-{$this->id}-external-messages"),
+            new Channel("{$this->domain}-{$this->id}-customer-chat"),
         ];
     }
 
