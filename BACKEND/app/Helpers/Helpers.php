@@ -330,6 +330,8 @@ if (! function_exists('uploadAttachment')) {
             $attachment = $request->file($fieldName);
             if (is_array($attachment)) {
                 foreach ($attachment as $value) {
+                    // $filename = now()->format('Y_m_d_H_i_s') . '.' . $value->getClientOriginalExtension();
+                    $filename = getSanitizedOriginalName($value->getClientOriginalName()) . '.' . $value->getClientOriginalExtension();
                     $filename = now()->format('Y_m_d_H_i_s') . '.' . $value->getClientOriginalExtension();
                     $filePath = $value->storeAs($directory, $filename, 'public');
                     $fileInfo[] = [
@@ -338,7 +340,8 @@ if (! function_exists('uploadAttachment')) {
                     ];
                 }
             } else {
-                $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
+                // $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
+                $filename = getSanitizedOriginalName($attachment->getClientOriginalName()) . '.' . $attachment->getClientOriginalExtension();
                 $filePath = $attachment->storeAs($directory, $filename, 'public');
                 $fileInfo = [
                     'fileName' => $filename,
@@ -395,5 +398,13 @@ if (! function_exists('getColorforNotification')) {
         ];
 
         return $color[$type] ?? "secondary";
+    }
+}
+
+
+if (! function_exists('getSanitizedOriginalName')) {
+    function getSanitizedOriginalName($fileName)
+    {
+        return preg_replace('/[^A-Za-z0-9_\-]/', '_', pathinfo($fileName, PATHINFO_FILENAME));
     }
 }

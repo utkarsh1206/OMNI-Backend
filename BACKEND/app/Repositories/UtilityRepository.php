@@ -262,7 +262,7 @@ class UtilityRepository
     public function import(Request $request)
     {
         try {
-            $importPath = storage_path('app' . DIRECTORY_SEPARATOR . 'import');
+            $importPath = storage_path('app/public' . DIRECTORY_SEPARATOR . 'import');
 
             // Create the directory if it doesn't exist
             if (!File::exists($importPath)) {
@@ -270,7 +270,6 @@ class UtilityRepository
             }
 
             $file = uploadAttachment($request, 'import_file', 'import');
-
             $fullFilePath = storage_path('app/public' . DIRECTORY_SEPARATOR . $file['path']);
 
             // Read and execute SQL queries line by line
