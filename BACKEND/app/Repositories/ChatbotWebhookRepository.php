@@ -5,7 +5,7 @@ namespace App\Repositories;
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use Exception;
-use App\Events\RoomIdForUserMessage;
+use App\Events\CustomerChatRequest;
 
 class ChatbotWebhookRepository
 {
@@ -23,7 +23,7 @@ class ChatbotWebhookRepository
                 'room_id' => $request->room_id,
                 'domain' => $detail->domain
             ];
-            broadcast(new RoomIdForUserMessage($boradCastData));    
+            broadcast(new CustomerChatRequest($boradCastData));    
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in Storing Messages of Room: ', $ex->getMessage());

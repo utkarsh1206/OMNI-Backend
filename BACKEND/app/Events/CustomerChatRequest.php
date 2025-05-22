@@ -9,7 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class RoomIdForUserMessage implements ShouldBroadcastNow
+class CustomerChatRequest implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -37,11 +37,11 @@ class RoomIdForUserMessage implements ShouldBroadcastNow
         generateLogs(
             'info',
             'Channel Name: ' . json_encode([
-                'Channel' => "{$this->domain}-message-room"
+                'Channel' => "{$this->domain}-customer-chat-request"
             ])
         );
         return [
-            new Channel("{$this->domain}-message-room"),
+            new Channel("{$this->domain}-customer-chat-request"),
         ];
     }
 
