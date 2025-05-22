@@ -98,11 +98,11 @@ class IncidentTypeRepository
             $incidentType = $page == config('omni.ALL_PAGE') ?
                 $query->with(
                     'category.department',
-                    'slaSetting.targets:id,sla_id,escalation_level',
+                    'slaSetting.targets:id,sla_id,escalation_level,priority_type',
                     'priority:id,name'
                 )->get() : $query->with(
                     'category.department',
-                    'slaSetting.targets:id,sla_id,escalation_level',
+                    'slaSetting.targets:id,sla_id,escalation_level,priority_type',
                     'priority:id,name'
                 )->paginate($perPage);
             return $this->apiResponse->getResponseStructure(
