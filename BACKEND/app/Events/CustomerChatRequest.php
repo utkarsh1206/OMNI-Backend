@@ -13,18 +13,18 @@ class CustomerChatRequest implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $roomId;
+    private $customerChat;
 
     private $domain;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($data)
+    public function __construct($data, $domain)
     {
-        $this->roomId = $data['room_id'];
-        $this->domain = $data['domain'];
-        generateLogs('info', 'broadcast Data: '.json_encode(['roomId' => $this->roomId]));
+        $this->customerChat = $data;
+        $this->domain = $domain;
+        generateLogs('info', 'broadcast Data: '.json_encode(['customerChat' => $this->customerChat]));
     }
 
     /**
@@ -47,9 +47,9 @@ class CustomerChatRequest implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: '.json_encode(['roomId' => $this->roomId]));
+        generateLogs('info', 'broadcastWith Data: '.json_encode(['customerChat' => $this->customerChat]));
         return [
-            'roomId' => $this->roomId, 
+            'customerChat' => $this->customerChat, 
         ];
     }
 }
