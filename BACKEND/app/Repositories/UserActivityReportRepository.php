@@ -250,7 +250,7 @@ class UserActivityReportRepository
                 'caller_user_extension',
                 'called_phone_number',
                 DB::raw('SEC_TO_TIME(call_talk_duration) as call_talk_duration'),
-                'call_status',
+                'call_dispo_status',
                 'created_at',
                 'call_date'
             )
@@ -344,11 +344,17 @@ class UserActivityReportRepository
     private function getDailyUserActivity($user_id, $date)
     {
         try {
-            return UserDailyActivity::where('user_id', $user_id)
+            return UserDailyActivity::with('pauseCode')
+                ->where('user_id', $user_id)
                 ->when($date, function ($query) use ($date) {
                     $query->whereDate('created_at', date('Y-m-d', strtotime($date)));
                 })
-                ->get();
+                ->get()
+                ->map(function ($activity) {
+                    $activityArray = $activity->toArray();
+                    $activityArray['pause_code'] = optional($activity->pauseCode)->code ?? null;
+                    return $activityArray;
+                });
         } catch (Exception $e) {
             generateLogs('error', 'Error in UserActivityReportRepository@getDailyUserActivity: ' . $e->getMessage());
             throw $e;

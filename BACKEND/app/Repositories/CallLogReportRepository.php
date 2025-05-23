@@ -59,7 +59,7 @@ class CallLogReportRepository
     /**
      * Builds the query for fetching call logs based on request filters.
      */
-    private function buildCallLogQuery(Request $request)
+    private function buildCallLogQuery(Request $request, $applyOrderById = true)
     {
         $filters = [
             'startDate' => $request->input('startDate', null),
@@ -97,8 +97,12 @@ class CallLogReportRepository
             ->whereBetween(DB::raw('DATE(call_date)'), [
                 Carbon::parse($filters['startDate'])->toDateString(),
                 Carbon::parse($filters['endDate'])->toDateString()
-            ])
-            ->orderBy('id', 'desc');
+            ]);
+
+            // Conditional ordering
+            if ($applyOrderById) {
+                $query->orderBy('id', 'desc');
+            }
 
         // Apply filters if present
         if (!empty($filters['campaign_id'])) {
@@ -201,7 +205,7 @@ class CallLogReportRepository
     public function getChartData(Request $request)
     {
         try {
-            $query = $this->buildCallLogQuery($request);
+            $query = $this->buildCallLogQuery($request, false);
             if (!$query) {
                 return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.record_not_found'));
             }
@@ -264,7 +268,7 @@ class CallLogReportRepository
     private function getGroupedData(Request $request, $groupByField)
     {
         try {
-            $query = $this->buildCallLogQuery($request);
+            $query = $this->buildCallLogQuery($request, false);
             if (!$query) {
                 return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.record_not_found'));
             }
@@ -274,6 +278,7 @@ class CallLogReportRepository
                 DB::raw('COUNT(*) as total_calls')
             )
                 ->groupBy($groupByField)
+                ->orderBy('total_calls', 'desc')
                 ->get();
 
             $formatted = $groupedData->map(function ($item) use ($groupByField) {

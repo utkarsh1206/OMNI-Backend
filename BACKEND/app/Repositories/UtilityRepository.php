@@ -21,122 +21,237 @@ class UtilityRepository
         $this->authId = auth()->user()->id;
     }
 
-    public function export($request)
+    // public function export($request)
+    // {
+    //     try {
+    //         $payload = extractPayload($request->bearerToken());
+    //         $database = $payload['db'] ?? 'omnichannel';
+    //         $backupFolder = storage_path('app/public/exports');
+    //         $filename = 'db_backup_' . now()->format('Ymd_His') . '.sql';
+    //         $filePath = $backupFolder . '/' . $filename;
+
+    //         if (!file_exists($backupFolder)) {
+    //             mkdir($backupFolder, 0755, true);
+    //         }
+
+    //         $tables = DB::select('SHOW TABLES');
+    //         $tableKey = 'Tables_in_' . $database;
+
+    //         $sqlContent = '';
+
+    //         foreach ($tables as $table) {
+    //             $tableName = $table->$tableKey;
+
+    //             // Get the CREATE TABLE statement
+    //             $createTableRow = DB::selectOne("SHOW CREATE TABLE `$tableName`");
+    //             $createTableStatement = $createTableRow->{'Create Table'};
+
+    //             $sqlContent .= "-- ----------------------------\n";
+    //             $sqlContent .= "-- Table structure for `$tableName`\n";
+    //             $sqlContent .= "-- ----------------------------\n";
+    //             $sqlContent .= "DROP TABLE IF EXISTS `$tableName`;\n";
+    //             $sqlContent .= $createTableStatement . ";\n\n";
+
+    //             // Get the data of the table
+    //             $rows = DB::table($tableName)->get();
+    //             if ($rows->isNotEmpty()) {
+    //                 $sqlContent .= "-- ----------------------------\n";
+    //                 $sqlContent .= "-- Data for table `$tableName`\n";
+    //                 $sqlContent .= "-- ----------------------------\n";
+    //             }
+
+    //             $batchSize = 10;
+    //             $batch = [];
+    //             $columns = [];
+    //             $now = now()->format('Y-m-d H:i:s');
+
+    //             foreach ($rows as $index => $row) {
+    //                 $row = (array) $row;
+
+    //                 if (array_key_exists('created_at', $row)) {
+    //                     $row['created_at'] = $row['created_at'] ?? $now;
+    //                 }
+    //                 if (array_key_exists('updated_at', $row)) {
+    //                     $row['updated_at'] = $row['updated_at'] ?? $now;
+    //                 }
+
+    //                 if (empty($columns)) {
+    //                     $columns = array_keys($row);
+    //                 }
+
+    //                 $escapedValues = array_map(function ($value) {
+    //                     return DB::getPdo()->quote($value);
+    //                 }, array_values($row));
+
+    //                 $batch[] = '(' . implode(', ', $escapedValues) . ')';
+
+    //                 // Write batch when full or on last item
+    //                 if (count($batch) === $batchSize || $index === $rows->count() - 1) {
+    //                     $columnsList = '`' . implode('`, `', $columns) . '`';
+    //                     $sqlContent .= "INSERT INTO `$tableName` ($columnsList) VALUES\n";
+    //                     $sqlContent .= implode(",\n", $batch) . ";\n";
+    //                     $batch = [];
+    //                 }
+    //             }
+    //             $sqlContent .= "\n\n";
+    //         }
+
+    //         file_put_contents($filePath, $sqlContent);
+
+    //         // File size for logging
+    //         $fileSizeBytes = filesize($filePath);
+    //         $fileSize = $fileSizeBytes > 1048576
+    //             ? number_format($fileSizeBytes / 1048576, 1) . ' MB'
+    //             : number_format($fileSizeBytes / 1024, 2) . ' KB';
+
+    //         // Activity logging
+    //         $activityData = [
+    //             "EDIT_ID" => md5(rand()),
+    //             'DOMAIN' => $this->domain,
+    //             'USER_ID' => $this->authId,
+    //             'DESCRIPTION' => 'Database export',
+    //             'ACTIVITY_DATETIME' => now(),
+    //             'ACTIVITY_TYPE' => 'Export',
+    //             'ACTIVITY_FROM' => 'System',
+    //             'IS_SUPERADMIN' => 'Yes',
+    //             'DATABASE_FILE_SIZE' => $fileSize,
+    //             'IS_DELETE' => 'No',
+    //             'DATABASE_FILES' => $filename,
+    //             'APPLICATION_FILE' => null,
+    //             'APPLICATION_FILE_SIZE' => null,
+    //             'CREATED' => now(),
+    //         ];
+    //         // Log or store in DB if needed
+    //         generateLogs('info', 'Database export complete:  ' . json_encode(['activityData' => $activityData]));
+
+    //         $fileDetails = [
+    //             'file_name' => $filename,
+    //             'file_size' => $fileSize,
+    //         ];
+
+    //         $this->store($fileDetails, 'Export');
+
+    //         return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.export_success'));
+
+    //     } catch (Exception $ex) {
+    //         generateLogs('error', 'Error in Database Export: ', $ex->getMessage());
+    //         return $this->apiResponse->handleAndResponseException($ex);
+    //     }
+    // }
+
+    public function export(Request $request)
     {
-        try {
-            $payload = extractPayload($request->bearerToken());
-            $database = $payload['db'] ?? 'omnichannel';
-            $backupFolder = storage_path('app/public/exports');
-            $filename = 'db_backup_' . now()->format('Ymd_His') . '.sql';
-            $filePath = $backupFolder . '/' . $filename;
+        $payload = extractPayload($request->bearerToken());
+        $database = $payload['db'] ?? 'omnichannel';
+        $backupFolder = storage_path('app/public/exports');
+        $filename = 'db_backup_' . now()->format('Ymd_His') . '.sql';
+        $filePath = $backupFolder . '/' . $filename;
 
-            if (!file_exists($backupFolder)) {
-                mkdir($backupFolder, 0755, true);
-            }
-
-            $tables = DB::select('SHOW TABLES');
-            $tableKey = 'Tables_in_' . $database;
-
-            $sqlContent = '';
-
-            foreach ($tables as $table) {
-                $tableName = $table->$tableKey;
-
-                // Get the CREATE TABLE statement
-                $createTableRow = DB::selectOne("SHOW CREATE TABLE `$tableName`");
-                $createTableStatement = $createTableRow->{'Create Table'};
-
-                $sqlContent .= "-- ----------------------------\n";
-                $sqlContent .= "-- Table structure for `$tableName`\n";
-                $sqlContent .= "-- ----------------------------\n";
-                $sqlContent .= "DROP TABLE IF EXISTS `$tableName`;\n";
-                $sqlContent .= $createTableStatement . ";\n\n";
-
-                // Get the data of the table
-                $rows = DB::table($tableName)->get();
-                if ($rows->isNotEmpty()) {
-                    $sqlContent .= "-- ----------------------------\n";
-                    $sqlContent .= "-- Data for table `$tableName`\n";
-                    $sqlContent .= "-- ----------------------------\n";
-                }
-
-                $batchSize = 10;
-                $batch = [];
-                $columns = [];
-                $now = now()->format('Y-m-d H:i:s');
-                
-                foreach ($rows as $index => $row) {
-                    $row = (array) $row;
-
-                    if (array_key_exists('created_at', $row)) {
-                        $row['created_at'] = $row['created_at'] ?? $now;
-                    }
-                    if (array_key_exists('updated_at', $row)) {
-                        $row['updated_at'] = $row['updated_at'] ?? $now;
-                    }
-
-                    if (empty($columns)) {
-                        $columns = array_keys($row);
-                    }
-
-                    $escapedValues = array_map(function ($value) {
-                        return DB::getPdo()->quote($value);
-                    }, array_values($row));
-
-                    $batch[] = '(' . implode(', ', $escapedValues) . ')';
-
-                    // Write batch when full or on last item
-                    if (count($batch) === $batchSize || $index === $rows->count() - 1) {
-                        $columnsList = '`' . implode('`, `', $columns) . '`';
-                        $sqlContent .= "INSERT INTO `$tableName` ($columnsList) VALUES\n";
-                        $sqlContent .= implode(",\n", $batch) . ";\n";
-                        $batch = [];
-                    }
-                }
-                $sqlContent .= "\n\n";
-            }
-
-            file_put_contents($filePath, $sqlContent);
-
-            // File size for logging
-            $fileSizeBytes = filesize($filePath);
-            $fileSize = $fileSizeBytes > 1048576
-                ? number_format($fileSizeBytes / 1048576, 1) . ' MB'
-                : number_format($fileSizeBytes / 1024, 2) . ' KB';
-
-            // Activity logging
-            $activityData = [
-                "EDIT_ID" => md5(rand()),
-                'DOMAIN' => $this->domain,
-                'USER_ID' => $this->authId,
-                'DESCRIPTION' => 'Database export',
-                'ACTIVITY_DATETIME' => now(),
-                'ACTIVITY_TYPE' => 'Export',
-                'ACTIVITY_FROM' => 'System',
-                'IS_SUPERADMIN' => 'Yes',
-                'DATABASE_FILE_SIZE' => $fileSize,
-                'IS_DELETE' => 'No',
-                'DATABASE_FILES' => $filename,
-                'APPLICATION_FILE' => null,
-                'APPLICATION_FILE_SIZE' => null,
-                'CREATED' => now(),
-            ];
-            // Log or store in DB if needed
-            generateLogs('info', 'Database export complete:  ' . json_encode(['activityData' => $activityData]));
-
-            $fileDetails = [
-                'file_name' => $filename,
-                'file_size' => $fileSize,
-            ];
-
-            $this->store($fileDetails, 'Export');
-
-            return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.export_success'));
-
-        } catch (Exception $ex) {
-            generateLogs('error', 'Error in Database Export: ', $ex->getMessage());
-            return $this->apiResponse->handleAndResponseException($ex);
+        if (!file_exists($backupFolder)) {
+            mkdir($backupFolder, 0755, true);
         }
+
+        $tables = DB::select('SHOW TABLES');
+        $tableKey = 'Tables_in_' . $database;
+        $sqlContent = '';
+
+        $sqlContent .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+
+        foreach ($tables as $table) {
+            $tableName = $table->$tableKey;
+
+            // Get the CREATE TABLE statement
+            $createTableRow = DB::selectOne("SHOW CREATE TABLE `$tableName`");
+            $createTableStatement = $createTableRow->{'Create Table'};
+
+            $sqlContent .= "-- ----------------------------\n";
+            $sqlContent .= "-- Table structure for `$tableName`\n";
+            $sqlContent .= "-- ----------------------------\n";
+            $sqlContent .= "DROP TABLE IF EXISTS `$tableName`;\n";
+            $sqlContent .= $createTableStatement . ";\n\n";
+
+            // Get the data of the table
+            $rows = DB::table($tableName)->get();
+            if ($rows->isNotEmpty()) {
+                $sqlContent .= "-- ----------------------------\n";
+                $sqlContent .= "-- Data for table `$tableName`\n";
+                $sqlContent .= "-- ----------------------------\n";
+            }
+
+            $batchSize = 10;
+            $batch = [];
+            $columns = [];
+            $now = now()->format('Y-m-d H:i:s');
+
+            foreach ($rows as $index => $row) {
+                $row = (array) $row;
+
+                if (array_key_exists('created_at', $row)) {
+                    $row['created_at'] = $row['created_at'] ?? $now;
+                }
+                if (array_key_exists('updated_at', $row)) {
+                    $row['updated_at'] = $row['updated_at'] ?? $now;
+                }
+
+                if (empty($columns)) {
+                    $columns = array_keys($row);
+                }
+
+                // Inline value escape logic
+                $escapedValues = array_map(function ($value) {
+                    if (is_null($value)) {
+                        return 'NULL';
+                    }
+                    return DB::getPdo()->quote($value);
+                }, array_values($row));
+
+                $batch[] = '(' . implode(', ', $escapedValues) . ')';
+
+                if (count($batch) === $batchSize || $index === $rows->count() - 1) {
+                    $columnsList = '`' . implode('`, `', $columns) . '`';
+                    $sqlContent .= "INSERT INTO `$tableName` ($columnsList) VALUES\n";
+                    $sqlContent .= implode(",\n", $batch) . ";\n";
+                    $batch = [];
+                }
+            }
+
+            $sqlContent .= "\n\n";
+        }
+
+        file_put_contents($filePath, $sqlContent);
+
+        $fileSizeBytes = filesize($filePath);
+        $fileSize = $fileSizeBytes > 1048576
+            ? number_format($fileSizeBytes / 1048576, 1) . ' MB'
+            : number_format($fileSizeBytes / 1024, 2) . ' KB';
+
+        $activityData = [
+            "EDIT_ID" => md5(rand()),
+            'DOMAIN' => $this->domain,
+            'USER_ID' => $this->authId,
+            'DESCRIPTION' => 'Database export',
+            'ACTIVITY_DATETIME' => now(),
+            'ACTIVITY_TYPE' => 'Export',
+            'ACTIVITY_FROM' => 'System',
+            'IS_SUPERADMIN' => 'Yes',
+            'DATABASE_FILE_SIZE' => $fileSize,
+            'IS_DELETE' => 'No',
+            'DATABASE_FILES' => $filename,
+            'APPLICATION_FILE' => null,
+            'APPLICATION_FILE_SIZE' => null,
+            'CREATED' => now(),
+        ];
+
+        generateLogs('info', 'Database export complete:  ' . json_encode(['activityData' => $activityData]));
+
+        $fileDetails = [
+            'file_name' => $filename,
+            'file_size' => $fileSize,
+        ];
+
+        $this->store($fileDetails, 'Export');
+
+        return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.export_success'));
     }
 
     public function exportUtility(Request $request)
@@ -147,26 +262,16 @@ class UtilityRepository
     public function import(Request $request)
     {
         try {
-            // Get the uploaded file
-            // $file = $request->file('import_file');
-            // $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-            // $extension = $file->getClientOriginalExtension();
-            // $timestamp = now()->format('Ymd_His');
-
-            // // New filename: user_fileName_TIMESTAMP.sql
-            // $newFilename = $originalName . '_' . $timestamp . '.' . $extension;
-
-            $importPath = storage_path('app'.DIRECTORY_SEPARATOR.'import');
+            $importPath = storage_path('app/public' . DIRECTORY_SEPARATOR . 'import');
 
             // Create the directory if it doesn't exist
             if (!File::exists($importPath)) {
                 File::makeDirectory($importPath, 0755, true);
             }
 
-            $file = uploadAttachment($request, 'import_file', 'import');    
-           
-            $fullFilePath = storage_path('app/public'. DIRECTORY_SEPARATOR . $file['path']);
-            
+            $file = uploadAttachment($request, 'import_file', 'import');
+            $fullFilePath = storage_path('app/public' . DIRECTORY_SEPARATOR . $file['path']);
+
             // Read and execute SQL queries line by line
             $templine = '';
             foreach (File::lines($fullFilePath) as $line) {
@@ -203,22 +308,21 @@ class UtilityRepository
                 'IS_SUPERADMIN' => 'Yes',
                 'FILE_SIZE' => $fileSize,
                 'IS_DELETE' => 'No',
-                'FILES' => $$file['fileName'],
+                'FILES' => $file['fileName'],
                 'CREATED' => now(),
             ];
 
             generateLogs('info', 'Database import complete: ' . json_encode(['activityData' => $activityData]));
-            
+
             $fileDetails = [
-                'file_name' => $$file['fileName'],
+                'file_name' => $file['fileName'],
                 'file_size' => $fileSize,
             ];
 
             $this->store($fileDetails, 'Import');
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.import_success'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.import_success'));
         } catch (Exception $ex) {
-            dd($ex->getMessage());
             generateLogs('error', 'Error in Database Import: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }

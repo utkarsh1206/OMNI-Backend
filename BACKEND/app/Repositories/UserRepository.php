@@ -319,14 +319,8 @@ class UserRepository
     public function profileUpdate(Request $request, $user)
     {
         try {
-            $payload = extractPayload($request->bearerToken());
-            $data = getDbConnection($payload['domain']);
-            DB::setDefaultConnection($data->getName());
-
-            $user1 = Users::find($user);
-            generateLogs('info', 'after find user');
-            generateLogs('info', 'retrieved user: ', $user1);
-            $user1->update([
+            // $user->update($request->all());
+            $user->update([
                 // "tenant_id" => $request->tenant_id,
                 "type" => $request->type,
                 "first_name" => $request->first_name,
@@ -334,7 +328,7 @@ class UserRepository
                 "email" => $request->email,
                 "username" => $request->username,
                 // "password" => bcrypt($request->password),
-                //"domain" => $request->domain,
+                // "domain" => $request->domain,
                 "mobile" => $request->mobile,
                 "status" => $request->status,
                 "role_id" => $request->role_id,
@@ -350,7 +344,7 @@ class UserRepository
                 "address" => $request->address,
                 "gender" => $request->gender
             ]);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $user1, trans('message.users_updated'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $user, trans('message.users_updated'));
         } catch (Exception $e) {
             generateLogs('error', 'Error during Update User : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -452,16 +446,9 @@ class UserRepository
     public function myProfile($request)
     {
         try {
-            $token = $request->bearerToken();
-            if ($token != "") {
-                $payload = extractPayload($token);
-                $users = Users::where('id', $payload['id'])->first();
-                $return_array['profile_info'] = $users->toArray();
-                unset($return_array['profile_info']['password']);
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $return_array, trans('message.fetch_data'));
-            } else {
-                return response()->json(['error' => trans("message.user_not_found")], ResponseHTTP::HTTP_FORBIDDEN);
-            }
+            $users = Users::findOrFail(auth()->user()->id);
+            $return_array['profile_info'] = $users->toArray();
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $return_array, trans('message.fetch_data'));
         } catch (Exception $e) {
             generateLogs('error', 'Error during My Profile : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
