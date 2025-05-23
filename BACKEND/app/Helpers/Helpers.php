@@ -330,7 +330,7 @@ if (! function_exists('uploadAttachment')) {
             $attachment = $request->file($fieldName);
             if (is_array($attachment)) {
                 foreach ($attachment as $value) {
-                    $filename = getSanitizedOriginalName($value->getClientOriginalName()) . '.' . $value->getClientOriginalExtension();
+                    $filename = getSanitizedOriginalName($value->getClientOriginalName()) . '_' . now()->timestamp. '.' . $value->getClientOriginalExtension();
                     // $filename = now()->format('Y_m_d_H_i_s') . '.' . $value->getClientOriginalExtension();
                     $filePath = $value->storeAs($directory, $filename, 'public');
                     $fileInfo[] = [
@@ -340,7 +340,7 @@ if (! function_exists('uploadAttachment')) {
                 }
             } else {
                 // $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
-                $filename = getSanitizedOriginalName($attachment->getClientOriginalName()) . '.' . $attachment->getClientOriginalExtension();
+                $filename = getSanitizedOriginalName($attachment->getClientOriginalName()) . '_' . now()->timestamp. '.' . $attachment->getClientOriginalExtension();
                 $filePath = $attachment->storeAs($directory, $filename, 'public');
                 $fileInfo = [
                     'fileName' => $filename,
