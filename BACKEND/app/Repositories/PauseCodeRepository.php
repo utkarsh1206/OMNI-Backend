@@ -29,16 +29,16 @@ class PauseCodeRepository
             $query = PauseCode::query();
 
             if ($code) {
-                $query->where('code', $code);
+                $query->where('code', 'like', "%$code%");
             }
             if ($name) {
-                $query->where('name', $name);
+                $query->where('name', 'like', "%$name%");
             }
 
             if (!empty($searchTerm)) {
-                $query->where(function($q) use ($searchTerm) {
+                $query->where(function ($q) use ($searchTerm) {
                     $q->where('code', 'like', "%$searchTerm%")
-                      ->orWhere('name', 'like', "%$searchTerm%");
+                        ->orWhere('name', 'like', "%$searchTerm%");
                 });
             }
 

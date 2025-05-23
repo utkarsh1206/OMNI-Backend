@@ -42,9 +42,8 @@ class ApiConfigurationRepository
                 $smsConfigurations = $smsConfigurations->orWhere('config_value', 'like', '%' . $search . '%');
             }
 
-
             if ($apiConfigId) {
-                $smsConfigurations = $smsConfigurations->where('api_config_type_id',$apiConfigId);
+                $smsConfigurations = $smsConfigurations->where('api_config_type_id', $apiConfigId);
             }
 
             $smsConfigurations = $smsConfigurations->pluck("provider_id");
@@ -69,15 +68,12 @@ class ApiConfigurationRepository
     public function store($request)
     {
         try {
-           
             if($request->api_config_type_id == 1)
             {
                 $smsProviers = SmsProvider::Create([
                     "name" => $request->provider_name,
                 ]);
-    
             }
-
             $requestConfig = $request->configurations;
             if($request->api_config_type_id == 3)
             {
@@ -85,15 +81,15 @@ class ApiConfigurationRepository
                     "name" => $request->provider_name,
                 ]);
                 establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
-                $detailsInfo =Detail::where("domain",auth()->user()->domain)->first();
+                $detailsInfo = Detail::where("domain",auth()->user()->domain)->first();
                 $uid = $detailsInfo->uin ?? '';
-                $webhookUrl = url("api/chatboot-webhook?id=".$uid."&source=".$request->provider_name);
+                $webhookUrl = url("api/chatbot-webhook/".$uid);
                 $requestConfig[0]['web_hook_url'] = $webhookUrl;
 
-                $webhookUrl = url("api/chatbot-room-id?id=".$uid."&source=" . $request->provider_name);
+                $webhookUrl = url("api/chatbot-room-id/".$uid);
                 $requestConfig[0]['web_hook_auth_url'] = $webhookUrl;
             }
-            getDbConnection($detailsInfo->domain);
+            // getDbConnection($detailsInfo->domain);
             if (count($requestConfig) > 0) {
                 foreach ($requestConfig as $config) {
                     foreach ($config as $key => $value) {
@@ -101,7 +97,7 @@ class ApiConfigurationRepository
                             'provider_id' => $smsProviers->id ?? 0,
                             'config_key' => $key,
                             'config_value' => $value,
-                            'api_config_type_id'=>$request->api_config_type_id,
+                            'api_config_type_id' => $request->api_config_type_id,
                         ]);
                     }
                 }
@@ -181,7 +177,11 @@ class ApiConfigurationRepository
     private function formatListingData($configurations, $method = null, $enabled = null)
     {
         $formattedData =  collect($configurations)->map(function ($item) use ($method, $enabled) {
-            $providerInfo = ApiConfiguration::select(["id", "config_key", "config_value","api_config_type_id"])->where(["provider_id"=> $item['id'],"api_config_type_id"=>request()->api_config_type_id]);
+            $providerInfo = ApiConfiguration::select(["id", "config_key", "config_value", "api_config_type_id"])
+            ->where(["provider_id" => $item['id']]);
+            if(request()->api_config_type_id) {
+              $providerInfo->where(["api_config_type_id" => request()->api_config_type_id]);
+            }
             $providerInfo = $providerInfo->get();
 
             return [

@@ -2,10 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\HomeController;
 
-Route::get('/', function () {
-    return 'Backend is ready';
-});
+// Route::get('/', function () {
+//     return 'Backend is ready';
+// });
+
+Route::get('/', [HomeController::class, 'index']);
 
 Route::get('/download/{filename}', function ($filename) {
     $path = 'attachment/' . $filename;

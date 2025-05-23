@@ -24,4 +24,9 @@ class UserDailyActivity extends Model
         'total_login_duration',
         'dispo_code',
     ];
+
+    public function pauseCode()
+    {
+        return $this->belongsTo(PauseCode::class, 'pause_code', 'id');
+    }
 }
