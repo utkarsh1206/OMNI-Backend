@@ -335,7 +335,8 @@ if (! function_exists('uploadAttachment')) {
                     $filePath = $value->storeAs($directory, $filename, 'public');
                     $fileInfo[] = [
                         'fileName' => $filename,
-                        'path' => $filePath
+                        'path' => $filePath,
+                        'mimeType' => $value->getMimeType()
                     ];
                 }
             } else {
@@ -344,7 +345,8 @@ if (! function_exists('uploadAttachment')) {
                 $filePath = $attachment->storeAs($directory, $filename, 'public');
                 $fileInfo = [
                     'fileName' => $filename,
-                    'path' => $filePath
+                    'path' => $filePath,
+                    'mimeType' => $attachment->getMimeType()
                 ];
             }
         }

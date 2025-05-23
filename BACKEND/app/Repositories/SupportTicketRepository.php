@@ -170,7 +170,6 @@ class SupportTicketRepository
         }
     }
 
-
     public function store(Request $request)
     {
         try {
@@ -358,36 +357,6 @@ class SupportTicketRepository
         ];
     }
 
-    // private function getColorforNotification($type)
-    // {
-    //     $color =   [
-    //         "Ticket Created" => "primary",
-    //         "Ticket Transfer" => "info",
-    //         "Ticket Merge" => "warning",
-    //         "Priority Changed" => "secondary",
-    //         "Type Changed" => "danger",
-    //         "Ticket Close" => "success",
-    //         "Status Changed" => "info",
-    //     ];
-
-    //     return $color[$type] ?? "secondary";
-    // }
-
-    // private function getIconforNotification($type)
-    // {
-    //     $icon =   [
-    //         "Ticket Created" => "cilUser",
-    //         "Ticket Transfer" => "cilTransfer",
-    //         "Ticket Merge" => "cilSync",
-    //         "Priority Changed" => "cilChevronDoubleUp",
-    //         "Type Changed" => "cilFire",
-    //         "Ticket Close" => "cilCheck",
-    //         "Status Changed" => "cilBolt",
-    //     ];
-
-    //     return $icon[$type] ?? "cilAsteriskCircle";
-    // }
-
     private function sendSms($apiUser, $type, $phone, $supportticket)
     {
         $smsInfo = new SmsService;
@@ -403,18 +372,16 @@ class SupportTicketRepository
     {
         $attachment_urls = [];
         $mail_attachment_urls = [];
-
         if ($request->hasFile('attachment')) {
-            $files = $request->file('attachment');
-            $files = is_array($files) ? $files : [$files];
-
+           
+            $files = uploadAttachment($request, "attachment", "support_ticket");
+           
             foreach ($files as $attachment) {
-                $file = uploadAttachment($request, "attachment", "support_ticket");
-                $attachment_urls[] = url('storage/' . $file['path']);
+                $attachment_urls[] = url('storage/' . $attachment['path']);
                 $mail_attachment_urls[] = [
-                    'path' => storage_path('app/public/' . $file['path']),
-                    'name' => $file['fileName'],
-                    'mime' => $attachment->getMimeType()
+                    'path' => storage_path('app/public/' . $attachment['path']),
+                    'name' => $attachment['fileName'],
+                    'mime' => $attachment['mimeType']
                 ];
             }
         }
