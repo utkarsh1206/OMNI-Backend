@@ -153,7 +153,7 @@ class AgentMessageRepository
     {
         try {
             Message::where('is_read', 'unread')
-                ->where('receiver_id', $request->agent_id)
+                ->where('user_id', $request->agent_id)
                 ->where('id', '<=', $request->last_message_id)
                 ->update(['is_read' => 'read']);
 

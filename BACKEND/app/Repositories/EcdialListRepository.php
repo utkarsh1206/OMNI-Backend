@@ -26,6 +26,7 @@ class EcdialListRepository
             $searchTerm = $request->input('search', '');
             $status = $request->input('status', '');
             $name = $request->input('name');
+            $description = $request->input('description');
             $perPage = $request->input('per_page', 10);
             $page = $request->input('page', 1);
 
@@ -46,7 +47,11 @@ class EcdialListRepository
             }
 
             if (!empty($name)) {
-                $query->where('name', $name);
+                $query->where('name', 'like', "%$name%");
+            }
+
+            if (!empty($description)) {
+                $query->where('description', 'like', "%$description%");
             }
             $listData = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $listData, trans('message.data_fetch'));

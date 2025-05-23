@@ -7,7 +7,7 @@ use App\Models\Message;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 use App\Services\Chat360Service;
-use App\Events\ChatMessagesStored;
+use App\Events\ReceivedCustomerMessages;
 
 class UserMessageRepository
 {
@@ -75,7 +75,7 @@ class UserMessageRepository
                 }
 
                 if (!empty($chatMessage)) {
-                    broadcast(new ChatMessagesStored($chatMessage));
+                    broadcast(new ReceivedCustomerMessages($chatMessage));
                     Message::insert($chatMessage);
                     generateLogs('info', "Inserted " . count($chatMessage) . " chat messages successfully.");
                 } else {

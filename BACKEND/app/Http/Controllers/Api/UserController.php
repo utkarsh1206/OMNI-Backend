@@ -602,7 +602,7 @@ class UserController extends Controller
      *     )
      * )
      */
-    public function profileUpdate(Request $request, $user)
+    public function profileUpdate(Request $request, Users $user)
     {
         return $this->userRepository->profileUpdate($request, $user);
     }

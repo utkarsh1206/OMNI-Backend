@@ -17,7 +17,7 @@ class Users extends Authenticatable implements JWTSubject
 
     protected $appends = ['user_role_id', 'online_status', 'usergroup_name'];
 
-    protected $hidden = ['usergroup'];
+    protected $hidden = ['usergroup', 'password'];
 
     protected $fillable = [
         // "tenant_id",

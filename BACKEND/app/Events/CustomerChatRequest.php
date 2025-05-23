@@ -9,22 +9,22 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class RoomIdForUserMessage implements ShouldBroadcastNow
+class CustomerChatRequest implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $roomId;
+    private $customerChat;
 
     private $domain;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($data)
+    public function __construct($data, $domain)
     {
-        $this->roomId = $data['room_id'];
-        $this->domain = $data['domain'];
-        generateLogs('info', 'broadcast Data: '.json_encode(['roomId' => $this->roomId]));
+        $this->customerChat = $data;
+        $this->domain = $domain;
+        generateLogs('info', 'broadcast Data: '.json_encode(['customerChat' => $this->customerChat]));
     }
 
     /**
@@ -37,19 +37,19 @@ class RoomIdForUserMessage implements ShouldBroadcastNow
         generateLogs(
             'info',
             'Channel Name: ' . json_encode([
-                'Channel' => "{$this->domain}-message-room"
+                'Channel' => "{$this->domain}-customer-chat-request"
             ])
         );
         return [
-            new Channel("{$this->domain}-message-room"),
+            new Channel("{$this->domain}-customer-chat-request"),
         ];
     }
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: '.json_encode(['roomId' => $this->roomId]));
+        generateLogs('info', 'broadcastWith Data: '.json_encode(['customerChat' => $this->customerChat]));
         return [
-            'roomId' => $this->roomId, 
+            'customerChat' => $this->customerChat, 
         ];
     }
 }
