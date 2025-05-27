@@ -49,6 +49,9 @@ class UserActivityReportRepository
             $startDatetime = Carbon::parse($request->startDate);
             $endDatetime = Carbon::parse($request->endDate);
 
+            // Get the authenticated user
+            $user = auth()->user();
+
             // Build the base query
             $query = UserLoginLog::select([
                 'user_id',
@@ -61,6 +64,11 @@ class UserActivityReportRepository
                 ->groupBy('login_date', 'user_id')
                 ->with('user')
                 ->orderByDesc('login_date');
+
+            // Apply user_id filter if role_id is 3
+            if ($user->role_id == 3) {
+                $query->where('user_id', $user->id);
+            }
 
             // Handle different response formats
             if ($page == config('omni.ALL_PAGE')) {
@@ -532,11 +540,19 @@ class UserActivityReportRepository
             $startDatetime = Carbon::parse($request->startDate);
             $endDatetime = Carbon::parse($request->endDate);
 
+            // Get the authenticated user
+            $user = auth()->user();
+
             $query = UserLoginLog::with('user')
                 ->whereBetween('created_at', [$startDatetime, $endDatetime]);
 
             if ($request->filled('user_id')) {
                 $query->where('user_id', $request->user_id);
+            }
+
+            // Apply user_id filter if role_id is 3
+            if ($user->role_id == 3) {
+                $query->where('user_id', $user->id);
             }
 
             $logs = $query->get();
@@ -598,41 +614,48 @@ class UserActivityReportRepository
 
                         try {
                             $activityData = $this->getData($detailedRequest);
+                            $responseContent = json_decode($activityData->getContent(), true); // associative array
 
-                            if ($activityData && isset($activityData->original['data'])) {
-                                $details = $activityData->original['data'];
+                            if (isset($responseContent['data'])) {
+                                $details = json_decode(json_encode($responseContent['data'])); // Convert to object
+                            } else {
+                                $details = null;
+                            }
+
+                            if ($details) {
+                                // $details = json_decode(json_encode($activityData->getData()->data));
 
                                 // Add separator
                                 fputcsv($file, ['--- DETAILED ACTIVITY DATA ---']);
 
                                 fputcsv($file, ['First Login', 'Last Logout', 'Total Log Time']);
                                 fputcsv($file, [
-                                    $details['dash_data']->first_login ?? '00:00:00',
-                                    $details['dash_data']->last_logout ?? '00:00:00',
-                                    $details['dash_data']->total_log_time ?? '00:00:00'
+                                    $details->dash_data->first_login ?? '00:00:00',
+                                    $details->dash_data->last_logout ?? '00:00:00',
+                                    $details->dash_data->total_log_time ?? '00:00:00'
                                 ]);
 
                                 fputcsv($file, ['']);
                                 fputcsv($file, ['Total Talk', 'Talk Average', 'Total Pause Time', 'Pause Average', 'Total Ready Time', 'Ready Average']);
                                 fputcsv($file, [
-                                    $details['dash_data']->total_talk ?? '00:00:00',
-                                    $details['dash_data']->talk_avg ?? '00:00:00',
-                                    $details['dash_data']->pause_time ?? '00:00:00',
-                                    $details['dash_data']->pause_time_avg ?? '00:00:00',
-                                    $details['ready_data']->ready ?? '00:00:00',
-                                    $details['ready_data']->ready_avg ?? '00:00:00'
+                                    $details->dash_data->total_talk ?? '00:00:00',
+                                    $details->dash_data->talk_avg ?? '00:00:00',
+                                    $details->dash_data->pause_time ?? '00:00:00',
+                                    $details->dash_data->pause_time_avg ?? '00:00:00',
+                                    $details->ready_data->ready ?? '00:00:00',
+                                    $details->ready_data->ready_avg ?? '00:00:00'
                                 ]);
 
                                 fputcsv($file, ['']);
                                 fputcsv($file, ['--- INCOMING DATA ---']);
                                 fputcsv($file, ['Caller Number', 'Call Time', 'Call Duration', 'Dispo Stat']);
-                                if (!empty($details['incoming']) && count($details['incoming']) > 0) {
-                                    foreach ($details['incoming'] as $incomingData) {
+                                if (!empty($details->incoming) && count($details->incoming) > 0) {
+                                    foreach ($details->incoming as $incomingData) {
                                         fputcsv($file, [
                                             $incomingData->called_phone_number,
                                             $incomingData->call_date,
                                             $incomingData->call_talk_duration,
-                                            $incomingData->call_status
+                                            $incomingData->call_dispo_status
                                         ]);
                                     }
                                 } else {
@@ -642,13 +665,13 @@ class UserActivityReportRepository
                                 fputcsv($file, ['']);
                                 fputcsv($file, ['--- OUTGOING DATA ---']);
                                 fputcsv($file, ['Caller Number', 'Call Time', 'Call Duration', 'Dispo Stat']);
-                                if (!empty($details['outgoing']) && count($details['outgoing']) > 0) {
-                                    foreach ($details['outgoing'] as $outgoingData) {
+                                if (!empty($details->outgoing) && count($details->outgoing) > 0) {
+                                    foreach ($details->outgoing as $outgoingData) {
                                         fputcsv($file, [
                                             $outgoingData->called_phone_number,
                                             $outgoingData->call_date,
                                             $outgoingData->call_talk_duration,
-                                            $outgoingData->call_status
+                                            $outgoingData->call_dispo_status
                                         ]);
                                     }
                                 } else {
@@ -658,8 +681,8 @@ class UserActivityReportRepository
                                 fputcsv($file, ['']);
                                 fputcsv($file, ['--- DAILY USER ACTIVITY ---']);
                                 fputcsv($file, ['Date/Time', 'Activity', 'Total Login Duration', 'Pause Duration', 'Pause Code', 'Resume Duration', 'Call Duration', 'Dispose Duration', 'Dispose Code']);
-                                if (!empty($details['daily_user_activity']) && count($details['daily_user_activity']) > 0) {
-                                    foreach ($details['daily_user_activity'] as $dailyUserActivity) {
+                                if (!empty($details->daily_user_activity) && count($details->daily_user_activity) > 0) {
+                                    foreach ($details->daily_user_activity as $dailyUserActivity) {
                                         fputcsv($file, [
                                             $dailyUserActivity->created_at,
                                             $dailyUserActivity->activity,
@@ -678,7 +701,7 @@ class UserActivityReportRepository
                                 fputcsv($file, ['']);
 
                                 fputcsv($file, ['--- TOTAL DURATIONS ---']);
-                                if (!empty($details['total_duration'])) {
+                                if (!empty($details->total_duration)) {
                                     fputcsv($file, [
                                         'Total Login Duration',
                                         'Total Pause Duration',
@@ -686,7 +709,7 @@ class UserActivityReportRepository
                                         'Total Call Duration',
                                         'Total Disposition Duration'
                                     ]);
-                                    $total = $details['total_duration'];
+                                    $total = $details->total_duration;
                                     fputcsv($file, [
                                         $total->total_login_d ?? '00:00:00',
                                         $total->total_pause_d ?? '00:00:00',
@@ -701,8 +724,8 @@ class UserActivityReportRepository
 
                                 fputcsv($file, ['--- LOGIN/LOGOUT TIME ---']);
                                 fputcsv($file, ['Login Time', 'Login Time']);
-                                if (!empty($details['log_data']) && count($details['log_data']) > 0) {
-                                    foreach ($details['log_data'] as $logData) {
+                                if (!empty($details->log_data) && count($details->log_data) > 0) {
+                                    foreach ($details->log_data as $logData) {
                                         fputcsv($file, [
                                             $logData->login_time = (!is_null($logData->login_time))
                                                 ? $logData->login_time : 'Closed Browser',
@@ -715,8 +738,8 @@ class UserActivityReportRepository
 
                                 fputcsv($file, ['--- PAUSE/RESUME ACTIVITY ---']);
                                 fputcsv($file, ['Activity', 'Time', 'Reason']);
-                                if (!empty($details['pause_resume_activity']) && count($details['pause_resume_activity']) > 0) {
-                                    foreach ($details['pause_resume_activity'] as $pauseResumeActivity) {
+                                if (!empty($details->pause_resume_activity) && count($details->pause_resume_activity) > 0) {
+                                    foreach ($details->pause_resume_activity as $pauseResumeActivity) {
                                         fputcsv($file, [
                                             $pauseResumeActivity->user_status,
                                             $pauseResumeActivity->time,
@@ -732,8 +755,8 @@ class UserActivityReportRepository
                                 fputcsv($file, ['--- TOTAL INCOMING/OUTGOING ---']);
                                 fputcsv($file, ['Total Incoming', 'Total Outgoing']);
                                 fputcsv($file, [
-                                    $details['i_call_data']->total,
-                                    $details['o_call_data']->total,
+                                    $details->i_call_data->total,
+                                    $details->o_call_data->total,
                                 ]);
 
                                 // Add separator before next main row
@@ -766,30 +789,45 @@ class UserActivityReportRepository
             $start_date = Carbon::parse($request->input('startDate'));
             $end_date = Carbon::parse($request->input('endDate'));
 
+            // Get authenticated user
+            $user = auth()->user();
+
             // Pause Count Query
-            $pauseCount = PauseResumeUserLog::selectRaw('count(id) as total')
+            $pauseQuery = PauseResumeUserLog::selectRaw('count(id) as total')
                 ->where('user_status', 'Pause')
-                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()])
-                ->first();
+                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()]);
 
             // Resume Count Query
-            $resumeCount = PauseResumeUserLog::selectRaw('count(id) as total')
+            $resumeQuery = PauseResumeUserLog::selectRaw('count(id) as total')
                 ->where('user_status', 'Resume')
-                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()])
-                ->first();
+                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()]);
 
-            $i_count = DB::table('neox_call_logs')
+            $incomingQuery = DB::table('neox_call_logs')
                 ->selectRaw('count(id) as total')
                 ->whereRaw(" call_type = 'incoming'")
                 ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()])
-                ->first();
+                ->where('type', 'call_history');              
 
             // Outgoing Call Count
-            $o_count = DB::table('neox_call_logs')
+            $outgoingQuery = DB::table('neox_call_logs')
                 ->selectRaw('count(id) as total')
                 ->whereRaw(" call_type = 'outgoing'")
                 ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()])
-                ->first();
+                ->where('type', 'call_history');
+
+            // Apply user filter if role_id is 3
+            if ($user->role_id == 3) {
+                $pauseQuery->where('user_id', $user->id);
+                $resumeQuery->where('user_id', $user->id);
+                $incomingQuery->where('caller_username', $user->username);
+                $outgoingQuery->where('caller_username', $user->username);
+            }
+
+            // Execute queries
+            $pauseCount = $pauseQuery->first();
+            $resumeCount = $resumeQuery->first();
+            $i_count = $incomingQuery->first();
+            $o_count = $outgoingQuery->first();
 
             // Return the counts as a JSON response
             $data = [
@@ -797,7 +835,7 @@ class UserActivityReportRepository
                 'resume_count' => $resumeCount->total,
                 'incoming_count' => $i_count->total,
                 'outgoing_count' => $o_count->total,
-            ];
+            ];            
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
