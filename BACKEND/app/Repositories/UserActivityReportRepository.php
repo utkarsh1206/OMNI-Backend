@@ -265,7 +265,7 @@ class UserActivityReportRepository
                 ->where('call_type', $call_type)
                 ->where('caller_username', $user_name)
                 ->whereDate('call_date', $date)
-                ->where('type', 'CALL_HISTORY')
+                ->where('type', 'call_history')
                 ->get();
         } catch (Exception $e) {
             generateLogs('error', 'Error in UserActivityReportRepository@getCallHistoryData: ' . $e->getMessage());
@@ -426,12 +426,12 @@ class UserActivityReportRepository
                     }
                 })
                 ->selectRaw("
-                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}) as calls,
-                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.call_type = 'outgoing' AND nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}) as outgoing_call,
-                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.call_type = 'incoming' AND nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}) as incoming_call,
+                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.type = 'call_history' AND nl.caller_username = u.username {$subCondStr}) as calls,
+                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.call_type = 'outgoing' AND nl.type = 'call_history' AND nl.caller_username = u.username {$subCondStr}) as outgoing_call,
+                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.call_type = 'incoming' AND nl.type = 'call_history' AND nl.caller_username = u.username {$subCondStr}) as incoming_call,
                 (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.type = 'CALL_CONNECTED' AND nl.caller_username = u.username {$subCondStr}) as answered,
-                IFNULL((SELECT SEC_TO_TIME(ROUND(SUM(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}), '00:00:00') as total_talk,
-                IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'CALL_HISTORY' AND nl.caller_username = u.username {$subCondStr}), '00:00:00') as talk_avg,
+                IFNULL((SELECT SEC_TO_TIME(ROUND(SUM(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'call_history' AND nl.caller_username = u.username {$subCondStr}), '00:00:00') as total_talk,
+                IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'call_history' AND nl.caller_username = u.username {$subCondStr}), '00:00:00') as talk_avg,
                 COUNT(ul.id) as login_count,
                 IF(MIN(ul.login_date) IS NOT NULL, CONCAT(MIN(ul.login_date), ' ', MIN(ul.login_time)), 'Not Logged') as first_login,
                 IF(MAX(ul.login_date) IS NOT NULL, CONCAT(MAX(ul.login_date), ' ', MAX(ul.login_time)), 'Not Logged') as last_log,
