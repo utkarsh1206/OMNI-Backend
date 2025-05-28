@@ -39,9 +39,10 @@ class TenantLicenseUpdateRequest extends FormRequest
     {
         // Convert expire_date to epoch timestamp
         if ($this->has('expire_date')) {
-            $this->merge([
-                'expire_date' => Carbon::parse($this->expire_date)->timestamp,
-            ]);
+                $date = Carbon::createFromFormat('Y-m-d', $this->expire_date);
+                $this->merge([
+                    'expire_date' => $date->setTime(12, 0)->timestamp,
+                ]);
         }
     }
 }
