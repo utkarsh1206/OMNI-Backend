@@ -265,7 +265,7 @@ class UserRepository
                     'fullName' => $request->first_name . ' ' . $request->last_name,
                     'userGroup' => $userGroup->name,
                 ];
-                $url = "https://{$ip}/Neox_ContactCenter_API/crud/user/create.php";
+                $url = "https://{$ip}/Neox_ContactCenter_API/crud/user_omni/create.php";
                 sendHttpRequest($url, 'POST', $neoxBody);
             }
 
@@ -360,13 +360,13 @@ class UserRepository
             // Fetch config and build webhook URL
             $config = getNeoxConfig();
             $ip = $config['neox_local_ip'];
-            $url = "https://{$ip}/Neox_ContactCenter_API/crud/user/delete.php";
+            $url = "https://{$ip}/Neox_ContactCenter_API/crud/user_omni/delete.php";
 
             // Prepare payload
             $data = ['userId' => $username];
 
             // Send HTTP request to webhook
-            sendHttpRequest($url, 'DELETE', $data);
+            sendHttpRequest($url, 'POST', $data);
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),

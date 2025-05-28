@@ -7,7 +7,8 @@ use App\Models\Message;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 use App\Services\Chat360Service;
-use App\Events\ReceivedCustomerMessages;
+use App\Events\CustomerChatRequest;
+use Carbon\Carbon;
 
 class UserMessageRepository
 {
@@ -26,60 +27,77 @@ class UserMessageRepository
     public function assignChatToAgent($request)
     {
         try {
-            $chatHistory = $this->chat360Service->getChatHistory($request->room_id);
+            $agentAssigned = Message::where('room_id', $request->room_id)
+                ->where('user_id', auth()->user()->id)->first();
 
-            if ($chatHistory) {
-                if (! isset($chatHistory['messages'])) {
-                    generateLogs('error', 'No messages found in API response.');
-                }
-
-                foreach ($chatHistory['messages'] as $msg) {
-                    $sender = $msg['user'] ?? null;
-
-                    if (! in_array($sender, ['bot', 'end_user'])) {
-                        continue;
+            if ($agentAssigned) {
+                $boradCastData = [
+                    'room_id' => $request->room_id,
+                    'user_id' => auth()->user()->id
+                ];
+                broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));  
+            } else {
+                $chatHistory = $this->chat360Service->getChatHistory($request->room_id);
+                if ($chatHistory) {
+                    if (! isset($chatHistory['messages'])) {
+                        generateLogs('error', 'No messages found in API response.');
                     }
 
-                    // Determine message text
-                    if ($sender === 'bot') {
-                        $messageText = $msg['data']['questionText']
-                            ?? ($msg['data']['messages'][0] ?? null);
+                    foreach ($chatHistory['messages'] as $msg) {
+                        $sender = $msg['user'] ?? null;
+
+                        if (! in_array($sender, ['bot', 'end_user'])) {
+                            continue;
+                        }
+
+                        // Determine message text
+                        if ($sender === 'bot') {
+                            $messageText = $msg['data']['questionText']
+                                ?? ($msg['data']['messages'][0] ?? null);
+                        } else {
+                            $messageText = $msg['post_data'] ?? $msg['message'] ?? null;
+                        }
+
+                        if (empty($messageText)) {
+                            continue;
+                        }
+
+                        if (is_array($messageText)) {
+                            $messageText = implode(', ', $messageText);
+                        }
+
+                        if (is_string($messageText)) {
+                            $messageText = trim($messageText, "[]\"");
+                        }
+
+                        $timestamp = isset($msg['timestamp_int'])
+                            ? Carbon::createFromTimestamp((float) $msg['timestamp_int'])
+                            : now();
+
+                        $chatMessage[] = [
+                            'user_id' => auth()->user()->id,
+                            'type' => 'user_chat',
+                            //  'attachment' => null,
+                            'text' => strip_tags($messageText),
+                            'room_id' => $request->room_id,
+                            'sender' => $sender,
+                            'external_message_time' => $timestamp,
+                            'node_type' => $msg['nodeType'] ?? $msg['data']['nodeType'] ?? 'MESSAGE',
+                            'session_id' => $msg['session_id'] ?? null,
+                            'first_name' => $msg['first_name'] ?? null,
+                            'last_name' => $msg['last_name'] ?? nulL,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+
+                    if (!empty($chatMessage)) {
+                        // broadcast(new ReceivedCustomerMessages($chatMessage));
+                        Message::insert($chatMessage);
+                        generateLogs('info', "Inserted " . count($chatMessage) . " chat messages successfully.");
                     } else {
-                        $messageText = $msg['post_data'] ?? $msg['message'] ?? null;
+                        generateLogs('error', "No Valid message to insert.");
                     }
-
-                    if (empty($messageText)) {
-                        continue;
-                    }
-
-                    $timestamp = isset($msg['timestamp_int'])
-                        ? Carbon::createFromTimestamp((float) $msg['timestamp_int'])
-                        : now();
-
-                    $chatMessage[] = [
-                        //'id' => $msg['currentId'] ?? Str::uuid()->toString(),
-                        'user_id' => auth()->user()->id,
-                        'type' => 'user_chat',
-                        'attachment' => null,
-                        'text' => strip_tags($messageText),
-                        'room_id' => $request->room_id,
-                        'sender' => $sender,
-                        'external_message_time' => $timestamp,
-                        'node_type' => $msg['nodeType'] ?? $msg['data']['nodeType'] ?? 'MESSAGE',
-                        'session_id' => $msg['session_id'] ?? null,
-                        'first_name' => $msg['first_name'] ?? null,
-                        'last_name' => $msg['last_name'] ?? nulL,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-                }
-
-                if (!empty($chatMessage)) {
-                    broadcast(new ReceivedCustomerMessages($chatMessage));
-                    Message::insert($chatMessage);
-                    generateLogs('info', "Inserted " . count($chatMessage) . " chat messages successfully.");
-                } else {
-                    generateLogs('error', "No Valid message to insert.");
                 }
             }
 
@@ -93,8 +111,8 @@ class UserMessageRepository
     public function getMessages()
     {
         try {
-            $userId = auth()->user()->id;
-            $messages  = Message::where("type", "user_chat")->get();
+            $messages  = Message::where("type", "user_chat")
+                ->where('user_id', auth()->user()->id)->get();
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
         } catch (Exception $ex) {

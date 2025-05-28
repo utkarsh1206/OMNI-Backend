@@ -11,7 +11,6 @@ class Chat360Service
     protected $password;
     protected $url;
     protected $apiKey;
-    protected $roomId;
     protected $fromPhone;
     protected $toPhone;
 
@@ -21,7 +20,6 @@ class Chat360Service
         $this->password =  config('omni.CHAT_360_PASSWORD');
         $this->url =  config('omni.CHAT_360_URL');
         $this->apiKey = config('omni.CHAT_360_API_KEY');
-        $this->roomId = config('omni.CHAT_360_ROOM_ID');
         $this->fromPhone = config('omni.CHAT_FROM_PHONE');
         $this->toPhone = config('omni.CHAT_TO_PHONE');
     }
@@ -61,9 +59,9 @@ class Chat360Service
     {
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Basic '.$this->getAccessToken(),
+                'Authorization' => 'Basic ' . $this->getAccessToken(),
                 'Cookie' => 'csrftoken=P8PSxHtwF5mI9grg1qhGrYtL55ScXbQoruVlnrdZXj8HWNF0pPcp7MDhpXGt1pDR',
-            ])->get($this->url. 'api/clientwidget_updated/chatroom/'.$roomId, [
+            ])->get($this->url . 'api/clientwidget_updated/chatroom/' . $roomId, [
                 'api_key' => $this->apiKey,
             ]);
 
@@ -89,7 +87,7 @@ class Chat360Service
                 'recipient_type' => 'individual',
                 'type' => $type,
             ];
-    
+
             // Attach message-specific payload
             switch ($type) {
                 case 'text':
@@ -97,34 +95,34 @@ class Chat360Service
                         'body' => $payload['body'] ?? '',
                     ];
                     break;
-    
+
                 case 'image':
                     $message['image'] = [
                         'link' => $payload['link'],
                         'caption' => $payload['caption'] ?? '',
                     ];
                     break;
-    
+
                 case 'video':
                     $message['video'] = [
                         'link' => $payload['link'],
                         'caption' => $payload['caption'] ?? '',
                     ];
                     break;
-    
+
                 case 'audio':
                     $message['audio'] = [
                         'link' => $payload['link'],
                     ];
                     break;
-    
+
                 case 'document':
                     $message['document'] = [
                         'link' => $payload['link'],
                         'filename' => $payload['filename'] ?? 'document',
                     ];
                     break;
-    
+
                 case 'location':
                     $message['location'] = [
                         'longitude' => $payload['longitude'],
@@ -133,15 +131,15 @@ class Chat360Service
                         'address' => $payload['address'],
                     ];
                     break;
-    
+
                 default:
                     generateLogs('error', "Unsupported message type: {$type}");
                     return "Unsupported message type: {$type}";
             }
-            
+
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer '.$this->getAccessToken(),
-            ])->post($this->url. 'api/whatsapp/whatsapp-session-messages', $message);
+                'Authorization' => 'Bearer ' . $this->getAccessToken(),
+            ])->post($this->url . 'api/whatsapp/whatsapp-session-messages', $message);
 
             if (! $response->ok()) {
                 generateLogs('error', 'Failed send data to Chat360.');

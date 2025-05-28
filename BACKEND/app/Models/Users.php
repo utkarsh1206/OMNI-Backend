@@ -75,18 +75,46 @@ class Users extends Authenticatable implements JWTSubject
             // New permission format using IDs
             $permissions = [];
 
+            // DO NOT DELETE THE BELOW CODE, IT IS WORKING IN LOCAL ENVIRONMENT BUT NOT ON SERVERS
+            // NEED TO TEST IN FUTURE - UTKARSH
+            // generateLogs('info', 'get roles '. json_encode($this->roles));
+            // foreach ($this->roles as $role) {
+            //     generateLogs('info', 'get tenant modules '. json_encode($role->tenantModules));
+            //     foreach ($role->tenantModules as $module) {
+            //         foreach ($module->actions as $action) {
+            //             $permissions[$module->name][] = $action->name;
+            //         }
+            //     }
+            // }
+            // DO NOT DELETE THE ABOVE CODE, IT IS WORKING IN LOCAL ENVIRONMENT BUT NOT ON SERVERS
+
             foreach ($this->roles as $role) {
                 foreach ($role->tenantModules as $module) {
-                    foreach ($module->actions as $action) {
-                        $permissions[$module->name][] = $action->name;
+                    // Filter actions for this module AND this role
+                    $actions = DB::table('role_action')
+                        ->join('actions', 'role_action.action_id', '=', 'actions.id')
+                        ->where('role_action.role_id', $role->id)
+                        ->where('role_action.tenant_module_id', $module->id)
+                        ->pluck('actions.name')
+                        ->toArray();
+
+                    if (!empty($actions)) {
+                        $permissions[$module->name] = array_values(
+                            array_unique(
+                                array_merge(
+                                    $permissions[$module->name] ?? [],
+                                    $actions
+                                )
+                            )
+                        );
                     }
                 }
             }
 
             // Remove duplicates in action ID arrays
-            foreach ($permissions as &$actions) {
-                $actions = array_values(array_unique($actions));
-            }
+            // foreach ($permissions as &$actions) {
+            //     $actions = array_values(array_unique($actions));
+            // }
 
             $claims['permission'] = json_encode($permissions);
 

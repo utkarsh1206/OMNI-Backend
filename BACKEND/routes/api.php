@@ -95,6 +95,7 @@ use App\Http\Controllers\Api\PriorityController;
 use App\Http\Controllers\Api\TranscriptApiController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\SuperAdminDashboardController;
 use App\Http\Controllers\Api\TenantModuleController;
 use App\Http\Controllers\Api\TicketTypeController;
 
@@ -363,6 +364,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('transcript', [TranscriptApiController::class, 'transcriptApi']);
     Route::apiResource('priorities', PriorityController::class);
     Route::apiResource('ticket-types', TicketTypeController::class);
+
+    Route::get('super-admin-dashboard', [SuperAdminDashboardController::class, 'index']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
