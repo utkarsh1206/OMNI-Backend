@@ -8,6 +8,7 @@ use App\Events\CallInitiated;
 use App\Models\NeoxCallLog;
 use App\Models\NeoxTempCallLog;
 use App\Events\DialCenterData;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class WebhookCallRepository
@@ -40,6 +41,8 @@ class WebhookCallRepository
     // Update or create call history
     public function updateOrCreateCallHistory($data, $connection)
     {
+        $now = Carbon::now();
+        
         $existing = $connection->table('neox_call_logs')
             ->where('call_unique_id', $data['call_unique_id'])
             ->where('call_date', $data['call_date'])
@@ -57,6 +60,9 @@ class WebhookCallRepository
                 ->where('id', $existing->id)
                 ->first();
         } else {
+            $data['created_at'] = $now;
+            $data['updated_at'] = $now;
+
             // Insert new record and get inserted ID
             $insertedId = $connection->table('neox_call_logs')->insertGetId($data);
 

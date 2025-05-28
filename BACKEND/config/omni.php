@@ -12,7 +12,6 @@ return [
    
    'CHAT_360_EMAIL' => env('CHAT360_EMAIL','sales@chat360.io'),
    'CHAT_360_PASSWORD' => env('CHAT_360_PASSWORD','Sdr#@1234'),
-   'CHAT_360_ROOM_ID' => env('CHAT_360_ROOM_ID','23001ab4-e5cf-4755-b5e0-dec25bb753b0'),
    'CHAT_360_API_KEY' => env('CHAT_360_API_KEY','t0HiHfFn.DBswDPdxcrQLeCt7bhpkciR2k7gRBwlN'),
    'CHAT_360_URL' => env('CHAT_360_URL','https://app.chat360.io/'),
    'CHAT_FROM_PHONE' => env('CHAT_FROM_PHONE', 918799952622),
