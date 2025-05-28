@@ -13,6 +13,8 @@ class TenantLicense extends Model
 
     protected $table = 'tenant_licenses';
 
+    protected $appends = ['tenant_name'];
+
     protected $fillable = [
         'id',
         'tenant_id',
@@ -24,4 +26,14 @@ class TenantLicense extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function getTenantNameAttribute()
+    {
+        return $this->tenant ? $this->tenant->username : null;
+    }
 }
