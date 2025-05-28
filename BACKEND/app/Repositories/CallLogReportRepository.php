@@ -68,6 +68,9 @@ class CallLogReportRepository
             'agent' => $request->input('user', null),
         ];
 
+        // Get logged-in user
+        $user = $request->user();
+
         // If startDate and endDate are not provided, return null
         if (is_null($filters['startDate']) || is_null($filters['endDate'])) {
             return null;
@@ -93,12 +96,16 @@ class CallLogReportRepository
                 'comments',
                 'call_recording_url',
             ])
-            ->where('type', 'CALL_HISTORY')
+            ->where('type', 'call_history')
             ->whereBetween(DB::raw('DATE(call_date)'), [
                 Carbon::parse($filters['startDate'])->toDateString(),
                 Carbon::parse($filters['endDate'])->toDateString()
             ]);
 
+            if ($user && $user->role_id == 3) {
+                $query->where('caller_username', $user->username);
+            }
+            
             // Conditional ordering
             if ($applyOrderById) {
                 $query->orderBy('id', 'desc');
@@ -109,7 +116,7 @@ class CallLogReportRepository
             $query->where('campaign_id', $filters['campaign_id']);
         }
 
-        if (!empty($filters['agent'])) {
+        if (!empty($filters['agent']) && $user->role_id != 3) {
             $query->where('caller_username', $filters['agent']);
         }
 
