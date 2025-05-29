@@ -10,7 +10,7 @@ return [
    'DEFAULT_PAGE' => env('DEFAULT_PAGE', 1),
    'ALL_PAGE' => env('ALL_PAGE', 'all'),
    
-   'CHAT_360_EMAIL' => env('CHAT360_EMAIL','sales@chat360.io'),
+   'CHAT_360_EMAIL' => env('CHAT_360_EMAIL','sales@chat360.io'),
    'CHAT_360_PASSWORD' => env('CHAT_360_PASSWORD','Sdr#@1234'),
    'CHAT_360_API_KEY' => env('CHAT_360_API_KEY','t0HiHfFn.DBswDPdxcrQLeCt7bhpkciR2k7gRBwlN'),
    'CHAT_360_URL' => env('CHAT_360_URL','https://app.chat360.io/'),
