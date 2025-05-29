@@ -13,9 +13,7 @@ class CallHangup implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $dialerData;
-    private $dialerId;
-    private $dialerDomain;
+    private $dialerData, $dialerId, $dialerDomain;
 
     /**
      * Create a new event instance.
@@ -25,7 +23,6 @@ class CallHangup implements ShouldBroadcastNow
         $this->dialerData = $data;
         $this->dialerDomain = $domain;
         $this->dialerId = $id;
-        // $this->dialerDomain = 'tenant4000';
         generateLogs('info', 'broadcast Data: ' . json_encode(['dialerData' => $this->dialerData]));
     }
 

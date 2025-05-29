@@ -24,7 +24,7 @@ class LiveAgentObserver
             return;
         }
 
-        broadcast(new AgentLiveStatus($liveAgent));
+        broadcast(new AgentLiveStatus($liveAgent, $liveAgent->user_id));
     }
 
     /**

@@ -13,11 +13,7 @@ class ChatMessagesStored implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $message;
-
-    private $domain;
-
-    private $id;
+    private $message, $domain, $id;
 
     /**
      * Create a new event instance.

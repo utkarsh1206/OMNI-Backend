@@ -13,11 +13,7 @@ class ReceivedMessages implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $message;
-
-    private $receiverId;
-
-    private $domain;
+    private $message, $receiverId, $domain;
 
     /**
      * Create a new event instance.

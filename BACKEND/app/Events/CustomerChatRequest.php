@@ -13,9 +13,7 @@ class CustomerChatRequest implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $customerChat;
-
-    private $domain;
+    private $customerChat, $domain;
 
     /**
      * Create a new event instance.
