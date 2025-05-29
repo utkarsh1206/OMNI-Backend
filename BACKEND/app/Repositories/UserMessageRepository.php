@@ -8,8 +8,10 @@ use App\Http\Response\CustomApiResponse;
 use Exception;
 use App\Services\Chat360Service;
 use App\Events\CustomerChatRequest;
+use App\Events\ChatMessagesStored;
 use Carbon\Carbon;
 use App\Models\MessageAttachment;
+
 class UserMessageRepository
 {
     private $apiResponse;
@@ -35,7 +37,7 @@ class UserMessageRepository
                     'room_id' => $request->room_id,
                     'user_id' => auth()->user()->id
                 ];
-                broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));  
+                broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));
             } else {
                 $chatHistory = $this->chat360Service->getChatHistory($request->room_id);
                 if ($chatHistory) {
@@ -72,22 +74,22 @@ class UserMessageRepository
 
                         $timestamp = isset($msg['timestamp_int'])
                             ? Carbon::createFromTimestamp((float) $msg['timestamp_int'])
-                            : now();
+                            : Carbon::now();
 
                         $chatMessage[] = [
                             'user_id' => auth()->user()->id,
                             'type' => 'user_chat',
-//                          'attachment' => null,
                             'text' => strip_tags($messageText),
                             'room_id' => $request->room_id,
                             'sender' => $sender,
+                            'is_read' => 'read',
                             'external_message_time' => $timestamp,
                             'node_type' => $msg['nodeType'] ?? $msg['data']['nodeType'] ?? 'MESSAGE',
                             'session_id' => $msg['session_id'] ?? null,
                             'first_name' => $msg['first_name'] ?? null,
                             'last_name' => $msg['last_name'] ?? nulL,
-                            'created_at' => now(),
-                            'updated_at' => now(),
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now(),
                         ];
                     }
 
@@ -127,13 +129,12 @@ class UserMessageRepository
             $files = uploadAttachment($request, "attachment", "attachment");
 
             $message = Message::Create([
-                "user_id" => auth()->user()->id,
-                "text" => $request->text,
-                "is_read" => 'unread',
-                "type" => 'user_chat',
-//              "attachment" => $file['path'] ?? null,
-                "sender" => 'agent',
-                "external_message_time" => Carbon::now()
+                'user_id' => auth()->user()->id,
+                'text' => $request->text,
+                'is_read' => 'read',
+                'type' => 'user_chat',
+                'sender' => 'agent',
+                'external_message_time' => Carbon::now()
             ]);
 
             if ($message) {
@@ -154,6 +155,41 @@ class UserMessageRepository
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in storing Message: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function fetchChatResponse($request, $details)
+    {
+        try {
+            $wabResponse = $request->input('wab_response');
+            $messageBody = $wabResponse['messages'][0]['text']['body'] ?? null;
+            $messageType = $wabResponse['messages'][0]['type'] ?? null;
+
+            $message = Message::Create([
+                'user_id' => 13,
+                'type' => 'user_chat',
+                'text' => strip_tags($messageBody),
+                'room_id' => $request->room_id,
+                'sender' => 'end_user',
+                'is_read' => 'read',
+                'external_message_time' => $request->input('timestamp') ?? Carbon::now(),
+                'node_type' => $messageType ?? 'MESSAGE',
+                'session_id' => null,
+                'first_name' => $request->input('receiver_name') ?? null,
+                'last_name' => nulL,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+            if($message) {
+                broadcast(new ChatMessagesStored($message, $details->domain, auth()->user()->id));
+            }
+
+            generateLogs('info', 'Stored data for UserChat: ' . json_encode($message));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in storing Chat360 Message: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
