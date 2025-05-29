@@ -148,8 +148,7 @@ class UserMessageRepository
                     }
                     MessageAttachment::insert($fileData);
                 }
-                $data = $this->chat360Service->sendMessage('text', ['body' => $request->text]);
-                echo '<pre>'; print_r($data); die;
+                $this->chat360Service->sendMessage('text', ['body' => $request->text]);
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));

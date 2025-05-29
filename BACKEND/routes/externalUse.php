@@ -9,6 +9,6 @@ Route::get('generate-auth-token/{uinId}', [AuthTokenController::class, 'index'])
 
 Route::post('chatbot-room-id/{uinId}', [ChatBotWebhookController::class, 'fetchMessageFromRoom'])->middleware(AuthTokenMiddleware::class);
 
-Route::post('chatbot-webhook/{uinId}', [ChatBotWebhookController::class, 'index'])->middleware(AuthTokenMiddleware::class);
+Route::post('fetch-session-messages/{uinId}', [ChatBotWebhookController::class, 'fetchChatResponse'])->middleware(AuthTokenMiddleware::class);
 
 
