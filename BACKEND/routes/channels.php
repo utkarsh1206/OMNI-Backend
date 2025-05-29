@@ -22,3 +22,9 @@ Broadcast::channel('{domain}-{id}-call-events', function ($user, $id, $domain) {
     generateLogs('info', 'User trying to access the channel: ' . json_encode(['user' => $user]));
     return true;
 });
+
+Broadcast::channel('{domain}-{id}-agent-status', function ($user, $id, $domain) {
+    generateLogs('info', 'User trying to access the channel: ' . json_encode(['user' => $user]));
+    return true;
+});
+
