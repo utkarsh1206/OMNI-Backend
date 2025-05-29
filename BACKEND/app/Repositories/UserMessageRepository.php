@@ -9,7 +9,7 @@ use Exception;
 use App\Services\Chat360Service;
 use App\Events\CustomerChatRequest;
 use Carbon\Carbon;
-
+use App\Models\MessageAttachment;
 class UserMessageRepository
 {
     private $apiResponse;
@@ -77,7 +77,7 @@ class UserMessageRepository
                         $chatMessage[] = [
                             'user_id' => auth()->user()->id,
                             'type' => 'user_chat',
-                            //  'attachment' => null,
+//                          'attachment' => null,
                             'text' => strip_tags($messageText),
                             'room_id' => $request->room_id,
                             'sender' => $sender,
@@ -124,19 +124,32 @@ class UserMessageRepository
     public function storeMessage($request)
     {
         try {
-            $file = uploadAttachment($request, "attachment", "attachment");
+            $files = uploadAttachment($request, "attachment", "attachment");
 
             $message = Message::Create([
                 "user_id" => auth()->user()->id,
                 "text" => $request->text,
                 "is_read" => 'unread',
                 "type" => 'user_chat',
-                "attachment" => $file['path'] ?? null,
+//              "attachment" => $file['path'] ?? null,
                 "sender" => 'agent',
+                "external_message_time" => Carbon::now()
             ]);
 
             if ($message) {
-                $this->chat360Service->sendMessage('text', ['body' => $request->text]);
+                if ($files) {
+                    foreach ($files as $file) {
+                        $fileData[] = [
+                            'message_id' => $message->id,
+                            'attachments' => $file['fileName'],
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now(),
+                        ];
+                    }
+                    MessageAttachment::insert($fileData);
+                }
+                $data = $this->chat360Service->sendMessage('text', ['body' => $request->text]);
+                echo '<pre>'; print_r($data); die;
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
