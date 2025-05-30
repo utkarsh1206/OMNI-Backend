@@ -23,7 +23,8 @@ class Message extends Model
         'session_id',
         'first_name',
         'last_name',
-        'external_user_id'
+        'external_user_id',
+        'external_user_phone'
     ];
 
     public function user()

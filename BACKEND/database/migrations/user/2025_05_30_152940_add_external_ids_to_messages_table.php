@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('messages', function (Blueprint $table) {
             $table->integer('external_user_id')->nullable()->after('session_id');
+            $table->text('external_user_phone')->nullable();
         });
     }
 
@@ -22,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('messages', function (Blueprint $table) {
-            $table->dropColumn(['external_user_id']);
+            $table->dropColumn(['external_user_id', 'external_user_phone']);
         });
     }
 };

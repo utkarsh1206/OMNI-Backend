@@ -43,7 +43,7 @@ class UserMessageRepository
                     if (! isset($chatHistory['messages'])) {
                         generateLogs('error', 'No messages found in API response.');
                     }
-                   
+                    $phoneNumber = $chatHistory['variables']['@user_number'] ?? $chatHistory['variables']['@phone'] ?? null;
                     foreach ($chatHistory['messages'] as $msg) {
                         $sender = $msg['user'] ?? null;
 
@@ -78,16 +78,17 @@ class UserMessageRepository
                         $chatMessage[] = [
                             'user_id' => auth()->user()->id,
                             'type' => 'user_chat',
-                            'text' => strip_tags($messageText),
-                            'room_id' => $request->room_id,
                             'sender' => $sender,
-                            'external_user_id' => $chatHistory['admin_id'] ?? null,
-                            'is_read' => 'read',
-                            'external_message_time' => $timestamp,
-                            'node_type' => $msg['nodeType'] ?? $msg['data']['nodeType'] ?? 'MESSAGE',
+                            'room_id' => $request->room_id,
                             'session_id' => $msg['session_id'] ?? null,
+                            'external_user_id' => $chatHistory['admin_id'] ?? null,
+                            'node_type' => $msg['nodeType'] ?? $msg['data']['nodeType'] ?? 'MESSAGE',
+                            'text' => strip_tags($messageText),    
                             'first_name' => $msg['first_name'] ?? null,
                             'last_name' => $msg['last_name'] ?? nulL,
+                            'external_user_phone' => $phoneNumber,
+                            'is_read' => 'read',
+                            'external_message_time' => $timestamp,
                             'created_at' => Carbon::now(),
                             'updated_at' => Carbon::now(),
                         ];
@@ -149,7 +150,12 @@ class UserMessageRepository
                     }
                     MessageAttachment::insert($fileData);
                 }
-                $this->chat360Service->sendMessage('text', ['body' => $request->text]);
+
+                $msg =  Message::where('user_id', auth()->user()->id)
+                        ->where('type', 'user_chat')->first();
+                if($msg) {
+                    $this->chat360Service->sendMessage('text', ['body' => $request->text], $msg->external_user_phone);
+                }
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
@@ -168,6 +174,11 @@ class UserMessageRepository
 
             $existingMessage = Message::where('external_user_id', $request->input('user_id'))->first();
 
+            if (!$existingMessage) {
+                generateLogs('info', "First time message received from external user id");
+                return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.message_created'));    
+            }
+
             $message = Message::Create([
                 'user_id' => $existingMessage->user_id,
                 'type' => 'user_chat',
@@ -185,8 +196,6 @@ class UserMessageRepository
             if($message) {
                 broadcast(new ChatMessagesStored($message, $details->domain, $existingMessage->user_id));
             }
-
-            generateLogs('info', 'Stored data for UserChat: ' . json_encode($message));
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in storing Chat360 Message: ', $ex->getMessage());

@@ -77,13 +77,13 @@ class Chat360Service
         }
     }
 
-    public function sendMessage(string $type, array $payload)
+    public function sendMessage(string $type, array $payload, string $phoneNumber)
     {
         try {
             $message = [
                 'api_key' => $this->apiKey,
                 'from' => $this->fromPhone,
-                'to' => (string)$this->toPhone,
+                'to' => (string)$phoneNumber, // $this->toPhone,
                 'recipient_type' => 'individual',
                 'type' => $type,
             ];
