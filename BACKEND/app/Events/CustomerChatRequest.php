@@ -39,7 +39,7 @@ class CustomerChatRequest implements ShouldBroadcastNow
             ])
         );
         return [
-            new Channel("{$this->domain}-customer-chat-request"),
+            new PrivateChannel("{$this->domain}-customer-chat-request"),
         ];
     }
 

@@ -35,7 +35,7 @@ class ReceivedMessages implements ShouldBroadcastNow
     {
         generateLogs('info', 'Channel Name: ' . json_encode(['Channel' => "{$this->domain}-{$this->receiverId}-agent-chat"]));
         return [
-            new Channel("{$this->domain}-{$this->receiverId}-agent-chat"),
+            new PrivateChannel("{$this->domain}-{$this->receiverId}-agent-chat"),
         ];
     }
 

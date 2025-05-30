@@ -40,7 +40,7 @@ class ChatMessagesStored implements ShouldBroadcastNow
             ])
         );
         return [
-            new Channel("{$this->domain}-{$this->id}-customer-chat"),
+            new PrivateChannel("{$this->domain}-{$this->id}-customer-chat"),
         ];
     }
 

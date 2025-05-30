@@ -2,7 +2,6 @@
 
 namespace App\Repositories;
 
-use Illuminate\Http\Request;
 use App\Models\Message;
 use App\Http\Response\CustomApiResponse;
 use Exception;
@@ -183,7 +182,7 @@ class UserMessageRepository
             ]);
 
             if($message) {
-                broadcast(new ChatMessagesStored($message, $details->domain, auth()->user()->id));
+                broadcast(new ChatMessagesStored($message, $details->domain, '13'));
             }
 
             generateLogs('info', 'Stored data for UserChat: ' . json_encode($message));
