@@ -40,7 +40,7 @@ class CallHangup implements ShouldBroadcastNow
             ])
         );
         return [
-            new Channel("{$this->dialerDomain}-{$this->dialerId}-call-events"),
+            new PrivateChannel("{$this->dialerDomain}-{$this->dialerId}-call-events"),
         ];
     }
 
