@@ -1,3 +1,23 @@
+2025-05-30 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 
+	* Version : Dev
+	* Laravel: Implemented API endpoints for managing status. This includes functionality to:
+		Retrieve all status with optional filters and pagination.
+		Create a new status.
+		View a specificstatus by ID.
+		Update an existing status.
+		Delete a status.
+        API responses are structured and include Swagger annotations for API documentation generation.
+        Created validation logic for status-related API requests.
+        The repository handles CRUD operations.        
+		Created the StatusObserver to listen for changes in the Status model (create, update, delete) and synchronize the changes across tenant databases. The observer:
+         Syncs Status between the master database and all tenant databases upon creation, update, or deletion.
+         Handles dynamic database connections for each tenant.
+        Logs issues if a table or status is missing in the tenant's database.
+        Ensures data consistency across multi-tenant systems.
+
 2025-05-09 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
