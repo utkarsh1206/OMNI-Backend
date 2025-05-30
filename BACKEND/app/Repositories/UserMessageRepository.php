@@ -43,7 +43,7 @@ class UserMessageRepository
                     if (! isset($chatHistory['messages'])) {
                         generateLogs('error', 'No messages found in API response.');
                     }
-
+                   
                     foreach ($chatHistory['messages'] as $msg) {
                         $sender = $msg['user'] ?? null;
 
@@ -81,6 +81,7 @@ class UserMessageRepository
                             'text' => strip_tags($messageText),
                             'room_id' => $request->room_id,
                             'sender' => $sender,
+                            'external_user_id' => $chatHistory['admin_id'] ?? null,
                             'is_read' => 'read',
                             'external_message_time' => $timestamp,
                             'node_type' => $msg['nodeType'] ?? $msg['data']['nodeType'] ?? 'MESSAGE',
@@ -165,24 +166,24 @@ class UserMessageRepository
             $messageBody = $wabResponse['messages'][0]['text']['body'] ?? null;
             $messageType = $wabResponse['messages'][0]['type'] ?? null;
 
+            $existingMessage = Message::where('external_user_id', $request->input('user_id'))->first();
+
             $message = Message::Create([
-                'user_id' => 13,
+                'user_id' => $existingMessage->user_id,
                 'type' => 'user_chat',
                 'text' => strip_tags($messageBody),
-                'room_id' => $request->room_id,
                 'sender' => 'end_user',
                 'is_read' => 'read',
+                'external_user_id' => $request->input('user_id'),
                 'external_message_time' => $request->input('timestamp') ?? Carbon::now(),
                 'node_type' => $messageType ?? 'MESSAGE',
-                'session_id' => null,
                 'first_name' => $request->input('receiver_name') ?? null,
-                'last_name' => nulL,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
 
             if($message) {
-                broadcast(new ChatMessagesStored($message, $details->domain, '13'));
+                broadcast(new ChatMessagesStored($message, $details->domain, $existingMessage->user_id));
             }
 
             generateLogs('info', 'Stored data for UserChat: ' . json_encode($message));
