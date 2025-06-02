@@ -2,37 +2,37 @@
 
 namespace App\Observers;
 
-use App\Models\Status;
+use App\Models\SupportTicketStatus;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class StatusObserver
+class SupportTicketStatusObserver
 {
-    public function created(Status $ticket_status)
+    public function created(SupportTicketStatus $ticket_status)
     {
         $this->syncStatuses($ticket_status, 'create');
     }
 
-    public function updated(Status $ticket_status)
+    public function updated(SupportTicketStatus $ticket_status)
     {
         $this->syncStatuses($ticket_status, 'update');
     }
 
-    public function deleted(Status $ticket_status)
+    public function deleted(SupportTicketStatus $ticket_status)
     {
         $this->syncStatuses($ticket_status, 'delete');
     }
 
-    private function syncStatuses(Status $ticket_status, $action)
+    private function syncStatuses(SupportTicketStatus $ticket_status, $action)
     {
         $user = Auth::user();
         if ($user && $user->role_id == 0) {
 
             $masterData = null;
             if ($action !== 'delete') {
-                $masterData = DB::table('statuses')->where('name', $ticket_status->name)->first();
+                $masterData = DB::table('support_ticket_statuses')->where('name', $ticket_status->name)->first();
                 if (!$masterData) {
                     generateLogs("error", "Status not found in master table");
                     return;
@@ -48,26 +48,26 @@ class StatusObserver
     }
 
 
-    private function processTenant($detail, Status $ticket_status, string $action, $masterData = null)
+    private function processTenant($detail, SupportTicketStatus $ticket_status, string $action, $masterData = null)
     {
         $newConnectionName = str_replace(".", "_", $detail->domain);
         $databaseName = str_replace(".", "_", $detail->domain);
         establishDatabaseConnect($newConnectionName, $databaseName);
 
-        if (!Schema::connection($databaseName)->hasTable('statuses')) {
-            generateLogs("warning", "statuses table missing in tenant DB" . json_encode([
+        if (!Schema::connection($databaseName)->hasTable('support_ticket_statuses')) {
+            generateLogs("warning", "support_ticket_statuses table missing in tenant DB" . json_encode([
                 'tenant_db' => $databaseName
             ]));
             return;
         }
 
         try {
-            $tenantStatusQuery = DB::connection($databaseName)->table('statuses');
+            $tenantStatusQuery = DB::connection($databaseName)->table('support_ticket_statuses');
 
             if ($action === 'create') {
                 $exists = $tenantStatusQuery->where('name', $ticket_status->name)->exists();
                 if (!$exists) {
-                    Status::on($databaseName)->create([
+                    SupportTicketStatus::on($databaseName)->create([
                         'name' => $ticket_status->name,
                         'description' => $ticket_status->description,
                         'status' => $ticket_status->status,

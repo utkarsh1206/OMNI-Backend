@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Status;
+use App\Models\SupportTicketStatus;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
-class StatusSeeder extends Seeder
+class SupportTicketStatusSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -20,7 +19,7 @@ class StatusSeeder extends Seeder
         ];
 
         foreach ($statuses as $status) {
-            Status::updateOrCreate(['name' => $status['name']], $status);
+            SupportTicketStatus::updateOrCreate(['name' => $status['name']], $status);
         }
     }
 }
