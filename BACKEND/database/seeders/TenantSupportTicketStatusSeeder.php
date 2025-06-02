@@ -3,20 +3,20 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Status;
+use App\Models\SupportTicketStatus;
 use Illuminate\Support\Facades\DB;
 
-class TenantStatusSeeder extends Seeder
+class TenantSupportTicketStatusSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $masterStatus = DB::table('omnichannel.statuses')->get();
+        $masterStatus = DB::table('omnichannel.support_ticket_statuses')->get();
 
         foreach ($masterStatus as $status) {
-            Status::updateOrCreate(
+            SupportTicketStatus::updateOrCreate(
                 ['name' => $status->name],
                 [
                     'description' => $status->description,

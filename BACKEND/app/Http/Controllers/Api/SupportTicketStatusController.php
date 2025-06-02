@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StatusRequest;
-use App\Models\Status;
-use App\Repositories\StatusRepository;
+use App\Http\Requests\SupportTicketStatusRequest;
+use App\Models\SupportTicketStatus;
+use App\Repositories\SupportTicketStatusRepository;
 use Illuminate\Http\Request;
 
-class StatusController extends Controller
+class SupportTicketStatusController extends Controller
 {
     private $statusRepository;
 
-    public function __construct(StatusRepository $statusRepository)
+    public function __construct(SupportTicketStatusRepository $statusRepository)
     {
         $this->statusRepository = $statusRepository;
     }
@@ -23,7 +23,7 @@ class StatusController extends Controller
      *     path="/api/ticket-status",
      *     summary="Get all status",
      *     description="Retrieve a list of status.",
-     *     tags={"status"},
+     *     tags={"Suppot Ticket Status"},
      *     security={{"bearerAuth":{}}},
      *     operationId="listStatus",
      *     @OA\Parameter(
@@ -94,7 +94,7 @@ class StatusController extends Controller
      *     summary="Create a new status",
      *     description="Store a new status.",
      *     operationId="storeStatus",
-     *     tags={"status"},
+     *     tags={"Suppot Ticket Status"},
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
@@ -126,7 +126,7 @@ class StatusController extends Controller
      * )
      */
 
-    public function store(StatusRequest $request)
+    public function store(SupportTicketStatusRequest $request)
     {
         return $this->statusRepository->store($request->validated());
     }
@@ -137,7 +137,7 @@ class StatusController extends Controller
      *     summary="Get a status by ID",
      *     description="Retrieve details of a specific status.",
      *     operationId="showStatus",
-     *     tags={"status"},
+     *     tags={"Suppot Ticket Status"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="id",
@@ -176,7 +176,7 @@ class StatusController extends Controller
      *     summary="Update a status",
      *     description="Update an existing status by ID.",
      *     operationId="updateStatus",
-     *     tags={"status"},
+     *     tags={"Suppot Ticket Status"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="id",
@@ -212,7 +212,7 @@ class StatusController extends Controller
      * )
      */
 
-    public function update(StatusRequest $request, Status $ticket_status)
+    public function update(SupportTicketStatusRequest $request, SupportTicketStatus $ticket_status)
     {
         return $this->statusRepository->update($request->validated(), $ticket_status);
     }
@@ -223,7 +223,7 @@ class StatusController extends Controller
      *     summary="Delete a status",
      *     description="Delete a status by ID.",
      *     operationId="deleteStatus",
-     *     tags={"status"},
+     *     tags={"Suppot Ticket Status"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="id",

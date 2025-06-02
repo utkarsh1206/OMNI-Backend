@@ -4,10 +4,10 @@ namespace App\Repositories;
 
 use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
-use App\Models\Status;
+use App\Models\SupportTicketStatus;
 use Exception;
 
-class StatusRepository
+class SupportTicketStatusRepository
 {
     private $apiResponse;
 
@@ -26,7 +26,7 @@ class StatusRepository
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
-            $query = Status::query();
+            $query = SupportTicketStatus::query();
 
             if (!empty($searchTerm)) {
                 $query->where('name', 'like', "%$searchTerm%")
@@ -37,7 +37,7 @@ class StatusRepository
                 $query->where('name', 'like', "%$name%");
             }
             if (!empty($status)) {
-                $query->where('status', $status);
+                $query->where('status', 'like',  $status);
             }
 
             $statuses = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
@@ -56,7 +56,7 @@ class StatusRepository
     public function store($validatedData)
     {
         try {
-            $status = Status::create($validatedData);
+            $status = SupportTicketStatus::create($validatedData);
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
@@ -72,7 +72,7 @@ class StatusRepository
     public function show($id)
     {
         try {
-            $status = Status::findOrFail($id);
+            $status = SupportTicketStatus::findOrFail($id);
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
@@ -85,7 +85,7 @@ class StatusRepository
         }
     }
 
-    public function update($validatedData, Status $ticket_status)
+    public function update($validatedData, SupportTicketStatus $ticket_status)
     {
         try {
             $ticket_status->update($validatedData);
@@ -104,7 +104,7 @@ class StatusRepository
     public function delete($id)
     {
         try {
-            $status = Status::findOrFail($id);
+            $status = SupportTicketStatus::findOrFail($id);
             
             $status->delete();
 

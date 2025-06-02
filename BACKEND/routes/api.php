@@ -95,8 +95,8 @@ use App\Http\Controllers\Api\PriorityController;
 use App\Http\Controllers\Api\TranscriptApiController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\RoleController;
-use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\SuperAdminDashboardController;
+use App\Http\Controllers\Api\SupportTicketStatusController;
 use App\Http\Controllers\Api\TenantModuleController;
 use App\Http\Controllers\Api\TicketTypeController;
 
@@ -368,7 +368,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('super-admin-dashboard', [SuperAdminDashboardController::class, 'index']);
 
-    Route::apiResource('ticket-status', StatusController::class);
+    Route::apiResource('ticket-status', SupportTicketStatusController::class);
 });
 
 Route::get('countries', [CountryController::class, 'index']);

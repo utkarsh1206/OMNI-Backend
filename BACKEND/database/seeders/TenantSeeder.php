@@ -19,7 +19,7 @@ class TenantSeeder extends Seeder
             TenantPrioritySeeder::class,
             TenantModulesSeeder::class,
             TenantTicketTypeSeeder::class,
-            TenantStatusSeeder::class,
+            TenantSupportTicketStatusSeeder::class,
          ]);
     }
 }
