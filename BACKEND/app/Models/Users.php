@@ -227,6 +227,7 @@ class Users extends Authenticatable implements JWTSubject
         return Message::where('is_read', 'unread')
             //->betweenUsers(auth()->id(), $this->id)
             ->where('receiver_id', auth()->user()->id)
+            ->where('user_id', $this->id)
             ->count();
     }
 }
