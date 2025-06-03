@@ -11,6 +11,7 @@ use App\Models\IncidentType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Response\CustomApiResponse;
+use App\Models\Product;
 use Exception;
 
 class DashboardRepository
@@ -148,6 +149,17 @@ class DashboardRepository
 
             // Get product names
             // $productTypes = Product::whereIn('id', $ticketsByProductType->pluck('product_id'))->get()->keyBy('id');
+            $productTypes = Product::whereIn('id', $ticketsByProductType->pluck('product_id'))
+                ->get()
+                ->keyBy('id');
+
+            $ticketsByProductType = $ticketsByProductType->map(function ($ticket) use ($productTypes) {
+                return [
+                    'product_id' => $ticket->product_id,
+                    'product_name' => $productTypes->get($ticket->product_id)->name ?? 'Unknown Product',
+                    'count' => $ticket->count,
+                ];
+            });
 
             // Tickets by type
             $ticketsByType = SupportTicket::with('ticketType')
