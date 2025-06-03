@@ -8,6 +8,7 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class ReceivedMessages implements ShouldBroadcastNow
 {
@@ -21,7 +22,7 @@ class ReceivedMessages implements ShouldBroadcastNow
     public function __construct($data)
     {
         $this->message = $data;
-        $this->domain = auth()->user()->domain;
+        $this->domain = convertToLower(Str::replace(".", "_", auth()->user()->domain));
         $this->receiverId = $data->receiver_id;
         generateLogs('info', 'broadcast Data: ' . json_encode(['AgentChatMessages' => $this->message]));
     }
