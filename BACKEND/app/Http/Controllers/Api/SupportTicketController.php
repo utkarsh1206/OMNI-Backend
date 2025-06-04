@@ -38,7 +38,7 @@ class SupportTicketController extends Controller
      *     @OA\Parameter(name="default_status", in="query", description="Filter by default status", required=false, @OA\Schema(type="string")),
      *     @OA\Parameter(name="default_priority", in="query", description="Filter by default priority", required=false, @OA\Schema(type="string")),
      *     @OA\Parameter(name="assign_to_id", in="query", description="Filter by assign_to_id", required=false, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="contact_id", in="query", description="Filter by contact_id", required=false, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="contact_number", in="query", description="Filter by contact_number", required=false, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="per_page", in="query", description="Number of results per page", required=false, @OA\Schema(type="integer", default=10)),
      *     @OA\Parameter(name="page", in="query", description="Page number or 'all' to fetch all records", required=false, @OA\Schema(type="string")),
      *
@@ -61,7 +61,7 @@ class SupportTicketController extends Controller
      *                     @OA\Property(property="description", type="string", example="User is experiencing issues accessing the dashboard."),
      *                     @OA\Property(property="attachment", type="array", @OA\Items(type="string", example="https://yourdomain.com/storage/support_ticket/file1.pdf")),
      *                     @OA\Property(property="assign_to_id", type="integer", example=2),
-     *                     @OA\Property(property="contact_id", type="integer", example=3),
+     *                     @OA\Property(property="contact_number", type="integer", example=3456789012),
      *                     @OA\Property(property="department_id", type="integer", example=1),
      *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-04-13T08:30:00Z")
      *                 )
@@ -115,7 +115,7 @@ class SupportTicketController extends Controller
      *             @OA\Property(property="to_emails", type="array", items=@OA\Items(type="string", example="user@example.com")),
      *             @OA\Property(property="attachment", type="array", items=@OA\Items(type="string", example="https://yourdomain.com/storage/attachments/file1.pdf")),
      *             @OA\Property(property="assign_to_id", type="integer", example=2),
-     *             @OA\Property(property="contact_id", type="integer", example=3),
+     *             @OA\Property(property="contact_number", type="integer", example=3456789012),
      *             @OA\Property(property="department_id", type="integer", example=1)
      *         )
      *     ),
@@ -135,7 +135,7 @@ class SupportTicketController extends Controller
      *                 @OA\Property(property="to_emails", type="array", items=@OA\Items(type="string", example="user@example.com")),
      *                 @OA\Property(property="attachment", type="array", items=@OA\Items(type="string", example="https://yourdomain.com/storage/attachments/file1.pdf")),
      *                 @OA\Property(property="assign_to_id", type="integer", example=2),
-     *                 @OA\Property(property="contact_id", type="integer", example=3),
+     *                 @OA\Property(property="contact_number", type="integer", example=3456789012),
      *                 @OA\Property(property="department_id", type="integer", example=1),
      *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-04-13T08:30:00Z")
      *             ),
@@ -195,7 +195,7 @@ class SupportTicketController extends Controller
      *                 @OA\Property(property="product_id", type="integer", example=1),
      *                 @OA\Property(property="campaign_id", type="integer", example=2),
      *                 @OA\Property(property="inbound_group_id", type="integer", example=3),
-     *                 @OA\Property(property="contact_id", type="integer", example=4),
+     *                 @OA\Property(property="contact_number", type="integer", example=4567890123),
      *                 @OA\Property(property="assign_to_id", type="integer", example=5),
      *                 @OA\Property(property="default_type", type="string", example="issue"),
      *                 @OA\Property(property="default_priority", type="string", example="high"),
@@ -263,7 +263,7 @@ class SupportTicketController extends Controller
      *                 @OA\Property(property="product_id", type="integer", example=1),
      *                 @OA\Property(property="campaign_id", type="integer", example=2),
      *                 @OA\Property(property="inbound_group_id", type="integer", example=3),
-     *                 @OA\Property(property="contact_id", type="integer", example=4),
+     *                 @OA\Property(property="contact_number", type="integer", example=4567890123),
      *                 @OA\Property(property="assign_to_id", type="integer", example=5),
      *                 @OA\Property(property="priority_id", type="integer", example=2),
      *                 @OA\Property(property="ticket_type_id", type="integer", example=1),
@@ -297,7 +297,7 @@ class SupportTicketController extends Controller
      *                 @OA\Property(property="product_id", type="integer", example=1),
      *                 @OA\Property(property="campaign_id", type="integer", example=2),
      *                 @OA\Property(property="inbound_group_id", type="integer", example=3),
-     *                 @OA\Property(property="contact_id", type="integer", example=4),
+     *                 @OA\Property(property="contact_number", type="integer", example=456789012),
      *                 @OA\Property(property="assign_to_id", type="integer", example=5),
      *                 @OA\Property(property="default_type", type="string", example="issue"),
      *                 @OA\Property(property="default_priority", type="string", example="high"),

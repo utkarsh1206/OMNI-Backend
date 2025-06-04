@@ -4627,6 +4627,15 @@
                         }
                     },
                     {
+                        "name": "contact_number",
+                        "in": "query",
+                        "description": "Filter by Contact Number.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "page",
                         "in": "query",
                         "description": "Page number for pagination.",
@@ -15204,9 +15213,9 @@
                         }
                     },
                     {
-                        "name": "contact_id",
+                        "name": "contact_number",
                         "in": "query",
-                        "description": "Filter by contact_id",
+                        "description": "Filter by contact_number",
                         "required": false,
                         "schema": {
                             "type": "integer"
@@ -15290,9 +15299,9 @@
                                                         "type": "integer",
                                                         "example": 2
                                                     },
-                                                    "contact_id": {
+                                                    "contact_number": {
                                                         "type": "integer",
-                                                        "example": 3
+                                                        "example": 3456789012
                                                     },
                                                     "department_id": {
                                                         "type": "integer",
@@ -15430,9 +15439,9 @@
                                         "type": "integer",
                                         "example": 2
                                     },
-                                    "contact_id": {
+                                    "contact_number": {
                                         "type": "integer",
-                                        "example": 3
+                                        "example": 3456789012
                                     },
                                     "department_id": {
                                         "type": "integer",
@@ -15499,9 +15508,9 @@
                                                     "type": "integer",
                                                     "example": 2
                                                 },
-                                                "contact_id": {
+                                                "contact_number": {
                                                     "type": "integer",
-                                                    "example": 3
+                                                    "example": 3456789012
                                                 },
                                                 "department_id": {
                                                     "type": "integer",
@@ -15608,9 +15617,9 @@
                                                     "type": "integer",
                                                     "example": 3
                                                 },
-                                                "contact_id": {
+                                                "contact_number": {
                                                     "type": "integer",
-                                                    "example": 4
+                                                    "example": 4567890123
                                                 },
                                                 "assign_to_id": {
                                                     "type": "integer",
@@ -15754,9 +15763,9 @@
                                         "type": "integer",
                                         "example": 3
                                     },
-                                    "contact_id": {
+                                    "contact_number": {
                                         "type": "integer",
-                                        "example": 4
+                                        "example": 4567890123
                                     },
                                     "assign_to_id": {
                                         "type": "integer",
@@ -15845,9 +15854,9 @@
                                                     "type": "integer",
                                                     "example": 3
                                                 },
-                                                "contact_id": {
+                                                "contact_number": {
                                                     "type": "integer",
-                                                    "example": 4
+                                                    "example": 456789012
                                                 },
                                                 "assign_to_id": {
                                                     "type": "integer",

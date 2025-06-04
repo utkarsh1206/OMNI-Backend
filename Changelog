@@ -1,3 +1,10 @@
+2025-06-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 
+	* Version : Dev
+	* Laravel: Change conatact_id to contact_number for support tickets. also make mobile unique for conacts tables. Apply chnages according to in API.
+
 2025-05-30 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
