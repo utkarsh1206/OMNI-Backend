@@ -22,7 +22,7 @@ class SupportTicket extends Model
         "campaign_id",
         //"inbound_group_id",
         "account_id",
-        "contact_id",
+        "contact_number",
         "assign_to_id",
         "default_type",
         "default_priority",
@@ -90,7 +90,7 @@ class SupportTicket extends Model
 
     public function contact()
     {
-        return $this->belongsTo(Contact::class, 'contact_id', 'id');
+        return $this->belongsTo(Contact::class, 'contact_number', 'mobile');
     }
 
     public function getContactNameAttribute()
