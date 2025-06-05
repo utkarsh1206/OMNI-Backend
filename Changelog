@@ -1,3 +1,10 @@
+2025-06-05 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 
+	* Version : Dev
+	* Laravel: Remove/truncate data from live agent based on configure cron time.
+
 2025-06-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
