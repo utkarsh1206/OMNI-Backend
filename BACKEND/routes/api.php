@@ -377,6 +377,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('{role}', [RoleController::class, 'update']);
     Route::delete('{role}', [RoleController::class, 'destroy']);
     });
+
+    Route::post('/check-user-limit', [UserController::class, 'checkUserLimit']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);

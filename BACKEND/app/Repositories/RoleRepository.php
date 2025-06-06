@@ -39,21 +39,8 @@ class RoleRepository
     public function create(RoleRequest $request)
     {
        
-        // try {
-            
-        $domain = auth()->user()->domain;
-        establishMasterConnection( $domain, "omnichannel", "mysql");
-        $tenantInfo= Tenant::where("domain_name", $domain)->first();
-        $licenseInfo = TenantLicense::where("tenant_id",$tenantInfo->id)->first("manager_ct");
-        $totalManagerCount  = $licenseInfo->manager_ct;
-        getDbConnection($domain,true);
-        $currentCount  = RolePermission::where("type",0)->distinct("role_id")->count();
-        
-        if($currentCount > $totalManagerCount)
-        {
-             return response()->json(['error' => trans('message.role_limit_exceeds')], ResponseHTTP::HTTP_FORBIDDEN);
-        }
-      
+        try {
+         
         $role = Role::create($request->validated());
             // foreach ($request->get('permissions', []) as $perm) {
             //     $module = TenantModule::find($perm['tenant_module_id']);
@@ -78,16 +65,14 @@ class RoleRepository
                         RolePermission::firstOrCreate([
                             'role_id' => $roleId,
                             'permission_id' => $permission->id,
-                        ],[
-                            "type"=>request()->type,
                         ]);
                     }
                 }
             });
             return response()->json($role->load(['tenantModules', 'actions']), 201);
-        // } catch (Exception $e) {
-        //     return $this->apiResponse->handleAndResponseException($e);
-        // }
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 
     public function show($role)
@@ -121,8 +106,6 @@ class RoleRepository
                         RolePermission::firstOrCreate([
                             'role_id' => $roleId,
                             'permission_id' => $permission->id,
-                        ],[
-                            "type"=>request()->type,
                         ]);
                     }
                 }

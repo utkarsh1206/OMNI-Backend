@@ -15,6 +15,7 @@ class RoleRequest extends FormRequest
             'display_name' => 'required|string',
             'description' => 'nullable|string',
             'status'      => 'boolean',
+            'type'=>'required',
             // // 'permissions' => 'required|array|min:1',
             // // 'permissions.*.module'  => 'required|string',
             // // 'permissions.*.actions' => 'required|array|min:1',
