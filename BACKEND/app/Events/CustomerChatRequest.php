@@ -13,9 +13,7 @@ class CustomerChatRequest implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $customerChat;
-
-    private $domain;
+    private $customerChat, $domain;
 
     /**
      * Create a new event instance.
@@ -41,7 +39,7 @@ class CustomerChatRequest implements ShouldBroadcastNow
             ])
         );
         return [
-            new Channel("{$this->domain}-customer-chat-request"),
+            new PrivateChannel("{$this->domain}-customer-chat-request"),
         ];
     }
 

@@ -91,13 +91,16 @@ use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
+use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
 use App\Http\Controllers\Api\PriorityController;
 use App\Http\Controllers\Api\TranscriptApiController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SuperAdminDashboardController;
+use App\Http\Controllers\Api\SupportTicketStatusController;
 use App\Http\Controllers\Api\TenantModuleController;
 use App\Http\Controllers\Api\TicketTypeController;
+use App\Http\Controllers\CustomCdrLeadController;
 
 require base_path('routes/externalUse.php');
 
@@ -264,11 +267,15 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'show']);
 
+    Route::get('/custom-leads/{list_id}/mobile-history/{mobile}', [CustomLeadController::class, 'getLeadHistoryByMobile']);
+
     Route::post('/custom-leads/{list_id}', [CustomLeadController::class, 'create']);
 
     Route::put('/custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'update']);
 
     Route::delete('custom-leads/{list_id}/{lead_id}', [CustomLeadController::class, 'destroy']);
+
+    Route::get('/lead-by-call-id/{callUniqueId}', [ApiCustomCdrLeadController::class, 'getLeadByCallUniqueId']);
 
     // Support Ticket
     //Route::apiResource('support-ticket', SupportTicketController::class);
@@ -366,6 +373,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('ticket-types', TicketTypeController::class);
 
     Route::get('super-admin-dashboard', [SuperAdminDashboardController::class, 'index']);
+
+    Route::apiResource('ticket-status', SupportTicketStatusController::class);
 });
 
 Route::get('countries', [CountryController::class, 'index']);

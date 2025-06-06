@@ -14,8 +14,11 @@ use App\Models\LiveAgents;
 use Illuminate\Support\Facades\Route;
 use App\Models\Detail;
 use App\Models\Priority;
+use App\Models\SupportTicketStatus;
 use App\Models\TicketType;
 use App\Observers\PriorityObserver;
+use App\Observers\StatusObserver;
+use App\Observers\SupportTicketStatusObserver;
 use App\Observers\TicketTypeObserver;
 
 class AppServiceProvider extends ServiceProvider
@@ -41,5 +44,6 @@ class AppServiceProvider extends ServiceProvider
         LiveAgents::observe(LiveAgentObserver::class);
         Priority::observe(PriorityObserver::class);
         TicketType::observe(TicketTypeObserver::class);
+        SupportTicketStatus::observe(SupportTicketStatusObserver::class);
     }
 }

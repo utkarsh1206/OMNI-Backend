@@ -83,7 +83,7 @@ class ApiConfigurationRepository
                 establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
                 $detailsInfo = Detail::where("domain",auth()->user()->domain)->first();
                 $uid = $detailsInfo->uin ?? '';
-                $webhookUrl = url("api/chatbot-webhook/".$uid);
+                $webhookUrl = url("api/fetch-session-messages/".$uid);
                 $requestConfig[0]['web_hook_url'] = $webhookUrl;
 
                 $webhookUrl = url("api/chatbot-room-id/".$uid);

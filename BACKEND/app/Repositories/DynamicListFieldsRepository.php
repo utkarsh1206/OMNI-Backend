@@ -11,6 +11,8 @@ use App\Http\Response\CustomApiResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class DynamicListFieldsRepository
 {
@@ -132,22 +134,54 @@ class DynamicListFieldsRepository
         }
     }
 
-    // Update field method
-    public function update(DynamicListFieldRequest $request, $id)
+    public function update($request, $id)
     {
-        try {
-            $field = DynamicListField::findOrFail($id);
+        $validationRules = [
+            'list_id' => ['required', Rule::exists('ecdial_lists', 'list_id')],
+            'field_name' => ['required', 'string', 'max:255'],
+            'field_label' => ['required', 'string', 'max:255'],
+            'field_type' => ['required', Rule::in(['text', 'select', 'multi', 'checkbox', 'radio', 'textarea', 'date'])],
+            'description' => ['nullable', 'string', 'max:255'],
+            'options' => ['nullable', 'string', 'max:255'],
+            'mandatory' => ['required', Rule::in(['Y', 'N'])],
+            'calling_authority' => ['required', Rule::in(['Y', 'N'])],
+            'show_authority' => ['required', Rule::in(['Y', 'N'])],
+            'agent_view' => ['required', Rule::in(['Y', 'N'])],
+            'field_order' => ['required', 'integer'],
+            'field_help' => ['nullable', 'string'],
+            'field_size' => ['nullable', 'integer'],
+            'field_max_length' => ['nullable', 'integer'],
+            'search_filter' => ['required', Rule::in(['Y', 'N'])],
+            'editable' => ['required', Rule::in(['Y', 'N'])],
+            'default_value' => ['nullable', 'string', 'max:255'],
+            'value_masked' => ['required', Rule::in(['Y', 'N'])],
+            'duplicate_check' => ['required', Rule::in(['Y', 'N'])],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+            'field_column' => ['nullable', 'string', 'max:1'],
+        ];
 
-            // Validate data automatically
-            $validatedData = $request->validated();
+        try {
+            $validator = Validator::make($request->all(), $validationRules);
+
+            if ($validator->fails()) {
+                generateLogs('error', 'Validation failed: ' . json_encode($validator->errors()->all()));
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    [],
+                    $validator->errors()->first()
+                );
+            }
+
+            $validatedData = $validator->validated();
+
+            $field = DynamicListField::findOrFail($id);
 
             $field->update($validatedData);
 
             $data = new DynamicListFieldResource($field);
-
             return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_field_update_success'));
         } catch (Exception $ex) {
-            generateLogs('error', 'Error in Update EcDial: ', $ex->getMessage());
+            generateLogs('error', 'Error in Update DynamicListField: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

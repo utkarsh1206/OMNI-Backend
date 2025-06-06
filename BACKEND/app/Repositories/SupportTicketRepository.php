@@ -39,7 +39,7 @@ class SupportTicketRepository
                 'status' => $request->input('default_status'),
                 'priority' => $request->input('default_priority'),
                 'assign_to_id' => $request->input('assign_to_id'),
-                'contact_id' => $request->input('contact_id'),
+                'contact_number' => $request->input('contact_number'),
                 // 'usergroup_id' => $request->input('usergroup_id'),
                 'department_id' => $request->input('department_id'),
                 'account_id' => $request->input('account_id'),
@@ -129,8 +129,8 @@ class SupportTicketRepository
                 $query->where('assign_to_id', $filters['assign_to_id']);
             }
 
-            if (!empty($filters['contact_id'])) {
-                $query->where('contact_id', $filters['contact_id']);
+            if (!empty($filters['contact_number'])) {
+                $query->where('contact_number', 'like', "%{$filters['contact_number']}%");
             }
 
             // if (!empty($filters['usergroup_id'])) {
@@ -396,7 +396,8 @@ class SupportTicketRepository
             'product_id' => $request->product_id ?? 0,
             'campaign_id' => $request->campaign_id ?? 0,
             'inbound_group_id' => $request->inbound_group_id ?? 0,
-            'contact_id' => $request->contact_id ?? 0,
+            // 'contact_id' => $request->contact_id ?? 0,
+            'contact_number' => $request->contact_number ?? 0,
             'assign_to_id' => $request->assign_to_id ?? 0,
             'default_type' => $request->default_type ?? 0,
             'default_priority' => $request->default_priority ?? 0,

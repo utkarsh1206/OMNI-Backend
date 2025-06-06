@@ -13,9 +13,7 @@ class CallConnected implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $dialerData;
-    private $dialerId;
-    private $dialerDomain;
+    private $dialerData, $dialerId, $dialerDomain;
 
     /**
      * Create a new event instance.
@@ -25,7 +23,6 @@ class CallConnected implements ShouldBroadcastNow
         $this->dialerData = $data;
         $this->dialerDomain = $domain;
         $this->dialerId = $id;
-        // $this->dialerDomain = 'tenant4000';
         generateLogs('info', 'broadcast Data: ' . json_encode(['dialerData' => $this->dialerData]));
     }
 
@@ -43,7 +40,7 @@ class CallConnected implements ShouldBroadcastNow
             ])
         );
         return [
-            new Channel("{$this->dialerDomain}-{$this->dialerId}-call-events"),
+            new PrivateChannel("{$this->dialerDomain}-{$this->dialerId}-call-events"),
         ];
     }
 

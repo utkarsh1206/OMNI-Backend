@@ -4627,6 +4627,15 @@
                         }
                     },
                     {
+                        "name": "contact_number",
+                        "in": "query",
+                        "description": "Filter by Contact Number.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "page",
                         "in": "query",
                         "description": "Page number for pagination.",
@@ -10954,283 +10963,6 @@
                 }
             }
         },
-        "/api/get-messages": {
-            "get": {
-                "tags": [
-                    "User Messages"
-                ],
-                "summary": "Get messages for the authenticated user",
-                "description": "Fetches all messages for the currently authenticated user.",
-                "operationId": "getMessages",
-                "responses": {
-                    "200": {
-                        "description": "Successful retrieval of messages",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Data has been fetched successfully !"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer",
-                                                        "example": 1
-                                                    },
-                                                    "user_id": {
-                                                        "type": "integer",
-                                                        "example": null,
-                                                        "nullable": true
-                                                    },
-                                                    "text": {
-                                                        "type": "string",
-                                                        "example": "What's your Name?"
-                                                    },
-                                                    "attachment": {
-                                                        "type": "string",
-                                                        "example": null,
-                                                        "nullable": true
-                                                    },
-                                                    "is_read": {
-                                                        "type": "string",
-                                                        "example": "unread"
-                                                    },
-                                                    "room_id": {
-                                                        "type": "string",
-                                                        "example": "367731a6-7f9b-431b-8432-8e958c71c17e"
-                                                    },
-                                                    "sender": {
-                                                        "type": "string",
-                                                        "example": "bot"
-                                                    },
-                                                    "external_message_time": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2025-03-12 13:06:46"
-                                                    },
-                                                    "node_type": {
-                                                        "type": "string",
-                                                        "example": "USERNAME"
-                                                    },
-                                                    "session_id": {
-                                                        "type": "string",
-                                                        "example": "47497830-512b-4f07-ae7b-7602dfa38a8b"
-                                                    },
-                                                    "first_name": {
-                                                        "type": "string",
-                                                        "example": "System"
-                                                    },
-                                                    "last_name": {
-                                                        "type": "string",
-                                                        "example": "Message"
-                                                    },
-                                                    "created_at": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2025-04-24T19:32:02.000000Z"
-                                                    },
-                                                    "updated_at": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2025-04-24T19:32:02.000000Z"
-                                                    },
-                                                    "attachment_url": {
-                                                        "type": "string",
-                                                        "example": null,
-                                                        "nullable": true
-                                                    }
-                                                },
-                                                "type": "object"
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Invalid request"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Internal server error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/send-message": {
-            "post": {
-                "tags": [
-                    "User Messages"
-                ],
-                "summary": "Store a new message",
-                "description": "Creates a new message for a specific user. Supports file attachment.",
-                "operationId": "storeMessage",
-                "requestBody": {
-                    "description": "Message data to be stored",
-                    "required": true,
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "text"
-                                ],
-                                "properties": {
-                                    "text": {
-                                        "type": "string",
-                                        "example": "This is a message"
-                                    },
-                                    "attachment": {
-                                        "description": "Optional file to be attached",
-                                        "type": "string",
-                                        "format": "binary"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Message successfully created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Message created successfully"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "user_id": {
-                                                    "type": "integer",
-                                                    "example": 12
-                                                },
-                                                "text": {
-                                                    "type": "string",
-                                                    "example": "This is a message"
-                                                },
-                                                "attachment": {
-                                                    "type": "string",
-                                                    "example": "uploads/messages/file.jpg",
-                                                    "nullable": true
-                                                },
-                                                "created_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-05-03T10:00:00Z"
-                                                },
-                                                "updated_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-05-03T10:00:00Z"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Invalid request"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Internal server error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "api/nameprefixes": {
             "get": {
                 "tags": [
@@ -15481,9 +15213,9 @@
                         }
                     },
                     {
-                        "name": "contact_id",
+                        "name": "contact_number",
                         "in": "query",
-                        "description": "Filter by contact_id",
+                        "description": "Filter by contact_number",
                         "required": false,
                         "schema": {
                             "type": "integer"
@@ -15567,9 +15299,9 @@
                                                         "type": "integer",
                                                         "example": 2
                                                     },
-                                                    "contact_id": {
+                                                    "contact_number": {
                                                         "type": "integer",
-                                                        "example": 3
+                                                        "example": 3456789012
                                                     },
                                                     "department_id": {
                                                         "type": "integer",
@@ -15707,9 +15439,9 @@
                                         "type": "integer",
                                         "example": 2
                                     },
-                                    "contact_id": {
+                                    "contact_number": {
                                         "type": "integer",
-                                        "example": 3
+                                        "example": 3456789012
                                     },
                                     "department_id": {
                                         "type": "integer",
@@ -15776,9 +15508,9 @@
                                                     "type": "integer",
                                                     "example": 2
                                                 },
-                                                "contact_id": {
+                                                "contact_number": {
                                                     "type": "integer",
-                                                    "example": 3
+                                                    "example": 3456789012
                                                 },
                                                 "department_id": {
                                                     "type": "integer",
@@ -15885,9 +15617,9 @@
                                                     "type": "integer",
                                                     "example": 3
                                                 },
-                                                "contact_id": {
+                                                "contact_number": {
                                                     "type": "integer",
-                                                    "example": 4
+                                                    "example": 4567890123
                                                 },
                                                 "assign_to_id": {
                                                     "type": "integer",
@@ -16031,9 +15763,9 @@
                                         "type": "integer",
                                         "example": 3
                                     },
-                                    "contact_id": {
+                                    "contact_number": {
                                         "type": "integer",
-                                        "example": 4
+                                        "example": 4567890123
                                     },
                                     "assign_to_id": {
                                         "type": "integer",
@@ -16122,9 +15854,9 @@
                                                     "type": "integer",
                                                     "example": 3
                                                 },
-                                                "contact_id": {
+                                                "contact_number": {
                                                     "type": "integer",
-                                                    "example": 4
+                                                    "example": 456789012
                                                 },
                                                 "assign_to_id": {
                                                     "type": "integer",
@@ -16595,6 +16327,391 @@
                         "description": "Internal Server Error"
                     }
                 }
+            }
+        },
+        "/api/ticket-status": {
+            "get": {
+                "tags": [
+                    "Suppot Ticket Status"
+                ],
+                "summary": "Get all status",
+                "description": "Retrieve a list of status.",
+                "operationId": "listStatus",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search term for status",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filter status",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter status",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error fetching pause codes"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Suppot Ticket Status"
+                ],
+                "summary": "Create a new status",
+                "description": "Store a new status.",
+                "operationId": "storeStatus",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Inprogress"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Tasks that need be in progress"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "active"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "status created successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "status created successfully."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ticket-status/{id}": {
+            "get": {
+                "tags": [
+                    "Suppot Ticket Status"
+                ],
+                "summary": "Get a status by ID",
+                "description": "Retrieve details of a specific status.",
+                "operationId": "showStatus",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "status ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "status details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data has been fetched successfully!"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "status not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "status not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Suppot Ticket Status"
+                ],
+                "summary": "Update a status",
+                "description": "Update an existing status by ID.",
+                "operationId": "updateStatus",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "status ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Waiting for customer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "status updated successfully!"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "status not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "status not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Suppot Ticket Status"
+                ],
+                "summary": "Delete a status",
+                "description": "Delete a status by ID.",
+                "operationId": "deleteStatus",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "status ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "status deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "status deleted successfully!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "status not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "status not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/transfer": {
@@ -20549,6 +20666,269 @@
                 ]
             }
         },
+        "/my-profile/{user}": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update authenticated user's profile",
+                "description": "Allows an authenticated user to update their profile details.",
+                "operationId": "profileUpdate",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "The ID of the authenticated user.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Profile data to update the authenticated user.",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "username",
+                                    "first_name",
+                                    "last_name",
+                                    "email",
+                                    "mobile",
+                                    "status",
+                                    "role_id",
+                                    "usergroup_id",
+                                    "name_prefix",
+                                    "level",
+                                    "date_of_birth",
+                                    "country_id",
+                                    "state_id",
+                                    "city_id",
+                                    "occupation_id",
+                                    "pincode",
+                                    "address",
+                                    "gender"
+                                ],
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "example": "johndoe"
+                                    },
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "johndoe@example.com"
+                                    },
+                                    "mobile": {
+                                        "type": "string",
+                                        "example": "9876543210"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "inactive"
+                                        ],
+                                        "example": "active"
+                                    },
+                                    "role_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "usergroup_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "name_prefix": {
+                                        "type": "string",
+                                        "example": "Dr."
+                                    },
+                                    "level": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "date_of_birth": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1985-06-15"
+                                    },
+                                    "country_id": {
+                                        "type": "integer",
+                                        "example": 101
+                                    },
+                                    "state_id": {
+                                        "type": "integer",
+                                        "example": 202
+                                    },
+                                    "city_id": {
+                                        "type": "integer",
+                                        "example": 303
+                                    },
+                                    "occupation_id": {
+                                        "type": "integer",
+                                        "example": 404
+                                    },
+                                    "pincode": {
+                                        "type": "string",
+                                        "example": "654321"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "456 Elm St, Another City, Another Country"
+                                    },
+                                    "gender": {
+                                        "type": "string",
+                                        "enum": [
+                                            "male",
+                                            "female",
+                                            "other"
+                                        ],
+                                        "example": "female"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile updated successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Profile updated successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "username": {
+                                                    "type": "string",
+                                                    "example": "johndoe"
+                                                },
+                                                "first_name": {
+                                                    "type": "string",
+                                                    "example": "John"
+                                                },
+                                                "last_name": {
+                                                    "type": "string",
+                                                    "example": "Doe"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "johndoe@example.com"
+                                                },
+                                                "mobile": {
+                                                    "type": "string",
+                                                    "example": "9876543210"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "active"
+                                                },
+                                                "role_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "usergroup_id": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "name_prefix": {
+                                                    "type": "string",
+                                                    "example": "Dr."
+                                                },
+                                                "level": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "date_of_birth": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "1985-06-15"
+                                                },
+                                                "country_id": {
+                                                    "type": "integer",
+                                                    "example": 101
+                                                },
+                                                "state_id": {
+                                                    "type": "integer",
+                                                    "example": 202
+                                                },
+                                                "city_id": {
+                                                    "type": "integer",
+                                                    "example": 303
+                                                },
+                                                "occupation_id": {
+                                                    "type": "integer",
+                                                    "example": 404
+                                                },
+                                                "pincode": {
+                                                    "type": "string",
+                                                    "example": "654321"
+                                                },
+                                                "address": {
+                                                    "type": "string",
+                                                    "example": "456 Elm St, Another City, Another Country"
+                                                },
+                                                "gender": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "male",
+                                                        "female",
+                                                        "other"
+                                                    ],
+                                                    "example": "female"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (validation error)."
+                    },
+                    "401": {
+                        "description": "Unauthorized access (invalid token)."
+                    },
+                    "404": {
+                        "description": "User not found."
+                    },
+                    "500": {
+                        "description": "Internal server error."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/users/delete/{user}": {
             "delete": {
                 "tags": [
@@ -20707,7 +21087,7 @@
                 ]
             }
         },
-        "/users/update-password": {
+        "/users/update-tenantpassword": {
             "put": {
                 "tags": [
                     "Users"
@@ -20829,6 +21209,143 @@
                                         "error": {
                                             "type": "string",
                                             "example": "An error occurred while updating the password."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users/update-adminpassword": {
+            "put": {
+                "tags": [
+                    "Admins"
+                ],
+                "summary": "Update admin password",
+                "description": "Allows an administrator to update their password by providing their old password, new password, and password confirmation.",
+                "operationId": "updateAdminPassword",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "old_password": {
+                                        "type": "string",
+                                        "example": "old_admin_password"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "example": "new_admin_password"
+                                    },
+                                    "new_password_confirmation": {
+                                        "type": "string",
+                                        "example": "new_admin_password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Admin password updated successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password updated successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (validation error).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid input data."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized (invalid or missing token).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Unauthorized access."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden (invalid admin role, incorrect old password, or passwords do not match).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid admin role."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Admin not found (invalid token or admin does not exist).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Admin not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "An error occurred while updating the admin password."
                                         }
                                     },
                                     "type": "object"
@@ -21843,6 +22360,390 @@
                         "description": "Bad Request"
                     }
                 }
+            }
+        },
+        "/assign-chat-to-agent": {
+            "post": {
+                "tags": [
+                    "User Messages"
+                ],
+                "summary": "Assign chat to agent and store chat history",
+                "operationId": "assignChatToAgent",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "room_id"
+                                ],
+                                "properties": {
+                                    "room_id": {
+                                        "type": "string",
+                                        "example": "abc123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Chat messages processed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully."
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid input or missing parameters."
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An unexpected error occurred."
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/get-messages": {
+            "get": {
+                "tags": [
+                    "User Messages"
+                ],
+                "summary": "Get messages for the authenticated user",
+                "description": "Fetches all messages for the currently authenticated user.",
+                "operationId": "getMessages",
+                "responses": {
+                    "200": {
+                        "description": "Successful retrieval of messages",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data has been fetched successfully !"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    },
+                                                    "text": {
+                                                        "type": "string",
+                                                        "example": "What's your Name?"
+                                                    },
+                                                    "attachment": {
+                                                        "type": "string",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    },
+                                                    "is_read": {
+                                                        "type": "string",
+                                                        "example": "unread"
+                                                    },
+                                                    "room_id": {
+                                                        "type": "string",
+                                                        "example": "367731a6-7f9b-431b-8432-8e958c71c17e"
+                                                    },
+                                                    "sender": {
+                                                        "type": "string",
+                                                        "example": "bot"
+                                                    },
+                                                    "external_message_time": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-03-12 13:06:46"
+                                                    },
+                                                    "node_type": {
+                                                        "type": "string",
+                                                        "example": "USERNAME"
+                                                    },
+                                                    "session_id": {
+                                                        "type": "string",
+                                                        "example": "47497830-512b-4f07-ae7b-7602dfa38a8b"
+                                                    },
+                                                    "first_name": {
+                                                        "type": "string",
+                                                        "example": "System"
+                                                    },
+                                                    "last_name": {
+                                                        "type": "string",
+                                                        "example": "Message"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-04-24T19:32:02.000000Z"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-04-24T19:32:02.000000Z"
+                                                    },
+                                                    "attachment_url": {
+                                                        "type": "string",
+                                                        "example": null,
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/send-message": {
+            "post": {
+                "tags": [
+                    "User Messages"
+                ],
+                "summary": "Store a new message",
+                "description": "Creates a new message for a specific user. Supports file attachment.",
+                "operationId": "storeMessage",
+                "requestBody": {
+                    "description": "Message data to be stored",
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "text"
+                                ],
+                                "properties": {
+                                    "text": {
+                                        "type": "string",
+                                        "example": "This is a message"
+                                    },
+                                    "attachment": {
+                                        "description": "Optional file to be attached",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Message successfully created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Message created successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "text": {
+                                                    "type": "string",
+                                                    "example": "This is a message"
+                                                },
+                                                "attachment": {
+                                                    "type": "string",
+                                                    "example": "uploads/messages/file.jpg",
+                                                    "nullable": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-03T10:00:00Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-03T10:00:00Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/utility/export": {
@@ -22956,10 +23857,6 @@
             "description": "Mail Templates"
         },
         {
-            "name": "User Messages",
-            "description": "User Messages"
-        },
-        {
             "name": "Name Prefixes",
             "description": "Name Prefixes"
         },
@@ -23016,6 +23913,10 @@
             "description": "Support Ticket"
         },
         {
+            "name": "Suppot Ticket Status",
+            "description": "Suppot Ticket Status"
+        },
+        {
             "name": "Tenants",
             "description": "Tenants"
         },
@@ -23048,12 +23949,20 @@
             "description": "Users"
         },
         {
+            "name": "Admins",
+            "description": "Admins"
+        },
+        {
             "name": "Branding",
             "description": "Branding"
         },
         {
             "name": "User Groups",
             "description": "User Groups"
+        },
+        {
+            "name": "User Messages",
+            "description": "User Messages"
         },
         {
             "name": "Utility",

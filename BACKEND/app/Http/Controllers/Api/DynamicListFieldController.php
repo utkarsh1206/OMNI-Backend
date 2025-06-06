@@ -137,7 +137,11 @@ class DynamicListFieldController extends Controller
      *     @OA\Response(response=500, description="Internal server error")
      * )
      */
-    public function update(DynamicListFieldRequest $request, $id)
+    // public function update(DynamicListFieldRequest $request, $id)
+    // {
+    //     return $this->dynamicListFieldRepository->update($request, $id);
+    // }
+    public function update(Request $request, $id)
     {
         return $this->dynamicListFieldRepository->update($request, $id);
     }

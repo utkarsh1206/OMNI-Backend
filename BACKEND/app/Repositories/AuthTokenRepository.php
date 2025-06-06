@@ -28,16 +28,17 @@ class AuthTokenRepository
             ->first();
 
             if ($checkToken) {
-                $authToken = $checkToken;
+                $authToken = $checkToken->token;
             } else {
-                $authToken = AuthToken::create([
-                    'token' =>  Str::random(64),
+                $authToken = Str::random(64);
+                AuthToken::create([
+                    'token' =>  $authToken,
                     'ipaddress' => $request->ip(),
                     'expire_at' =>  Carbon::now()->addHours(3),
                 ]);
             }
            
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $authToken, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), ['token' => $authToken], trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Auth Token Listing: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
