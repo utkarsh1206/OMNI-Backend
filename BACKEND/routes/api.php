@@ -92,6 +92,7 @@ use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
+use App\Http\Controllers\Api\LiveCallDashboardController;
 use App\Http\Controllers\Api\PriorityController;
 use App\Http\Controllers\Api\TranscriptApiController;
 use App\Http\Controllers\Api\UserRoleController;
@@ -385,6 +386,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     });
 
     Route::post('/check-user-limit', [UserController::class, 'checkUserLimit']);
+    Route::get('live-calls', [LiveCallDashboardController::class, 'index']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
