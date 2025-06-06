@@ -13,18 +13,20 @@ class Role extends Model
         'status'
     ];
 
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'role_permissions', 'role_id', 'permission_id')
+            ->withTimestamps();
+    }
+
     public function actions()
     {
-        return $this->belongsToMany(Action::class, 'role_action', 'role_id', 'action_id')
-            ->withPivot('tenant_module_id')
-            ->withTimestamps();
+        return $this->hasManyThrough(Action::class, Permission::class, 'id', 'id', null, 'action_id');
     }
 
     public function tenantModules()
     {
-        return $this->belongsToMany(TenantModule::class, 'role_action', 'role_id', 'tenant_module_id')
-            ->withPivot('action_id')
-            ->withTimestamps();
+        return $this->hasManyThrough(TenantModule::class, Permission::class, 'id', 'id', null, 'module_id');
     }
 
     public function users()
