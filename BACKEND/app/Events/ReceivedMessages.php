@@ -8,16 +8,13 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class ReceivedMessages implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $message;
-
-    private $receiverId;
-
-    private $domain;
+    private $message, $receiverId, $domain;
 
     /**
      * Create a new event instance.
@@ -25,7 +22,7 @@ class ReceivedMessages implements ShouldBroadcastNow
     public function __construct($data)
     {
         $this->message = $data;
-        $this->domain = auth()->user()->domain;
+        $this->domain = convertToLower(auth()->user()->domain);
         $this->receiverId = $data->receiver_id;
         generateLogs('info', 'broadcast Data: ' . json_encode(['AgentChatMessages' => $this->message]));
     }
@@ -39,7 +36,7 @@ class ReceivedMessages implements ShouldBroadcastNow
     {
         generateLogs('info', 'Channel Name: ' . json_encode(['Channel' => "{$this->domain}-{$this->receiverId}-agent-chat"]));
         return [
-            new Channel("{$this->domain}-{$this->receiverId}-agent-chat"),
+            new PrivateChannel("{$this->domain}-{$this->receiverId}-agent-chat"),
         ];
     }
 

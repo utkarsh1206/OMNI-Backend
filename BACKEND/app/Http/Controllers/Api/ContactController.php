@@ -52,6 +52,13 @@ class ContactController extends Controller
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
+     *         name="contact_number",
+     *         in="query",
+     *         description="Filter by Contact Number.",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
      *         name="page",
      *         in="query",
      *         description="Page number for pagination.",

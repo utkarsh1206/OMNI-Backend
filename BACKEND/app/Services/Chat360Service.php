@@ -77,18 +77,17 @@ class Chat360Service
         }
     }
 
-    public function sendMessage(string $type, array $payload)
+    public function sendMessage(string $type, array $payload, string $phoneNumber)
     {
         try {
             $message = [
                 'api_key' => $this->apiKey,
-                'from' => $this->fromPhone,       // Replace with dynamic value if needed
-                'to' => $this->toPhone,         // Replace with dynamic value if needed
+                'from' => $this->fromPhone,
+                'to' => (string)$phoneNumber, // $this->toPhone,
                 'recipient_type' => 'individual',
                 'type' => $type,
             ];
 
-            // Attach message-specific payload
             switch ($type) {
                 case 'text':
                     $message['text'] = [
@@ -136,11 +135,10 @@ class Chat360Service
                     generateLogs('error', "Unsupported message type: {$type}");
                     return "Unsupported message type: {$type}";
             }
-
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->getAccessToken(),
             ])->post($this->url . 'api/whatsapp/whatsapp-session-messages', $message);
-
+           
             if (! $response->ok()) {
                 generateLogs('error', 'Failed send data to Chat360.');
                 return $response->body();

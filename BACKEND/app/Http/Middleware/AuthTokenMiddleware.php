@@ -25,7 +25,7 @@ class AuthTokenMiddleware
             if (Str::startsWith(request()->path(), $protectedPrefixes)) {
                 $header = $request->header('Token');
                 if (!$header) {
-                    return response()->json(['error' => 'Authorization token missing or invalid'], 401);
+                    return response()->json(['error' => 'Authorization token missing or invalid'], ResponseHTTP::HTTP_UNAUTHORIZED);
                 }
 
                 $authToken = AuthToken::where('token', $header)

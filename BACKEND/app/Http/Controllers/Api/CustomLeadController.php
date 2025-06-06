@@ -106,6 +106,55 @@ class CustomLeadController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/custom-leads/{list_id}/mobile-history/{mobile}",
+     *     tags={"Custom Leads"},
+     *     summary="Get all versions of a lead by mobile number",
+     *     description="Fetch all versions/records of a lead based on the mobile number for a specific list.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="list_id",
+     *         in="path",
+     *         required=true,
+     *         description="List ID (used to resolve dynamic table name like custom_lead_{list_id})",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="mobile",
+     *         in="path",
+     *         required=true,
+     *         description="Mobile number of the lead",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="columns", type="array", @OA\Items(type="string")),
+     *                 @OA\Property(property="data", type="array", @OA\Items(type="object"))
+     *             ),
+     *             @OA\Property(property="message", type="string", example="Data fetched successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Lead not found"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized, invalid token"
+     *     )
+     * )
+     */
+    public function getLeadHistoryByMobile(Request $request, $list_id, $mobile)
+    {
+        return $this->leadRepository->getLeadHistoryByMobile($list_id, $mobile);
+    }
+
+    /**
      * @OA\Post(
      *      path="/api/custom-leads/{list_id}",
      *      tags={"Custom Leads"},
@@ -170,13 +219,14 @@ class CustomLeadController extends Controller
 
         // Filter input based on valid columns
         $insertData = $request->only($validColumns);
+        $callUniqueId = $request->input('call_unique_id', null);
 
         // Ensure there's data to insert
         if (empty($insertData)) {
             return response()->json(['error' => 'No valid fields provided for insertion'], 400);
         }
 
-        return $this->leadRepository->createLead($list_id, $insertData);
+        return $this->leadRepository->createLead($list_id, $insertData, $callUniqueId);
     }
 
     /**
@@ -243,13 +293,14 @@ class CustomLeadController extends Controller
 
         // Only keep fields that exist in the table
         $updateData = $request->only($columns);
+        $callUniqueId = $request->input('call_unique_id', null);
 
         // Ensure there's data to update
         if (empty($updateData)) {
             return response()->json(['error' => 'No valid fields provided for update'], 400);
         }
 
-        return $this->leadRepository->updateLead($list_id, $lead_id, $updateData);
+        return $this->leadRepository->updateLead($list_id, $lead_id, $updateData, $callUniqueId);
     }
 
     /**

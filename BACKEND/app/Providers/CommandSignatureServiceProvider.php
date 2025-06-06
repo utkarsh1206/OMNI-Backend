@@ -17,7 +17,7 @@ class CommandSignatureServiceProvider extends ServiceProvider
         // Listen for CommandStarting event
         Event::listen(CommandFinished::class, function ($event) {
             // Log the event to check if it's being triggered
-            generateLogs('info', 'Command Starting event fired!');
+            // generateLogs('info', 'Command Starting event fired!');
             // Check if the command being executed is 'make:command'
             if ($event->command === 'make:command') {
                 $commandName = $event->input->getArgument('name');

@@ -344,7 +344,7 @@ class WebhookCallController extends Controller
                             $liveAgent->call_direction = 'out_call';
                             $liveAgent->save();
 
-                            broadcast(new AgentLiveStatus($liveAgent, $domain));
+                            broadcast(new AgentLiveStatus($liveAgent, $agentId->id, $domain));
                         }
                         generateLogs('info', "after agentId IF block");
                     }

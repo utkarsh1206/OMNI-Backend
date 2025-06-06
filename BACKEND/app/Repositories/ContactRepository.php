@@ -26,6 +26,7 @@ class ContactRepository
             $productId = $request->input('product_id', '');
             $accountId = $request->input('account_id', '');
             $ownerId = $request->input('owner_id', '');
+            $contactNumber = $request->input('contact_number', '');
 
             $query = Contact::query();
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
@@ -39,7 +40,8 @@ class ContactRepository
                         ->orWhere('mobile', 'like', "%$searchTerm%")
                         ->orWhere('product_id', 'like', "%$searchTerm%")
                         ->orWhere('account_id', 'like', "%$searchTerm%")
-                        ->orWhere('owner_id', 'like', "%$searchTerm%");
+                        ->orWhere('owner_id', 'like', "%$searchTerm%")
+                        ->orWhere('mobile', 'like', "%$searchTerm%");
                 });
 
                 $account = Account::where('name', 'like', "%$searchTerm%")->first();
@@ -64,6 +66,11 @@ class ContactRepository
             if (!empty($ownerId)) {
                 $query->where('owner_id', $ownerId);
             }
+
+            if (!empty($contactNumber)) {
+                $query->where('mobile', 'like', "$contactNumber%");
+            }
+
             $contact = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $contact, trans('message.data_fetch'));
         } catch (Exception $ex) {

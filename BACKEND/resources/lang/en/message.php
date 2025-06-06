@@ -190,6 +190,10 @@ return [
     'ticket_type_created' => 'Ticket Type created successfully.',
     'ticket_type_updated' => 'Ticket Type updated successfully.',
     'ticket_type_deleted' => 'Ticket Type deleted successfully.',
+    //Status
+    'status_created' => 'Status created successfully.',
+    'status_updated' => 'Status updated successfully.',
+    'status_deleted' => 'Status deleted successfully.',
 ]   
 ?>
 

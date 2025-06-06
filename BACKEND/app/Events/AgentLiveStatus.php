@@ -19,9 +19,10 @@ class AgentLiveStatus implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public function __construct($data, $domain = null)
+    public function __construct($data, $id, $domain = null)
     {
         $this->agentLiveData = $data;
+        $this->authId = $id;
         // $this->domain = $domain ?? convertToLower(auth()->user()->domain);
         $this->domain = $domain ?? convertToLower(Str::replace(".", "_", auth()->user()->domain));
         generateLogs('info', 'broadcast Data: ' . json_encode(['AgentLiveStatus' => $this->agentLiveData]));
@@ -34,9 +35,9 @@ class AgentLiveStatus implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        generateLogs('info', 'Channel Name: ' . json_encode(['Channel' =>"{$this->domain}-agent-status"]));
+        generateLogs('info', 'Channel Name: ' . json_encode(['Channel' =>"{$this->domain}-{$this->authId}-agent-status"]));
         return [
-            new Channel("{$this->domain}-agent-status"),
+            new PrivateChannel("{$this->domain}-{$this->authId}-agent-status"),
         ];
     }
 

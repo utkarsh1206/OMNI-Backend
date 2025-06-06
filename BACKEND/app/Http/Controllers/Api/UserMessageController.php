@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Repositories\UserMessageRepository;
 use App\Http\Requests\UserMessageRequest;
 use App\Http\Requests\ChatBotRoomId;
-
+use App\Models\Detail;
 class UserMessageController extends Controller
 {
     private $messageRepository;
@@ -205,5 +205,10 @@ class UserMessageController extends Controller
     public function storeMessage(UserMessageRequest $request)
     {
         return $this->messageRepository->storeMessage($request);
+    }
+
+    public function fetchChatResponse(Request $request, Detail $detail)
+    {
+       return $this->messageRepository->fetchChatResponse($request, $detail);
     }
 }

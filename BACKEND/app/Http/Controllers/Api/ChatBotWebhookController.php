@@ -9,8 +9,6 @@ use App\Repositories\ChatBotWebhookRepository;
 
 class ChatBotWebhookController extends Controller
 {
-    private $chat360Service;
-    
     private $chatBotWebhookRepository;
 
     public function __construct( 

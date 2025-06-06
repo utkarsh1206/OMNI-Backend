@@ -24,6 +24,8 @@ class CronCommandsSeeder extends Seeder
 	        ['command_signature' => 'app:process-callbacks', 'type' => 'cron'],
 	    
 		['command_signature' => 'app:migrate-ticket-defaults', 'type' => 'other'],
+	
+		['command_signature' => 'app:clean-end-of-day-data', 'type' => 'other'],
 	];
         
         foreach ($cronCommands as $cronCommand) {
