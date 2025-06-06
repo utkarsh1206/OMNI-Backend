@@ -5836,6 +5836,86 @@
                 ]
             }
         },
+        "/api/custom-leads/{list_id}/mobile-history/{mobile}": {
+            "get": {
+                "tags": [
+                    "Custom Leads"
+                ],
+                "summary": "Get all versions of a lead by mobile number",
+                "description": "Fetch all versions/records of a lead based on the mobile number for a specific list.",
+                "operationId": "8a839f48327afd201b635494f46b3ca2",
+                "parameters": [
+                    {
+                        "name": "list_id",
+                        "in": "path",
+                        "description": "List ID (used to resolve dynamic table name like custom_lead_{list_id})",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "mobile",
+                        "in": "path",
+                        "description": "Mobile number of the lead",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "columns": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Lead not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/dashboard/ticket_details": {
             "get": {
                 "tags": [
@@ -10082,6 +10162,103 @@
                         "description": "Live agent deleted"
                     }
                 }
+            }
+        },
+        "/api/live-calls": {
+            "get": {
+                "tags": [
+                    "Live Calls"
+                ],
+                "summary": "Get Live Call Logs",
+                "description": "Retrieve all current live calls with status (`ringing` or `incall`) and duration since `call_initiated`.",
+                "operationId": "getLiveCalls",
+                "parameters": [
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "Start date of the time range (format: YYYY-MM-DD)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "End date of the time range (format: YYYY-MM-DD)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Live calls fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No live calls found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Record not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/login": {
@@ -23839,6 +24016,10 @@
         {
             "name": "License",
             "description": "License"
+        },
+        {
+            "name": "Live Calls",
+            "description": "Live Calls"
         },
         {
             "name": "Authentication",
