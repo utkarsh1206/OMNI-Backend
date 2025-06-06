@@ -375,6 +375,16 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('super-admin-dashboard', [SuperAdminDashboardController::class, 'index']);
 
     Route::apiResource('ticket-status', SupportTicketStatusController::class);
+
+    Route::prefix('roles')->group(function () {
+    Route::get('/', [RoleController::class, 'index']);
+    Route::post('/', [RoleController::class, 'store']);
+    Route::get('{role}', [RoleController::class, 'show']);
+    Route::put('{role}', [RoleController::class, 'update']);
+    Route::delete('{role}', [RoleController::class, 'destroy']);
+    });
+
+    Route::post('/check-user-limit', [UserController::class, 'checkUserLimit']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
@@ -402,13 +412,7 @@ Route::apiResource('pause-code', 'App\Http\Controllers\Api\PauseCodeController')
 Route::get('cron-commands', [CronCommandController::class, 'index']);
 Route::get('cron-expressions', [CronExpressionController::class, 'index']);
 
-Route::prefix('roles')->group(function () {
-    Route::get('/', [RoleController::class, 'index']);
-    Route::post('/', [RoleController::class, 'store']);
-    Route::get('{role}', [RoleController::class, 'show']);
-    Route::put('{role}', [RoleController::class, 'update']);
-    Route::delete('{role}', [RoleController::class, 'destroy']);
-});
+
 
 Route::prefix('user-roles')->group(function () {
     Route::get('/',             [UserRoleController::class, 'index']);

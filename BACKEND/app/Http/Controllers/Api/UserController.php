@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserLimitRequest;
 use Illuminate\Http\Request;
 use App\Models\Users;
 use App\Http\Requests\UserRequest;
@@ -960,5 +961,10 @@ class UserController extends Controller
     public function getBranding(Request $request)
     {
         return $this->userRepository->getBranding($request);
+    }
+
+    public function checkUserLimit(UserLimitRequest $request)
+    {
+        return $this->userRepository->checkUserLimit($request);
     }
 }
