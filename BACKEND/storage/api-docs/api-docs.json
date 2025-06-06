@@ -5836,6 +5836,86 @@
                 ]
             }
         },
+        "/api/custom-leads/{list_id}/mobile-history/{mobile}": {
+            "get": {
+                "tags": [
+                    "Custom Leads"
+                ],
+                "summary": "Get all versions of a lead by mobile number",
+                "description": "Fetch all versions/records of a lead based on the mobile number for a specific list.",
+                "operationId": "8a839f48327afd201b635494f46b3ca2",
+                "parameters": [
+                    {
+                        "name": "list_id",
+                        "in": "path",
+                        "description": "List ID (used to resolve dynamic table name like custom_lead_{list_id})",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "mobile",
+                        "in": "path",
+                        "description": "Mobile number of the lead",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "columns": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Lead not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized, invalid token"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/dashboard/ticket_details": {
             "get": {
                 "tags": [
@@ -21660,6 +21740,96 @@
                 ]
             }
         },
+        "/api/check-user-limit": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Check if user creation exceeds license limit",
+                "description": "Checks if the number of users (agent/manager) exceeds the limit defined in the tenant license.",
+                "operationId": "8bbfe874e21f5dba66f1fed61357147f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "type"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "description": "0 = Manager, 1 = Agent",
+                                        "type": "integer",
+                                        "enum": [
+                                            0,
+                                            1
+                                        ],
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "License usage within limits",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "manager_ct": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "agent_ct": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "User limit exceeded",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "User limit exceeded"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/usergroup": {
             "get": {
                 "tags": [
@@ -23955,6 +24125,10 @@
         {
             "name": "Branding",
             "description": "Branding"
+        },
+        {
+            "name": "User",
+            "description": "User"
         },
         {
             "name": "User Groups",
