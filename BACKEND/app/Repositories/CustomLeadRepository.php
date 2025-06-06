@@ -5,6 +5,7 @@ namespace App\Repositories;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use App\Http\Response\CustomApiResponse;
+use App\Models\CustomCdrLead;
 use Illuminate\Http\Request;
 
 class CustomLeadRepository
@@ -52,7 +53,7 @@ class CustomLeadRepository
     private function getSingleLead($query, $column, $value, $columns)
     {
         try {
-            $lead = $query->where($column, $value)->first();
+            $lead = $query->where($column, $value)->orderBy('created_at', 'desc')->first();
 
             if (!$lead) {
                 return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.lead_not_found'));
@@ -70,6 +71,94 @@ class CustomLeadRepository
         }
     }
 
+    public function getLeadHistoryByMobile(int $listId, string $mobile)
+    {
+        try {
+            $table = "custom_lead_" . $listId;
+
+            if (!$this->isTableExists($table)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    $table,
+                    trans('message.table_not_found')
+                );
+            }
+
+            // Fetch table columns
+            $columns = DB::getSchemaBuilder()->getColumnListing($table);
+
+            // Get all leads for this mobile
+            $leads = DB::table($table)
+                ->where('mobile', $mobile)
+                ->orderBy('created_at', 'desc') // or 'asc' if you want oldest first
+                ->get();
+
+            if ($leads->isEmpty()) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    [],
+                    trans('message.lead_not_found')
+                );
+            }
+
+            $formattedLeads = $leads->map(function ($lead) use ($columns) {
+                return $this->formatLeadData($lead, $columns);
+            });
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                [
+                    'columns' => $columns,
+                    'data' => $formattedLeads
+                ],
+                trans('message.data_fetch')
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in getting lead history by mobile: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+
+    // private function getAllLeads(Request $request, $query, $columns)
+    // {
+    //     try {
+    //         $searchTerm = $request->input('search', '');
+
+    //         $startDate = $request->input('start_date');
+    //         $endDate = $request->input('end_date');
+
+    //         if (!empty($searchTerm)) {
+    //             $query->where(function ($q) use ($searchTerm) {
+    //                 $q->where('mobile', 'like', "%{$searchTerm}%")
+    //                     ->orwhere('first_name', 'like', "%{$searchTerm}%")
+    //                     ->orwhere('last_name', 'like', "%{$searchTerm}%");
+    //             });
+    //         }
+
+    //         // Filter by start and end date (including time)
+    //         if ($startDate && $endDate) {
+    //             $query->whereBetween('created_at', [$startDate, $endDate]);
+    //         } elseif ($startDate) {
+    //             $query->where('created_at', '>=', $startDate);
+    //         } elseif ($endDate) {
+    //             $query->where('created_at', '<=', $endDate);
+    //         }
+
+    //         $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+    //         $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+    //         $data = $page == config('omni.ALL_PAGE') ? $query->get()->map(fn($row) => $this->formatLeadData($row, $columns))->toArray() : $query->paginate($perPage);
+
+    //         return $this->apiResponse->getResponseStructure(trans('message.success'), [
+    //             'columns' => $columns,
+    //             'data' => $data
+    //         ], trans('message.data_fetch'));
+    //     } catch (Exception $ex) {
+    //         generateLogs('error', 'Error in generating all leads: ', $ex->getMessage());
+    //         return $this->apiResponse->handleAndResponseException($ex);
+    //     }
+    // }
+
     private function getAllLeads(Request $request, $query, $columns)
     {
         try {
@@ -78,26 +167,50 @@ class CustomLeadRepository
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date');
 
+            $table = $query->from; // get the dynamic table name
+
+            // Subquery to get latest created_at per mobile
+            $subQuery = DB::table($table)
+                ->select(DB::raw('MAX(created_at) as latest_created_at'), 'mobile')
+                ->groupBy('mobile');
+
+            // Join original table with subquery to get full lead info
+            $query = DB::table($table . ' as main')
+                ->joinSub($subQuery, 'latest', function ($join) {
+                    $join->on('main.mobile', '=', 'latest.mobile')
+                        ->on('main.created_at', '=', 'latest.latest_created_at');
+                })
+                ->select('main.*');
+
+            // Apply search filter
             if (!empty($searchTerm)) {
                 $query->where(function ($q) use ($searchTerm) {
-                    $q->where('mobile', 'like', "%{$searchTerm}%")
-                        ->orwhere('first_name', 'like', "%{$searchTerm}%")
-                        ->orwhere('last_name', 'like', "%{$searchTerm}%");
+                    $q->where('main.mobile', 'like', "%{$searchTerm}%")
+                        ->orWhere('main.first_name', 'like', "%{$searchTerm}%")
+                        ->orWhere('main.last_name', 'like', "%{$searchTerm}%");
                 });
             }
 
-            // Filter by start and end date (including time)
+            // Apply date filters
             if ($startDate && $endDate) {
-                $query->whereBetween('created_at', [$startDate, $endDate]);
+                $query->whereBetween('main.created_at', [$startDate, $endDate]);
             } elseif ($startDate) {
-                $query->where('created_at', '>=', $startDate);
+                $query->where('main.created_at', '>=', $startDate);
             } elseif ($endDate) {
-                $query->where('created_at', '<=', $endDate);
+                $query->where('main.created_at', '<=', $endDate);
             }
+
+            // $query->orderBy('main.created_at', 'desc'); // To be used if and when required
+
+            // $query->orderBy('main.created_at', 'desc')   // To be used if and when required
+            //     ->orderBy('main.id', 'desc');
 
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-            $data = $page == config('omni.ALL_PAGE') ? $query->get()->map(fn($row) => $this->formatLeadData($row, $columns))->toArray() : $query->paginate($perPage);
+
+            $data = $page == config('omni.ALL_PAGE')
+                ? $query->get()->map(fn($row) => $this->formatLeadData($row, $columns))->toArray()
+                : $query->paginate($perPage);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), [
                 'columns' => $columns,
@@ -116,7 +229,7 @@ class CustomLeadRepository
         })->toArray();
     }
 
-    public function createLead(int $listId, array $data)
+    public function createLead(int $listId, array $data, ?string $callUniqueId)
     {
         try {
             $table = "custom_lead_" . $listId;
@@ -156,6 +269,15 @@ class CustomLeadRepository
             // Insert and get ID
             $leadId = DB::table($table)->insertGetId($data);
 
+            if (!empty($callUniqueId)) {
+                CustomCdrLead::create([
+                    'lead_id' => $leadId,
+                    'list_id' => $listId,
+                    'call_unique_id' => $callUniqueId,
+                    'lead_json' => json_encode($data),
+                ]);
+            }
+
             if ($leadId) {
                 $data['id'] = $leadId;
                 return $this->apiResponse->getResponseStructure(
@@ -176,7 +298,7 @@ class CustomLeadRepository
         }
     }
 
-    public function updateLead(int $listId, int $leadId, array $data)
+    public function updateLead(int $listId, int $leadId, array $data, ?string $callUniqueId)
     {
         try {
             $table = "custom_lead_" . $listId;
@@ -195,16 +317,53 @@ class CustomLeadRepository
                 return $this->apiResponse->getResponseStructure(trans('message.error'), $data, trans('message.invalid_data'));
             }
 
-            $data['updated_at'] = now();
+            // $data['updated_at'] = now();
 
-            // Update the lead
-            $updated = DB::table($table)->where('id', $leadId)->update($data);
+            // // Update the lead
+            // $updated = DB::table($table)->where('id', $leadId)->update($data);
 
-            if ($updated) {
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.lead_update_success'));
+            // if ($updated) {
+            //     return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.lead_update_success'));
+            // }
+
+            // return $this->apiResponse->getResponseStructure(trans('message.error'), [], trans('message.no_changes_made'));
+
+            $existingLead = DB::table($table)->where('id', $leadId)->first();
+
+            // Prepare new data
+            $newLeadData = (array)$existingLead;
+            unset($newLeadData['id'], $newLeadData['created_at'], $newLeadData['updated_at']);
+
+            $newLeadData = array_merge($newLeadData, $data);
+            $timestamp = now();
+            $newLeadData['created_at'] = $timestamp;
+            $newLeadData['updated_at'] = $timestamp;
+
+            $newId = DB::table($table)->insertGetId($newLeadData);
+
+            if (!empty($callUniqueId)) {
+                CustomCdrLead::create([
+                    'lead_id' => $leadId,
+                    'list_id' => $listId,
+                    'call_unique_id' => $callUniqueId,
+                    'lead_json' => json_encode($newLeadData),
+                ]);
             }
 
-            return $this->apiResponse->getResponseStructure(trans('message.error'), [], trans('message.no_changes_made'));
+            if ($newId) {
+                $newLeadData['id'] = $newId;
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.success'),
+                    $newLeadData,
+                    trans('message.lead_update_success')
+                );
+            }
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.error'),
+                [],
+                trans('message.no_changes_made')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in updating lead: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
