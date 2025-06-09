@@ -30,9 +30,13 @@ class ModifyRequestMiddleware
 
         $payload = $token ? extractPayload($token) : null;
 
+        if (empty($request->campaign_id) && isset($payload['campaign'])) {
+            $modifiedData['campaign_id'] = $payload['campaign'];
+        }
+
         $modifiedData['user_id'] = $payload['username'];
         $modifiedData['user'] = $payload['username'];
-        $modifiedData['campaign_id'] = $payload['campaign'];
+        // $modifiedData['campaign_id'] = $payload['campaign'];
         $modifiedData['domain_name'] = $payload['domain'];
         $modifiedData['id'] = $payload['id'];
         $modifiedData['phone'] = $payload['phone'];
