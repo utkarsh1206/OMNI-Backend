@@ -11339,6 +11339,376 @@
                 }
             }
         },
+        "/api/neox-configurations": {
+            "get": {
+                "tags": [
+                    "Neox Configuration"
+                ],
+                "summary": "List Neox Configurations",
+                "description": "Fetch a list of Neox configurations with optional search and pagination.",
+                "operationId": "listNeoxConfigurations",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search term for Neox token or local IP",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Results per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched Neox configurations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {}
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid pagination parameters"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Neox Configuration"
+                ],
+                "summary": "Create a Neox Configuration",
+                "description": "Create a new Neox configuration with provided token and local IP.",
+                "operationId": "createNeoxConfiguration",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "neox_token",
+                                    "neox_local_ip"
+                                ],
+                                "properties": {
+                                    "neox_token": {
+                                        "type": "string",
+                                        "example": "ABC123"
+                                    },
+                                    "neox_local_ip": {
+                                        "type": "string",
+                                        "example": "192.168.1.1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Neox configuration created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {}
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data or duplicate configuration",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Neox token already exists"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/neox-configurations/{id}": {
+            "get": {
+                "tags": [
+                    "Neox Configuration"
+                ],
+                "summary": "Get a Neox Configuration by ID",
+                "description": "Fetch the details of a Neox configuration by its unique ID.",
+                "operationId": "showNeoxConfiguration",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the Neox configuration to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched Neox configuration",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {}
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Neox configuration not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Neox configuration not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Neox Configuration"
+                ],
+                "summary": "Update a Neox Configuration",
+                "description": "Update an existing Neox configuration based on the provided ID.",
+                "operationId": "updateNeoxConfiguration",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the Neox configuration to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "neox_token": {
+                                        "type": "string",
+                                        "example": "XYZ123"
+                                    },
+                                    "neox_local_ip": {
+                                        "type": "string",
+                                        "example": "192.168.1.2"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Neox configuration updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {}
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data or configuration not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Neox token already exists"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Neox Configuration"
+                ],
+                "summary": "Delete a Neox Configuration",
+                "description": "Delete a Neox configuration by its ID.",
+                "operationId": "deleteNeoxConfiguration",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the Neox configuration to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Neox configuration deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "integer",
+                                            "example": 1
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Configuration not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Neox configuration not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/note": {
             "get": {
                 "tags": [
@@ -24798,6 +25168,10 @@
         {
             "name": "Name Prefixes",
             "description": "Name Prefixes"
+        },
+        {
+            "name": "Neox Configuration",
+            "description": "Neox Configuration"
         },
         {
             "name": "Notes",
