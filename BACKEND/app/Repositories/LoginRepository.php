@@ -61,7 +61,7 @@ class LoginRepository
         if ($validator['flag'] == 0) {
             $token = authenticateUser($credentials, Admins::class);
             $userData = $this->getUserData($credentials, Admins::class, $validator['flag']);
-        } elseif ($validator['flag'] == 1) {
+        } elseif ($validator['flag'] == 1 || $validator['flag'] == 3) {
             $token = authenticateUser($credentials, Users::class, 'api_users');
             $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
         } elseif ($validator['flag'] == 2) {
