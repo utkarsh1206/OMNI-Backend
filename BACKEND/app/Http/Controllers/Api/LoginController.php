@@ -125,4 +125,10 @@ class LoginController extends Controller
         $this->loginRepository->logout($request);
         return response()->json(['message' => 'Successfully logged out']);
     }
+
+    public function logoutAgent(Request $request, $user, $extension)
+    {
+        $this->loginRepository->logoutAgent($user, $extension);
+        return response()->json(['message' => 'Agent Successfully logged out']);
+    }
 }
