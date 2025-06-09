@@ -14,6 +14,9 @@ use App\Models\LiveAgents;
 use App\Models\Phone;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+use App\Models\RolePermission;
+use App\Models\Permission;
+use App\Models\RoleUser;
 
 /**
  * Class UserRepository.
@@ -37,10 +40,11 @@ class LoginRepository
      */
     public function login(Request $request, array $validator)
     {
+        $permissionInfo = [];
         $domain = $request->input('domain');
         if ($validator["flag"] == 1 || $validator["flag"] == 2) {
             if (isLicenseExpired($request)) {
-                return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
+                //return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
             }
 
             if (!$domain) {
@@ -53,63 +57,83 @@ class LoginRepository
         $loginInput = $request->input('username');
         $credentials[filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'username'] = $loginInput;
 
-        try {
-            if ($validator['flag'] == 0) {
-                $token = authenticateUser($credentials, Admins::class);
-                $userData = $this->getUserData($credentials, Admins::class, $validator['flag']);
-            } elseif ($validator['flag'] == 1) {
-                $token = authenticateUser($credentials, Users::class, 'api_users');
-                $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
-            } elseif ($validator['flag'] == 2) {
-                $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
-                if (!$userData) {
-                    generateLogs('error', 'User not found or deleted credentials : ', $credentials);
-                    return response()->json(['error' =>  trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
-                }
-                $phoneData = $this->getPhoneData($request);
-                if (!$phoneData) {
-                    generateLogs('error', 'Phone not found or inactive phone: ', $request->input('phone'));
-                    return response()->json(['error' =>  trans('message.invalid_phone_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
-                }
-                if ($this->authenticatePassword($credentials, $userData, $request->input('phone_password'), $phoneData)) {
-                    // Check if user or extension already exists in LiveAgents
-                    $existingAgent = LiveAgents::where('user_id', $userData['id'])
-                        ->orWhere('extension', $request->phone)
-                        ->first();
-
-                    if ($existingAgent) {
-                        return response()->json(['error' => trans('message.user_or_phone_already_logged_in')], ResponseHTTP::HTTP_UNAUTHORIZED);
-                    }
-
-                    // Set the flag to include phone in JWT
-                    $userData->setAddPhoneToJWT($validator['flag']);
-                    $token = JWTAuth::attempt($credentials);
-                    if ($userData['role_id'] == 3) {
-                        $timeNow = Carbon::now();
-                        LiveAgents::create([
-                            'user_id' => $userData['id'],
-                            'extension' => $request->phone,
-                            'status' => 'pause',
-                            'status_last_updated_at' => $timeNow,
-                            'login_time' => $timeNow,
-                            'ready_hr' => $timeNow,
-                            'campaign_id' => $request->campaign,
-                        ]);
-                    }
-                } else {
-                    generateLogs('error', 'Unauthorized: Invalid credentials userData: ', $userData);
-                    return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
-                }
+        // try {
+        if ($validator['flag'] == 0) {
+            $token = authenticateUser($credentials, Admins::class);
+            $userData = $this->getUserData($credentials, Admins::class, $validator['flag']);
+        } elseif ($validator['flag'] == 1 || $validator['flag'] == 3) {
+            $token = authenticateUser($credentials, Users::class, 'api_users');
+            $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
+        } elseif ($validator['flag'] == 2) {
+            $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
+            if (!$userData) {
+                generateLogs('error', 'User not found or deleted credentials : ', $credentials);
+                return response()->json(['error' =>  trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
             }
-            $dataArr = [
-                "userInfo" => $userData,
-                "token" => $token,
-            ];
-            return is_string($token) ? $this->apiResponse->getResponseStructure(trans('message.success'), $dataArr, trans('message.login')) : $token;
-        } catch (\Exception $ex) {
-            generateLogs('error', 'Error during authentication: ', $ex->getMessage());
-            return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
+            $phoneData = $this->getPhoneData($request);
+            if (!$phoneData) {
+                generateLogs('error', 'Phone not found or inactive phone: ', $request->input('phone'));
+                return response()->json(['error' =>  trans('message.invalid_phone_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
+            }
+            if ($this->authenticatePassword($credentials, $userData, $request->input('phone_password'), $phoneData)) {
+                // Check if user or extension already exists in LiveAgents
+                $existingAgent = LiveAgents::where('user_id', $userData['id'])
+                    ->orWhere('extension', $request->phone)
+                    ->first();
+
+                if ($existingAgent) {
+                    return response()->json(['error' => trans('message.user_or_phone_already_logged_in')], ResponseHTTP::HTTP_UNAUTHORIZED);
+                }
+
+                // Set the flag to include phone in JWT
+                $userData->setAddPhoneToJWT($validator['flag']);
+                $token = JWTAuth::attempt($credentials);
+                if ($userData['role_id'] == 3) {
+                    $timeNow = Carbon::now();
+                    LiveAgents::create([
+                        'user_id' => $userData['id'],
+                        'extension' => $request->phone,
+                        'status' => 'pause',
+                        'status_last_updated_at' => $timeNow,
+                        'login_time' => $timeNow,
+                        'ready_hr' => $timeNow,
+                        'campaign_id' => $request->campaign,
+                    ]);
+                }
+            } else {
+                generateLogs('error', 'Unauthorized: Invalid credentials userData: ', $userData);
+                return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
+            }
         }
+
+
+        $permissionData = RolePermission::where("role_id", $userData->user_role_id)->pluck("permission_id");
+        $permissionInfo = Permission::with(["module", "action"])->whereIn("id", $permissionData)->get();
+        $permissionInfo = $permissionInfo->toArray();
+        $formattedPermissions = [];
+
+        foreach ($permissionInfo as $permission) {
+            $moduleName = $permission['module']['name'];
+            $actionName = $permission['action']['name'];
+
+            if (!isset($formattedPermissions[$moduleName])) {
+                $formattedPermissions[$moduleName] = [];
+            }
+
+            if (!in_array($actionName, $formattedPermissions[$moduleName])) {
+                $formattedPermissions[$moduleName][] = $actionName;
+            }
+        }
+        $dataArr = [
+            "userInfo" => $userData,
+            "token" => $token,
+            "permission" => $formattedPermissions
+        ];
+        return is_string($token) ? $this->apiResponse->getResponseStructure(trans('message.success'), $dataArr, trans('message.login')) : $token;
+        // } catch (\Exception $ex) {
+        //     generateLogs('error', 'Error during authentication: ', $ex->getMessage());
+        //     return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
+        // }
     }
 
 

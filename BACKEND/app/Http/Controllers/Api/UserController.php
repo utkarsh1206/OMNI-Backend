@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserLimitRequest;
 use Illuminate\Http\Request;
 use App\Models\Users;
 use App\Http\Requests\UserRequest;
@@ -960,5 +961,46 @@ class UserController extends Controller
     public function getBranding(Request $request)
     {
         return $this->userRepository->getBranding($request);
+    }
+
+
+    /**
+ * @OA\Post(
+ *     path="/api/check-user-limit",
+ *     summary="Check if user creation exceeds license limit",
+ *     description="Checks if the number of users (agent/manager) exceeds the limit defined in the tenant license.",
+ *     tags={"User"},
+ *     security={{"bearerAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"type"},
+ *             @OA\Property(property="type", type="integer", enum={0,1}, description="0 = Manager, 1 = Agent", example=1)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="License usage within limits",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Data fetched successfully"),
+ *             @OA\Property(property="data", type="object",
+ *                 @OA\Property(property="manager_ct", type="integer", example=5),
+ *                 @OA\Property(property="agent_ct", type="integer", example=50)
+ *             ),
+ *             @OA\Property(property="status", type="string", example="success")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="User limit exceeded",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="User limit exceeded")
+ *         )
+ *     )
+ * )
+ */
+    public function checkUserLimit(UserLimitRequest $request)
+    {
+        return $this->userRepository->checkUserLimit($request);
     }
 }
