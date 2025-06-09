@@ -24,7 +24,7 @@ class LoginRequest extends FormRequest
         return [
             'username' => 'required',
             'password' => 'required',
-            'flag' => 'required|in:0,1,2',
+            'flag' => 'required|in:0,1,2,3',
             'phone' => 'required_if:flag,2',
             'phone_password' => 'required_if:flag,2'
         ];
