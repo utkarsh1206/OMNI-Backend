@@ -127,35 +127,52 @@ class Users extends Authenticatable implements JWTSubject
             }
         } else {
             // Old logic: build permission array from omnichannel.tenant_roles
-            $permission = "";
-            $permission_array = [];
+            // $permission = "";
+            // $permission_array = [];
 
-            $tenantRoleId = DB::table('omnichannel.tenants')
-                ->where('domain_name', $postData['domain'] ?? null)
-                ->value('tenant_role_id');
+            // $tenantRoleId = DB::table('omnichannel.tenants')
+            //     ->where('domain_name', $postData['domain'] ?? null)
+            //     ->value('tenant_role_id');
 
-            if ($tenantRoleId) {
-                $permission = DB::table('omnichannel.tenant_roles')
-                    ->where('id', $tenantRoleId)
-                    ->value('permission');
-            }
+            // if ($tenantRoleId) {
+            //     $permission = DB::table('omnichannel.tenant_roles')
+            //         ->where('id', $tenantRoleId)
+            //         ->value('permission');
+            // }
 
-            $decoded_permissions = json_decode($permission, true);
+            // $decoded_permissions = json_decode($permission, true);
 
-            if (!empty($decoded_permissions)) {
-                foreach ($decoded_permissions as $permission_key => $permission_value) {
-                    if (isset($permission_value['allowed']) && $permission_value['allowed'] == 1) {
-                        $view_name = DB::table('omnichannel.menu_permissions')
-                            ->where('module_name', $permission_key)
-                            ->value('view_name');
-                        if ($view_name) {
-                            $permission_array[] = $view_name;
-                        }
-                    }
+            // if (!empty($decoded_permissions)) {
+            //     foreach ($decoded_permissions as $permission_key => $permission_value) {
+            //         if (isset($permission_value['allowed']) && $permission_value['allowed'] == 1) {
+            //             $view_name = DB::table('omnichannel.menu_permissions')
+            //                 ->where('module_name', $permission_key)
+            //                 ->value('view_name');
+            //             if ($view_name) {
+            //                 $permission_array[] = $view_name;
+            //             }
+            //         }
+            //     }
+            // }
+
+            $permissionData = RolePermission::where("role_id", $this->user_role_id)->pluck("permission_id");
+            $permissionInfo = Permission::with(["module", "action"])->whereIn("id", $permissionData)->get();
+            $permissionInfo = $permissionInfo->toArray();
+            $formattedPermissions = [];
+            foreach ($permissionInfo as $permission) {
+                $moduleName = $permission['module']['name'];
+                $actionName = $permission['action']['name'];
+
+                if (!isset($formattedPermissions[$moduleName])) {
+                    $formattedPermissions[$moduleName] = [];
+                }
+
+                if (!in_array($actionName, $formattedPermissions[$moduleName])) {
+                    $formattedPermissions[$moduleName][] = $actionName;
                 }
             }
 
-            $claims['permission'] = json_encode($permission_array);
+            $claims['permission'] = json_encode($formattedPermissions);
 
             $dbName = DB::table('omnichannel.details')->select('db')->where('domain', $postData['domain'])->first();
             $claims['db'] = $dbName->db;
