@@ -18,6 +18,50 @@ class RecordApiController extends Controller
         $this->apiResponse = $customApiResponse;
     }
 
+
+    /**
+     * @OA\Post(
+     *     path="/api/ext-api/record-call",
+     *     tags={"Call Recording"},
+     *     description="Fetch call recording data from the external API.",
+     *     operationId="callRecordingApi",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 required={"action"},
+     *                 @OA\Property(property="action", type="string", example="StartMonitor"),
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Call recording retrieved successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request. Validation failed or missing parameters."
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized. Invalid or missing token."
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error. Something went wrong while processing the request."
+     *     )
+     * )
+     */
+
     public function callRecordingApi(Request $request)
     {
         try {

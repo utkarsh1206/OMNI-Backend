@@ -17,6 +17,45 @@ class DispositionApiController extends Controller
         $this->apiResponse = $customApiResponse;
     }
 
+   /**
+     * @OA\Post(
+     *     path="/api/ext-api/dispo-list",
+     *     tags={"Disposition List"},
+     *     description="Fetch the disposition list from the external API.",
+     *     operationId="dispositionListApi",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 required={"campaign_id"},
+     *                 @OA\Property(property="campaign_id", type="string", example="Incoming"),
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Disposition list retrieved successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error"
+     *     )
+     * )
+     */
+
     public function dispositionListApi(Request $request)
     {
         $config = getNeoxConfig();

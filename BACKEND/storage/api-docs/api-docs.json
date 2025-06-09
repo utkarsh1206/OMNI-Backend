@@ -6782,6 +6782,65 @@
                 ]
             }
         },
+        "/api/ext-api/dispo-list": {
+            "post": {
+                "tags": [
+                    "Disposition List"
+                ],
+                "description": "Fetch the disposition list from the external API.",
+                "operationId": "dispositionListApi",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "campaign_id"
+                                ],
+                                "properties": {
+                                    "campaign_id": {
+                                        "type": "string",
+                                        "example": "Incoming"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Disposition list retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/dynamic-list-fields": {
             "get": {
                 "tags": [
@@ -9550,6 +9609,71 @@
                         "description": "Bad Request"
                     }
                 }
+            }
+        },
+        "/api/ext-api/ingroup-list": {
+            "post": {
+                "tags": [
+                    "Ingroup List"
+                ],
+                "summary": "Get Ingroup List",
+                "description": "Fetch the ingroup list from the external API. Domain name is required unless a JWT is provided.",
+                "operationId": "ingroupListApi",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "campaign_id, user, domain_name"
+                                ],
+                                "properties": {
+                                    "campaign_id": {
+                                        "type": "string",
+                                        "example": "Incoming"
+                                    },
+                                    "user": {
+                                        "type": "string",
+                                        "example": "8002"
+                                    },
+                                    "domain_name": {
+                                        "type": "string",
+                                        "example": "Tenant4000"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Disposition list retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/ingroups": {
@@ -13343,6 +13467,68 @@
                     },
                     "500": {
                         "description": "Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ext-api/record-call": {
+            "post": {
+                "tags": [
+                    "Call Recording"
+                ],
+                "description": "Fetch call recording data from the external API.",
+                "operationId": "callRecordingApi",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "action"
+                                ],
+                                "properties": {
+                                    "action": {
+                                        "type": "string",
+                                        "example": "StartMonitor"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Call recording retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request. Validation failed or missing parameters."
+                    },
+                    "401": {
+                        "description": "Unauthorized. Invalid or missing token."
+                    },
+                    "500": {
+                        "description": "Internal Server Error. Something went wrong while processing the request."
                     }
                 },
                 "security": [
@@ -24064,6 +24250,10 @@
             "description": "Disposition"
         },
         {
+            "name": "Disposition List",
+            "description": "Disposition List"
+        },
+        {
             "name": "Email Configuration",
             "description": "Email Configuration"
         },
@@ -24098,6 +24288,10 @@
         {
             "name": "Industry Types",
             "description": "Industry Types"
+        },
+        {
+            "name": "Ingroup List",
+            "description": "Ingroup List"
         },
         {
             "name": "Inbound Groups",
@@ -24158,6 +24352,10 @@
         {
             "name": "Products",
             "description": "Products"
+        },
+        {
+            "name": "Call Recording",
+            "description": "Call Recording"
         },
         {
             "name": "Roles",
