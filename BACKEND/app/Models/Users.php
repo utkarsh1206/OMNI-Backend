@@ -15,7 +15,7 @@ class Users extends Authenticatable implements JWTSubject
 
     protected $table = 'users';
 
-    protected $appends = ['user_role_id', 'online_status', 'usergroup_name'];
+    protected $appends = ['user_role_id', 'online_status', 'usergroup_name','user_role_name'];
 
     protected $hidden = ['usergroup', 'password'];
 
@@ -202,6 +202,11 @@ class Users extends Authenticatable implements JWTSubject
     public function getUserRoleIdAttribute()
     {
         return $this->roles()->first()?->id;
+    }
+
+    public function getUserRoleNameAttribute()
+    {
+        return $this->roles()->first()?->name;
     }
 
     public function usergroup()

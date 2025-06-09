@@ -194,6 +194,7 @@ return [
     'status_created' => 'Status created successfully.',
     'status_updated' => 'Status updated successfully.',
     'status_deleted' => 'Status deleted successfully.',
+    'user_limit_exceeds'=>"User limit exceeds",
 ]   
 ?>
 

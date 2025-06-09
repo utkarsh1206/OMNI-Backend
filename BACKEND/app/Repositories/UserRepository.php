@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Admins;
 use App\Models\Role;
+use App\Models\RolePermission;
 use App\Models\Users;
 use App\Models\Tenant;
+use App\Models\TenantLicense;
 use App\Models\UserGroup;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -478,5 +480,24 @@ class UserRepository
             generateLogs('error', 'Error during Get Branding: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
+    }
+
+    public function checkUserLimit($request){
+        $domain = auth()->user()->domain;
+        establishMasterConnection( $domain, "omnichannel", "mysql");
+        $tenantInfo= Tenant::where("domain_name", $domain)->first();
+        $licenseInfo = TenantLicense::where("tenant_id",$tenantInfo->id)->first(["manager_ct","agent_ct"]);
+         $totalDesiredCount  = $request->type == 0 ? $licenseInfo->manager_ct : $licenseInfo->agent_ct;
+        getDbConnection($domain,true);
+      
+        $currentCount  = Role::where("type",$request->type)->count();
+      
+        if($currentCount > $totalDesiredCount)
+        {
+             return response()->json(['error' => trans('message.user_limit_exceeds')], ResponseHTTP::HTTP_FORBIDDEN);
+        }
+
+          return $this->apiResponse->getResponseStructure(trans('message.success'), $licenseInfo , trans('message.fetch_data')); 
+
     }
 }

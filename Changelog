@@ -1,9 +1,13 @@
-2025-06-05 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+2025-06-06 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
-	* Previous Commit ID : 
+	* Previous Commit ID : 546b518
 	* Version : Dev
-	* Laravel: Remove/truncate data from live agent based on configure cron time.
+	* Laravel: Implemented a new Live Call Dashboard API to fetch ongoing live calls.
+	Calculates call duration.
+	Returns an empty dataset with 404 if no active calls are found.
+	Includes exception handling, structured API response, and logging.
+	Added Swagger documentation with proper response schema and @OA\Items() support.
 
 2025-06-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
