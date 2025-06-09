@@ -149,6 +149,8 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::post('logout', [LoginController::class, 'logout']);
 
+    Route::post('/logout-agent/{user}/{extension}', [LoginController::class, 'logoutAgent']);
+
     Route::apiResource('tenants', TenantController::class);
 
     Route::apiResource('usergroup', UserGroupController::class);
