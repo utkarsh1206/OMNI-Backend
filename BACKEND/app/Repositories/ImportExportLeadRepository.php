@@ -54,7 +54,11 @@ class ImportExportLeadRepository
                 $errors[] = 'Invalid Last Name';
             }
 
-            if (isset($rowAssoc['Mobile']) && !preg_match('/^\d{10}$/', $rowAssoc['Mobile'])) {
+            // if (isset($rowAssoc['Mobile']) && !preg_match('/^\d{10}$/', $rowAssoc['Mobile'])) {
+            //     $errors[] = 'Invalid Mobile';
+            // }
+
+            if (isset($rowAssoc['Mobile']) && !preg_match('/^\+?\d{8,15}$/', $rowAssoc['Mobile'])) {
                 $errors[] = 'Invalid Mobile';
             }
 
