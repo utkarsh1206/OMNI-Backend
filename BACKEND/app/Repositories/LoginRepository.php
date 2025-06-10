@@ -44,7 +44,7 @@ class LoginRepository
         $domain = $request->input('domain');
         if ($validator["flag"] == 1 || $validator["flag"] == 2) {
             if (isLicenseExpired($request)) {
-                //return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
+                return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
             }
 
             if (!$domain) {
@@ -61,7 +61,7 @@ class LoginRepository
         if ($validator['flag'] == 0) {
             $token = authenticateUser($credentials, Admins::class);
             $userData = $this->getUserData($credentials, Admins::class, $validator['flag']);
-        } elseif ($validator['flag'] == 1 || $validator['flag'] == 3) {
+        } elseif ($validator['flag'] == 1 ) {
             $token = authenticateUser($credentials, Users::class, 'api_users');
             $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
         } elseif ($validator['flag'] == 2) {

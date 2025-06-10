@@ -436,25 +436,23 @@ class SupportTicketRepository
     {
         setEmailConfig();
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
-
-        $sender_email = $emailConfig->sender_email ?? config('mail.from.address');
-
-        establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
-
-        $subject = $mailTemplate['subject'] ?? $request->subject;
-        $body = $mailTemplate['body'] ?? $request->description;
-
-        $result = Mail::to($request->to_emails)->send(new SendEmail($subject, $body, $mail_attachment_urls));
-
-        getDbConnection(auth()->user()->domain);
-
-        logEmail([
-            "user_id" => $assignToId,
-            "email_template_id" => 0,
-            "from_email" => $sender_email,
-            "module_name" => "Support Ticket",
-            "entity_id" => $ticketId,
-            "status" => "Sent",
-        ]);
+        if(isset($emailConfig->id) && !empty($emailConfig->id))
+        {
+            $sender_email = $emailConfig->sender_email ?? config('mail.from.address');
+            establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
+            $subject = $mailTemplate['subject'] ?? $request->subject;
+            $body = $mailTemplate['body'] ?? $request->description;
+            $result = Mail::to($request->to_emails)->send(new SendEmail($subject, $body, $mail_attachment_urls));
+            getDbConnection(auth()->user()->domain);
+            logEmail([
+                "user_id" => $assignToId,
+                "email_template_id" => 0,
+                "from_email" => $sender_email,
+                "module_name" => "Support Ticket",
+                "entity_id" => $ticketId,
+                "status" => "Sent",
+            ]);      
+        }
+      
     }
 }
