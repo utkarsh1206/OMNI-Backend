@@ -8,6 +8,8 @@ use App\Services\AESService;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Illuminate\Support\Facades\Http;
 use App\Models\NeoxConfiguration;
+use App\Models\Permission;
+use App\Models\RolePermission;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -409,3 +411,30 @@ if (! function_exists('getSanitizedOriginalName')) {
         return preg_replace('/[^A-Za-z0-9_\-]/', '_', pathinfo($fileName, PATHINFO_FILENAME));
     }
 }
+
+if (! function_exists('getPermissionFromRoleId')) {
+function getPermissionFromRoleId($roleId)
+{
+        $permissionData = RolePermission::where("role_id", $roleId)->pluck("permission_id");
+        $permissionInfo = Permission::with(["module", "action"])->whereIn("id", $permissionData)->get();
+        $permissionInfo = $permissionInfo->toArray();
+        $formattedPermissions = [];
+
+        foreach ($permissionInfo as $permission) {
+            $moduleName = $permission['module']['name'];
+            $actionName = $permission['action']['name'];
+
+            if (!isset($formattedPermissions[$moduleName])) {
+                $formattedPermissions[$moduleName] = [];
+            }
+
+            if (!in_array($actionName, $formattedPermissions[$moduleName])) {
+                $formattedPermissions[$moduleName][] = $actionName;
+            }
+        }
+
+        return $formattedPermissions;
+    }
+}
+
+

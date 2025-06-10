@@ -71,7 +71,7 @@ class Users extends Authenticatable implements JWTSubject
             'domain'   => $postData['domain'] ?? null,
         ];
 
-        if (isset($postData['flag']) && in_array($postData['flag'],[2,3])) {
+        if (isset($postData['flag']) && $postData['flag'] == 2) {
             // New permission format using IDs
             $permissions = [];
 
@@ -88,29 +88,30 @@ class Users extends Authenticatable implements JWTSubject
             // }
             // DO NOT DELETE THE ABOVE CODE, IT IS WORKING IN LOCAL ENVIRONMENT BUT NOT ON SERVERS
 
-            foreach ($this->roles as $role) {
-                foreach ($role->tenantModules as $module) {
-                    // Filter actions for this module AND this role
-                    $actions = DB::table('role_action')
-                        ->join('actions', 'role_action.action_id', '=', 'actions.id')
-                        ->where('role_action.role_id', $role->id)
-                        ->where('role_action.tenant_module_id', $module->id)
-                        ->pluck('actions.name')
-                        ->toArray();
+            // foreach ($this->roles as $role) {
+            //     foreach ($role->tenantModules as $module) {
+            //         // Filter actions for this module AND this role
+            //         $actions = DB::table('role_action')
+            //             ->join('actions', 'role_action.action_id', '=', 'actions.id')
+            //             ->where('role_action.role_id', $role->id)
+            //             ->where('role_action.tenant_module_id', $module->id)
+            //             ->pluck('actions.name')
+            //             ->toArray();
 
-                    if (!empty($actions)) {
-                        $permissions[$module->name] = array_values(
-                            array_unique(
-                                array_merge(
-                                    $permissions[$module->name] ?? [],
-                                    $actions
-                                )
-                            )
-                        );
-                    }
-                }
-            }
+            //         if (!empty($actions)) {
+            //             $permissions[$module->name] = array_values(
+            //                 array_unique(
+            //                     array_merge(
+            //                         $permissions[$module->name] ?? [],
+            //                         $actions
+            //                     )
+            //                 )
+            //             );
+            //         }
+            //     }
+            // }
 
+             $permissions = getPermissionFromRoleId($this->user_role_id);
             // Remove duplicates in action ID arrays
             // foreach ($permissions as &$actions) {
             //     $actions = array_values(array_unique($actions));
