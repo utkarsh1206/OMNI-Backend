@@ -26,9 +26,9 @@ class EmailConfigureRequest extends FormRequest
         return [
             'smtp_host' => 'nullable',
             'smtp_port' => 'nullable',
-            'imap_host' => 'required',
-            'imap_port' => 'required',
-            'sender_email' => 'required|unique:email_configures',
+            'imap_host' => 'nullable',
+            'imap_port' => 'nullable',
+            'sender_email' => 'nullable',
             'product_id' => 'required|exists:products,id',
             'department_id' => 'required|exists:departments,id',
         ];
