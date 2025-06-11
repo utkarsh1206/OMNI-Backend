@@ -107,23 +107,7 @@ class LoginRepository
         }
 
 
-        $permissionData = RolePermission::where("role_id", $userData->user_role_id)->pluck("permission_id");
-        $permissionInfo = Permission::with(["module", "action"])->whereIn("id", $permissionData)->get();
-        $permissionInfo = $permissionInfo->toArray();
-        $formattedPermissions = [];
-
-        foreach ($permissionInfo as $permission) {
-            $moduleName = $permission['module']['name'];
-            $actionName = $permission['action']['name'];
-
-            if (!isset($formattedPermissions[$moduleName])) {
-                $formattedPermissions[$moduleName] = [];
-            }
-
-            if (!in_array($actionName, $formattedPermissions[$moduleName])) {
-                $formattedPermissions[$moduleName][] = $actionName;
-            }
-        }
+       $formattedPermissions = getPermissionFromRoleId($userData->user_role_id);
         $dataArr = [
             "userInfo" => $userData,
             "token" => $token,

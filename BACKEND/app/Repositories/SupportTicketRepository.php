@@ -434,10 +434,10 @@ class SupportTicketRepository
 
     private function sendSupportEmail(Request $request, array $mail_attachment_urls, int $ticketId, int $assignToId, array $mailTemplate = null)
     {
-        setEmailConfig();
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
-        if(isset($emailConfig->id) && !empty($emailConfig->id))
+        if(isset($emailConfig) && !empty($emailConfig))
         {
+            setEmailConfig();
             $sender_email = $emailConfig->sender_email ?? config('mail.from.address');
             establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
             $subject = $mailTemplate['subject'] ?? $request->subject;

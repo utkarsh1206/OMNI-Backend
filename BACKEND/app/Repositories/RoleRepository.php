@@ -78,8 +78,12 @@ class RoleRepository
     public function show($role)
     {
         try {
+            $roleInfo = [];
+            $roleInfo = $role->toArray();
+            $formattedPermissions = getPermissionFromRoleId($role->id);
+            $roleInfo["permissions"] =  $formattedPermissions;
             // return $this->apiResponse->getResponseStructure(trans('message.success'), $role->load(['tenantModules', 'actions']));
-            return response()->json($role->load(['actions']));
+            return response()->json($roleInfo);
         } catch (Exception $e) {
             return $this->apiResponse->handleAndResponseException($e);
         }
