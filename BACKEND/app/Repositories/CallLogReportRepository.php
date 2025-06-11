@@ -88,7 +88,7 @@ class CallLogReportRepository
                 'caller_user_extension',
                 'called_phone_number',
                 'call_did_pattern',
-                DB::raw('SEC_TO_TIME(call_total_duration) as call_total_duration'),
+                DB::raw('DATE_FORMAT(SEC_TO_TIME(call_total_duration), "%H:%i:%s") as call_total_duration'),
                 DB::raw('SEC_TO_TIME(call_talk_duration) as call_talk_duration'),
                 'call_status',
                 'call_dispo_status',
@@ -142,23 +142,19 @@ class CallLogReportRepository
     private function generateCsvExport($callLogs)
     {
         $headers = [
-            'Call Unique ID',
-            'Campaign ID',
-            'Inbound Group ID',
-            'User Group',
+            'Campaign',
+            'Inbound Group',
             'Call Date',
-            'Call Type',
-            'Caller Username',
-            'Caller User Extension',
-            'Called Phone Number',
-            'Call DID Pattern',
-            'Total Duration',
-            'Talk Duration',
-            'Status',
-            'Disposition Status',
-            'Term Reason',
-            'Comments',
-            'Recording URL',
+            'Caller Name',
+            'Caller Extension',
+            'Phone Number',
+            'Call Total Duration',
+            'Call Talk Duration',
+            'Dispo Status',
+            'Uniqueid',
+            'DID',
+            'Type of Call',
+            'Term Reason'
         ];
 
         $csvData = $this->formatCallLogsForCsv($callLogs);
@@ -185,23 +181,19 @@ class CallLogReportRepository
     {
         return $logs->map(function ($log) {
             return [
-                $log->call_unique_id,
                 $log->campaign_id,
                 $log->inbound_group_id,
-                $log->user_group,
                 Carbon::parse($log->call_date)->format('Y-m-d H:i:s'),
-                $log->call_type,
                 $log->caller_username,
                 $log->caller_user_extension,
                 $log->called_phone_number,
-                $log->call_did_pattern,
-                $this->formatDuration($log->call_total_duration),
-                $this->formatDuration($log->call_talk_duration),
-                $log->call_status,
+                $log->call_total_duration,
+                $log->call_talk_duration,
                 $log->call_dispo_status,
+                $log->call_unique_id,
+                $log->call_did_pattern,
+                $log->call_type,
                 $log->call_term_reason,
-                $log->comments,
-                $log->call_recording_url,
             ];
         })->toArray();
     }
