@@ -46,7 +46,7 @@ class AuditLogRepository
 
             // Optional filter: module
             if ($request->filled('module_name')) {
-                $query->where('action', 'like', '%' . $request->module_name . '%');
+                $query->where('module_name', 'like', '%' . $request->module_name . '%');
             }
 
             // Optional filter: action
