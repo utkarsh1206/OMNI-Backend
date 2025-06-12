@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Http\Response\CustomApiResponse;
 use App\Models\NeoxCallLog;
+use App\Services\DispositionListService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -14,10 +15,12 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 class CallLogReportRepository
 {
     private $apiResponse;
+    protected $dispositionService;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(CustomApiResponse $customApiResponse, DispositionListService $dispositionService)
     {
         $this->apiResponse = $customApiResponse;
+        $this->dispositionService = $dispositionService;
     }
 
     /**
@@ -48,7 +51,7 @@ class CallLogReportRepository
     {
         try {
             $callLogs = $this->buildCallLogQuery($request)->get();
-            
+
             return $this->generateCsvExport($callLogs);
         } catch (Exception $e) {
             generateLogs('error', 'Error in exportCsvData: ' . $e->getMessage());
@@ -102,14 +105,14 @@ class CallLogReportRepository
                 Carbon::parse($filters['endDate'])->toDateString()
             ]);
 
-            if ($user && $user->role_id == 3) {
-                $query->where('caller_username', $user->username);
-            }
-            
-            // Conditional ordering
-            if ($applyOrderById) {
-                $query->orderBy('id', 'desc');
-            }
+        if ($user && $user->role_id == 3) {
+            $query->where('caller_username', $user->username);
+        }
+
+        // Conditional ordering
+        if ($applyOrderById) {
+            $query->orderBy('id', 'desc');
+        }
 
         // Apply filters if present
         if (!empty($filters['campaign_id'])) {
@@ -179,7 +182,29 @@ class CallLogReportRepository
      */
     protected function formatCallLogsForCsv($logs)
     {
-        return $logs->map(function ($log) {
+        $dispoCache = [];
+        return $logs->map(function ($log) use (&$dispoCache) {
+            $campaignId = $log->campaign_id;
+
+            if (!isset($dispoCache[$campaignId])) {
+                $request = new Request(['campaign_id' => $campaignId, 'user' => $log->caller_username]);
+
+                // Call the service with the constructed Request
+                $dispoCache[$campaignId] = $this->dispositionService->getDispositions($request);
+            }
+
+            $dispos = $dispoCache[$campaignId];
+            $dispoStatus = $log->call_dispo_status;
+
+            $dispoLabel = $dispoStatus;
+            foreach ($dispos as $dispo) {
+                if ($dispo['disposition'] === $dispoStatus) {
+                    $dispoLabel = "{$dispoStatus} - {$dispo['disposition_description']}";
+                    break;
+                }
+            }
+
+            generateLogs("info", "test ", json_encode($dispos));
             return [
                 $log->campaign_id,
                 $log->inbound_group_id,
@@ -189,7 +214,7 @@ class CallLogReportRepository
                 $log->called_phone_number,
                 $log->call_total_duration,
                 $log->call_talk_duration,
-                $log->call_dispo_status,
+                $dispoLabel,
                 $log->call_unique_id,
                 $log->call_did_pattern,
                 $log->call_type,
