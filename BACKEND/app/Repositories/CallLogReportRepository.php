@@ -79,6 +79,9 @@ class CallLogReportRepository
             return null;
         }
 
+        $startDate = Carbon::parse($filters['startDate'])->toDateTimeString();
+        $endDate = Carbon::parse($filters['endDate'])->endOfDay()->toDateTimeString();
+
         $query = NeoxCallLog::query()
             ->select([
                 'call_unique_id',
@@ -100,10 +103,7 @@ class CallLogReportRepository
                 'call_recording_url',
             ])
             ->where('type', 'call_history')
-            ->whereBetween(DB::raw('DATE(call_date)'), [
-                Carbon::parse($filters['startDate'])->toDateString(),
-                Carbon::parse($filters['endDate'])->toDateString()
-            ]);
+            ->whereBetween('call_date', [$startDate, $endDate]);
 
         if ($user && $user->role_id == 3) {
             $query->where('caller_username', $user->username);
