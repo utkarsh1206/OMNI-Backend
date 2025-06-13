@@ -8,6 +8,7 @@ use App\Models\CustomCdrLead;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Str;
 
 class CustomCdrLeadController extends Controller
 {
@@ -41,16 +42,25 @@ class CustomCdrLeadController extends Controller
 
             // Step 4: Get columns and query
             $columns = DB::getSchemaBuilder()->getColumnListing($table);
+
+            // Get only fields marked as show_authority = 'Y'
+            $authorizedFields = DB::table('ecdial_lists_fields')
+                ->where('list_id', $listId)
+                ->where('show_authority', 'Y')
+                ->pluck('field_name')
+                ->map(fn($field) => Str::slug($field, '_'))
+                ->toArray();
+
             $query = DB::table($table);
 
-            return $this->getSingleLead($query, 'id', $leadId, $columns);
+            return $this->getSingleLead($query, 'id', $leadId, $authorizedFields, $columns);
         } catch (Exception $ex) {
             generateLogs('error', 'Error in fetching lead by call_unique_id: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
-    private function getSingleLead($query, $column, $value, $columns)
+    private function getSingleLead($query, $column, $value, $authorizedFields, $allColumns)
     {
         try {
             $lead = $query->where($column, $value)->first();
@@ -59,10 +69,11 @@ class CustomCdrLeadController extends Controller
                 return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.lead_not_found'));
             }
 
-            $leadData = $this->formatLeadData($lead, $columns);
+            $leadData = $this->formatLeadData($lead, $authorizedFields);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), [
-                'columns' => $columns,
+                'columns' => $allColumns,
+                'displayable_fields' => $authorizedFields,
                 'data' => $leadData
             ], trans('message.data_fetch'));
         } catch (Exception $ex) {
