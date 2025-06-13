@@ -8,6 +8,7 @@ use App\Http\Response\CustomApiResponse;
 use App\Models\Admins;
 use App\Models\Role;
 use App\Models\RolePermission;
+use App\Models\RoleUser;
 use App\Models\Users;
 use App\Models\Tenant;
 use App\Models\TenantLicense;
@@ -126,7 +127,6 @@ class UserRepository
                 $query->where('type', '3');
             }
 
-            // ✅ LIVE SEARCH — searches across multiple text fields
             if (!empty($searchTerm)) {
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('username', 'like', "%{$searchTerm}%")
@@ -140,7 +140,6 @@ class UserRepository
                 });
             }
 
-            // ✅ ADVANCED FILTERS — applies only if specific filter field is given
             if (!empty($filters['name'])) {
                 $name = $filters['name'];
                 $query->where(function ($q) use ($name) {
@@ -186,7 +185,6 @@ class UserRepository
                 }
             }
 
-            // ✅ PAGINATION
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
@@ -205,7 +203,6 @@ class UserRepository
         }
     }
 
-
     public function store(Request $request)
     {
         try {
@@ -215,8 +212,7 @@ class UserRepository
 
             $maxAgents = $licenseInfo['number_of_agents'];
 
-            $currentAgentCount = Users::where('type', '3')
-                ->count();
+            $currentAgentCount = Users::where('type', '3')->count();
 
             // Check if the limit is reached
             if ($currentAgentCount >= $maxAgents) {
@@ -482,22 +478,21 @@ class UserRepository
         }
     }
 
-    public function checkUserLimit($request){
+    public function checkUserLimit($request)
+    {
         $domain = auth()->user()->domain;
-        establishMasterConnection( $domain, "omnichannel", "mysql");
-        $tenantInfo= Tenant::where("domain_name", $domain)->first();
-        $licenseInfo = TenantLicense::where("tenant_id",$tenantInfo->id)->first(["manager_ct","agent_ct"]);
-         $totalDesiredCount  = $request->type == 0 ? $licenseInfo->manager_ct : $licenseInfo->agent_ct;
-        getDbConnection($domain,true);
-      
-        $currentCount  = Role::where("type",$request->type)->count();
-      
-        if($currentCount > $totalDesiredCount)
-        {
-             return response()->json(['error' => trans('message.user_limit_exceeds')], ResponseHTTP::HTTP_FORBIDDEN);
+        establishMasterConnection($domain, "omnichannel", "mysql");
+        $tenantInfo = Tenant::where("domain_name", $domain)->first();
+        $licenseInfo = TenantLicense::where("tenant_id", $tenantInfo->id)->first(["manager_ct", "agent_ct"]);
+        $totalDesiredCount  = $request->type == 0 ? $licenseInfo->manager_ct : $licenseInfo->agent_ct;
+        getDbConnection($domain, true);
+
+        $roleArr  = Role::where("type", $request->type)->pluck("id");
+        $currentCount  = RoleUser::whereIn("role_id",$roleArr)->count("user_id");
+        if ($currentCount > $totalDesiredCount) {
+            return response()->json(['error' => trans('message.user_limit_exceeds')], ResponseHTTP::HTTP_FORBIDDEN);
         }
 
-          return $this->apiResponse->getResponseStructure(trans('message.success'), $licenseInfo , trans('message.fetch_data')); 
-
+        return $this->apiResponse->getResponseStructure(trans('message.success'), $licenseInfo, trans('message.fetch_data'));
     }
 }

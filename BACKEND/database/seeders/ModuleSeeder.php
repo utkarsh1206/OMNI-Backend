@@ -33,7 +33,7 @@ class ModuleSeeder extends Seeder
             ['name' => "Settings"],
             ['name' => "Email Settings"],
             ['name' => "Gmail"],
-            ['name' => " Email Templates"],
+            ['name' => "Email Templates"],
             ['name' => "SLA Configurations"],
             ['name' => "CRON Configuration"],
             ['name' => "Login"],
@@ -41,8 +41,30 @@ class ModuleSeeder extends Seeder
             ['name' => "Roles"],
             ['name' => "Users"],
             ['name' => "User Groups"],
-           
-            
+            ['name' => "Chatbot Templates"],
+            ['name' => "Neox Configurations"],
+            ['name' => "Dynamic Form"],
+            ['name' => "API Configurations"],
+            ['name' => "Import Utility"],
+            ['name' => "Export Utility"],
+            ['name' => "Priority Settings"],
+            ['name' => "Ticket Type Settings"],
+            ['name' => "Satus Settings"],
+            ['name' => "Evaluation"],
+            ['name' => "Audit Report"],
+            ['name' => "Email Logs"],
+            ['name' => "Call Log Report"],
+            ['name' => "User Activity Report"],
+            ['name' => "Pause Code"],
+            ['name' => "List"],
+            ['name' => "Lead Upload"],
+            ['name' => "Lead"],
+            ['name' => "Change Password"],
+            ['name' => "Live Agents"],
+            ['name' => "Live Calls"],
+            ['name' => "Logout"],
+            ['name' => "Product"],
+
         ];
         foreach ($module as  $moduleInfo) {
             Module::create([

@@ -101,7 +101,6 @@ use App\Http\Controllers\Api\SuperAdminDashboardController;
 use App\Http\Controllers\Api\SupportTicketStatusController;
 use App\Http\Controllers\Api\TenantModuleController;
 use App\Http\Controllers\Api\TicketTypeController;
-use App\Http\Controllers\CustomCdrLeadController;
 
 require base_path('routes/externalUse.php');
 

@@ -38,21 +38,27 @@ class AuditLogRepository
             $query->whereBetween('created_at', [$request->startDate, $request->endDate]);
 
             if ($request->filled('username')) {
-                $query->whereHas('userInfo', function($q) use ($request) {
+                $query->whereHas('userInfo', function ($q) use ($request) {
                     $q->where('first_name', 'like', '%' . $request->username . '%')
-                      ->orWhere('last_name', 'like', '%' . $request->username . '%');
+                        ->orWhere('last_name', 'like', '%' . $request->username . '%');
                 });
             }
 
             // Optional filter: module
             if ($request->filled('module_name')) {
-                $query->where('action', 'like', '%' . $request->module_name . '%');
+                $query->where('module_name', 'like', '%' . $request->module_name . '%');
             }
 
             // Optional filter: action
             if ($request->filled('action')) {
                 $query->where('request_method', 'like', '%' . $request->action . '%');
             }
+
+            // **Skip records where 'module_name' is blank**
+            $query->where(function ($query) {
+                $query->whereNotNull('module_name')
+                    ->where('module_name', '!=', '');
+            });
 
             // Paginate the results
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));

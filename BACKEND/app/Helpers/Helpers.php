@@ -297,9 +297,18 @@ if (!function_exists('generateLogs')) {
 
     function generateLogs($type, $msg, $error = null)
     {
+        $logFilePath = storage_path('logs/laravel-' . date('Y-m-d') . '.log');
+        if (file_exists($logFilePath) && env("APP_ENV") != "local") {
+            $fileOwner = posix_getpwuid(fileowner($logFilePath));
+            if ($fileOwner && isset($fileOwner['name']) && $fileOwner['name'] === 'root') {
+                unlink($logFilePath);
+                $msg .= ' | Log file owned by root was deleted.';
+            }
+        }
         Log::$type($msg . ($error ? ' ' . $error : ''));
     }
 }
+
 
 if (!function_exists('logMessage')) {
     function logMessage($level, $message, $data = [])

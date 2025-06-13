@@ -48,7 +48,8 @@ class LiveCallDashboardRepository
                     'nc.called_phone_number',
                     'nc.inbound_group_id',
                     'nc.call_date as latest_call_date',
-                    'nc.type as latest_type'
+                    'nc.type as latest_type',
+                    'nc.campaign_id'
                 )
                 ->cursor()
                 ->map(function ($call) use ($now, $startDate, $endDate) {
