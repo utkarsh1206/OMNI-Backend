@@ -30,16 +30,41 @@ class ModifyRequestMiddleware
 
         $payload = $token ? extractPayload($token) : null;
 
+        if ($payload['role_id'] == 1) {
+            $request->merge($modifiedData);
+            return $next($request);
+        }
+
         if (empty($request->campaign_id) && isset($payload['campaign'])) {
             $modifiedData['campaign_id'] = $payload['campaign'];
         }
 
-        $modifiedData['user_id'] = $payload['username'];
-        $modifiedData['user'] = $payload['username'];
+        // $modifiedData['user_id'] = $payload['username'];
+        if (empty($request->user_id) && isset($payload['username'])) {
+            $modifiedData['user_id'] = $payload['username'];
+        }
+
+        if (empty($request->id) && isset($payload['id'])) {
+            $modifiedData['id'] = $payload['id'];
+        }
+
+        if (empty($request->user) && isset($payload['username'])) {
+            $modifiedData['user'] = $payload['username'];
+        }
+
+        if (empty($request->domain_name) && isset($payload['domain'])) {
+            $modifiedData['domain_name'] = $payload['domain'];
+        }
+
+        if (empty($request->phone) && isset($payload['phone'])) {
+            $modifiedData['phone'] = $payload['phone'];
+        }
+
+        // $modifiedData['user'] = $payload['username'];
         // $modifiedData['campaign_id'] = $payload['campaign'];
-        $modifiedData['domain_name'] = $payload['domain'];
-        $modifiedData['id'] = $payload['id'];
-        $modifiedData['phone'] = $payload['phone'];
+        // $modifiedData['domain_name'] = $payload['domain'];
+        // $modifiedData['id'] = $payload['id'];
+        // $modifiedData['phone'] = $payload['phone'];
 
         // Replace the original request with modified data
         $request->merge($modifiedData);
