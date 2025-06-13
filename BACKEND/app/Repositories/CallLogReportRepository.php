@@ -182,29 +182,38 @@ class CallLogReportRepository
      */
     protected function formatCallLogsForCsv($logs)
     {
-        $dispoCache = [];
+        $dispoCache = []; // Cache for dispositions
+
         return $logs->map(function ($log) use (&$dispoCache) {
             $campaignId = $log->campaign_id;
+            $dispoLabel = $log->call_dispo_status;
 
-            if (!isset($dispoCache[$campaignId])) {
+            if ($campaignId && !isset($dispoCache[$campaignId])) {
                 $request = new Request(['campaign_id' => $campaignId, 'user' => $log->caller_username]);
 
-                // Call the service with the constructed Request
-                $dispoCache[$campaignId] = $this->dispositionService->getDispositions($request);
+                $response = $this->dispositionService->getDispositions($request);
+
+                if ($response instanceof \Illuminate\Http\JsonResponse) {
+                    $response = $response->getData(true);
+                }
+
+                $dispoCache[$campaignId] = $response;
             }
 
-            $dispos = $dispoCache[$campaignId];
-            $dispoStatus = $log->call_dispo_status;
+            if ($campaignId && isset($dispoCache[$campaignId]) && !isset($dispoCache[$campaignId]['errors'])) {
+                $dispos = $dispoCache[$campaignId];
+                $dispoStatus = $log->call_dispo_status;
 
-            $dispoLabel = $dispoStatus;
-            foreach ($dispos as $dispo) {
-                if ($dispo['disposition'] === $dispoStatus) {
-                    $dispoLabel = "{$dispoStatus} - {$dispo['disposition_description']}";
-                    break;
+                // Find the matching disposition description
+                foreach ($dispos as $dispo) {
+                    if (isset($dispo['disposition']) && $dispo['disposition'] === $dispoStatus) {
+                        $dispoLabel = "{$dispoStatus} - {$dispo['disposition_description']}";
+                        break;
+                    }
                 }
             }
 
-            generateLogs("info", "test ", json_encode($dispos));
+            // Return the row data for the CSV export
             return [
                 $log->campaign_id,
                 $log->inbound_group_id,
