@@ -46,4 +46,10 @@ class NeoxCallLog extends Model
         'cust_call_time' => 'datetime',
         'aband_call_time' => 'datetime',
     ];
+
+    public function dispositionDetail()
+    {
+        return $this->belongsTo(NeoxCallDispositionDetail::class, 'call_unique_id', 'call_unique_id')
+            ->select('call_unique_id', 'disposition_detail');
+    }
 }

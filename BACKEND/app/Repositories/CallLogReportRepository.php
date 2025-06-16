@@ -37,7 +37,13 @@ class CallLogReportRepository
             // Pagination or get all results
             $callLogs = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
 
+            $callLogs->load('dispositionDetail');
+
             $callLogs->getCollection()->transform(function ($log) {
+                $log->disposition_detail = $log->dispositionDetail->disposition_detail ?? null;
+
+                unset($log->dispositionDetail);
+
                 $recording = getRecordingFile($log->call_unique_id);
 
                 if ($recording instanceof \Illuminate\Http\JsonResponse) {
