@@ -206,20 +206,20 @@ class UserRepository
     public function store(Request $request)
     {
         try {
-            // $is_tanant = true;
-            // $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant' => true]));
-            // $licenseInfo = $licenseResponse->getData(true);
+            $is_tanant = true;
+            $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant' => true]));
+            $licenseInfo = $licenseResponse->getData(true);
 
-            // $maxAgents = $licenseInfo['number_of_agents'];
+            $maxAgents = $licenseInfo['number_of_agents'];
 
-            // $currentAgentCount = Users::where('type', '3')->count();
+            $currentAgentCount = Users::where('type', '3')->count();
 
-            // // Check if the limit is reached
-            // if ($currentAgentCount >= $maxAgents) {
-            //     return response()->json([
-            //         'error' => trans("message.user_limit_reached"),
-            //     ], ResponseHTTP::HTTP_BAD_REQUEST);
-            // }
+            // Check if the limit is reached
+            if ($currentAgentCount >= $maxAgents) {
+                return response()->json([
+                    'error' => trans("message.user_limit_reached"),
+                ], ResponseHTTP::HTTP_BAD_REQUEST);
+            }
             $users = Users::create([
                 'username' => $request->username,
                 // "tenant_id" => $request->tenant_id,
