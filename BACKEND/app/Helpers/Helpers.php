@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
  * Format price with a currency symbol.
@@ -155,7 +156,7 @@ if (!function_exists('getDbConnection')) {
         // Get the database name associated with the domain from 'details' table
         $details = DB::table('details')->where('domain', $domainName)
             ->orWhere('uin', $domainName)->first();
-       
+
         if ($details) {
             $connectionDetails = [
                 'database' => $details->db,
@@ -178,11 +179,11 @@ if (!function_exists('getDbConnection')) {
                 'strict' => true,
                 'engine' => null,
             ]);
-            
-            if($isExternal) {
+
+            if ($isExternal) {
                 DB::setDefaultConnection($newConnectionName);
             }
-            
+
             return DB::connection($newConnectionName);
         }
         return null;
@@ -336,12 +337,12 @@ if (!function_exists('logMessage')) {
 if (! function_exists('uploadAttachment')) {
     function uploadAttachment(Request $request, $fieldName = 'attachment', $directory = 'attachments')
     {
-        $fileInfo = []; 
+        $fileInfo = [];
         if ($request->hasFile($fieldName)) {
             $attachment = $request->file($fieldName);
             if (is_array($attachment)) {
                 foreach ($attachment as $value) {
-                    $filename = getSanitizedOriginalName($value->getClientOriginalName()) . '_' . now()->timestamp. '.' . $value->getClientOriginalExtension();
+                    $filename = getSanitizedOriginalName($value->getClientOriginalName()) . '_' . now()->timestamp . '.' . $value->getClientOriginalExtension();
                     // $filename = now()->format('Y_m_d_H_i_s') . '.' . $value->getClientOriginalExtension();
                     $filePath = $value->storeAs($directory, $filename, 'public');
                     $fileInfo[] = [
@@ -352,7 +353,7 @@ if (! function_exists('uploadAttachment')) {
                 }
             } else {
                 // $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
-                $filename = getSanitizedOriginalName($attachment->getClientOriginalName()) . '_' . now()->timestamp. '.' . $attachment->getClientOriginalExtension();
+                $filename = getSanitizedOriginalName($attachment->getClientOriginalName()) . '_' . now()->timestamp . '.' . $attachment->getClientOriginalExtension();
                 $filePath = $attachment->storeAs($directory, $filename, 'public');
                 $fileInfo = [
                     'fileName' => $filename,
@@ -422,8 +423,8 @@ if (! function_exists('getSanitizedOriginalName')) {
 }
 
 if (! function_exists('getPermissionFromRoleId')) {
-function getPermissionFromRoleId($roleId)
-{
+    function getPermissionFromRoleId($roleId)
+    {
         $permissionData = RolePermission::where("role_id", $roleId)->pluck("permission_id");
         $permissionInfo = Permission::with(["module", "action"])->whereIn("id", $permissionData)->get();
         $permissionInfo = $permissionInfo->toArray();
@@ -446,4 +447,28 @@ function getPermissionFromRoleId($roleId)
     }
 }
 
+if (!function_exists('getRecordingFile')) {
+    function getRecordingFile($uniqueId)
+    {
+        $recordingPath = base_path(config('omni.RECORDING_FILE_PATH'));
 
+        if (!is_dir($recordingPath)) {
+            return null;
+        }
+
+        $files = File::files($recordingPath);
+
+        foreach ($files as $file) {
+            $filename = $file->getFilename();
+
+            if (str_contains($filename, $uniqueId)) {
+                return response()->json([
+                    'filename' => $filename,
+                    'url' => asset("storage/recordings/$filename")
+                ]);
+            }
+        }
+
+        return null;
+    }
+}
