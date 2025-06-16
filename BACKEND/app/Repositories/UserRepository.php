@@ -206,21 +206,20 @@ class UserRepository
     public function store(Request $request)
     {
         try {
-            $is_tanant = true;
-            $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant' => $is_tanant]));
-            $licenseInfo = $licenseResponse->getData(true);
+            // $is_tanant = true;
+            // $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant' => true]));
+            // $licenseInfo = $licenseResponse->getData(true);
 
-            $maxAgents = $licenseInfo['number_of_agents'];
+            // $maxAgents = $licenseInfo['number_of_agents'];
 
-            $currentAgentCount = Users::where('type', '3')->count();
+            // $currentAgentCount = Users::where('type', '3')->count();
 
-            // Check if the limit is reached
-            if ($currentAgentCount >= $maxAgents) {
-                return response()->json([
-                    'error' => trans("message.user_limit_reached"),
-                ], ResponseHTTP::HTTP_BAD_REQUEST);
-            }
-
+            // // Check if the limit is reached
+            // if ($currentAgentCount >= $maxAgents) {
+            //     return response()->json([
+            //         'error' => trans("message.user_limit_reached"),
+            //     ], ResponseHTTP::HTTP_BAD_REQUEST);
+            // }
             $users = Users::create([
                 'username' => $request->username,
                 // "tenant_id" => $request->tenant_id,
@@ -255,16 +254,21 @@ class UserRepository
             $config = getNeoxConfig();
             $ip = $config['neox_local_ip'];
 
-            $userGroup = UserGroup::find($request->usergroup_id);
-            if ($userGroup) {
-                $neoxBody = [
-                    'userId' => $request->username,
-                    'password' => $request->password,
-                    'fullName' => $request->first_name . ' ' . $request->last_name,
-                    'userGroup' => $userGroup->name,
-                ];
-                $url = "https://{$ip}/Neox_ContactCenter_API/crud/user_omni/create.php";
-                sendHttpRequest($url, 'POST', $neoxBody);
+            if ($request->filled('user_role_id')) {
+                $roles = Role::find([$request->user_role_id])->first();
+                if ($roles->type == 1) {
+                    $userGroup = UserGroup::find($request->usergroup_id);
+                    if ($userGroup) {
+                        $neoxBody = [
+                            'userId' => $request->username,
+                            'password' => $request->password,
+                            'fullName' => $request->first_name . ' ' . $request->last_name,
+                            'userGroup' => $userGroup->name,
+                        ];
+                        $url = "https://{$ip}/Neox_ContactCenter_API/crud/user_omni/create.php";
+                        sendHttpRequest($url, 'POST', $neoxBody);
+                    }
+                }
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.users_created'), ResponseHTTP::HTTP_CREATED);
@@ -303,10 +307,12 @@ class UserRepository
                 "address" => $request->address,
                 "gender" => $request->gender
             ]);
+
             if ($request->filled('user_role_id')) {
                 $roles = Role::find([$request->user_role_id]);
                 $user->roles()->sync($roles);
             }
+
             return $this->apiResponse->getResponseStructure(trans('message.success'), $user, trans('message.users_updated'));
         } catch (Exception $e) {
             generateLogs('error', 'Error during Update User : ', $e->getMessage());
@@ -488,7 +494,7 @@ class UserRepository
         getDbConnection($domain, true);
 
         $roleArr  = Role::where("type", $request->type)->pluck("id");
-        $currentCount  = RoleUser::whereIn("role_id",$roleArr)->count("user_id");
+        $currentCount  = RoleUser::whereIn("role_id", $roleArr)->count("user_id");
         if ($currentCount > $totalDesiredCount) {
             return response()->json(['error' => trans('message.user_limit_exceeds')], ResponseHTTP::HTTP_FORBIDDEN);
         }
