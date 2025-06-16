@@ -7,6 +7,7 @@ use Exception;
 use App\Http\Response\CustomApiResponse;
 use App\Models\CustomCdrLead;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CustomLeadRepository
 {
@@ -84,6 +85,16 @@ class CustomLeadRepository
                 );
             }
 
+            $authorizedFields = DB::table('ecdial_lists_fields')
+                ->where('list_id', $listId)
+                ->where('show_authority', 'Y')
+                ->pluck('field_name') // Retrieve only the 'field_name' column values
+                // ->map(fn($f) => strtolower($f))
+                ->map(function ($field) {
+                    return Str::slug($field, '_'); // Laravel helper to convert "First Name" → "first_name"
+                })
+                ->toArray(); // Convert the collection to a plain PHP array
+
             // Fetch table columns
             $columns = DB::getSchemaBuilder()->getColumnListing($table);
 
@@ -101,14 +112,18 @@ class CustomLeadRepository
                 );
             }
 
-            $formattedLeads = $leads->map(function ($lead) use ($columns) {
-                return $this->formatLeadData($lead, $columns);
+            // $formattedLeads = $leads->map(function ($lead) use ($columns) {
+            //     return $this->formatLeadData($lead, $columns);
+            // });
+            $formattedLeads = $leads->map(function ($lead) use ($authorizedFields) {
+                return $this->formatLeadDataShowAuth($lead, $authorizedFields);
             });
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 [
                     'columns' => $columns,
+                    'displayable_fields' => $authorizedFields, // Explicitly show which fields were displayed
                     'data' => $formattedLeads
                 ],
                 trans('message.data_fetch')
@@ -226,6 +241,13 @@ class CustomLeadRepository
     {
         return collect($columns)->mapWithKeys(function ($column) use ($lead) {
             return [$column => $lead->$column ?? null];
+        })->toArray();
+    }
+
+    private function formatLeadDataShowAuth($lead, $authorizedFields)
+    {
+        return collect($authorizedFields)->mapWithKeys(function ($field) use ($lead) {
+            return [$field => $lead->$field ?? null];
         })->toArray();
     }
 

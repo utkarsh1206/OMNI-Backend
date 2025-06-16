@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Http\Response\CustomApiResponse;
 use App\Models\NeoxCallLog;
+use App\Services\DispositionListService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -14,10 +15,12 @@ use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 class CallLogReportRepository
 {
     private $apiResponse;
+    protected $dispositionService;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(CustomApiResponse $customApiResponse, DispositionListService $dispositionService)
     {
         $this->apiResponse = $customApiResponse;
+        $this->dispositionService = $dispositionService;
     }
 
     /**
@@ -48,7 +51,7 @@ class CallLogReportRepository
     {
         try {
             $callLogs = $this->buildCallLogQuery($request)->get();
-            
+
             return $this->generateCsvExport($callLogs);
         } catch (Exception $e) {
             generateLogs('error', 'Error in exportCsvData: ' . $e->getMessage());
@@ -76,6 +79,9 @@ class CallLogReportRepository
             return null;
         }
 
+        $startDate = Carbon::parse($filters['startDate'])->toDateTimeString();
+        $endDate = Carbon::parse($filters['endDate'])->endOfDay()->toDateTimeString();
+
         $query = NeoxCallLog::query()
             ->select([
                 'call_unique_id',
@@ -97,19 +103,16 @@ class CallLogReportRepository
                 'call_recording_url',
             ])
             ->where('type', 'call_history')
-            ->whereBetween(DB::raw('DATE(call_date)'), [
-                Carbon::parse($filters['startDate'])->toDateString(),
-                Carbon::parse($filters['endDate'])->toDateString()
-            ]);
+            ->whereBetween('call_date', [$startDate, $endDate]);
 
-            if ($user && $user->role_id == 3) {
-                $query->where('caller_username', $user->username);
-            }
-            
-            // Conditional ordering
-            if ($applyOrderById) {
-                $query->orderBy('id', 'desc');
-            }
+        if ($user && $user->role_id == 3) {
+            $query->where('caller_username', $user->username);
+        }
+
+        // Conditional ordering
+        if ($applyOrderById) {
+            $query->orderBy('id', 'desc');
+        }
 
         // Apply filters if present
         if (!empty($filters['campaign_id'])) {
@@ -179,7 +182,38 @@ class CallLogReportRepository
      */
     protected function formatCallLogsForCsv($logs)
     {
-        return $logs->map(function ($log) {
+        $dispoCache = []; // Cache for dispositions
+
+        return $logs->map(function ($log) use (&$dispoCache) {
+            $campaignId = $log->campaign_id;
+            $dispoLabel = $log->call_dispo_status;
+
+            if ($campaignId && !isset($dispoCache[$campaignId])) {
+                $request = new Request(['campaign_id' => $campaignId, 'user' => $log->caller_username]);
+
+                $response = $this->dispositionService->getDispositions($request);
+
+                if ($response instanceof \Illuminate\Http\JsonResponse) {
+                    $response = $response->getData(true);
+                }
+
+                $dispoCache[$campaignId] = $response;
+            }
+
+            if ($campaignId && isset($dispoCache[$campaignId]) && !isset($dispoCache[$campaignId]['errors'])) {
+                $dispos = $dispoCache[$campaignId];
+                $dispoStatus = $log->call_dispo_status;
+
+                // Find the matching disposition description
+                foreach ($dispos as $dispo) {
+                    if (isset($dispo['disposition']) && $dispo['disposition'] === $dispoStatus) {
+                        $dispoLabel = "{$dispoStatus} - {$dispo['disposition_description']}";
+                        break;
+                    }
+                }
+            }
+
+            // Return the row data for the CSV export
             return [
                 $log->campaign_id,
                 $log->inbound_group_id,
@@ -189,7 +223,7 @@ class CallLogReportRepository
                 $log->called_phone_number,
                 $log->call_total_duration,
                 $log->call_talk_duration,
-                $log->call_dispo_status,
+                $dispoLabel,
                 $log->call_unique_id,
                 $log->call_did_pattern,
                 $log->call_type,
