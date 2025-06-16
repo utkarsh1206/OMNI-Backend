@@ -37,6 +37,16 @@ class CallLogReportRepository
             // Pagination or get all results
             $callLogs = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
 
+            $callLogs->getCollection()->transform(function ($log) {
+                $recording = getRecordingFile($log->call_unique_id);
+
+                if ($recording instanceof \Illuminate\Http\JsonResponse) {
+                    $recordingResult = $recording->getData(true);
+                }
+                $log->call_recording_url = $recordingResult['url'] ?? null;
+                return $log;
+            });
+
             return $this->apiResponse->getResponseStructure(trans('message.success'), $callLogs, trans('message.data_fetch'));
         } catch (Exception $e) {
             generateLogs('error', 'Error in getCallReport: ' . $e->getMessage());

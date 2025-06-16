@@ -40,9 +40,10 @@ class LoginRepository
      */
     public function login(Request $request, array $validator)
     {
-        $permissionInfo = [];
+        // $permissionInfo = [];
         $domain = $request->input('domain');
-        if ($validator["flag"] == 1 || $validator["flag"] == 2) {
+        // if ($validator["flag"] == 1 || $validator["flag"] == 2 ) {
+        if (in_array($validator["flag"], [1, 2, 3])) {
             if (isLicenseExpired($request)) {
                 return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
             }
@@ -61,7 +62,7 @@ class LoginRepository
         if ($validator['flag'] == 0) {
             $token = authenticateUser($credentials, Admins::class);
             $userData = $this->getUserData($credentials, Admins::class, $validator['flag']);
-        } elseif ($validator['flag'] == 1 ) {
+        } elseif ($validator['flag'] == 1 || $validator['flag'] == 3) {
             $token = authenticateUser($credentials, Users::class, 'api_users');
             $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
         } elseif ($validator['flag'] == 2) {
@@ -107,7 +108,7 @@ class LoginRepository
         }
 
 
-       $formattedPermissions = getPermissionFromRoleId($userData->user_role_id);
+        $formattedPermissions = getPermissionFromRoleId($userData->user_role_id);
         $dataArr = [
             "userInfo" => $userData,
             "token" => $token,
@@ -162,7 +163,12 @@ class LoginRepository
         if ($flag == 2) {
             $userData = $userData->where('role_id', 3);
         }
+
+        if ($flag == 3) {
+            $userData = $userData->where('role_id', 2);
+        }
         $userData = $userData->first();
+
         return $userData;
     }
 
