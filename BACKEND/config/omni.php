@@ -18,4 +18,7 @@ return [
    'CHAT_TO_PHONE' => env('CHAT_TO_PHONE', 919111882178), 
 
    'REPORT_DATA_PER_PAGE' => 50,
+
+   'RECORDING_FILE_PATH' => env('RECORDING_FILE_PATH', 'storage/app/public/recordings'),
+
 ];
