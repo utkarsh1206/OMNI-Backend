@@ -13908,103 +13908,6 @@
                 ]
             }
         },
-        "/api/recording-file": {
-            "get": {
-                "tags": [
-                    "RecordingsFile"
-                ],
-                "summary": "Fetch recording file by unique ID",
-                "description": "Returns the file name and URL of the matching recording based on unique_id in the filename.",
-                "operationId": "getRecordingFile",
-                "parameters": [
-                    {
-                        "name": "unique_id",
-                        "in": "query",
-                        "description": "Unique ID that appears in the filename",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "CI1722255087397"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Recording file found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "filename": {
-                                            "type": "string",
-                                            "example": "2024_07_29_17_41_31_9725958612_8001_CI1722255087397.wav"
-                                        },
-                                        "url": {
-                                            "type": "string",
-                                            "example": "https://your-domain.com/storage/recordings/recording-file.wav"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Missing unique_id parameter",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "unique_id is required"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "File not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "File not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Recording directory not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Recording directory not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/ext-api/remove-party": {
             "post": {
                 "tags": [
@@ -25301,10 +25204,6 @@
         {
             "name": "Call Recording",
             "description": "Call Recording"
-        },
-        {
-            "name": "RecordingsFile",
-            "description": "RecordingsFile"
         },
         {
             "name": "Roles",
