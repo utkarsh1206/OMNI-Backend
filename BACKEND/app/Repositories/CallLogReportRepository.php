@@ -96,7 +96,7 @@ class CallLogReportRepository
         }
 
         $startDate = Carbon::parse($filters['startDate'])->toDateTimeString();
-        $endDate = Carbon::parse($filters['endDate'])->endOfDay()->toDateTimeString();
+        $endDate = Carbon::parse($filters['endDate'])->toDateTimeString();
 
         $query = NeoxCallLog::query()
             ->select([
