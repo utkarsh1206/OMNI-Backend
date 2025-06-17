@@ -53,7 +53,7 @@ class TicketReportRepository
             ]);
 
             // Paginate the results
-            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $perPage = $request->input('perPage', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             $payload = $this->extractPayload($request);
