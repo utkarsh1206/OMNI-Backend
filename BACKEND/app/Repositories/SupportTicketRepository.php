@@ -66,7 +66,7 @@ class SupportTicketRepository
             //         // 'usergroup:id,name'
             //     ]);
 
-            $query = SupportTicket::query()->with(['department', 'priority:id,name', 'ticketType:id,type']);
+            $query = SupportTicket::query()->with(['department', 'priority:id,name', 'ticketType:id,type', 'ticketStatus:id,name']);
 
             if (isset($roleId) && $roleId == 3) {
                 $query->where('assign_to_id', $userId);

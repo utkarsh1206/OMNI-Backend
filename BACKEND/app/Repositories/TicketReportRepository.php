@@ -35,6 +35,9 @@ class TicketReportRepository
                 },
                 'ticketType' => function ($query) {
                     $query->select(['id', 'type']);
+                },
+                'ticketStatus' => function ($query) {
+                    $query->select(['id', 'name']);
                 }
             ]);
 
@@ -147,23 +150,18 @@ class TicketReportRepository
     {
         try {
             $payload = $this->extractPayload($request);
-            $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
+            $query = $this->applyFilters(SupportTicket::with('ticketStatus'), $request, $payload);
 
-            $statusSummary = $query->select(
-                'support_tickets.default_status',
-                DB::raw('COUNT(*) AS total_tickets')
-            )
-                ->groupBy('support_tickets.default_status')
-                ->get();
+            $statuses = $query->get();
 
-            $formattedStatusSummary = $statusSummary->map(function ($status) {
-                return [
-                    'Status' => $status->default_status,
-                    'Total Tickets' => $status->total_tickets,
-                ];
-            });
+            $statusSummary = $statuses->groupBy(fn($status) => $status->ticketStatus?->name ?? '')
+                ->map(fn($group, $statusName) => [
+                    'Status' => $statusName,
+                    'Total Tickets' => $group->count(),
+                ])
+                ->values();
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedStatusSummary, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $statusSummary, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error during Ticket Status Summary : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
