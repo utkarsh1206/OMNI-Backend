@@ -13,13 +13,17 @@ class LogActivity
     public function handle(Request $request, Closure $next)
     {
         $response = $next($request);
+        $method = $request->method();
+        $path = $request->path();
+        $actionType = $this->determineActionType($method, $path);
         $logData = [
             'user_id' => Auth::check() ? Auth::id() : 1,
-            'action' => $request->path(),
-            'module_name' => $this->getModuleName($request->method() . " " . $request->path()),
+            'action' => $path,
+            'module_name' => $this->getModuleName($method . " " . $path),
             'ipaddress' => $request->ip(),
             'request_params' => json_encode($request->all()),
-            'request_method' => $request->method(),
+            'request_method' => $method,
+            'action_type' => $actionType
             // 'response_params' => json_encode($response->getContent()),
         ];
         ActivityLog::create($logData);
@@ -30,6 +34,37 @@ class LogActivity
     {
         $normalizedPath = preg_replace('/\/\d+/', '/{id}', $path);
         $subModule = SubModule::where("name", $normalizedPath)->first();
-        return $subModule->module->name ?? '';
+        return $subModule->module->name ?? NULL;
+    }
+
+    protected function determineActionType($method, $path)
+    {
+        $path = strtolower($path);
+
+        switch ($method) {
+            case 'GET':
+                if (preg_match('/\/create$/', $path)) {
+                    return 'Create';
+                } elseif (preg_match('/\/\d+\/edit$/', $path)) {
+                    return 'Edit';
+                } elseif (preg_match('/\/\d+$/', $path)) {
+                    return 'View';
+                } else {
+                    return 'List';
+                }
+
+            case 'POST':
+                return 'Store';
+
+            case 'PUT':
+            case 'PATCH':
+                return 'Update';
+
+            case 'DELETE':
+                return 'Delete';
+
+            default:
+                return 'Other';
+        }
     }
 }
