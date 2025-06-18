@@ -108,10 +108,6 @@ class TicketReportRepository
                     return [
                         'Ticket Type' => $ticketTypeName,
                         'Total Tickets' => $group->count(),
-                        'Open' => $group->where('default_status', 'Open')->count(),
-                        'Resolved' => $group->where('default_status', 'Resolved')->count(),
-                        'Pending' => $group->whereNotIn('default_status', ['Open', 'Resolved', 'Closed'])->count(),
-                        'Closed' => $group->where('default_status', 'Closed')->count(),
                     ];
                 })->values();
 
@@ -281,7 +277,7 @@ class TicketReportRepository
     {
         return collect($tickets)->map(function ($ticket) use ($forCsv) {
             $resolveNotification = $ticket->notifications
-                ->where('status', 'Resolved')
+                ->where('status', 'Resolve')
                 ->sortByDesc('created_at')
                 ->first();
 
@@ -296,7 +292,7 @@ class TicketReportRepository
                     $customerName,
                     $ticket->ticketType->type ?? '',
                     $ticket->priority->name ?? '',
-                    $ticket->default_status,
+                    $ticket->ticketStatus->name ?? '',
                     $ticket->created_at->format('Y-m-d H:i:s'),
                     $ticket->updated_at->format('Y-m-d H:i:s'),
                     $ticket->assignedAgent->username ?? '',
@@ -311,7 +307,7 @@ class TicketReportRepository
                     'customerName' => $customerName,
                     'ticketType' => $ticket->ticketType->type,
                     'priority' => $ticket->priority->name,
-                    'status' => $ticket->default_status,
+                    'status' => $ticket->ticketStatus->name ?? '',
                     'createdDate' => $ticket->created_at->format('Y-m-d H:i:s'),
                     'lastUpdated' => $ticket->updated_at->format('Y-m-d H:i:s'),
                     'assignedAgent' => $ticket->assignedAgent->username ?? '',
