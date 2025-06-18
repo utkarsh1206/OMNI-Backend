@@ -39,3 +39,8 @@ Broadcast::channel('{domain}-{id}-agent-chat', function ($user, $domain, $id) {
     return true;
 });
 
+Broadcast::channel('{domain}-{id}-force-logout', function ($user, $domain, $id) {
+    generateLogs('info', 'Admin trying to force logout the Agent: ' . json_encode(['user' => $user]));
+    // return true;
+    return (string) $user->id === (string) $id;
+});
