@@ -13,7 +13,8 @@ class ActivityLog extends Model
         'ipaddress',
         'request_params',
         'request_method',
-        'response_params'
+        'response_params',
+        'action_type',
     ];
 
     protected $appends = ["user_name"];
