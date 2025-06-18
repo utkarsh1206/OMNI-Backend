@@ -34,7 +34,7 @@ class LogActivity
     {
         $normalizedPath = preg_replace('/\/\d+/', '/{id}', $path);
         $subModule = SubModule::where("name", $normalizedPath)->first();
-        return $subModule->module->name ?? '';
+        return $subModule->module->name ?? NULL;
     }
 
     protected function determineActionType($method, $path)
