@@ -17,7 +17,7 @@ class SlaService
     public function calculateSla($support_ticket_id)
     {
         generateLogs('info', "SLA Calculation started for Ticket ID: {$support_ticket_id}");
-        $ticket = Supportticket::whereIn('default_status', ['Open', 'Resolved', 'Closed'])
+        $ticket = Supportticket::whereIn('default_status', [1, 2, 3])
             ->where('id', $support_ticket_id)
             ->first();
 
@@ -66,7 +66,7 @@ class SlaService
             $formattedTime = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
             generateLogs('info', "Calculated formatted Total Time: {$formattedTime}");
 
-            if ($ticket->default_status === 'Resolved' || $ticket->default_status === 'Closed') {
+            if ($ticket->default_status === 2 || $ticket->default_status === 3) {
                 return [
                     'actual_resolved_time' => $formattedTime,
                 ];
@@ -280,7 +280,7 @@ class SlaService
             next_status AS last_subsequent_status,
             next_status_created_at AS last_subsequent_status_created_at
             FROM status_changes
-            WHERE status = 'Open' AND support_ticket_id = $support_ticket_id";
+            WHERE status = 1 AND support_ticket_id = $support_ticket_id";
 
         // Execute the query using DB::select() with the query string.
         $results = DB::select($query);

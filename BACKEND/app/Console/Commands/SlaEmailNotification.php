@@ -50,7 +50,7 @@ class SlaEmailNotification extends Command
                     if ($supportTickets->count()) {
                         foreach ($supportTickets as $ticket) {
                             $currentTime = Carbon::now();
-                            if ($ticket->default_status == "Open") {
+                            if ($ticket->default_status == 1) {
                                 if ($currentTime->diffInSeconds($ticket->first_response_time) >= 0) {
                                     $this->notifyViaEmail($newConnectionName, $ticket, "first_response_email");
                                 }
