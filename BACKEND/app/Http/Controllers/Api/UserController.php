@@ -984,10 +984,6 @@ class UserController extends Controller
      *         description="License usage within limits",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Data fetched successfully"),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="manager_ct", type="integer", example=5),
-     *                 @OA\Property(property="agent_ct", type="integer", example=50)
-     *             ),
      *             @OA\Property(property="status", type="string", example="success")
      *         )
      *     ),
@@ -996,13 +992,6 @@ class UserController extends Controller
      *         description="User limit exceeded",
      *         @OA\JsonContent(
      *             @OA\Property(property="error", type="string", example="User limit exceeded")
-     *         )
-     *     )
-     * @OA\Response(
-     *         response=500,
-     *         description="Internal Server Error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="An unexpected error occurred")
      *         )
      *     )
      * )

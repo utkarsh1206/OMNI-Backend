@@ -22881,17 +22881,18 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "type"
+                                    "role_id"
                                 ],
                                 "properties": {
-                                    "type": {
-                                        "description": "0 = Manager, 1 = Agent",
+                                    "role_id": {
+                                        "description": "ID of the role to check",
                                         "type": "integer",
-                                        "enum": [
-                                            0,
-                                            1
-                                        ],
-                                        "example": 1
+                                        "example": 3
+                                    },
+                                    "type": {
+                                        "description": "Role type (0 for manager, 1 for agent)",
+                                        "type": "integer",
+                                        "example": 0
                                     }
                                 },
                                 "type": "object"
@@ -22909,19 +22910,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Data fetched successfully"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "manager_ct": {
-                                                    "type": "integer",
-                                                    "example": 5
-                                                },
-                                                "agent_ct": {
-                                                    "type": "integer",
-                                                    "example": 50
-                                                }
-                                            },
-                                            "type": "object"
                                         },
                                         "status": {
                                             "type": "string",

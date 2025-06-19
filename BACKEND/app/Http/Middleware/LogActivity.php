@@ -54,7 +54,7 @@ class LogActivity
                 }
 
             case 'POST':
-                return 'Store';
+                return 'Create';
 
             case 'PUT':
             case 'PATCH':
