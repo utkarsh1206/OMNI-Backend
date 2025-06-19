@@ -36,8 +36,9 @@ class EmailConfigureRepository
                 'sender_name',
                 'sender_email',
                 'smtp_user',
-                'imap_user'
-            )->with(['product:id,name', 'department:id,name']);
+                'imap_user',
+                'default_status'
+            )->with(['product:id,name', 'department:id,name', 'ticketStatus:id,name']);
 
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {

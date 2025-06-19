@@ -425,3 +425,7 @@ Route::prefix('user-roles')->group(function () {
 
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
+
+Route::post('/network-check', function () {
+    return response()->noContent();
+});
