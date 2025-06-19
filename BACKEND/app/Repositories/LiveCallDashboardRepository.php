@@ -27,20 +27,28 @@ class LiveCallDashboardRepository
             $startDate = $startDate ? Carbon::parse($startDate)->startOfDay()->toDateTimeString() : Carbon::today()->startOfDay()->toDateTimeString();
             $endDate   = $endDate   ? Carbon::parse($endDate)->endOfDay()->toDateTimeString()   : Carbon::today()->endOfDay()->toDateTimeString();
 
-            //Get latest live record per call within date range
+            //Get call_unique_ids that have a 'call_hangup' or 'call_history' event within the period
+            $endedCallIds = NeoxCallLog::select('call_unique_id')
+                ->whereIn('type', ['call_hangup', 'call_history'])
+                ->whereBetween('call_date', [$startDate, $endDate])
+                ->distinct()
+                ->pluck('call_unique_id');
+
+            //Get the latest 'call_initiated' or 'call_connected' records, EXCLUDING those that have ended
             $latestLiveLogs = NeoxCallLog::from(DB::raw('neox_call_logs nc'))
                 ->join(DB::raw("
-            (
-                SELECT call_unique_id, MAX(call_date) AS max_date
-                FROM neox_call_logs
-                WHERE call_date BETWEEN '{$startDate}' AND '{$endDate}'
-                GROUP BY call_unique_id
-            ) AS latest
-        "), function ($join) {
+                    (
+                        SELECT call_unique_id, MAX(call_date) AS max_date
+                        FROM neox_call_logs
+                        WHERE call_date BETWEEN '{$startDate}' AND '{$endDate}'
+                        GROUP BY call_unique_id
+                    ) AS latest
+                "), function ($join) {
                     $join->on('nc.call_unique_id', '=', 'latest.call_unique_id')
                         ->on('nc.call_date', '=', 'latest.max_date');
                 })
                 ->whereIn('nc.type', ['call_initiated', 'call_connected'])
+                ->whereNotIn('nc.call_unique_id', $endedCallIds) // <--- Add this exclusion
                 ->select(
                     'nc.call_unique_id',
                     'nc.caller_user_extension',
@@ -60,7 +68,7 @@ class LiveCallDashboardRepository
                         ->orderBy('call_date', 'asc')
                         ->value('call_date');
 
-                    $startTime = $initiated ? Carbon::parse($initiated) : $call->latest_call_date;
+                    $startTime = $initiated ? Carbon::parse($initiated) : Carbon::parse($call->latest_call_date); // Ensure parsing latest_call_date as well
 
                     $call->duration = gmdate("H:i:s", $startTime->diffInSeconds($now));
                     $call->status = $call->latest_type === 'call_connected' ? 'INCALL' : 'RINGING';
