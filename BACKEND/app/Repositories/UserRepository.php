@@ -504,7 +504,7 @@ class UserRepository
             $roleType = $roleData->first()->type ?? null;
             $totalDesiredCount = $roleType == 0 ? $licenseInfo->manager_ct : $licenseInfo->agent_ct;
 
-            if ($currentCount > $totalDesiredCount) {
+            if ($currentCount >= $totalDesiredCount) {
                 return response()->json(['error' => trans('message.user_limit_exceeds')], ResponseHTTP::HTTP_FORBIDDEN);
             }
 
