@@ -29,7 +29,7 @@ class CallLogReportRepository
     public function getCallReport(Request $request)
     {
         try {
-            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $perPage = $request->input('perPage', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             $query = $this->buildCallLogQuery($request);
@@ -37,7 +37,13 @@ class CallLogReportRepository
             // Pagination or get all results
             $callLogs = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
 
+            $callLogs->load('dispositionDetail');
+
             $callLogs->getCollection()->transform(function ($log) {
+                $log->disposition_detail = $log->dispositionDetail->disposition_detail ?? null;
+
+                unset($log->dispositionDetail);
+
                 $recording = getRecordingFile($log->call_unique_id);
 
                 if ($recording instanceof \Illuminate\Http\JsonResponse) {
@@ -90,7 +96,7 @@ class CallLogReportRepository
         }
 
         $startDate = Carbon::parse($filters['startDate'])->toDateTimeString();
-        $endDate = Carbon::parse($filters['endDate'])->endOfDay()->toDateTimeString();
+        $endDate = Carbon::parse($filters['endDate'])->toDateTimeString();
 
         $query = NeoxCallLog::query()
             ->select([

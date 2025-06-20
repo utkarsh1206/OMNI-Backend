@@ -10,9 +10,9 @@ class EmailConfigure extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $hidden = ['product', 'department'];
+    protected $hidden = ['product', 'department', 'ticketStatus'];
 
-    protected $appends = ['product_name', 'depart_name'];
+    protected $appends = ['product_name', 'depart_name', 'status_name'];
 
     protected $fillable = [
         'type',
@@ -58,5 +58,15 @@ class EmailConfigure extends Model
     public function ticketType()
     {
         return $this->belongsTo(TicketType::class)->select('id', 'type');
+    }
+
+    public function ticketStatus()
+    {
+        return $this->belongsTo(SupportTicketStatus::class, 'default_status');
+    }
+
+    public function getStatusNameAttribute()
+    {
+        return $this->ticketStatus ? $this->ticketStatus->name : null;
     }
 }

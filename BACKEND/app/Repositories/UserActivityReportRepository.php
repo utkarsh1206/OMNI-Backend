@@ -33,7 +33,7 @@ class UserActivityReportRepository
     public function getReport(Request $request)
     {
         try {
-            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $perPage = $request->input('perPage', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             // Validate required datetime filters

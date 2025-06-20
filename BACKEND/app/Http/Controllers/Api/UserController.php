@@ -971,11 +971,12 @@ class UserController extends Controller
      *     description="Checks if the number of users (agent/manager) exceeds the limit defined in the tenant license.",
      *     tags={"User"},
      *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
+     *      @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"type"},
-     *             @OA\Property(property="type", type="integer", enum={0,1}, description="0 = Manager, 1 = Agent", example=1)
+     *             required={"role_id"},
+     *             @OA\Property(property="role_id", type="integer", example=3, description="ID of the role to check"),
+     *             @OA\Property(property="type", type="integer", example=0, description="Role type (0 for manager, 1 for agent)")
      *         )
      *     ),
      *     @OA\Response(
@@ -983,10 +984,6 @@ class UserController extends Controller
      *         description="License usage within limits",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Data fetched successfully"),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="manager_ct", type="integer", example=5),
-     *                 @OA\Property(property="agent_ct", type="integer", example=50)
-     *             ),
      *             @OA\Property(property="status", type="string", example="success")
      *         )
      *     ),

@@ -486,19 +486,32 @@ class UserRepository
 
     public function checkUserLimit($request)
     {
-        $domain = auth()->user()->domain;
-        establishMasterConnection($domain, "omnichannel", "mysql");
-        $tenantInfo = Tenant::where("domain_name", $domain)->first();
-        $licenseInfo = TenantLicense::where("tenant_id", $tenantInfo->id)->first(["manager_ct", "agent_ct"]);
-        $totalDesiredCount  = $request->type == 0 ? $licenseInfo->manager_ct : $licenseInfo->agent_ct;
-        getDbConnection($domain, true);
+        try {
+            $domain = auth()->user()->domain;
+            establishMasterConnection($domain, "omnichannel", "mysql");
+            $tenantInfo = Tenant::where("domain_name", $domain)->first();
+            $licenseInfo = TenantLicense::where("tenant_id", $tenantInfo->id)->first(["manager_ct", "agent_ct"]);
 
-        $roleArr  = Role::where("type", $request->type)->pluck("id");
-        $currentCount  = RoleUser::whereIn("role_id", $roleArr)->count("user_id");
-        if ($currentCount > $totalDesiredCount) {
-            return response()->json(['error' => trans('message.user_limit_exceeds')], ResponseHTTP::HTTP_FORBIDDEN);
+            getDbConnection($domain, true);
+            // $roleArr  = Role::where("id", $request->role_id)->pluck("id");
+            // $currentCount  = RoleUser::whereIn("role_id", $roleArr)->count("user_id");
+            // $totalDesiredCount  = $request->type == 0 ? $licenseInfo->manager_ct : $licenseInfo->agent_ct;
+
+            $roleData = Role::where("id", $request->role_id)->get(["id", "type"]);
+            $roleIds = $roleData->pluck("id");
+            $currentCount = RoleUser::whereIn("role_id", $roleIds)->count("user_id");
+
+            $roleType = $roleData->first()->type ?? null;
+            $totalDesiredCount = $roleType == 0 ? $licenseInfo->manager_ct : $licenseInfo->agent_ct;
+
+            if ($currentCount >= $totalDesiredCount) {
+                return response()->json(['error' => trans('message.user_limit_exceeds')], ResponseHTTP::HTTP_FORBIDDEN);
+            }
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $licenseInfo, trans('message.fetch_data'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error checking user limit : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
-
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $licenseInfo, trans('message.fetch_data'));
     }
 }
