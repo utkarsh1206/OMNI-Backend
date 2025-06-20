@@ -137,9 +137,13 @@ class LoginRepository
     public function logoutAgent($user, $extension)
     {
         // Delete the matching live agent entry
-        LiveAgents::where('user_id', $user)
+        $liveAgents = LiveAgents::where('user_id', $user)
             ->where('extension', $extension)
-            ->delete();
+            ->get();
+
+        foreach ($liveAgents as $liveAgent) {
+            $liveAgent->delete();
+        }
 
         return response()->json([
             'message' => 'Agent logged out successfully.',

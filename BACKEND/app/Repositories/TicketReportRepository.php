@@ -35,6 +35,9 @@ class TicketReportRepository
                 },
                 'ticketType' => function ($query) {
                     $query->select(['id', 'type']);
+                },
+                'ticketStatus' => function ($query) {
+                    $query->select(['id', 'name']);
                 }
             ]);
 
@@ -53,7 +56,7 @@ class TicketReportRepository
             ]);
 
             // Paginate the results
-            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $perPage = $request->input('perPage', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             $payload = $this->extractPayload($request);
@@ -105,10 +108,6 @@ class TicketReportRepository
                     return [
                         'Ticket Type' => $ticketTypeName,
                         'Total Tickets' => $group->count(),
-                        'Open' => $group->where('default_status', 'Open')->count(),
-                        'Resolved' => $group->where('default_status', 'Resolved')->count(),
-                        'Pending' => $group->whereNotIn('default_status', ['Open', 'Resolved', 'Closed'])->count(),
-                        'Closed' => $group->where('default_status', 'Closed')->count(),
                     ];
                 })->values();
 
@@ -147,23 +146,18 @@ class TicketReportRepository
     {
         try {
             $payload = $this->extractPayload($request);
-            $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
+            $query = $this->applyFilters(SupportTicket::with('ticketStatus'), $request, $payload);
 
-            $statusSummary = $query->select(
-                'support_tickets.default_status',
-                DB::raw('COUNT(*) AS total_tickets')
-            )
-                ->groupBy('support_tickets.default_status')
-                ->get();
+            $statuses = $query->get();
 
-            $formattedStatusSummary = $statusSummary->map(function ($status) {
-                return [
-                    'Status' => $status->default_status,
-                    'Total Tickets' => $status->total_tickets,
-                ];
-            });
+            $statusSummary = $statuses->groupBy(fn($status) => $status->ticketStatus?->name ?? '')
+                ->map(fn($group, $statusName) => [
+                    'Status' => $statusName,
+                    'Total Tickets' => $group->count(),
+                ])
+                ->values();
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $formattedStatusSummary, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $statusSummary, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error during Ticket Status Summary : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -283,7 +277,7 @@ class TicketReportRepository
     {
         return collect($tickets)->map(function ($ticket) use ($forCsv) {
             $resolveNotification = $ticket->notifications
-                ->where('status', 'Resolved')
+                ->where('status', 'Resolve')
                 ->sortByDesc('created_at')
                 ->first();
 
@@ -298,7 +292,7 @@ class TicketReportRepository
                     $customerName,
                     $ticket->ticketType->type ?? '',
                     $ticket->priority->name ?? '',
-                    $ticket->default_status,
+                    $ticket->ticketStatus->name ?? '',
                     $ticket->created_at->format('Y-m-d H:i:s'),
                     $ticket->updated_at->format('Y-m-d H:i:s'),
                     $ticket->assignedAgent->username ?? '',
@@ -313,7 +307,7 @@ class TicketReportRepository
                     'customerName' => $customerName,
                     'ticketType' => $ticket->ticketType->type,
                     'priority' => $ticket->priority->name,
-                    'status' => $ticket->default_status,
+                    'status' => $ticket->ticketStatus->name ?? '',
                     'createdDate' => $ticket->created_at->format('Y-m-d H:i:s'),
                     'lastUpdated' => $ticket->updated_at->format('Y-m-d H:i:s'),
                     'assignedAgent' => $ticket->assignedAgent->username ?? '',

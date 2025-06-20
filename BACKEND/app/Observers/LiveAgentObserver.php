@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Events\AgentForceLogout;
 use App\Models\LiveAgents;
 use App\Events\AgentLiveStatus;
 
@@ -12,7 +13,7 @@ class LiveAgentObserver
      */
     public function created(LiveAgents $liveAgent): void
     {
-        
+        //
     }
 
     /**
@@ -32,7 +33,11 @@ class LiveAgentObserver
      */
     public function deleted(LiveAgents $liveAgent): void
     {
-        //
+        if ($liveAgent->bypassObserver ?? false) {
+            return;
+        }
+
+        broadcast(new AgentForceLogout($liveAgent->user_id));
     }
 
     /**

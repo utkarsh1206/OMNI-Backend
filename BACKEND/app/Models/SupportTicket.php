@@ -134,4 +134,9 @@ class SupportTicket extends Model
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
+
+    public function ticketStatus()
+    {
+        return $this->belongsTo(SupportTicketStatus::class, 'default_status');
+    }
 }
