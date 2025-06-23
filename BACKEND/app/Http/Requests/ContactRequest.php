@@ -27,7 +27,7 @@ class ContactRequest extends FormRequest
             'first_name' => 'required|string',
             'last_name' => 'required|string',
             'mobile' => 'required|integer',
-            'gender' => 'required|string',
+            'gender' => 'nullable|string',
         ];
     }
 }
