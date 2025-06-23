@@ -21,13 +21,20 @@ class ContactRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $contactId = $this->route('contact');
+
+        $rules = [
             'product_id' => 'required',
             'account_id' => 'required',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
-            'mobile' => 'required|integer',
+            'mobile' => 'required|integer|unique:contacts,mobile',
             'gender' => 'nullable|string',
         ];
+
+        if ($contactId) {
+            $rules['mobile'] = 'required|integer|unique:contacts,mobile,' . $contactId;
+        }
+        return $rules;
     }
 }
