@@ -405,10 +405,10 @@ Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(fu
 
 Route::post('/ext-api/login', [LoginApiController::class, 'agentLoginApi']);
 
-Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  // -not to be used in frontend
-Route::post('call-connected', [WebhookCallController::class, 'callConnected']); // -not to be used in frontend
-Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);   // -not to be used in frontend
-Route::post('call-history', [WebhookCallController::class, 'callHistory']); // -not to be used in frontend
+// Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  // -not to be used in frontend
+// Route::post('call-connected', [WebhookCallController::class, 'callConnected']); // -not to be used in frontend
+// Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);   // -not to be used in frontend
+// Route::post('call-history', [WebhookCallController::class, 'callHistory']); // -not to be used in frontend
 
 Route::apiResource('pause-code', 'App\Http\Controllers\Api\PauseCodeController');
 

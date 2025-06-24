@@ -152,7 +152,6 @@ class WebhookCallController extends Controller
         return $this->handleCallRequest($request, 'call_connected');
     }
 
-
     /**
      * @OA\Post(
      *     path="/api/call-hangup",
@@ -304,13 +303,11 @@ class WebhookCallController extends Controller
     private function handleCallRequest(Request $request, string $type)
     {
         try {
-            generateLogs('info', "Request data" . $request);
             // $agentName = $request->caller_username;
             $domain_name = $request->domain_name;
             $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $domain_name));
 
             if ($request->has('call_unique_id')) {
-
                 $data = getDbConnection($domain_name);
                 DB::setDefaultConnection($data->getName());
 
@@ -324,7 +321,6 @@ class WebhookCallController extends Controller
 
                 if ($type !== 'call_initiated') {
                     generateLogs('info', 'inside if + caller_uername: ' . $request->caller_username);
-
 
                     generateLogs('info', 'Agent ID: ' . $agentId->id);
                     generateLogs('info', 'caller_user_extenstion: ' . $data['caller_user_extension']);

@@ -43,6 +43,11 @@ class DatabaseServiceProvider extends ServiceProvider
         $currentRoute = request()->path();
         $protectedPrefixes = [
             'api/chatbot-room-id',
+        //    'fetch-session-messages',
+            'call-initiate',
+            'call-connected',
+            'call-hangup',
+            'call-history',
         ];
         if (!Str::startsWith($currentRoute, $protectedPrefixes)) {
         // if (!in_array($currentRoute, ["api/chatbot-room-id","chatbot-room-id"])) {
