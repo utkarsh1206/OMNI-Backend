@@ -45,7 +45,7 @@ class LoginRepository
         // if ($validator["flag"] == 1 || $validator["flag"] == 2 ) {
         if (in_array($validator["flag"], [1, 2, 3])) {
             if (isLicenseExpired($request)) {
-                return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
+              //  return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
             }
 
             if (!$domain) {
@@ -65,11 +65,18 @@ class LoginRepository
         } elseif ($validator['flag'] == 1 || $validator['flag'] == 3) {
             $token = authenticateUser($credentials, Users::class, 'api_users');
             $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
+            if($userData->status == "Inactive"){
+                return response()->json(['error' =>  trans('message.tenant_inactive')], ResponseHTTP::HTTP_UNAUTHORIZED);
+            }
         } elseif ($validator['flag'] == 2) {
             $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
             if (!$userData) {
                 generateLogs('error', 'User not found or deleted credentials : ', $credentials);
                 return response()->json(['error' =>  trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
+            }
+
+            if($userData->status == "Inactive"){
+                return response()->json(['error' =>  trans('message.tenant_inactive')], ResponseHTTP::HTTP_UNAUTHORIZED);
             }
             $phoneData = $this->getPhoneData($request);
             if (!$phoneData) {

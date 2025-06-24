@@ -195,6 +195,7 @@ return [
     'status_updated' => 'Status updated successfully.',
     'status_deleted' => 'Status deleted successfully.',
     'user_limit_exceeds'=>"User limit exceeds",
+    'tenant_inactive'=>"Tenant is inactive please contact to administrator",
 ]   
 ?>
 

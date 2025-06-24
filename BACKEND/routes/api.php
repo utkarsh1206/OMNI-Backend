@@ -388,6 +388,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::post('/check-user-limit', [UserController::class, 'checkUserLimit']);
     Route::get('live-calls', [LiveCallDashboardController::class, 'index']);
+    Route::post('tenant/change-status', [TenantController::class, 'changeStatus']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);

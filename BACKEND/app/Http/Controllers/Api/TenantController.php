@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\LicenseController;
 use App\Repositories\TenantRepository;
 use App\Http\Requests\TenantRequest;
+use App\Http\Requests\TenantChangeStatusRequest;
+use Svg\Tag\Rect;
 
 class TenantController extends Controller
 {
@@ -692,5 +694,11 @@ class TenantController extends Controller
             'allowed' => true,
             'message' => trans("message.tenant_creation_allowed")
         ], 200);
+    }
+
+
+    public function changeStatus(TenantChangeStatusRequest $request)
+    {
+       return $this->tenantRepository->changeStatus($request);
     }
 }
