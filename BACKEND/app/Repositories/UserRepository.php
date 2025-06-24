@@ -514,4 +514,15 @@ class UserRepository
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
+
+    public function changeStatus(Request $request)
+    {
+        try {
+            $userInfo = Users::where('id', $request->user_id)->update(['status' => $request->status]);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $userInfo, trans('message.tenant_update_msg'));
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in change status Tenant : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
 }

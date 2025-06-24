@@ -389,6 +389,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('/check-user-limit', [UserController::class, 'checkUserLimit']);
     Route::get('live-calls', [LiveCallDashboardController::class, 'index']);
     Route::post('tenant/change-status', [TenantController::class, 'changeStatus']);
+    Route::post('user/change-status', [UserController::class, 'changeStatus']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
@@ -416,13 +417,10 @@ Route::apiResource('pause-code', 'App\Http\Controllers\Api\PauseCodeController')
 Route::get('cron-commands', [CronCommandController::class, 'index']);
 Route::get('cron-expressions', [CronExpressionController::class, 'index']);
 
-
-
 Route::prefix('user-roles')->group(function () {
     Route::get('/',             [UserRoleController::class, 'index']);
     Route::put('{user}/roles',  [UserRoleController::class, 'update']);
 });
-
 
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);

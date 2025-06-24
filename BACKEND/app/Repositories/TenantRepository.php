@@ -197,7 +197,7 @@ class TenantRepository
                 $tenantInfo->status = $request->status;
                 $tenantInfo->save();
                 getDbConnection($tenantInfo->domain_name,true);
-                Users::query()->update(['status' => 'Inactive']);
+                Users::query()->update(['status' => $request->status]);
                 establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
                 return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantInfo, trans('message.tenant_update_msg'));
 
