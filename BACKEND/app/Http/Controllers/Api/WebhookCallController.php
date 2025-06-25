@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Models\LiveAgents;
 use App\Events\AgentLiveStatus;
+use App\Models\Detail;
 
 class WebhookCallController extends Controller
 {
@@ -83,11 +84,9 @@ class WebhookCallController extends Controller
      *     )
      * )
      */
-    // Handle call initiation
-    public function callInitiated(WebhookCallRequest $request)
+    public function callInitiated(WebhookCallRequest $request, Detail $detail)
     {
-        generateLogs('info', "\nInitiate Called\n");
-        return $this->handleCallRequest($request, 'call_initiated');
+        return $this->handleCallRequest($request, 'call_initiated', $detail);
     }
 
     /**
@@ -145,11 +144,9 @@ class WebhookCallController extends Controller
      *     )
      * )
      */
-    // Handle call connection
-    public function callConnected(WebhookCallRequest $request)
+    public function callConnected(WebhookCallRequest $request, Detail $detail)
     {
-        generateLogs('info', "\nCall Connected\n");
-        return $this->handleCallRequest($request, 'call_connected');
+        return $this->handleCallRequest($request, 'call_connected', $detail);
     }
 
     /**
@@ -207,11 +204,9 @@ class WebhookCallController extends Controller
      *     )
      * )
      */
-    // Handle call hangup
-    public function callHangup(WebhookCallRequest $request)
+    public function callHangup(WebhookCallRequest $request, Detail $detail)
     {
-        generateLogs('info', "\nCall HangedUp\n");
-        return $this->handleCallRequest($request, 'call_hangup');
+        return $this->handleCallRequest($request, 'call_hangup', $detail);
     }
 
     /**
@@ -276,10 +271,8 @@ class WebhookCallController extends Controller
      *     )
      * )
      */
-    // Handle call history
-    public function callHistory(Request $request)
+    public function callHistory(Request $request, Detail $detail)
     {
-        generateLogs('info', "\n History Called\n");
         if ($request->has('call_unique_id')) {
             $callType = $this->determineCallTypeFromHistory($request);
             $data = $this->prepareHistoryData($request, $callType);
@@ -300,19 +293,13 @@ class WebhookCallController extends Controller
     }
 
     // Common method to handle call requests (initiated, connected, hangup)
-    private function handleCallRequest(Request $request, string $type)
+    private function handleCallRequest(Request $request, string $type, $detail)
     {
         try {
-            // $agentName = $request->caller_username;
-            $domain_name = $request->domain_name;
+            $domain_name = $detail->domain;
             $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $domain_name));
 
             if ($request->has('call_unique_id')) {
-                $data = getDbConnection($domain_name);
-                DB::setDefaultConnection($data->getName());
-
-                // $agentId = Users::select('id')->where('username', $agentName)->first();
-
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
 
