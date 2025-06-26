@@ -46,7 +46,7 @@ class AuthTokenRepository
                 [
                     'token' => $authToken,
                     'code' => 200,
-                    'expire_at' => $expireAt->toDateTimeString()
+                    'expire_at' => $expireAt,
                 ],
                 trans('message.data_fetch')
             );
