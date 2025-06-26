@@ -24,7 +24,7 @@ class AuthTokenRepository
         try {
             getDbConnection($detail->domain, true);
 
-            $checkToken = AuthToken::select('token')->where('expire_at', '>', Carbon::now())
+            $checkToken = AuthToken::select('token', 'expire_at')->where('expire_at', '>', Carbon::now())
                 ->first();
 
             if ($checkToken) {
