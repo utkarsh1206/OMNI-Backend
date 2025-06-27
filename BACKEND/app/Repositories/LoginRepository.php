@@ -14,9 +14,6 @@ use App\Models\LiveAgents;
 use App\Models\Phone;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
-use App\Models\RolePermission;
-use App\Models\Permission;
-use App\Models\RoleUser;
 
 /**
  * Class UserRepository.

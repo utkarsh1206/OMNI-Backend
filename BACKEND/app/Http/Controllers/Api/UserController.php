@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\Users;
 use App\Http\Requests\UserRequest;
 use App\Http\Requests\UserChangeStatusRequest;
+use App\Http\Requests\DcUserLogoutRequest;
+use App\Models\Detail;
 use App\Repositories\UserRepository;
 
 class UserController extends Controller
@@ -1040,5 +1042,10 @@ class UserController extends Controller
     public function changeStatus(UserChangeStatusRequest $request)
     {
         return $this->userRepository->changeStatus($request);
+    }
+
+    public function dcUserLogout(DcUserLogoutRequest $request, Detail $detail)
+    {
+        $this->userRepository->dcUserLogout($request, $detail);
     }
 }

@@ -7,15 +7,14 @@ use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Admins;
 use App\Models\Role;
-use App\Models\RolePermission;
 use App\Models\RoleUser;
 use App\Models\Users;
 use App\Models\Tenant;
 use App\Models\TenantLicense;
 use App\Models\UserGroup;
 use Exception;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Models\LiveAgents;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class UserRepository
@@ -29,78 +28,6 @@ class UserRepository
         $this->apiResponse = $customApiResponse;
         $this->licenseController = $licenseController;
     }
-
-    // public function list(Request $request)
-    // {
-    //     try {
-    //         $searchTerm = $request->input('search', '');
-    //         $name = $request->input('name', '');
-    //         $email = $request->input('email', '');
-    //         $status = $request->input('status', '');
-    //         $mobile = $request->input('mobile', '');
-    //         $usergroup_id = $request->input('usergroup_id', '');
-    //         $level = $request->input('level');
-
-    //         $payload = extractPayload($request->bearerToken());
-    //         // Start the query for tenants
-
-    //         $is_all_users = $request->has('all_user') ? $request->input('all_user') : null;
-
-    //         $query = Users::query();
-
-    //         if ($is_all_users !== 'Y') {
-    //             $query->where('type', '3');
-
-    //             // If there's a search term, apply it to the query
-    //             if (!empty($searchTerm)) {
-    //                 $query->where(function ($q) use ($searchTerm) {
-    //                     $q->where('username', 'like', '%' . $searchTerm . '%')
-    //                         ->orwhere('first_name', 'like', '%' . $searchTerm . '%')
-    //                         ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
-    //                         ->orWhere('email', 'like', '%' . $searchTerm . '%')
-    //                         ->orWhere('mobile', 'like', '%' . $searchTerm . '%')
-    //                         ->orWhere('level', 'like', '%' . $searchTerm . '%');
-    //                 });
-    //             }
-
-    //             if (!empty($name)) {
-    //                 $query->where('first_name', $name)->orWhere('last_name', $name);
-    //             }
-    //             if (!empty($email)) {
-    //                 $query->where('email', $email);
-    //             }
-    //             if (!empty($status)) {
-    //                 $query->where('status', $status);
-    //             }
-    //             if (!empty($mobile)) {
-    //                 $query->where('mobile', $mobile);
-    //             }
-    //             if (!empty($usergroup_id)) {
-    //                 $query->where('usergroup_id', $usergroup_id);
-    //             }
-    //             if (!empty($level)) {
-    //                 if (is_array($level)) {
-    //                     $query->whereIn('level', $level);
-    //                 } else {
-    //                     $query->where('level', $level);
-    //                 }
-    //             }
-
-    //             // Paginate the results
-    //             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
-    //             $users = $query->paginate($perPage);
-    //             //  $newToken = JWTAuth::refresh(JWTAuth::getToken());
-    //             // Return the response
-    //             return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.fetch_data'));
-    //         }
-
-    //         $users = $query->get();
-    //         return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.fetch_data'));
-    //     } catch (Exception $e) {
-    //         generateLogs('error', 'Error during User List : ', $e->getMessage());
-    //         return $this->apiResponse->handleAndResponseException($e);
-    //     }
-    // }
 
     public function list(Request $request)
     {
@@ -135,8 +62,6 @@ class UserRepository
                         ->orWhere('email', 'like', "%{$searchTerm}%")
                         ->orWhere('mobile', 'like', "%{$searchTerm}%");
                     // ->orWhere('level', 'like', "%{$searchTerm}%");
-
-                    // You can expand this block to include usergroup name, role name, etc., via joins if needed
                 });
             }
 
@@ -206,7 +131,6 @@ class UserRepository
     public function store(Request $request)
     {
         try {
-            $is_tanant = true;
             $licenseResponse = $this->licenseController->decodeLicense(new Request(['is_tanant' => true]));
             $licenseInfo = $licenseResponse->getData(true);
 
@@ -524,5 +448,20 @@ class UserRepository
             generateLogs('error', 'Error in change status Tenant : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
+    }
+
+    public function dcUserLogout($request, $detail)
+    {
+        // Delete the matching live agent entry
+        $liveAgents = LiveAgents::where('extension', $request->extension)
+            ->get();
+
+        foreach ($liveAgents as $liveAgent) {
+            $liveAgent->delete();
+        }
+
+        return response()->json([
+            'message' => 'Agent logged out successfully.',
+        ]);
     }
 }

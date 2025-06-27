@@ -24,6 +24,7 @@ class AuthTokenMiddleware
                 'call-connected',
                 'call-hangup',
                 'call-history',
+                'dc-user-logout',
             ];
 
             if (Str::startsWith(request()->path(), $protectedPrefixes)) {

@@ -48,6 +48,7 @@ class DatabaseServiceProvider extends ServiceProvider
             'call-connected',
             'call-hangup',
             'call-history',
+            'dc-user-logout',
         ];
         if (!Str::startsWith($currentRoute, $protectedPrefixes)) {
         // if (!in_array($currentRoute, ["api/chatbot-room-id","chatbot-room-id"])) {
