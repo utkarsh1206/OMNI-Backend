@@ -94,6 +94,7 @@ use App\Http\Controllers\Api\AgentMessageController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
 use App\Http\Controllers\Api\LiveCallDashboardController;
 use App\Http\Controllers\Api\PriorityController;
+use App\Http\Controllers\Api\ProductCustomFieldController;
 use App\Http\Controllers\Api\TranscriptApiController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\RoleController;
@@ -256,6 +257,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('live-agents', LiveAgentController::class);
 
     Route::apiResource('/dynamic-list-fields', DynamicListFieldController::class);
+
+    Route::apiResource('/product-custom-fields', ProductCustomFieldController::class);
 
     Route::apiResource('/lists_fields', EcdialListFieldController::class);
 
