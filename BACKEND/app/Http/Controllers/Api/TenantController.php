@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\LicenseController;
 use App\Repositories\TenantRepository;
 use App\Http\Requests\TenantRequest;
+use App\Http\Requests\TenantChangeStatusRequest;
+use Svg\Tag\Rect;
 
 class TenantController extends Controller
 {
@@ -692,5 +694,59 @@ class TenantController extends Controller
             'allowed' => true,
             'message' => trans("message.tenant_creation_allowed")
         ], 200);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/tenant/change-status",
+     *     summary="Change tenant status",
+     *     description="Change the status of a tenant (e.g., Active or Inactive) and update related user statuses.",
+     *     operationId="changeTenantStatus",
+     *     tags={"Tenant"},
+     *     security={{"bearerAuth":{}}},
+     *     
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"tenant_id", "status"},
+     *             @OA\Property(property="tenant_id", type="integer", example=1, description="ID of the tenant to update"),
+     *             @OA\Property(property="status", type="string", example="Inactive", description="New status for the tenant")
+     *         )
+     *     ),
+     *     
+     *     @OA\Response(
+     *         response=200,
+     *         description="Tenant status updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="status", type="string", example="Inactive"),
+     *                 @OA\Property(property="domain_name", type="string", example="example.tenant.com")
+     *             ),
+     *             @OA\Property(property="details", type="string", example="Tenant status updated successfully.")
+     *         )
+     *     ),
+     *     
+     *     @OA\Response(
+     *         response=404,
+     *         description="Tenant not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Tenant not found")
+     *         )
+     *     ),
+     *     
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="An error occurred")
+     *         )
+     *     )
+     * )
+     */
+    public function changeStatus(TenantChangeStatusRequest $request)
+    {
+        return $this->tenantRepository->changeStatus($request);
     }
 }

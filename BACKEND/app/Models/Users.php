@@ -15,7 +15,7 @@ class Users extends Authenticatable implements JWTSubject
 
     protected $table = 'users';
 
-    protected $appends = ['user_role_id', 'online_status', 'usergroup_name','user_role_name'];
+    protected $appends = ['user_role_id', 'online_status', 'usergroup_name', 'user_role_name'];
 
     protected $hidden = ['usergroup', 'password'];
 
@@ -71,7 +71,9 @@ class Users extends Authenticatable implements JWTSubject
             'domain'   => $postData['domain'] ?? null,
         ];
 
-        if (isset($postData['flag']) && $postData['flag'] == 2) {
+        // if (isset($postData['flag']) && $postData['flag'] == 2) {
+        if (isset($postData['flag']) && ($postData['flag'] == 2 || $postData['flag'] == 3)) {
+
             // New permission format using IDs
             $permissions = [];
 
@@ -111,7 +113,7 @@ class Users extends Authenticatable implements JWTSubject
             //     }
             // }
 
-             $permissions = getPermissionFromRoleId($this->user_role_id);
+            $permissions = getPermissionFromRoleId($this->user_role_id);
             // Remove duplicates in action ID arrays
             // foreach ($permissions as &$actions) {
             //     $actions = array_values(array_unique($actions));

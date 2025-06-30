@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Users;
 use Exception;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class TenantRepository
 {
@@ -182,5 +183,27 @@ class TenantRepository
         $filename = now()->format('Y_m_d_H_i_s') . '.' . $tenant_logo->getClientOriginalExtension();
 
         return $tenant_logo->storeAs('tenant_logo', $filename, 'public');
+    }
+
+    public function changeStatus(Request $request)
+    {
+        try {
+            $tenantInfo = Tenant::find($request->tenant_id);
+                if (!$tenantInfo) {
+                        return response()->json([
+                            'message' => trans("message.tenant_not_found"),
+                        ], ResponseHTTP::HTTP_NOT_FOUND);
+                    }
+                $tenantInfo->status = $request->status;
+                $tenantInfo->save();
+                getDbConnection($tenantInfo->domain_name,true);
+                Users::query()->update(['status' => $request->status]);
+                establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
+                return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantInfo, trans('message.tenant_update_msg'));
+
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in change status Tenant : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 }

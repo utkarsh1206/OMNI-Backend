@@ -14,9 +14,6 @@ use App\Models\LiveAgents;
 use App\Models\Phone;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
-use App\Models\RolePermission;
-use App\Models\Permission;
-use App\Models\RoleUser;
 
 /**
  * Class UserRepository.
@@ -65,11 +62,18 @@ class LoginRepository
         } elseif ($validator['flag'] == 1 || $validator['flag'] == 3) {
             $token = authenticateUser($credentials, Users::class, 'api_users');
             $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
+            if($userData->status == "Inactive"){
+                return response()->json(['error' =>  trans('message.tenant_inactive')], ResponseHTTP::HTTP_UNAUTHORIZED);
+            }
         } elseif ($validator['flag'] == 2) {
             $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
             if (!$userData) {
                 generateLogs('error', 'User not found or deleted credentials : ', $credentials);
                 return response()->json(['error' =>  trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
+            }
+
+            if($userData->status == "Inactive"){
+                return response()->json(['error' =>  trans('message.tenant_inactive')], ResponseHTTP::HTTP_UNAUTHORIZED);
             }
             $phoneData = $this->getPhoneData($request);
             if (!$phoneData) {
