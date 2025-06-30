@@ -1043,7 +1043,7 @@ class UserController extends Controller
     {
         return $this->userRepository->changeStatus($request);
     }
-
+    
     public function dcUserLogout(DcUserLogoutRequest $request, Detail $detail)
     {
         $this->userRepository->dcUserLogout($request, $detail);
