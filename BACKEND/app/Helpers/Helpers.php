@@ -472,3 +472,28 @@ if (!function_exists('getRecordingFile')) {
         return null;
     }
 }
+
+
+if (!function_exists('exportCsv')) {
+ function exportCsv(array $headers, array $rows, string $filenamePrefix = 'export'): string
+    {
+        $filename = $filenamePrefix . '_' . Str::random(10) . '.csv';
+        $directory = public_path('exports');
+
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0777, true);
+        }
+
+        $path = $directory . '/' . $filename;
+
+        $file = fopen($path, 'w');
+        fputcsv($file, $headers);
+        foreach ($rows as $row) {
+            fputcsv($file, $row);
+        }
+        fclose($file);
+
+        return asset('exports/' . $filename);
+    }
+
+}

@@ -7,14 +7,15 @@ use App\Http\Requests\UserLimitRequest;
 use Illuminate\Http\Request;
 use App\Models\Users;
 use App\Http\Requests\UserRequest;
-
+use App\Http\Requests\UserChangeStatusRequest;
+use App\Http\Requests\DcUserLogoutRequest;
+use App\Models\Detail;
 use App\Repositories\UserRepository;
 
 class UserController extends Controller
 {
     protected $userRepository;
 
-    // Inject LicenseController in the constructor
     public function __construct(UserRepository $userRepository)
     {
         $this->userRepository = $userRepository;
@@ -999,5 +1000,52 @@ class UserController extends Controller
     public function checkUserLimit(UserLimitRequest $request)
     {
         return $this->userRepository->checkUserLimit($request);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/user/change-status",
+     *     summary="Change user status",
+     *     description="Change the status of a User (e.g., Active or Inactive) and update related user statuses.",
+     *     operationId="changeTenantStatus",
+     *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
+     *     
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"user_id", "status"},
+     *             @OA\Property(property="tenant_id", type="integer", example=1, description="ID of the tenant to update"),
+     *             @OA\Property(property="status", type="string", example="Inactive", description="New status for the tenant")
+     *         )
+     *     ),
+     *     
+     *     @OA\Response(
+     *         response=200,
+     *         description="User status updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="integer", example=1, description="Number of affected rows"),
+     *             @OA\Property(property="details", type="string", example="User status updated successfully.")
+     *         )
+     *     ),
+     *     
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="An error occurred")
+     *         )
+     *     )
+     * )
+     */
+    public function changeStatus(UserChangeStatusRequest $request)
+    {
+        return $this->userRepository->changeStatus($request);
+    }
+
+    public function dcUserLogout(DcUserLogoutRequest $request, Detail $detail)
+    {
+        $this->userRepository->dcUserLogout($request, $detail);
     }
 }

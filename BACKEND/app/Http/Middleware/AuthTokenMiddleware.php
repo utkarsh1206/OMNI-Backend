@@ -20,6 +20,11 @@ class AuthTokenMiddleware
             
             $protectedPrefixes = [
                 'api/chatbot-room-id',
+                'call-initiate',
+                'call-connected',
+                'call-hangup',
+                'call-history',
+                'dc-user-logout',
             ];
 
             if (Str::startsWith(request()->path(), $protectedPrefixes)) {

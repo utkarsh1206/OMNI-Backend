@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+use Illuminate\Support\Str;
 
 class CallLogReportRepository
 {
@@ -67,8 +68,27 @@ class CallLogReportRepository
     {
         try {
             $callLogs = $this->buildCallLogQuery($request)->get();
-
-            return $this->generateCsvExport($callLogs);
+            $formattedRows = $this->formatCallLogsForCsv($callLogs);
+            $headers = [
+                'Campaign',
+                'Inbound Group',
+                'Call Date',
+                'Caller Name',
+                'Caller Extension',
+                'Phone Number',
+                'Call Total Duration',
+                'Call Talk Duration',
+                'Dispo Status',
+                'Uniqueid',
+                'DID',
+                'Type of Call',
+                'Term Reason'
+            ];
+            $url = exportCsv($headers, $formattedRows, 'call_logs');
+            return response()->json([
+                'message' => 'CSV exported successfully.',
+                'url' => $url,
+            ]);
         } catch (Exception $e) {
             generateLogs('error', 'Error in exportCsvData: ' . $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -120,7 +140,6 @@ class CallLogReportRepository
             ])
             ->where('type', 'call_history')
             ->whereBetween('call_date', [$startDate, $endDate]);
-
         if ($user && $user->role_id == 3) {
             $query->where('caller_username', $user->username);
         }
@@ -158,7 +177,8 @@ class CallLogReportRepository
     /**
      * Generates CSV export for the call logs.
      */
-    private function generateCsvExport($callLogs)
+
+     private function generateCsvExport($callLogs)
     {
         $headers = [
             'Campaign',
@@ -178,22 +198,33 @@ class CallLogReportRepository
 
         $csvData = $this->formatCallLogsForCsv($callLogs);
 
-        $callback = function () use ($headers, $csvData) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $headers); // Write the header row
-            foreach ($csvData as $row) {
-                fputcsv($file, $row); // Write data rows
-            }
-            fclose($file);
-        };
+        // Define the filename and path
+        $filename = 'call_logs_' . Str::random(10) . '.csv';
+        $path = public_path('exports/' . $filename);
 
-        return new StreamedResponse($callback, ResponseHTTP::HTTP_OK, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment;filename="call_logs_report.csv"',
+        // Make sure the directory exists
+        if (!file_exists(public_path('exports'))) {
+            mkdir(public_path('exports'), 0777, true);
+        }
+
+        // Write CSV to the file
+        $file = fopen($path, 'w');
+        fputcsv($file, $headers);
+        foreach ($csvData as $row) {
+            fputcsv($file, $row);
+        }
+        fclose($file);
+
+        // Generate public URL
+        $url = asset('exports/' . $filename);
+
+        return response()->json([
+            'message' => 'CSV exported successfully.',
+            'url' => $url
         ]);
     }
 
-    /**
+     /**
      * Formats the call logs for CSV export.
      */
     protected function formatCallLogsForCsv($logs)

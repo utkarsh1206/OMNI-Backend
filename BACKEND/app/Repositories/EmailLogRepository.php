@@ -74,36 +74,37 @@ class EmailLogRepository
      */
     public function exportToCsv($request)
     {
-        $logsQuery = DB::table('email_logs')
-            ->join('users', 'email_logs.user_id', '=', 'users.id')
-            ->join('mail_template', 'email_logs.email_template_id', '=', 'mail_template.id')
-            ->select('email_logs.id', 'email_logs.from_email', 'users.email as to_email', 'users.first_name as username', 'users.mobile as contact', 'mail_template.subject as subject', 'email_logs.created_at', 'email_logs.status');
-
-        $logs = $logsQuery->get();
-        $headers = ['From Email', 'To Email', 'Username', 'Contact', 'Subject', 'Date & Time', 'Status'];
-
-        $callback = function () use ($logs, $headers) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $headers);
-
-            foreach ($logs as $log) {
-                fputcsv($file, [
+            $logs = DB::table('email_logs')
+                ->join('users', 'email_logs.user_id', '=', 'users.id')
+                ->leftJoin('mail_template', 'email_logs.email_template_id', '=', 'mail_template.id')
+                ->select(
+                    'email_logs.from_email',
+                    'users.email as to_email',
+                    'users.first_name as username',
+                    'users.mobile as contact',
+                    'mail_template.subject as subject',
+                    'email_logs.created_at',
+                    'email_logs.status'
+                )
+                ->get();
+            // Define headers
+            $headers = ['From Email', 'To Email', 'Username', 'Contact', 'Subject', 'Date & Time', 'Status'];
+            // Prepare rows
+            $rows = $logs->map(function ($log) {
+                return [
                     $log->from_email,
                     $log->to_email,
                     $log->username,
                     $log->contact,
                     $log->subject,
                     $log->created_at,
-                    $log->status === 'sent' ? 'Sent' : 'Failed'
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return new StreamedResponse($callback, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="email_logs.csv"',
-        ]);
+                    $log->status === 'sent' ? 'Sent' : 'Failed',
+                ];
+            })->toArray();
+            $fileUrl = exportCsv($headers, $rows, 'email_logs');
+            return response()->json([
+                'success' => true,
+                'file_url' => $fileUrl
+            ]);
     }
 }

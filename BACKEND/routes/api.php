@@ -94,6 +94,7 @@ use App\Http\Controllers\Api\AgentMessageController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
 use App\Http\Controllers\Api\LiveCallDashboardController;
 use App\Http\Controllers\Api\PriorityController;
+use App\Http\Controllers\Api\ProductCustomFieldController;
 use App\Http\Controllers\Api\TranscriptApiController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\RoleController;
@@ -257,6 +258,8 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::apiResource('/dynamic-list-fields', DynamicListFieldController::class);
 
+    Route::apiResource('/product-custom-fields', ProductCustomFieldController::class);
+
     Route::apiResource('/lists_fields', EcdialListFieldController::class);
 
     Route::apiResource('chatbots', ChatBotController::class);
@@ -388,6 +391,8 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::post('/check-user-limit', [UserController::class, 'checkUserLimit']);
     Route::get('live-calls', [LiveCallDashboardController::class, 'index']);
+    Route::post('tenant/change-status', [TenantController::class, 'changeStatus']);
+    Route::post('user/change-status', [UserController::class, 'changeStatus']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
@@ -405,23 +410,20 @@ Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(fu
 
 Route::post('/ext-api/login', [LoginApiController::class, 'agentLoginApi']);
 
-Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  // -not to be used in frontend
-Route::post('call-connected', [WebhookCallController::class, 'callConnected']); // -not to be used in frontend
-Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);   // -not to be used in frontend
-Route::post('call-history', [WebhookCallController::class, 'callHistory']); // -not to be used in frontend
+// Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  // -not to be used in frontend
+// Route::post('call-connected', [WebhookCallController::class, 'callConnected']); // -not to be used in frontend
+// Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);   // -not to be used in frontend
+// Route::post('call-history', [WebhookCallController::class, 'callHistory']); // -not to be used in frontend
 
 Route::apiResource('pause-code', 'App\Http\Controllers\Api\PauseCodeController');
 
 Route::get('cron-commands', [CronCommandController::class, 'index']);
 Route::get('cron-expressions', [CronExpressionController::class, 'index']);
 
-
-
 Route::prefix('user-roles')->group(function () {
     Route::get('/',             [UserRoleController::class, 'index']);
     Route::put('{user}/roles',  [UserRoleController::class, 'update']);
 });
-
 
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
