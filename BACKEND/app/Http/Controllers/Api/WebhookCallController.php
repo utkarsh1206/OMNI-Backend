@@ -84,9 +84,9 @@ class WebhookCallController extends Controller
      *     )
      * )
      */
-    public function callInitiated(WebhookCallRequest $request, Detail $detail)
+    public function callInitiated(WebhookCallRequest $request)
     {
-        return $this->handleCallRequest($request, 'call_initiated', $detail);
+        return $this->handleCallRequest($request, 'call_initiated');
     }
 
     /**
@@ -144,9 +144,9 @@ class WebhookCallController extends Controller
      *     )
      * )
      */
-    public function callConnected(WebhookCallRequest $request, Detail $detail)
+    public function callConnected(WebhookCallRequest $request)
     {
-        return $this->handleCallRequest($request, 'call_connected', $detail);
+        return $this->handleCallRequest($request, 'call_connected');
     }
 
     /**
@@ -204,9 +204,9 @@ class WebhookCallController extends Controller
      *     )
      * )
      */
-    public function callHangup(WebhookCallRequest $request, Detail $detail)
+    public function callHangup(WebhookCallRequest $request)
     {
-        return $this->handleCallRequest($request, 'call_hangup', $detail);
+        return $this->handleCallRequest($request, 'call_hangup');
     }
 
     /**
@@ -271,7 +271,7 @@ class WebhookCallController extends Controller
      *     )
      * )
      */
-    public function callHistory(Request $request, Detail $detail)
+    public function callHistory(Request $request)
     {
         if ($request->has('call_unique_id')) {
             $callType = $this->determineCallTypeFromHistory($request);
@@ -293,13 +293,16 @@ class WebhookCallController extends Controller
     }
 
     // Common method to handle call requests (initiated, connected, hangup)
-    private function handleCallRequest(Request $request, string $type, $detail)
+    private function handleCallRequest(Request $request, string $type)
     {
         try {
-            $domain_name = $detail->domain;
+            $domain_name = $request->domain_name;
             $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $domain_name));
 
             if ($request->has('call_unique_id')) {
+                $data = getDbConnection($domain_name);
+                DB::setDefaultConnection($data->getName());
+                
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
 
@@ -307,17 +310,10 @@ class WebhookCallController extends Controller
                 $agentId = Users::select('id')->where('username', $agentName)->first();
 
                 if ($type !== 'call_initiated') {
-                    generateLogs('info', 'inside if + caller_uername: ' . $request->caller_username);
-
-                    generateLogs('info', 'Agent ID: ' . $agentId->id);
-                    generateLogs('info', 'caller_user_extenstion: ' . $data['caller_user_extension']);
-
                     if ($agentId) {
-                        generateLogs('info', "Inside agentId IF block");
                         $liveAgent = LiveAgents::where('user_id', $agentId->id)
                             ->where('extension', $data['caller_user_extension'])
                             ->first();
-                        generateLogs('info', "Inside agentId IF block" . json_encode($liveAgent));
                         if ($liveAgent) {
                             $liveAgent->bypassObserver = true;
                             $liveAgent->status = $data['user_status'];
@@ -329,7 +325,6 @@ class WebhookCallController extends Controller
 
                             broadcast(new AgentLiveStatus($liveAgent, $agentId->id, $domain));
                         }
-                        generateLogs('info', "after agentId IF block");
                     }
                 }
 
