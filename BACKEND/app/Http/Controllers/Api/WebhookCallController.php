@@ -300,8 +300,10 @@ class WebhookCallController extends Controller
             $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $domain_name));
 
             if ($request->has('call_unique_id')) {
-                getDbConnection($domain_name, true);
-                // DB::setDefaultConnection($data->getName());
+                generateLogs('info', "Before DB Connection".json_encode($domain_name));
+                generateLogs('info', "Before DB Connection 11111".json_encode($domain));
+                getDbConnection($domain_name);
+                DB::setDefaultConnection($domain);
                 
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
