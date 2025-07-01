@@ -41,7 +41,7 @@ class LoginRepository
         $domain = $request->input('domain');
         if (in_array($validator["flag"], [1, 2, 3])) {
             if (isLicenseExpired($request)) {
-                //return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
+                return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
             }
 
             if (!$domain) {
