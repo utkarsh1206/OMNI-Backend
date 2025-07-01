@@ -15,6 +15,7 @@ use App\Models\UserGroup;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 use App\Models\LiveAgents;
+use App\Events\AgentForceLogout;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class UserRepository
@@ -457,7 +458,9 @@ class UserRepository
             ->get();
 
         foreach ($liveAgents as $liveAgent) {
+            $liveAgent->bypassObserver = true;
             $liveAgent->delete();
+            broadcast(new AgentForceLogout($liveAgent->user_id, $detail->domain));
         }
 
         return response()->json([
