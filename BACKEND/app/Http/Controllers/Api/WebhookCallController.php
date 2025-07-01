@@ -301,7 +301,6 @@ class WebhookCallController extends Controller
 
             if ($request->has('call_unique_id')) {
                 $data = getDbConnection($domain_name);
-                generateLogs('info', "After DB Connection".json_encode($data));
                 DB::setDefaultConnection($data->getName());
                 
                 $callType = $this->determineCallType($request);
@@ -311,17 +310,10 @@ class WebhookCallController extends Controller
                 $agentId = Users::select('id')->where('username', $agentName)->first();
 
                 if ($type !== 'call_initiated') {
-                    generateLogs('info', 'inside if + caller_uername: ' . $request->caller_username);
-
-                    generateLogs('info', 'Agent ID: ' . $agentId->id);
-                    generateLogs('info', 'caller_user_extenstion: ' . $data['caller_user_extension']);
-
                     if ($agentId) {
-                        generateLogs('info', "Inside agentId IF block");
                         $liveAgent = LiveAgents::where('user_id', $agentId->id)
                             ->where('extension', $data['caller_user_extension'])
                             ->first();
-                        generateLogs('info', "Inside agentId IF block" . json_encode($liveAgent));
                         if ($liveAgent) {
                             $liveAgent->bypassObserver = true;
                             $liveAgent->status = $data['user_status'];
@@ -333,7 +325,6 @@ class WebhookCallController extends Controller
 
                             broadcast(new AgentLiveStatus($liveAgent, $agentId->id, $domain));
                         }
-                        generateLogs('info', "after agentId IF block");
                     }
                 }
 
