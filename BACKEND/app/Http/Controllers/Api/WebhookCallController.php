@@ -296,7 +296,7 @@ class WebhookCallController extends Controller
     private function handleCallRequest(Request $request, string $type)
     {
         try {
-            $domain_name = $request->domain;
+            $domain_name = $request->domain_name;
             $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $domain_name));
 
             if ($request->has('call_unique_id')) {
