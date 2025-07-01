@@ -68,22 +68,8 @@ class CallLogReportRepository
     {
         try {
             $callLogs = $this->buildCallLogQuery($request)->get();
-            $formattedRows = $this->formatCallLogsForCsv($callLogs);
-            $headers = [
-                'Campaign',
-                'Inbound Group',
-                'Call Date',
-                'Caller Name',
-                'Caller Extension',
-                'Phone Number',
-                'Call Total Duration',
-                'Call Talk Duration',
-                'Dispo Status',
-                'Uniqueid',
-                'DID',
-                'Type of Call',
-                'Term Reason'
-            ];
+            $headers = [];
+            $formattedRows = $this->formatCallLogsForCsv($callLogs, $headers);
             $url = exportCsv($headers, $formattedRows, 'call_logs');
             return response()->json([
                 'message' => 'CSV exported successfully.',
@@ -112,7 +98,7 @@ class CallLogReportRepository
 
         // If startDate and endDate are not provided, return null
         if (is_null($filters['startDate']) || is_null($filters['endDate'])) {
-            return null;
+           // return null;
         }
 
         $startDate = Carbon::parse($filters['startDate'])->toDateTimeString();
@@ -120,7 +106,7 @@ class CallLogReportRepository
 
         $query = NeoxCallLog::query()
             ->select([
-                'call_unique_id',
+                'neox_call_logs.call_unique_id',
                 'campaign_id',
                 'inbound_group_id',
                 'user_group',
@@ -137,16 +123,18 @@ class CallLogReportRepository
                 'call_term_reason',
                 'comments',
                 'call_recording_url',
+                'custom_cdr_leads.lead_json',
             ])
-            ->where('type', 'call_history')
-            ->whereBetween('call_date', [$startDate, $endDate]);
-        if ($user && $user->role_id == 3) {
-            $query->where('caller_username', $user->username);
-        }
+             ->leftJoin('custom_cdr_leads', 'custom_cdr_leads.call_unique_id', '=', 'neox_call_logs.call_unique_id')
+            ->where('type', 'call_history');
+         //   ->whereBetween('call_date', [$startDate, $endDate]);
+        // if ($user && $user->role_id == 3) {
+        //     $query->where('caller_username', $user->username);
+        // }
 
         // Conditional ordering
         if ($applyOrderById) {
-            $query->orderBy('id', 'desc');
+            $query->orderBy('neox_call_logs.id', 'desc');
         }
 
         // Apply filters if present
@@ -178,106 +166,109 @@ class CallLogReportRepository
      * Generates CSV export for the call logs.
      */
 
-     private function generateCsvExport($callLogs)
-    {
-        $headers = [
-            'Campaign',
-            'Inbound Group',
-            'Call Date',
-            'Caller Name',
-            'Caller Extension',
-            'Phone Number',
-            'Call Total Duration',
-            'Call Talk Duration',
-            'Dispo Status',
-            'Uniqueid',
-            'DID',
-            'Type of Call',
-            'Term Reason'
-        ];
-
-        $csvData = $this->formatCallLogsForCsv($callLogs);
-
-        // Define the filename and path
-        $filename = 'call_logs_' . Str::random(10) . '.csv';
-        $path = public_path('exports/' . $filename);
-
-        // Make sure the directory exists
-        if (!file_exists(public_path('exports'))) {
-            mkdir(public_path('exports'), 0777, true);
-        }
-
-        // Write CSV to the file
-        $file = fopen($path, 'w');
-        fputcsv($file, $headers);
-        foreach ($csvData as $row) {
-            fputcsv($file, $row);
-        }
-        fclose($file);
-
-        // Generate public URL
-        $url = asset('exports/' . $filename);
-
-        return response()->json([
-            'message' => 'CSV exported successfully.',
-            'url' => $url
-        ]);
-    }
-
+ 
      /**
      * Formats the call logs for CSV export.
      */
-    protected function formatCallLogsForCsv($logs)
+    
+    protected function formatCallLogsForCsv($logs, &$headers = [])
     {
-        $dispoCache = []; // Cache for dispositions
+    $dispoCache = [];
+    $dynamicKeys = [];
 
-        return $logs->map(function ($log) use (&$dispoCache) {
-            $campaignId = $log->campaign_id;
-            $dispoLabel = $log->call_dispo_status;
-
-            if ($campaignId && !isset($dispoCache[$campaignId])) {
-                $request = new Request(['campaign_id' => $campaignId, 'user' => $log->caller_username]);
-
-                $response = $this->dispositionService->getDispositions($request);
-
-                if ($response instanceof \Illuminate\Http\JsonResponse) {
-                    $response = $response->getData(true);
-                }
-
-                $dispoCache[$campaignId] = $response;
-            }
-
-            if ($campaignId && isset($dispoCache[$campaignId]) && !isset($dispoCache[$campaignId]['errors'])) {
-                $dispos = $dispoCache[$campaignId];
-                $dispoStatus = $log->call_dispo_status;
-
-                // Find the matching disposition description
-                foreach ($dispos as $dispo) {
-                    if (isset($dispo['disposition']) && $dispo['disposition'] === $dispoStatus) {
-                        $dispoLabel = "{$dispoStatus} - {$dispo['disposition_description']}";
-                        break;
-                    }
-                }
-            }
-
-            // Return the row data for the CSV export
-            return [
-                $log->campaign_id,
-                $log->inbound_group_id,
-                Carbon::parse($log->call_date)->format('Y-m-d H:i:s'),
-                $log->caller_username,
-                $log->caller_user_extension,
-                $log->called_phone_number,
-                $log->call_total_duration,
-                $log->call_talk_duration,
-                $dispoLabel,
-                $log->call_unique_id,
-                $log->call_did_pattern,
-                $log->call_type,
-                $log->call_term_reason,
-            ];
-        })->toArray();
+    foreach ($logs as $log) {
+       $firstDecode = json_decode($log->lead_json, true); // returns a string
+       $leadJson = is_string($firstDecode) ? json_decode($firstDecode, true) : $firstDecode;
+        if (is_array($leadJson)) {
+            $dynamicKeys = array_unique(array_merge($dynamicKeys, array_keys($leadJson)));
+        }
     }
+
+    // Define static headers (used for export)
+    $staticHeaders = [
+        'Campaign',
+        'Inbound Group',
+        'Call Date',
+        'Caller Name',
+        'Caller Extension',
+        'Phone Number',
+        'Call Total Duration',
+        'Call Talk Duration',
+        'Dispo Status',
+        'Uniqueid',
+        'DID',
+        'Type of Call',
+        'Term Reason',
+    ];
+
+    // Final headers (passed by reference for use in exportCsv)
+    $headers = array_merge($staticHeaders, $dynamicKeys);
+    // Map formatted rows
+    $rows = $logs->map(function ($log) use (&$dispoCache, $dynamicKeys) {
+       $campaignId = $log->campaign_id;
+       $dispoLabel = $log->call_dispo_status;
+
+      //  Disposition description resolution
+        if ($campaignId && !isset($dispoCache[$campaignId])) {
+            $request = new \Illuminate\Http\Request([
+                'campaign_id' => $campaignId,
+                'user' => $log->caller_username
+            ]);
+
+            $response = $this->dispositionService->getDispositions($request);
+            if ($response instanceof \Illuminate\Http\JsonResponse) {
+                $response = $response->getData(true);
+            }
+            $dispoCache[$campaignId] = $response;
+        }
+
+        if ($campaignId && isset($dispoCache[$campaignId]) && !isset($dispoCache[$campaignId]['errors'])) {
+           $dispos = $dispoCache[$campaignId];
+           $dispoStatus = $log->call_dispo_status;
+
+            foreach ($dispos as $dispo) {
+                if (isset($dispo['disposition']) && $dispo['disposition'] === $dispoStatus) {
+                    $dispoLabel = "{$dispoStatus} - {$dispo['disposition_description']}";
+                    break;
+                }
+            }
+        }
+
+        // Base row
+        $row = [
+            $log->campaign_id,
+            $log->inbound_group_id,
+            Carbon::parse($log->call_date)->format('Y-m-d H:i:s'),
+            $log->caller_username,
+            $log->caller_user_extension,
+            $log->called_phone_number,
+            $log->call_total_duration,
+            $log->call_talk_duration,
+            $dispoLabel,
+            $log->call_unique_id,
+            $log->call_did_pattern,
+            $log->call_type,
+            $log->call_term_reason,
+        ];
+
+        // Append dynamic fields in same order
+        $leadJsonRaw = json_decode($log->lead_json, true) ?? [];
+        if (is_string($leadJsonRaw)) {
+            $leadJson = json_decode($leadJsonRaw, true);
+        } elseif (is_array($leadJsonRaw)) {
+            $leadJson = $leadJsonRaw;
+        } else {
+            $leadJson = [];
+        }
+     
+        foreach ($dynamicKeys as $key) {
+            $row[] = $leadJson[$key] ?? '';
+        }
+        return $row;
+    });
+
+    return $rows->toArray();
+}
 
     /**
      * Generates chart data for call logs (e.g., daily summary).

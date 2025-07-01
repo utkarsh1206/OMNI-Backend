@@ -15,6 +15,7 @@ use App\Mail\SendEmail;
 use App\Models\SmsTemplate;
 use App\Services\SmsService;
 use App\Models\MailTemplate;
+use App\Models\SupportTicketCustomFieldValue;
 
 class SupportTicketRepository
 {
@@ -66,7 +67,16 @@ class SupportTicketRepository
             //         // 'usergroup:id,name'
             //     ]);
 
-            $query = SupportTicket::query()->with(['department', 'priority:id,name', 'ticketType:id,type', 'ticketStatus:id,name']);
+            $query = SupportTicket::query()->with(
+                [
+                    'department',
+                    'priority:id,name',
+                    'ticketType:id,type',
+                    'ticketStatus:id,name',
+                    'product:id,name',
+                    'supportTicketCustomFieldValues.productCustomField',
+                ]
+            );
 
             if (isset($roleId) && $roleId == 3) {
                 $query->where('assign_to_id', $userId);
@@ -96,58 +106,113 @@ class SupportTicketRepository
                             $subQ->where('first_name', 'like', "%{$searchTerm}%")
                                 ->orWhere('last_name', 'like', "%{$searchTerm}%")
                                 ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$searchTerm}%"]);
+                        })
+                        // --- START: Search in Custom Fields ---
+                        ->orWhereHas('supportTicketCustomFieldValues', function ($subQ) use ($searchTerm) {
+                            $subQ->where('field_value', 'like', "%{$searchTerm}%")
+                                ->whereHas('productCustomField', function ($fieldQ) {
+                                    $fieldQ->where('search_filter', 'Y');
+                                });
                         });
                 });
             }
 
             // ✅ ADVANCED FILTERS
-            if (!empty($filters['support_ticket_id'])) {
-                $query->where('ticket_id', 'like', "%{$filters['support_ticket_id']}%");
-            }
-
-            if (!empty($filters['product_id'])) {
-                $query->where('product_id', $filters['product_id']);
-            }
-
-            if (!empty($filters['subject'])) {
-                $query->where('subject', 'like', "%{$filters['subject']}%");
-            }
-
-            if (!empty($filters['type'])) {
-                $query->where('default_type', $filters['type']);
-            }
-
-            if (!empty($filters['status'])) {
-                $query->where('default_status', $filters['status']);
-            }
-
-            if (!empty($filters['priority'])) {
-                $query->where('default_priority', $filters['priority']);
-            }
-
-            if (!empty($filters['assign_to_id'])) {
-                $query->where('assign_to_id', $filters['assign_to_id']);
-            }
-
-            if (!empty($filters['contact_number'])) {
-                $query->where('contact_number', 'like', "%{$filters['contact_number']}%");
-            }
-
-            // if (!empty($filters['usergroup_id'])) {
-            //     $query->where('usergroup_id', $filters['usergroup_id']);
+            // if (!empty($filters['support_ticket_id'])) {
+            //     $query->where('ticket_id', 'like', "%{$filters['support_ticket_id']}%");
             // }
 
-            if (!empty($filters['department_id'])) {
-                $query->where('department_id', $filters['department_id']);
+            // if (!empty($filters['product_id'])) {
+            //     $query->where('product_id', $filters['product_id']);
+            // }
+
+            // if (!empty($filters['subject'])) {
+            //     $query->where('subject', 'like', "%{$filters['subject']}%");
+            // }
+
+            // if (!empty($filters['type'])) {
+            //     $query->where('default_type', $filters['type']);
+            // }
+
+            // if (!empty($filters['status'])) {
+            //     $query->where('default_status', $filters['status']);
+            // }
+
+            // if (!empty($filters['priority'])) {
+            //     $query->where('default_priority', $filters['priority']);
+            // }
+
+            // if (!empty($filters['assign_to_id'])) {
+            //     $query->where('assign_to_id', $filters['assign_to_id']);
+            // }
+
+            // if (!empty($filters['contact_number'])) {
+            //     $query->where('contact_number', 'like', "%{$filters['contact_number']}%");
+            // }
+
+            // // if (!empty($filters['usergroup_id'])) {
+            // //     $query->where('usergroup_id', $filters['usergroup_id']);
+            // // }
+
+            // if (!empty($filters['department_id'])) {
+            //     $query->where('department_id', $filters['department_id']);
+            // }
+
+            // if (!empty($filters['account_id'])) {
+            //     $query->where('account_id', $filters['account_id']);
+            // }
+
+            // if (!empty($filters['incident_id'])) {
+            //     $query->where('incident_id', $filters['incident_id']);
+            // }
+
+            foreach ($filters as $key => $value) {
+                if (!empty($value)) {
+                    // Handle specific column names if different from filter key
+                    $columnName = $key;
+                    if ($key === 'type') {
+                        $columnName = 'default_type';
+                    } elseif ($key === 'status') {
+                        $columnName = 'default_status';
+                    } elseif ($key === 'priority') {
+                        $columnName = 'default_priority';
+                    } elseif ($key === 'ticket_id') {
+                        $columnName = 'support_ticket_id';
+                    }
+
+                    if (in_array($key, ['subject', 'contact_number', 'ticket_id'])) {
+                        $query->where($columnName, 'like', "%{$value}%");
+                    } else {
+                        $query->where($columnName, $value);
+                    }
+                }
             }
 
-            if (!empty($filters['account_id'])) {
-                $query->where('account_id', $filters['account_id']);
-            }
 
-            if (!empty($filters['incident_id'])) {
-                $query->where('incident_id', $filters['incident_id']);
-            }
+            // DO NOT REMOVE, WILL BE USED IN FUTURE - UTKARSH
+            // ------------------------------------------
+
+            // --- START: ADVANCED FILTERS FOR CUSTOM FIELDS ---
+            // Assume custom filters are sent as: ?custom_filters[field_name_1]=value1&custom_filters[field_name_2]=value2
+            // $customFilters = $request->input('custom_filters', []);
+            // if (!empty($customFilters)) {
+            //     foreach ($customFilters as $fieldName => $filterValue) {
+            //         if (!empty($filterValue) && is_string($fieldName)) {
+            //             $query->whereHas('supportTicketCustomFieldValues', function ($q) use ($fieldName, $filterValue) {
+            //                 $q->where('field_name', $fieldName)
+            //                     ->where('field_value', 'like', "%{$filterValue}%") // Assuming partial match for text fields
+            //                     ->whereHas('productCustomField', function ($subQ) {
+            //                         // Only filter on custom fields explicitly marked as searchable
+            //                         $subQ->where('search_filter', 'Y');
+            //                     });
+            //             });
+            //         }
+            //     }
+            // }
+            // --- END: ADVANCED FILTERS FOR CUSTOM FIELDS ---
+
+            // ------------------------------------------
+            // DO NOT REMOVE, WILL BE USED IN FUTURE - UTKARSH
 
             // ✅ PAGINATION
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
@@ -172,6 +237,19 @@ class SupportTicketRepository
 
     public function store(Request $request)
     {
+        /** Format in which the data should be sent
+         * {
+         *   "product_id": 123,
+         *   "subject": "Issue with product X",
+         *   "description": "...",
+         *   "custom_fields": {
+         *           "order_number": "XYZ789",
+         *           "customer_feedback": "Very satisfied with the quick r*esponse.",
+         *           "delivery_date": "2025-07-15"
+         *           ...
+         *       }
+         *   }
+         */
         try {
             $apiUser = auth()->user();
 
@@ -182,6 +260,31 @@ class SupportTicketRepository
             $builtTicketData = $this->buildTicketData($request, $attachment_urls);
             $supportTicket = SupportTicket::create($builtTicketData);
             $supportTicketId = $builtTicketData['support_ticket_id'];
+
+            if ($request->has('custom_fields') && is_array($request->custom_fields)) {
+                $customFieldValuesToStore = [];
+                $productId = $supportTicket->product_id;
+
+                foreach ($request->custom_fields as $fieldName => $fieldValue) {
+                    if (is_string($fieldName)) {
+                        // $preparedFieldValue = is_array($fieldValue) ? json_encode($fieldValue) : $fieldValue;
+
+                        $customFieldValuesToStore[] = [
+                            'support_ticket_id' => $supportTicket->id,
+                            'product_id' => $productId,
+                            'field_name' => $fieldName,
+                            'field_value' => $fieldValue,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                }
+
+                if (!empty($customFieldValuesToStore)) {
+                    // Insert all custom field values in a single batch for efficiency
+                    SupportTicketCustomFieldValue::insert($customFieldValuesToStore);
+                }
+            }
 
             $mailTemplate = MailTemplate::where('type', 'created_ticket')->first();
             if ($mailTemplate) {
@@ -227,6 +330,31 @@ class SupportTicketRepository
 
             $supportTicket->update($updateData);
 
+            SupportTicketCustomFieldValue::where('support_ticket_id', $supportTicket->id)->delete();
+
+            if ($request->has('custom_fields') && is_array($request->custom_fields)) {
+                $customFieldValuesToStore = [];
+                // Get the current product_id from the *updated* support ticket
+                $productId = $supportTicket->product_id;
+
+                foreach ($request->custom_fields as $fieldName => $fieldValue) {
+                    if (is_string($fieldName)) {
+                        $customFieldValuesToStore[] = [
+                            'support_ticket_id' => $supportTicket->id,
+                            'product_id' => $productId,
+                            'field_name' => $fieldName,
+                            'field_value' => $fieldValue, // Model's mutator handles serialization if needed
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                }
+
+                if (!empty($customFieldValuesToStore)) {
+                    SupportTicketCustomFieldValue::insert($customFieldValuesToStore);
+                }
+            }
+
             $this->createTicket($supportTicket, $request->default_status ?? "", "Edit Support Ticket", $apiUser);
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
 
@@ -255,6 +383,7 @@ class SupportTicketRepository
     {
         try {
             // $response = new TenantsResource($supportTicket);
+            $supportTicket->load('supportTicketCustomFieldValues.productCustomField');
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.data_fetch'));
         } catch (Exception $ex) {
@@ -373,9 +502,9 @@ class SupportTicketRepository
         $attachment_urls = [];
         $mail_attachment_urls = [];
         if ($request->hasFile('attachment')) {
-           
+
             $files = uploadAttachment($request, "attachment", "support_ticket");
-           
+
             foreach ($files as $attachment) {
                 $attachment_urls[] = url('storage/' . $attachment['path']);
                 $mail_attachment_urls[] = [
@@ -435,8 +564,7 @@ class SupportTicketRepository
     private function sendSupportEmail(Request $request, array $mail_attachment_urls, int $ticketId, int $assignToId, array $mailTemplate = null)
     {
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
-        if(isset($emailConfig) && !empty($emailConfig))
-        {
+        if (isset($emailConfig) && !empty($emailConfig)) {
             setEmailConfig();
             $sender_email = $emailConfig->sender_email ?? config('mail.from.address');
             establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
@@ -451,8 +579,7 @@ class SupportTicketRepository
                 "module_name" => "Support Ticket",
                 "entity_id" => $ticketId,
                 "status" => "Sent",
-            ]);      
+            ]);
         }
-      
     }
 }
