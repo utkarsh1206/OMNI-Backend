@@ -84,9 +84,9 @@ class WebhookCallController extends Controller
      *     )
      * )
      */
-    public function callInitiated(WebhookCallRequest $request, Detail $detail)
+    public function callInitiated(WebhookCallRequest $request)
     {
-        return $this->handleCallRequest($request, 'call_initiated', $detail);
+        return $this->handleCallRequest($request, 'call_initiated');
     }
 
     /**
@@ -144,9 +144,9 @@ class WebhookCallController extends Controller
      *     )
      * )
      */
-    public function callConnected(WebhookCallRequest $request, Detail $detail)
+    public function callConnected(WebhookCallRequest $request)
     {
-        return $this->handleCallRequest($request, 'call_connected', $detail);
+        return $this->handleCallRequest($request, 'call_connected');
     }
 
     /**
@@ -204,9 +204,9 @@ class WebhookCallController extends Controller
      *     )
      * )
      */
-    public function callHangup(WebhookCallRequest $request, Detail $detail)
+    public function callHangup(WebhookCallRequest $request)
     {
-        return $this->handleCallRequest($request, 'call_hangup', $detail);
+        return $this->handleCallRequest($request, 'call_hangup');
     }
 
     /**
@@ -293,13 +293,16 @@ class WebhookCallController extends Controller
     }
 
     // Common method to handle call requests (initiated, connected, hangup)
-    private function handleCallRequest(Request $request, string $type, $detail)
+    private function handleCallRequest(Request $request, string $type)
     {
         try {
-            $domain_name = $detail->domain;
+            $domain_name = $request->domain;
             $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $domain_name));
 
             if ($request->has('call_unique_id')) {
+                $data = getDbConnection($domain_name);
+                DB::setDefaultConnection($data->getName());
+                
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
 
