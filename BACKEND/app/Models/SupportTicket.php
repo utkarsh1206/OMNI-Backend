@@ -5,15 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SupportTicket extends Model
 {
     use SoftDeletes;
 
-    protected $appends = ['contact_name', 'assigned_agent_name'];
+    protected $appends = ['contact_name', 'assigned_agent_name', 'custom_fields'];
 
-    protected $hidden = ['contact', 'assignedAgent'];
+    protected $hidden = ['contact', 'assignedAgent', 'supportTicketCustomFieldValues'];
 
     protected $fillable = [
         //"tenant_id",
@@ -138,5 +139,17 @@ class SupportTicket extends Model
     public function ticketStatus()
     {
         return $this->belongsTo(SupportTicketStatus::class, 'default_status');
+    }
+
+    public function supportTicketCustomFieldValues(): HasMany
+    {
+        return $this->hasMany(SupportTicketCustomFieldValue::class, 'support_ticket_id', 'id');
+    }
+
+    public function getCustomFieldsAttribute()
+    {
+        return $this->supportTicketCustomFieldValues->mapWithKeys(function ($item) {
+            return [$item->field_name => $item->field_value];
+        });
     }
 }
