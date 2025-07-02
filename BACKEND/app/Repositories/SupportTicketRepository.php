@@ -16,6 +16,7 @@ use App\Models\SmsTemplate;
 use App\Services\SmsService;
 use App\Models\MailTemplate;
 use App\Models\SupportTicketCustomFieldValue;
+use Illuminate\Support\Facades\DB;
 
 class SupportTicketRepository
 {
@@ -161,17 +162,12 @@ class SupportTicketRepository
          *   "product_id": 123,
          *   "subject": "Issue with product X",
          *   "description": "...",
-         *   "custom_fields": {
-         *           "order_number": "XYZ789",
-         *           "customer_feedback": "Very satisfied with the quick r*esponse.",
-         *           "delivery_date": "2025-07-15"
-         *           ...
-         *       }
+         *   "custom_fields": '{"First Name 2 part 2":"utkarsh 4","Last Name 2 part 2":"rokade 4"}'
          *   }
          */
         try {
             $apiUser = auth()->user();
-
+            DB::beginTransaction();
             // Handle file attachments
             [$attachment_urls, $mail_attachment_urls] = $this->processAttachments($request);
 
@@ -179,14 +175,32 @@ class SupportTicketRepository
             $builtTicketData = $this->buildTicketData($request, $attachment_urls);
             $supportTicket = SupportTicket::create($builtTicketData);
             $supportTicketId = $builtTicketData['support_ticket_id'];
-
-            if ($request->has('custom_fields') && is_array($request->custom_fields)) {
+            $customFieldsData = [];
+            if ($request->has('custom_fields') && is_string($request->input('custom_fields'))) {
+                $decodedCustomFields = json_decode(
+                    $request->input('custom_fields'),
+                    true
+                );
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decodedCustomFields)) {
+                    $customFieldsData = $decodedCustomFields;
+                } else {
+                    generateLogs('error', 'Invalid JSON for custom_fields: ' . $request->input('custom_fields'));
+                    return $this->apiResponse->getResponseStructure(
+                        trans('message.validation_error'),
+                        ['custom_fields' => ['Invalid JSON format for custom_fields.']],
+                        trans('message.validation_error_message'),
+                        422
+                    );
+                }
+            }
+            // if ($request->has('custom_fields') && is_array($request->custom_fields)) {
+            if (!empty($customFieldsData)) {
                 $customFieldValuesToStore = [];
                 $productId = $supportTicket->product_id;
 
-                foreach ($request->custom_fields as $fieldName => $fieldValue) {
+                // foreach ($request->custom_fields as $fieldName => $fieldValue) {
+                foreach ($customFieldsData as $fieldName => $fieldValue) {
                     if (is_string($fieldName)) {
-
                         $customFieldValuesToStore[] = [
                             'support_ticket_id' => $supportTicket->id,
                             'product_id' => $productId,
@@ -202,6 +216,8 @@ class SupportTicketRepository
                     SupportTicketCustomFieldValue::insert($customFieldValuesToStore);
                 }
             }
+
+            DB::commit();
 
             $mailTemplate = MailTemplate::where('type', 'created_ticket')->first();
             if ($mailTemplate) {
@@ -234,13 +250,14 @@ class SupportTicketRepository
             );
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
             $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0);
-
+            
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $supportTicket,
                 trans('message.support_ticket_create_msg')
             );
         } catch (Exception $ex) {
+            DB::rollBack();
             generateLogs('error', 'Error occurred while creating Support Ticket: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }

@@ -28,7 +28,7 @@ return new class extends Migration
             $table->integer('field_size')->nullable();
             $table->integer('field_max_length')->nullable();
             $table->enum('search_filter', ['Y', 'N'])->default('N');
-            $table->enum('editable', ['Y', 'N'])->default('N');
+            $table->enum('editable', ['Y', 'N'])->default('Y');
             $table->string('default_value')->nullable();
             $table->enum('value_masked', ['Y', 'N'])->default('N');
             $table->enum('duplicate_check', ['Y', 'N'])->default('N');
