@@ -250,7 +250,7 @@ class SupportTicketRepository
             );
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
             $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0);
-            
+
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $supportTicket,
@@ -279,14 +279,39 @@ class SupportTicketRepository
 
             $supportTicket->update($updateData);
 
+            // Decode custom_fields consistently with the store method
+            $customFieldsData = [];
+            if ($request->has('custom_fields') && is_string($request->input('custom_fields'))) {
+                $decodedCustomFields = json_decode(
+                    $request->input('custom_fields'),
+                    true
+                );
+
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decodedCustomFields)) {
+                    $customFieldsData = $decodedCustomFields;
+                } else {
+                    generateLogs('error', 'Invalid JSON for custom_fields: ' . $request->input('custom_fields'));
+                    DB::rollBack();
+                    return $this->apiResponse->getResponseStructure(
+                        trans('message.validation_error'),
+                        ['custom_fields' => ['Invalid JSON format for custom_fields.']],
+                        trans('message.validation_error_message'),
+                        422
+                    );
+                }
+            }
+
             SupportTicketCustomFieldValue::where('support_ticket_id', $supportTicket->id)->delete();
 
-            if ($request->has('custom_fields') && is_array($request->custom_fields)) {
+            // if ($request->has('custom_fields') && is_array($request->custom_fields)) {
+            if (!empty($customFieldsData)) {
                 $customFieldValuesToStore = [];
                 // Get the current product_id from the *updated* support ticket
                 $productId = $supportTicket->product_id;
 
-                foreach ($request->custom_fields as $fieldName => $fieldValue) {
+                // foreach ($request->custom_fields as $fieldName => $fieldValue) {
+                foreach ($customFieldsData as $fieldName => $fieldValue) {
+
                     if (is_string($fieldName)) {
                         $customFieldValuesToStore[] = [
                             'support_ticket_id' => $supportTicket->id,
@@ -303,6 +328,7 @@ class SupportTicketRepository
                     SupportTicketCustomFieldValue::insert($customFieldValuesToStore);
                 }
             }
+            DB::commit();
 
             $this->createTicket($supportTicket, $request->default_status ?? "", "Edit Support Ticket", $apiUser);
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
