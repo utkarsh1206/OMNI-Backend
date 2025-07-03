@@ -144,9 +144,12 @@ class ProductCustomFieldsRepository
                 'field_type' => ['required', Rule::in(
                     ['text', 'select', 'multi', 'checkbox', 'radio', 'textarea', 'date']
                 )],
+                'description' => 'nullable|string|max:500',
+                'options' => 'nullable|string',
+                'mandatory' => ['required', Rule::in(['Y', 'N'])],
+                'default_value' => 'nullable|string|max:255',
                 'status' => ['required', Rule::in(['active', 'inactive'])],
                 'section_name' => ['required', 'string', 'max:255'],
-                // Include any other rules as needed
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -158,16 +161,15 @@ class ProductCustomFieldsRepository
                     $validator->errors()->first()
                 );
             }
-
             $field = ProductCustomField::findOrFail($id);
             $field->update($validator->validated());
-
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $field,
                 trans('message.list_field_update_success')
             );
         } catch (\Exception $e) {
+            generateLogs('error', 'Error in update function: ' . $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
