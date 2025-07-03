@@ -47,6 +47,21 @@ class SupportTicket extends Model
         "usergroup_id"
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        // When a SupportTicket is being soft-deleted, soft-delete its custom field values
+        static::deleting(function ($supportTicket) {
+            $supportTicket->supportTicketCustomFieldValues()->delete();
+        });
+
+        // If you ever forceDelete a SupportTicket, you might want to forceDelete related records too
+        static::forceDeleted(function ($supportTicket) {
+            $supportTicket->supportTicketCustomFieldValues()->forceDelete();
+        });
+    }
+
     public function assignedUser()
     {
         return $this->belongsTo(User::class, 'assign_to_id');
