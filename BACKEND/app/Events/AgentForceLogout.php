@@ -26,7 +26,7 @@ class AgentForceLogout implements ShouldBroadcastNow
     public function __construct($userId, $domain = null)
     {
         $this->userId = $userId;
-        $this->domain = $domain ?? convertToLower(Str::replace('.', '_', auth()->user()->domain));
+        $this->domain = convertToLower(Str::replace('.', '_', $domain ?? auth()->user()->domain));
     }
 
     /**

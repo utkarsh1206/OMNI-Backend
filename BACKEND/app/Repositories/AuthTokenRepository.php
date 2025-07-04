@@ -7,9 +7,9 @@ use App\Http\Response\CustomApiResponse;
 use App\Models\AuthToken;
 use Exception;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Crypt;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class AuthTokenRepository
 {
@@ -47,7 +47,7 @@ class AuthTokenRepository
                 trans('message.success'),
                 [
                     'token' => $authToken,
-                    'code' => 200,
+                    'code' => ResponseHTTP::HTTP_OK,
                     'expire_at' => $expireAt,
                 ],
                 trans('message.data_fetch')
