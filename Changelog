@@ -1,3 +1,16 @@
+2025-07-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : e05a7a3
+	* Version : Dev
+	* Laravel: Updated the generateLogs() helper function to:
+    Capture the calling file and line number using debug_backtrace().
+    Use basename() to log only the filename, avoiding full path clutter.
+    Append this information to every log entry for improved traceability.
+	Preserved existing logic for handling root-owned log file deletion in non-local environments.
+	Final log format now looks like:
+	Message content | File: ExampleController.php | Line: 42 | Error: (optional)
+
 2025-06-06 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :
