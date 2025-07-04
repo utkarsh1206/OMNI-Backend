@@ -195,7 +195,10 @@ return [
     'status_updated' => 'Status updated successfully.',
     'status_deleted' => 'Status deleted successfully.',
     'user_limit_exceeds'=>"User limit exceeds",
-    'tenant_inactive'=>"Tenant is inactive please contact to administrator",
+    'tenant_inactive' => "Tenant is inactive please contact to administrator",
+    'token_expired' => 'Token is expired. Please generate new token',
+    'token_missing' => 'Token is missing',
+    'agent_logout' => 'Agent logged out successfully'
 ]   
 ?>
 

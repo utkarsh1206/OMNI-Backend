@@ -21,5 +21,5 @@ Route::middleware(AuthTokenMiddleware::class)->group(function () {
     // Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
     // Route::post('call-hangup', [WebhookCallController::class, 'callHangup']); 
     // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
-    Route::post('dc-user-logout/{uinId}', [UserController::class, 'dcUserLogout']);
+    Route::post('dc-user-logout', [UserController::class, 'dcUserLogout']);
 });

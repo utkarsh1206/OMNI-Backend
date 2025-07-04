@@ -16,6 +16,7 @@ use Exception;
 use Illuminate\Support\Facades\Hash;
 use App\Models\LiveAgents;
 use App\Events\AgentForceLogout;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class UserRepository
@@ -451,7 +452,7 @@ class UserRepository
         }
     }
 
-    public function dcUserLogout($request, $detail)
+    public function dcUserLogout($request)
     {
         // Delete the matching live agent entry
         $liveAgents = LiveAgents::where('extension', $request->extension)
@@ -460,11 +461,9 @@ class UserRepository
         foreach ($liveAgents as $liveAgent) {
             $liveAgent->bypassObserver = true;
             $liveAgent->delete();
-            broadcast(new AgentForceLogout($liveAgent->user_id, $detail->domain));
+            broadcast(new AgentForceLogout($liveAgent->user_id, $request->attributes->get('tenant_domain')));
         }
 
-        return response()->json([
-            'message' => 'Agent logged out successfully.',
-        ]);
+        return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.agent_logout'));
     }
 }

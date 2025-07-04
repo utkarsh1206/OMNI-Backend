@@ -9,6 +9,7 @@ use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Crypt;
 
 class AuthTokenRepository
 {
@@ -41,6 +42,7 @@ class AuthTokenRepository
                 ]);
             }
 
+            $authToken = Crypt::encryptString($authToken.'+'.$detail->domain);
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 [
