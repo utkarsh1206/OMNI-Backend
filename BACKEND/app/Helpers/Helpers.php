@@ -298,15 +298,26 @@ if (!function_exists('generateLogs')) {
 
     function generateLogs($type, $msg, $error = null)
     {
+        // Get the file and line info where the log was triggered
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0] ?? null;
+        $file = isset($backtrace['file']) ? basename($backtrace['file']) : 'unknown_file';
+        $line = $backtrace['line'] ?? 'unknown_line';
+
+        // Construct the log message
+        $logMessage = "{$msg} | File: {$file} | Line: {$line}";
+        if ($error) {
+            $logMessage .= " | Error: {$error}";
+        }
+
         $logFilePath = storage_path('logs/laravel-' . date('Y-m-d') . '.log');
         if (file_exists($logFilePath) && env("APP_ENV") != "local") {
             $fileOwner = posix_getpwuid(fileowner($logFilePath));
             if ($fileOwner && isset($fileOwner['name']) && $fileOwner['name'] === 'root') {
                 unlink($logFilePath);
-                $msg .= ' | Log file owned by root was deleted.';
+                $logMessage .= ' | Log file owned by root was deleted.';
             }
         }
-        Log::$type($msg . ($error ? ' ' . $error : ''));
+        Log::$type($logMessage);
     }
 }
 
@@ -475,7 +486,7 @@ if (!function_exists('getRecordingFile')) {
 
 
 if (!function_exists('exportCsv')) {
- function exportCsv(array $headers, array $rows, string $filenamePrefix = 'export'): string
+    function exportCsv(array $headers, array $rows, string $filenamePrefix = 'export'): string
     {
         $filename = $filenamePrefix . '_' . Str::random(10) . '.csv';
         $directory = public_path('exports');
@@ -495,5 +506,4 @@ if (!function_exists('exportCsv')) {
 
         return asset('exports/' . $filename);
     }
-
 }
