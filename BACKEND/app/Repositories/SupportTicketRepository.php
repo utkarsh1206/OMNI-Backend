@@ -265,6 +265,7 @@ class SupportTicketRepository
 
     public function update(Request $request, SupportTicket $supportTicket)
     {
+        DB::beginTransaction();
         try {
             $apiUser = auth()->user();
 
@@ -301,32 +302,49 @@ class SupportTicketRepository
                 }
             }
 
-            SupportTicketCustomFieldValue::where('support_ticket_id', $supportTicket->id)->delete();
+            // SupportTicketCustomFieldValue::where('support_ticket_id', $supportTicket->id)->delete();
 
             // if ($request->has('custom_fields') && is_array($request->custom_fields)) {
             if (!empty($customFieldsData)) {
-                $customFieldValuesToStore = [];
+                // $customFieldValuesToStore = [];
                 // Get the current product_id from the *updated* support ticket
                 $productId = $supportTicket->product_id;
 
                 // foreach ($request->custom_fields as $fieldName => $fieldValue) {
-                foreach ($customFieldsData as $fieldName => $fieldValue) {
+                // foreach ($customFieldsData as $fieldName => $fieldValue) {
 
+                //     if (is_string($fieldName)) {
+                //         $customFieldValuesToStore[] = [
+                //             'support_ticket_id' => $supportTicket->id,
+                //             'product_id' => $productId,
+                //             'field_name' => $fieldName,
+                //             'field_value' => $fieldValue,
+                //             'created_at' => now(),
+                //             'updated_at' => now(),
+                //         ];
+                //     }
+                // }
+
+                foreach ($customFieldsData as $fieldName => $fieldValue) {
                     if (is_string($fieldName)) {
-                        $customFieldValuesToStore[] = [
-                            'support_ticket_id' => $supportTicket->id,
-                            'product_id' => $productId,
-                            'field_name' => $fieldName,
-                            'field_value' => $fieldValue,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
+                        SupportTicketCustomFieldValue::updateOrInsert(
+                            [
+                                'support_ticket_id' => $supportTicket->id,
+                                'product_id' => $productId,
+                                'field_name' => $fieldName
+                            ],
+                            [
+                                'field_value' => $fieldValue,
+                                'deleted_at' => null, // In case it was soft-deleted before
+                                'updated_at' => now(),
+                            ]
+                        );
                     }
                 }
 
-                if (!empty($customFieldValuesToStore)) {
-                    SupportTicketCustomFieldValue::insert($customFieldValuesToStore);
-                }
+                // if (!empty($customFieldValuesToStore)) {
+                //     SupportTicketCustomFieldValue::insert($customFieldValuesToStore);
+                // }
             }
             DB::commit();
 
@@ -341,6 +359,7 @@ class SupportTicketRepository
                 trans('message.support_ticket_update_msg')
             );
         } catch (Exception $ex) {
+            DB::rollBack();
             generateLogs('error', 'Error occurred while updating Support Ticket: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
