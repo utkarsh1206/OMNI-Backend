@@ -484,15 +484,14 @@ if (!function_exists('getRecordingFile')) {
     }
 }
 
-
 if (!function_exists('exportCsv')) {
     function exportCsv(array $headers, array $rows, string $filenamePrefix = 'export'): string
     {
-        $filename = $filenamePrefix . '_' . Str::random(10) . '.csv';
-        $directory = public_path('exports');
+        $filename = $filenamePrefix . '_' . now()->format('Ymd_His') . '.csv';
+        $directory = storage_path('app/public/exports');
 
-        if (!File::exists($directory)) {
-            File::makeDirectory($directory, 0777, true);
+        if (!file_exists($directory)) {
+            mkdir($directory, 0755, true);
         }
 
         $path = $directory . '/' . $filename;
@@ -504,6 +503,6 @@ if (!function_exists('exportCsv')) {
         }
         fclose($file);
 
-        return asset('exports/' . $filename);
+        return asset('storage/exports/' . $filename);
     }
 }

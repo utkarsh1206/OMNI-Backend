@@ -454,19 +454,6 @@ class UserRepository
 
     public function dcUserLogout($request)
     {
-        // Delete the matching live agent entry
-        $liveAgents = LiveAgents::where('extension', $request->extension)
-            ->get();
-
-        foreach ($liveAgents as $liveAgent) {
-            $liveAgent->bypassObserver = true;
-            $liveAgent->delete();
-            broadcast(new AgentForceLogout($liveAgent->user_id, $request->attributes->get('tenant_domain')));
-        }
-
-        
-
-
         try {
             $liveAgents = LiveAgents::where('extension', $request->extension)->get();
 
