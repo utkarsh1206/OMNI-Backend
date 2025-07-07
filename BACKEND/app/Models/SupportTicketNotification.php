@@ -44,4 +44,35 @@ class SupportTicketNotification extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function getFormattedCommentAttribute()
+    {
+        $comment = $this->attributes['comment'];
+
+        // Match pattern: Change ticket status|priority|type to: ID
+        if (preg_match('/Change ticket (status|priority|type) to:\s*(\d+)/i', $comment, $matches)) {
+            $field = strtolower($matches[1]);
+            $id = (int) $matches[2];
+            $name = null;
+
+            switch ($field) {
+                case 'status':
+                    $name = SupportTicketStatus::find($id)?->name;
+                    break;
+                case 'priority':
+                    $name = Priority::find($id)?->name;
+                    break;
+                case 'type':
+                    $name = TicketType::find($id)?->type;
+                    break;
+            }
+
+            if ($name) {
+                return "Change ticket {$field} to: {$name}";
+            }
+        }
+
+        // Fallback to original if no match
+        return $comment;
+    }
 }

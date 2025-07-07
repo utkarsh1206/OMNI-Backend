@@ -62,10 +62,21 @@ class DashboardRepository
             $totalContacts = Contact::count();
 
             // Tickets by status
-            $ticketsByStatus = SupportTicket::where($conditionalFilter)->select(DB::raw('default_status, COUNT(*) as count'))
-                ->groupBy('default_status')
+            $ticketsByStatus = SupportTicket::with('ticketStatus')
+                ->where($conditionalFilter)
                 ->get()
-                ->keyBy('default_status');
+                ->groupBy('default_status')
+                ->mapWithKeys(function ($tickets, $statusId) {
+                    $status = $tickets->first()->ticketStatus;
+
+                    return [
+                        optional($status)->name ?? 'Unknown' => [
+                            'status' => $statusId,
+                            'default_status' => optional($status)->name ?? 'Unknown',
+                            'count' => $tickets->count(),
+                        ]
+                    ];
+                });
 
             // Tickets by priority
             $ticketsByPriority = SupportTicket::with('priority')

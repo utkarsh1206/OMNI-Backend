@@ -15,7 +15,10 @@ use App\Mail\SendEmail;
 use App\Models\SmsTemplate;
 use App\Services\SmsService;
 use App\Models\MailTemplate;
+use App\Models\Priority;
 use App\Models\SupportTicketCustomFieldValue;
+use App\Models\SupportTicketStatus;
+use App\Models\TicketType;
 use Illuminate\Support\Facades\DB;
 
 class SupportTicketRepository
@@ -455,6 +458,32 @@ class SupportTicketRepository
                 (new TenantsResource($supportTicket))->toArray($request),
                 $ticketResponse
             );
+
+            $comment = $statusUpdateData['comment'] ?? '';  // Check if 'comment' exists in the data
+
+            if ($comment && preg_match('/Change ticket (status|priority|type) to:\s*(\d+)/i', $comment, $matches)) {
+                $field = strtolower($matches[1]);
+                $id = (int) $matches[2];
+                $name = null;
+
+                // Map ID to the name based on the field (status, priority, or type)
+                switch ($field) {
+                    case 'status':
+                        $name = SupportTicketStatus::find($id)?->name;
+                        break;
+                    case 'priority':
+                        $name = Priority::find($id)?->name;
+                        break;
+                    case 'type':
+                        $name = TicketType::find($id)?->type;
+                        break;
+                }
+
+                // If a name is found, update the comment
+                if ($name) {
+                    $statusUpdateData['comment'] = "Change ticket {$field} to: {$name}";
+                }
+            }
 
             // Return the response
             return $this->apiResponse->getResponseStructure(
