@@ -22,7 +22,12 @@ class SupportTicketNotificationRepository
             $supportTicketId = $request->query('supportticket_id');
             $notifications = SupportTicketNotification::where('support_ticket_id', $supportTicketId)
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->get()
+                ->map(function ($notification) {
+                    $notification->comment = $notification->formatted_comment;
+                    return $notification;
+                });
+            
             return $this->apiResponse->getResponseStructure(trans('message.success'), $notifications, trans('message.data_fetch'));
         } catch (Exception $e) {
             generateLogs('error', 'Error in Support Ticket Notification : ', $e->getMessage());
