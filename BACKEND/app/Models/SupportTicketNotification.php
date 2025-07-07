@@ -9,6 +9,10 @@ class SupportTicketNotification extends Model
 {
     use HasFactory;
 
+    protected $hidden = ['ticketStatus'];
+
+    protected $appends = ['status_name'];
+
     protected $fillable = [
         'type',
         'status',
@@ -85,5 +89,15 @@ class SupportTicketNotification extends Model
         }
 
         return $type;
+    }
+
+    public function ticketStatus()
+    {
+        return $this->belongsTo(SupportTicketStatus::class, 'status');
+    }
+
+    public function getStatusNameAttribute()
+    {
+        return $this->ticketStatus ? $this->ticketStatus->name : null;
     }
 }
