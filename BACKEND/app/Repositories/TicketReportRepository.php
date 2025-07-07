@@ -63,6 +63,8 @@ class TicketReportRepository
 
             $query = $this->applyFilters($query, $request, $payload);
 
+            $query->orderByDesc('id');
+
             if ($page == config('omni.ALL_PAGE')) {
                 $tickets = $query->get();
                 $formattedTickets = $this->formatTickets($tickets);

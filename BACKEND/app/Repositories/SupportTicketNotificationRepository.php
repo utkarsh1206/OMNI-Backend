@@ -25,6 +25,7 @@ class SupportTicketNotificationRepository
                 ->get()
                 ->map(function ($notification) {
                     $notification->comment = $notification->formatted_comment;
+                    $notification->type = $notification->formatted_type;
                     return $notification;
                 });
             
