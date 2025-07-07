@@ -39,15 +39,15 @@ class LoginRepository
     {
         // $permissionInfo = [];
         $domain = $request->input('domain');
-        if (in_array($validator["flag"], [1, 2, 3])) {
-            if (isLicenseExpired($request)) {
-                return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
-            }
+        // if (in_array($validator["flag"], [1, 2, 3])) {
+        //     if (isLicenseExpired($request)) {
+        //         return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
+        //     }
 
-            if (!$domain) {
-                return response()->json(['error' => trans('message.domain_required')], ResponseHTTP::HTTP_BAD_REQUEST);
-            }
-        }
+        //     if (!$domain) {
+        //         return response()->json(['error' => trans('message.domain_required')], ResponseHTTP::HTTP_BAD_REQUEST);
+        //     }
+        // }
 
         $credentials = request(['password']);
         // Determine whether the input is an email or username

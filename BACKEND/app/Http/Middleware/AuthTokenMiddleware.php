@@ -16,11 +16,6 @@ class AuthTokenMiddleware
     public function handle(Request $request, Closure $next)
     {
         try {
-            $header = $request->header('Token');
-            if (!$header) {
-                return response()->json(['error' =>  trans('message.token_missing')], ResponseHTTP::HTTP_UNAUTHORIZED);
-            }
-            
             $protectedPrefixes = [
                 'api/chatbot-room-id',
                 // 'api/call-initiate',
@@ -31,6 +26,9 @@ class AuthTokenMiddleware
             ];
 
             if (Str::startsWith(request()->path(), $protectedPrefixes)) {
+                if (!$request->header('Token')) {
+                    return response()->json(['error' =>  trans('message.token_missing')], ResponseHTTP::HTTP_UNAUTHORIZED);
+                }
                 $decrypted = Crypt::decryptString($request->header('Token'));
                 $parts = explode('+', $decrypted);
             
@@ -46,6 +44,9 @@ class AuthTokenMiddleware
                 }
                 $request->attributes->set('auth_token', $authToken);
                 $request->attributes->set('tenant_domain', $domain);
+            } else {
+                $uinId = $request->route('uinId');
+                getDbConnection($uinId->domain, true);
             }
             return $next($request);
         } catch (Exception $e) {

@@ -43,7 +43,7 @@ class DatabaseServiceProvider extends ServiceProvider
         $currentRoute = request()->path();
         $protectedPrefixes = [
             'api/chatbot-room-id',
-            // 'api/fetch-session-messages',
+            'api/fetch-session-messages',
             // 'api/call-initiate',
             // 'api/call-connected',
             // 'api/call-hangup',
