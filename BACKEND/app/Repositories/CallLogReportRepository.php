@@ -98,7 +98,7 @@ class CallLogReportRepository
 
         // If startDate and endDate are not provided, return null
         if (is_null($filters['startDate']) || is_null($filters['endDate'])) {
-           // return null;
+           return null;
         }
 
         $startDate = Carbon::parse($filters['startDate'])->toDateTimeString();
@@ -125,12 +125,12 @@ class CallLogReportRepository
                 'call_recording_url',
                 'custom_cdr_leads.lead_json',
             ])
-             ->leftJoin('custom_cdr_leads', 'custom_cdr_leads.call_unique_id', '=', 'neox_call_logs.call_unique_id')
-            ->where('type', 'call_history');
-         //   ->whereBetween('call_date', [$startDate, $endDate]);
-        // if ($user && $user->role_id == 3) {
-        //     $query->where('caller_username', $user->username);
-        // }
+            ->leftJoin('custom_cdr_leads', 'custom_cdr_leads.call_unique_id', '=', 'neox_call_logs.call_unique_id')
+            ->where('type', 'call_history')
+            ->whereBetween('call_date', [$startDate, $endDate]);
+            if ($user && $user->role_id == 3) {
+                $query->where('caller_username', $user->username);
+            }
 
         // Conditional ordering
         if ($applyOrderById) {
