@@ -105,7 +105,7 @@ class TicketReportRepository
             $tickets = $query->get();
 
             // Group by ticketType and calculate summary
-            $ticketTypeSummary = $tickets->groupBy(fn($ticket) => $ticket->ticketType?->type ?? '')
+            $ticketTypeSummary = $tickets->groupBy(fn($ticket) => $ticket->ticketType?->type ?? 'Unknown')
                 ->map(function ($group, $ticketTypeName) {
                     return [
                         'Ticket Type' => $ticketTypeName,
@@ -130,7 +130,7 @@ class TicketReportRepository
             $tickets = $query->get();
 
             // Group by priority name and count
-            $prioritySummary = $tickets->groupBy(fn($ticket) => $ticket->priority?->name ?? '')
+            $prioritySummary = $tickets->groupBy(fn($ticket) => $ticket->priority?->name ?? 'Unknown')
                 ->map(fn($group, $priorityName) => [
                     'Priority' => $priorityName,
                     'Total Tickets' => $group->count(),
@@ -152,7 +152,7 @@ class TicketReportRepository
 
             $statuses = $query->get();
 
-            $statusSummary = $statuses->groupBy(fn($status) => $status->ticketStatus?->name ?? '')
+            $statusSummary = $statuses->groupBy(fn($status) => $status->ticketStatus?->name ?? 'Unknown')
                 ->map(fn($group, $statusName) => [
                     'Status' => $statusName,
                     'Total Tickets' => $group->count(),
@@ -292,12 +292,12 @@ class TicketReportRepository
                 return [
                     $ticket->support_ticket_id,
                     $customerName,
-                    $ticket->ticketType->type ?? '',
-                    $ticket->priority->name ?? '',
-                    $ticket->ticketStatus->name ?? '',
+                    $ticket->ticketType->type ?? 'Unknown',
+                    $ticket->priority->name ?? 'Unknown',
+                    $ticket->ticketStatus->name ?? 'Unknown',
                     $ticket->created_at->format('Y-m-d H:i:s'),
                     $ticket->updated_at->format('Y-m-d H:i:s'),
-                    $ticket->assignedAgent->username ?? '',
+                    $ticket->assignedAgent->username ?? 'Unknown',
                     $resolveDateTime,
                     $ticket->description,
                     $ticket->is_escalated,
@@ -307,12 +307,12 @@ class TicketReportRepository
                     'id' => $ticket->id,
                     'ticketId' => $ticket->support_ticket_id,
                     'customerName' => $customerName,
-                    'ticketType' => $ticket->ticketType->type,
-                    'priority' => $ticket->priority->name,
-                    'status' => $ticket->ticketStatus->name ?? '',
+                    'ticketType' => $ticket->ticketType->type ?? 'Unknown',
+                    'priority' => $ticket->priority->name ?? 'Unknown',
+                    'status' => $ticket->ticketStatus->name ?? 'Unknown',
                     'createdDate' => $ticket->created_at->format('Y-m-d H:i:s'),
                     'lastUpdated' => $ticket->updated_at->format('Y-m-d H:i:s'),
-                    'assignedAgent' => $ticket->assignedAgent->username ?? '',
+                    'assignedAgent' => $ticket->assignedAgent->username ?? 'Unknown',
                     'resolutionTime' => $resolveDateTime,
                     'comments' => $ticket->description,
                     'escalation' => $ticket->is_escalated,
