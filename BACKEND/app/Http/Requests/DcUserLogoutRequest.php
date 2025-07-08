@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class DcUserLogoutRequest extends FormRequest
 {
@@ -40,9 +41,10 @@ class DcUserLogoutRequest extends FormRequest
     {
         throw new HttpResponseException(
             response()->json([
+                'code' => ResponseHTTP::HTTP_UNPROCESSABLE_ENTITY,
                 'error' => 'Validation failed',
                 'messages' => $validator->errors(),
-            ])
+            ], ResponseHTTP::HTTP_UNPROCESSABLE_ENTITY)
         );
     }
 }
