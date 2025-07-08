@@ -9,6 +9,10 @@ class SupportTicketNotification extends Model
 {
     use HasFactory;
 
+    protected $hidden = ['ticketStatus'];
+
+    protected $appends = ['status_name'];
+
     protected $fillable = [
         'type',
         'status',
@@ -74,5 +78,26 @@ class SupportTicketNotification extends Model
 
         // Fallback to original if no match
         return $comment;
+    }
+
+    public function getFormattedTypeAttribute()
+    {
+        $type = $this->attributes['type'];
+
+        if (is_numeric($type)) {
+            return SupportTicketStatus::find($type)?->name ?? $type;
+        }
+
+        return $type;
+    }
+
+    public function ticketStatus()
+    {
+        return $this->belongsTo(SupportTicketStatus::class, 'status');
+    }
+
+    public function getStatusNameAttribute()
+    {
+        return $this->ticketStatus ? $this->ticketStatus->name : null;
     }
 }

@@ -133,11 +133,11 @@ class SlaReportRepository
         return [
             'id' => $ticket->id,
             'ticket_id' => $ticket->ticket_id,
-            'ticketType' => $ticket->ticketType->type ?? '',
-            'priority' => $ticket->priority->name ?? '',
+            'ticketType' => $ticket->ticketType->type ?? 'Unknown',
+            'priority' => $ticket->priority->name ?? 'Unknown',
             'opened_date' => $ticket->opened_date,
             'sla_compliance' => $ticket->sla_compliance,
-            'user_name' => $ticket->user_name,
+            'user_name' => $ticket->user_name ?? 'Unknown',
             'incident_id' => $ticket->incident_id,
             'resolve_time_value' => $resolveTimeFormatted,
             'actual_resolved_time' => $ticket->actual_resolved_time,
@@ -149,7 +149,7 @@ class SlaReportRepository
     {
         try {
             $tickets = SupportTicket::select(
-                'priorities.name as priority',
+                DB::raw("IFNULL(priorities.name, 'Unknown') as priority"),
                 DB::raw("COUNT(*) as ticket_count")
             )
                 ->join('priorities', 'support_tickets.default_priority', '=', 'priorities.id')
@@ -173,7 +173,7 @@ class SlaReportRepository
     {
         try {
             $tickets = SupportTicket::select(
-                'ticket_types.type as ticketType',
+                DB::raw("IFNULL(ticket_types.type, 'Unknown') as ticketType"),
                 DB::raw("COUNT(*) as ticket_count")
             )
                 ->join('ticket_types', 'support_tickets.default_type', '=', 'ticket_types.id')
@@ -200,7 +200,7 @@ class SlaReportRepository
                 ->join('incident_types', 'support_tickets.incident_id', '=', 'incident_types.id')
                 ->select(
                     'support_tickets.incident_id',
-                    'incident_types.name as incident_name',
+                    DB::raw("IFNULL(incident_types.name, 'Unknown') as incident_name"),
                     DB::raw('COUNT(support_tickets.id) as ticket_count')
                 )
                 ->where('support_tickets.is_escalated', 'Yes')
@@ -259,10 +259,10 @@ class SlaReportRepository
                     $resolvedDate = $ticket->notifications->first()->resolved_date ?? null;
                     $openedDate = Carbon::parse($ticket->opened_date)->toDateTimeString();
                     $row = [
-                        $ticket->user_name,
+                        $ticket->user_name ?? 'Unknown',
                         $ticket->ticket_id,
-                        $ticket->ticketType->type ?? '',
-                        $ticket->priority->name ?? 'm',
+                        $ticket->ticketType->type ?? 'Unknown',
+                        $ticket->priority->name ?? 'Unknown',
                         $openedDate,
                         $resolvedDate ? Carbon::parse($resolvedDate)->toDateTimeString() : null,
                         $ticket->sla_compliance,
