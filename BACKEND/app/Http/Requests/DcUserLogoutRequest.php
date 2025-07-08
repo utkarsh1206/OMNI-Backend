@@ -25,6 +25,7 @@ class DcUserLogoutRequest extends FormRequest
     {
         return [
             'extension' => 'required',
+            'userid'=> 'required',
         ];
     }
 

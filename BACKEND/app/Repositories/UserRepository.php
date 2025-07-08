@@ -465,22 +465,20 @@ class UserRepository
                     broadcast(new AgentForceLogout($liveAgent->user_id, $request->attributes->get('tenant_domain')));
                 }
 
-                return $this->apiResponse->getResponseStructure(
-                trans('message.success'),
-                [
-                    'code' => ResponseHTTP::HTTP_OK,
-                    'message' => trans('message.agent_logout') ,
-                ],
-                trans('message.agent_logout')
+                return response()->json(
+                    [
+                        'code' => ResponseHTTP::HTTP_OK,
+                        'message' => trans('message.agent_logout'),
+                    ]
                 );
-            }    
-            return $this->apiResponse->getResponseStructure(
-                trans('message.error'),
+            }
+
+
+            return response()->json(
                 [
                     'code' => ResponseHTTP::HTTP_NOT_FOUND,
-                    'message' => trans('message.user_not_found') ,
-                ],
-                trans('message.record_not_found')
+                    'message' => trans('message.user_not_found'),
+                ]
             );
         } catch (Exception $e) {
             generateLogs('error', 'Error in change status Tenant : ', $e->getMessage());
