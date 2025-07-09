@@ -198,7 +198,9 @@ return [
     'tenant_inactive' => "Tenant is inactive please contact to administrator",
     'token_expired' => 'Token is expired. Please generate new token',
     'token_missing' => 'Token is missing',
-    'agent_logout' => 'Agent logged out successfully'
+    'agent_logout' => 'Agent logged out successfully',
+    // Report
+    'report_generated' => 'Report generated successfully',
 ]   
 ?>
 
