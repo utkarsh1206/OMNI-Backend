@@ -13,6 +13,7 @@ use App\Http\Response\CustomApiResponse;
 use App\Models\LiveAgents;
 use App\Models\Phone;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 /**
@@ -61,7 +62,7 @@ class LoginRepository
         } elseif ($validator['flag'] == 1 || $validator['flag'] == 3) {
             $token = authenticateUser($credentials, Users::class, 'api_users');
             $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
-            if($userData->status == "Inactive"){
+            if ($userData->status == "Inactive") {
                 return response()->json(['error' =>  trans('message.tenant_inactive')], ResponseHTTP::HTTP_UNAUTHORIZED);
             }
         } elseif ($validator['flag'] == 2) {
@@ -71,7 +72,7 @@ class LoginRepository
                 return response()->json(['error' =>  trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
             }
 
-            if($userData->status == "Inactive"){
+            if ($userData->status == "Inactive") {
                 return response()->json(['error' =>  trans('message.tenant_inactive')], ResponseHTTP::HTTP_UNAUTHORIZED);
             }
             $phoneData = $this->getPhoneData($request);
@@ -117,6 +118,16 @@ class LoginRepository
             "token" => $token,
             "permission" => $formattedPermissions
         ];
+
+        if ($domain) {
+            establishMasterConnection($domain, "omnichannel", "mysql");
+            $detail = DB::table('details')->where('domain', $domain)->first();
+            getdbConnection($domain, false);
+            if ($detail) {
+                $dataArr['uin'] = $detail->uin;
+            }
+        }
+
         return is_string($token) ? $this->apiResponse->getResponseStructure(trans('message.success'), $dataArr, trans('message.login')) : $token;
         // } catch (\Exception $ex) {
         //     generateLogs('error', 'Error during authentication: ', $ex->getMessage());
