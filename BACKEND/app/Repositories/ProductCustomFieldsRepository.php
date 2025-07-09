@@ -142,7 +142,7 @@ class ProductCustomFieldsRepository
                 'field_name' => 'required|string|max:255',
                 'field_label' => 'required|string|max:255',
                 'field_type' => ['required', Rule::in(
-                    ['text', 'select', 'multi', 'checkbox', 'radio', 'textarea', 'date']
+                    ['text', 'select', 'multi', 'checkbox', 'radio', 'textarea', 'date', 'number']
                 )],
                 'description' => 'nullable|string|max:500',
                 'options' => 'nullable|string',
