@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PermissionAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CountryController;
@@ -102,6 +103,7 @@ use App\Http\Controllers\Api\SuperAdminDashboardController;
 use App\Http\Controllers\Api\SupportTicketStatusController;
 use App\Http\Controllers\Api\TenantModuleController;
 use App\Http\Controllers\Api\TicketTypeController;
+use App\Http\Middleware\CheckPermissionMiddleware;
 
 require base_path('routes/externalUse.php');
 
@@ -143,7 +145,14 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
 
-    Route::apiResource('audit-logs', AuditController::class);
+    //Route::apiResource('audit-logs', AuditController::class);
+    $moduleId = getModuleId("audit_report");
+    Route::get('audit-logs', [AuditController::class, 'index'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::post('audit-logs', [AuditController::class, 'store'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::CREATE->value);
+    Route::get('audit-logs/{audit_log}', [AuditController::class, 'show'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::put('audit-logs/{audit_log}', [AuditController::class, 'update'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
+    Route::patch('audit-logs/{audit_log}', [AuditController::class, 'update'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
+    Route::delete('audit-logs/{audit_log}', [AuditController::class, 'destroy'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DELETE->value);
 
     Route::post('save-user-provider', [SmsProviderController::class, 'saveUserProvider']);  // not in frontend yet
 
@@ -175,7 +184,14 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::apiResource('api-configurations', ApiConfigurationController::class);
 
-    Route::apiResource('accounts', AccountController::class);
+    //Route::apiResource('accounts', AccountController::class);
+    $moduleId = getModuleId("accounts");
+    Route::get('accounts', [AccountController::class, 'index'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);;
+    Route::post('accounts', [AccountController::class, 'store'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::CREATE->value);
+    Route::get('accounts/{account}', [AccountController::class, 'show'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::put('accounts/{account}', [AccountController::class, 'update'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
+    Route::patch('accounts/{account}', [AccountController::class, 'update'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
+    Route::delete('accounts/{account}', [AccountController::class, 'destroy'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DELETE->value);
 
     Route::get('industry_type', [IndustryTypeController::class, 'index']);
 
@@ -191,9 +207,16 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('cities', [CityController::class, 'index']);
 
-    Route::apiResource('email-logs', EmailLogController::class);
-
-    Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv']);
+    $moduleId = getModuleId("email_logs");
+    
+  //  Route::apiResource('email-logs', EmailLogController::class);
+    Route::get('email-logs', [EmailLogController::class, 'index'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::post('email-logs', [EmailLogController::class, 'store'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::CREATE->value);
+    Route::get('email-logs/{email_log}', [EmailLogController::class, 'show'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::put('email-logs/{email_log}', [EmailLogController::class, 'update'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
+    Route::patch('email-logs/{email_log}', [EmailLogController::class, 'update'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
+    Route::delete('email-logs/{email_log}', [EmailLogController::class, 'destroy'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DELETE->value);
+    Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DOWNLOAD->value);
 
     Route::get('usersList', [UserListController::class, 'index']);
 
@@ -211,7 +234,18 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::post('insert-update-custom', [UpdateCustomFieldController::class, 'index']);
 
-    Route::apiResource('contacts', ContactController::class);
+    //Route::apiResource('contacts', ContactController::class);
+    $moduleId = getModuleId("contacts");
+    Route::get('contacts', [ContactController::class, 'index'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    // POST /contacts - Create a new contact
+    Route::post('contacts', [ContactController::class, 'store'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::CREATE->value);
+    // GET /contacts/{contact} - Show a specific contact
+    Route::get('contacts/{contact}', [ContactController::class, 'show'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    // PUT /contacts/{contact} - Update a contact completely
+    Route::put('contacts/{contact}', [ContactController::class, 'update'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
+    // PATCH /contacts/{contact} - Update a contact partially
+    Route::patch('contacts/{contact}', [ContactController::class, 'update'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
+    Route::delete('contacts/{contact}', [ContactController::class, 'destroy'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
 
     Route::get('agent-activity', [AgentActivityController::class, 'getAgentActivity']);
 
@@ -284,16 +318,26 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     // Support Ticket
     //Route::apiResource('support-ticket', SupportTicketController::class);
-    Route::apiResource('support-ticket', SupportTicketController::class)->except(['update']);
-    Route::post('support-ticket/{support_ticket}', [SupportTicketController::class, 'update']);
-    Route::post('update-ticket-status/{supportticket}', [SupportTicketController::class, 'statusUpdate']);
+    $moduleId = getModuleId("support_tickets");
+    Route::get('support-ticket', [SupportTicketController::class, 'index'])
+        ->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::post('support-ticket', [SupportTicketController::class, 'store'])
+        ->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::CREATE->value);
+    Route::get('support-ticket/{support_ticket}', [SupportTicketController::class, 'show'])
+         ->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::delete('support-ticket/{support_ticket}', [SupportTicketController::class, 'destroy'])
+       ->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DELETE->value);
+    // Route::apiResource('support-ticket', SupportTicketController::class)->except(['update']);
+    Route::post('support-ticket/{support_ticket}', [SupportTicketController::class, 'update'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
+    Route::post('update-ticket-status/{supportticket}', [SupportTicketController::class, 'statusUpdate'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
     Route::post('transfer', [SupportTicketTransferController::class, 'store']);
     Route::post('merge', [SupportTicketMergeController::class, 'store']);
     Route::get('notification', [SupportTicketNotificationController::class, 'index']);
 
     // Ticket Report
-    Route::get('ticketReport', [TicketReportController::class, 'ticketReport']);
-    Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv']);
+    $moduleId = getModuleId("ticket_report");
+    Route::get('ticketReport', [TicketReportController::class, 'ticketReport'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DOWNLOAD->value);
 
     Route::prefix('/ticket/summary')->group(function () {
         Route::get('ticket-type', [TicketReportController::class, 'ticketTypeSummary']);
@@ -306,11 +350,12 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('sla-settings', SlaSettingController::class);
 
     // SLA Report
-    Route::get('slareport', [SlaReportController::class, 'generateReport']);
-    Route::get('slareport/csv', [SlaReportController::class, 'exportCsv']);
-    Route::get('sla-priority', [SlaReportController::class, 'prioritySLA']);
-    Route::get('sla-ticket-type', [SlaReportController::class, 'ticketTypeSLA']);
-    Route::get('sla-incident', [SlaReportController::class, 'incidentSLA']);
+    $moduleId = getModuleId("sla_report");
+    Route::get('slareport', [SlaReportController::class, 'generateReport'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::get('slareport/csv', [SlaReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DOWNLOAD->value);
+    Route::get('sla-priority', [SlaReportController::class, 'prioritySLA'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::get('sla-ticket-type', [SlaReportController::class, 'ticketTypeSLA'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::get('sla-incident', [SlaReportController::class, 'incidentSLA'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
 
     Route::apiResource('neox-configurations', NeoxConfigurationController::class);
 
@@ -341,29 +386,32 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('get-messages', [UserMessageController::class, 'getMessages']);
     Route::post('send-message', [UserMessageController::class, 'storeMessage']);
 
-    Route::get('get-agent-status', [AgentMessageController::class, 'getStatus']);
-    Route::get('get-agent-messages/{agent_id}', [AgentMessageController::class, 'getMessages']);
-    Route::post('send-agent-messages', [AgentMessageController::class, 'storeMessage']);
-    Route::post('last-read-message', [AgentMessageController::class, 'lastReadMessage']);
+    $moduleId = getModuleId("agent_chat");
+    Route::get('get-agent-status', [AgentMessageController::class, 'getStatus'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::get('get-agent-messages/{agent_id}', [AgentMessageController::class, 'getMessages'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+    Route::post('send-agent-messages', [AgentMessageController::class, 'storeMessage'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
+    Route::post('last-read-message', [AgentMessageController::class, 'lastReadMessage'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
 
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::get('neox-call-incoming', [IncomingCallController::class, 'checkIncoming']);
     });
 
     Route::prefix('call-log-report')->group(function () {
-        Route::get('list', [CallLogReportController::class, 'list']);
-        Route::get('csv', [CallLogReportController::class, 'exportCsv']);
-        Route::get('chart-summary', [CallLogReportController::class, 'getChartSummary']);
-        Route::get('status-summary', [CallLogReportController::class, 'getStatusSummary']);
-        Route::get('usergroup-summary', [CallLogReportController::class, 'getByUserGroup']);
-        Route::get('user-summary', [CallLogReportController::class, 'getCallsByAgent']);
+        $moduleId = getModuleId("call_log_report");
+        Route::get('list', [CallLogReportController::class, 'list'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+        Route::get('csv', [CallLogReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DOWNLOAD->value);
+        Route::get('chart-summary', [CallLogReportController::class, 'getChartSummary'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+        Route::get('status-summary', [CallLogReportController::class, 'getStatusSummary'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+        Route::get('usergroup-summary', [CallLogReportController::class, 'getByUserGroup'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+        Route::get('user-summary', [CallLogReportController::class, 'getCallsByAgent'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
     });
 
     Route::prefix('user-activity-report')->group(function () {
-        Route::get('list', [UserActivityReportController::class, 'list']);
-        Route::get('user-activity', [UserActivityReportController::class, 'userActivity']);
-        Route::get('csv', [UserActivityReportController::class, 'exportCsv']);
-        Route::get('graph', [UserActivityReportController::class, 'graphData']);
+        $moduleId = getModuleId("user_activity_report");
+        Route::get('list', [UserActivityReportController::class, 'list'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+        Route::get('user-activity', [UserActivityReportController::class, 'userActivity'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
+        Route::get('csv', [UserActivityReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DOWNLOAD->value);
+        Route::get('graph', [UserActivityReportController::class, 'graphData'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
     });
 
     Route::prefix('evaluation')->group(function () {

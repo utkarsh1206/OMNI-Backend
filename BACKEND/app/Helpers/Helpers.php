@@ -4,12 +4,14 @@ use App\Models\EmailLog;
 use App\Models\EmailConfigure;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\LicenseController;
+use App\Models\Module;
 use App\Services\AESService;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Illuminate\Support\Facades\Http;
 use App\Models\NeoxConfiguration;
 use App\Models\Permission;
 use App\Models\RolePermission;
+use App\Models\TenantModule;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -504,5 +506,18 @@ if (!function_exists('exportCsv')) {
         fclose($file);
 
         return asset('storage/exports/' . $filename);
+    }
+}
+
+if (! function_exists('getModuleId')) {
+    function getModuleId($moduleName)
+    {
+        $authUser = auth()->user();
+        if(isset($authUser->user_role_id))
+        {
+            $moduleInfo = TenantModule::where("name",$moduleName)->first();
+             return $moduleInfo->id ?? 0 ;
+        }
+        return 0;
     }
 }

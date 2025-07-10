@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -20,6 +21,13 @@ class CheckPermissionMiddleware
      */
     public function handle(Request $request, Closure $next, $moduleId, $actionId)
     {
+        $token = $request->bearerToken();
+        $payload = extractPayload($token);
+
+        if ($payload["admin_type"] == "Super") {
+            return $next($request);
+        }
+
         $roleId = auth()->user()?->user_role_id;
 
         if (!$roleId) {
