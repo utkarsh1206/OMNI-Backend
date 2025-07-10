@@ -70,7 +70,8 @@ class MailDetailRepository
         // Store the mail detail
         $mailDetail = MailDetail::create([
             'supportticket_id' => $request->supportticket_id,
-            'date' => gmdate('Y-m-d H:i:s'),
+            // 'date' => gmdate('Y-m-d H:i:s'),
+            'date' => date('Y-m-d H:i:s'),
             'user_id' => $request->user_id,
             'type' => $request->default_type,
             'priority' => $request->default_priority,

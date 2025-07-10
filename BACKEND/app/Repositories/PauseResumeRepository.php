@@ -38,7 +38,7 @@ class PauseResumeRepository
 
             return $logEntry;
         } catch (Exception $e) {
-            generateLogs('error', 'Error in Occupation List : ', $e->getMessage());
+            generateLogs('error', 'Error in Pause/Resume API : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

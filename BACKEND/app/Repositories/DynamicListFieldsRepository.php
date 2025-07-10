@@ -140,7 +140,7 @@ class DynamicListFieldsRepository
             'list_id' => ['required', Rule::exists('ecdial_lists', 'list_id')],
             'field_name' => ['required', 'string', 'max:255'],
             'field_label' => ['required', 'string', 'max:255'],
-            'field_type' => ['required', Rule::in(['text', 'select', 'multi', 'checkbox', 'radio', 'textarea', 'date'])],
+            'field_type' => ['required', Rule::in(['text', 'select', 'multi', 'checkbox', 'radio', 'textarea', 'date', 'number'])],
             'description' => ['nullable', 'string', 'max:255'],
             'options' => ['nullable', 'string', 'max:255'],
             'mandatory' => ['required', Rule::in(['Y', 'N'])],
