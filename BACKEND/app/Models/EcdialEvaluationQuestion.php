@@ -11,6 +11,7 @@ class EcdialEvaluationQuestion extends Model
         'question_type',
         'answers',
         'status',
+        'usage_type',
         'created_by',
         'updated_by'
     ];

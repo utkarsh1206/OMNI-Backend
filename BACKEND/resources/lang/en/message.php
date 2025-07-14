@@ -201,6 +201,9 @@ return [
     'agent_logout' => 'Agent logged out successfully',
     // Report
     'report_generated' => 'Report generated successfully',
+    'question_usage_type_created' => 'Question usage type created successfully.',
+    'question_usage_type_updated' => 'Question usage type updated successfully.',
+    'question_usage_type_deleted' => 'Question usage type deleted successfully.',
 ]   
 ?>
 
