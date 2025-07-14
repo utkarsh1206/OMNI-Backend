@@ -2,15 +2,19 @@
 
 namespace App\Repositories;
 
+use App\Models\LiveAgentDailyMetric;
 use App\Models\LiveAgents;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class LiveAgentRepository
 {
     public function list(Request $request)
     {
+        $this->refreshLoginTimesForToday();
+
         $query = LiveAgents::query()->with(['user', 'ingroup']);
 
         $searchTerm = $request->input('search', '');
@@ -67,11 +71,17 @@ class LiveAgentRepository
             'rank' => 'nullable|integer',
         ]);
 
-        return LiveAgents::create($data);
+        $agent = LiveAgents::create($data);
+
+        $this->refreshLoginTimesForToday();
+
+        return $agent;
     }
 
     public function show($id)
     {
+        $this->refreshLoginTimesForToday();
+
         return LiveAgents::with(['campaign', 'ingroup'])->findOrFail($id);
     }
 
@@ -89,7 +99,10 @@ class LiveAgentRepository
         ]);
 
         $liveAgent = LiveAgents::findOrFail($id);
+
         $liveAgent->update($validated);
+
+        $this->refreshLoginTimesForToday();
 
         return $liveAgent;
     }
@@ -100,5 +113,29 @@ class LiveAgentRepository
         $liveAgent->delete();
 
         return ['message' => 'Live agent record deleted successfully'];
+    }
+
+    public function refreshLoginTimesForToday()
+    {
+        $today = now()->toDateString();
+
+        $stats = DB::table('user_login_logs')
+            ->select(
+                'user_id',
+                'login_date',
+                DB::raw("SUM(TIMESTAMPDIFF(SECOND, CONCAT(login_date, ' ', login_time), CONCAT(logout_date, ' ', logout_time))) as total_seconds")
+            )
+            ->whereDate('login_date', $today)
+            ->whereNotNull('logout_time')
+            ->groupBy('login_date', 'user_id')
+            ->get();
+
+        foreach ($stats as $stat) {
+            LiveAgentDailyMetric::updateOrCreate(
+                ['user_id' => $stat->user_id, 'date' => $stat->login_date],
+                ['login_seconds' => $stat->total_seconds]
+            );
+        }
+        // return ['message' => 'Login durations updated for all users.'];
     }
 }

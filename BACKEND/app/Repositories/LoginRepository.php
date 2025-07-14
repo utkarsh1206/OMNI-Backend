@@ -68,7 +68,7 @@ class LoginRepository
         } elseif ($validator['flag'] == 2) {
             $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
             if (!$userData) {
-                generateLogs('error', 'User not found or deleted credentials : ', $credentials);
+                // generateLogs('error', 'User not found or deleted credentials : ' . $credentials);
                 return response()->json(['error' =>  trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
             }
 
@@ -92,6 +92,7 @@ class LoginRepository
 
                 // Set the flag to include phone in JWT
                 $userData->setAddPhoneToJWT($validator['flag']);
+                generateLogs('info', 'User data with phone: ' . json_encode($userData));
                 $token = JWTAuth::attempt($credentials);
                 if ($userData['role_id'] == 3) {
                     $timeNow = Carbon::now();
@@ -106,7 +107,7 @@ class LoginRepository
                     ]);
                 }
             } else {
-                generateLogs('error', 'Unauthorized: Invalid credentials userData: ', $userData);
+                generateLogs('error', 'Unauthorized: Invalid credentials userData: ' . json_encode($userData));
                 return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
             }
         }
