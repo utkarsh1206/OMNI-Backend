@@ -19,7 +19,7 @@ class ProductCustomFieldRequest extends FormRequest
             'field_label' => ['required', 'string', 'max:255'],
             'field_type' => [
                 'required',
-                Rule::in(['text', 'select', 'multi', 'checkbox', 'radio', 'textarea', 'date'])
+                Rule::in(['text', 'select', 'multi', 'checkbox', 'radio', 'textarea', 'date', 'number'])
             ],
             'description' => ['nullable', 'string', 'max:255'],
             'options' => ['nullable', 'string', 'max:255'],

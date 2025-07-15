@@ -15,7 +15,11 @@ use App\Mail\SendEmail;
 use App\Models\SmsTemplate;
 use App\Services\SmsService;
 use App\Models\MailTemplate;
+use App\Models\Priority;
 use App\Models\SupportTicketCustomFieldValue;
+use App\Models\SupportTicketStatus;
+use App\Models\TicketType;
+use Illuminate\Support\Facades\DB;
 
 class SupportTicketRepository
 {
@@ -54,29 +58,12 @@ class SupportTicketRepository
                 $userId = $payload['id'];
             }
 
-            // $query = SupportTicket::query()
-            //     ->with([
-            //         // 'product:id,name',
-            //         'priority:id,name',
-            //         'ticketType:id,type',
-            //         'department:id,name',
-            //         'contact:id,first_name,last_name',
-            //         'assignedAgent:id,username',
-            //         // 'account:id,name',
-            //         'incidentType:id,name',
-            //         // 'usergroup:id,name'
-            //     ]);
-
-            $query = SupportTicket::query()->with(
-                [
-                    'department',
-                    'priority:id,name',
-                    'ticketType:id,type',
-                    'ticketStatus:id,name',
-                    'product:id,name',
-                    'supportTicketCustomFieldValues.productCustomField',
-                ]
-            );
+            $query = SupportTicket::query()->with([
+                'department',
+                'priority:id,name',
+                'ticketType:id,type',
+                'ticketStatus:id,name'
+            ]);
 
             if (isset($roleId) && $roleId == 3) {
                 $query->where('assign_to_id', $userId);
@@ -88,15 +75,6 @@ class SupportTicketRepository
                     $q->where('support_ticket_id', 'like', "%{$searchTerm}%")
                         ->orWhere('subject', 'like', "%{$searchTerm}%")
                         ->orWhere('description', 'like', "%{$searchTerm}%")
-                        // ->orWhereHas('product', function ($subQ) use ($searchTerm) {
-                        //     $subQ->where('name', 'like', "%{$searchTerm}%");
-                        // })
-                        // ->orWhereHas('priority', function ($subQ) use ($searchTerm) {
-                        //     $subQ->where('name', 'like', "%{$searchTerm}%");
-                        // })
-                        // ->orWhereHas('ticketType', function ($subQ) use ($searchTerm) {
-                        //     $subQ->where('type', 'like', "%{$searchTerm}%");
-                        // })
                         ->orWhereHas('assignedAgent', function ($subQ) use ($searchTerm) {
                             $subQ->where('first_name', 'like', "%{$searchTerm}%")
                                 ->orWhere('last_name', 'like', "%{$searchTerm}%")
@@ -106,66 +84,11 @@ class SupportTicketRepository
                             $subQ->where('first_name', 'like', "%{$searchTerm}%")
                                 ->orWhere('last_name', 'like', "%{$searchTerm}%")
                                 ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$searchTerm}%"]);
-                        })
-                        // --- START: Search in Custom Fields ---
-                        ->orWhereHas('supportTicketCustomFieldValues', function ($subQ) use ($searchTerm) {
-                            $subQ->where('field_value', 'like', "%{$searchTerm}%")
-                                ->whereHas('productCustomField', function ($fieldQ) {
-                                    $fieldQ->where('search_filter', 'Y');
-                                });
                         });
                 });
             }
 
             // ✅ ADVANCED FILTERS
-            // if (!empty($filters['support_ticket_id'])) {
-            //     $query->where('ticket_id', 'like', "%{$filters['support_ticket_id']}%");
-            // }
-
-            // if (!empty($filters['product_id'])) {
-            //     $query->where('product_id', $filters['product_id']);
-            // }
-
-            // if (!empty($filters['subject'])) {
-            //     $query->where('subject', 'like', "%{$filters['subject']}%");
-            // }
-
-            // if (!empty($filters['type'])) {
-            //     $query->where('default_type', $filters['type']);
-            // }
-
-            // if (!empty($filters['status'])) {
-            //     $query->where('default_status', $filters['status']);
-            // }
-
-            // if (!empty($filters['priority'])) {
-            //     $query->where('default_priority', $filters['priority']);
-            // }
-
-            // if (!empty($filters['assign_to_id'])) {
-            //     $query->where('assign_to_id', $filters['assign_to_id']);
-            // }
-
-            // if (!empty($filters['contact_number'])) {
-            //     $query->where('contact_number', 'like', "%{$filters['contact_number']}%");
-            // }
-
-            // // if (!empty($filters['usergroup_id'])) {
-            // //     $query->where('usergroup_id', $filters['usergroup_id']);
-            // // }
-
-            // if (!empty($filters['department_id'])) {
-            //     $query->where('department_id', $filters['department_id']);
-            // }
-
-            // if (!empty($filters['account_id'])) {
-            //     $query->where('account_id', $filters['account_id']);
-            // }
-
-            // if (!empty($filters['incident_id'])) {
-            //     $query->where('incident_id', $filters['incident_id']);
-            // }
-
             foreach ($filters as $key => $value) {
                 if (!empty($value)) {
                     // Handle specific column names if different from filter key
@@ -242,17 +165,12 @@ class SupportTicketRepository
          *   "product_id": 123,
          *   "subject": "Issue with product X",
          *   "description": "...",
-         *   "custom_fields": {
-         *           "order_number": "XYZ789",
-         *           "customer_feedback": "Very satisfied with the quick r*esponse.",
-         *           "delivery_date": "2025-07-15"
-         *           ...
-         *       }
+         *   "custom_fields": '{"First Name 2 part 2":"utkarsh 4","Last Name 2 part 2":"rokade 4"}'
          *   }
          */
         try {
             $apiUser = auth()->user();
-
+            DB::beginTransaction();
             // Handle file attachments
             [$attachment_urls, $mail_attachment_urls] = $this->processAttachments($request);
 
@@ -260,15 +178,32 @@ class SupportTicketRepository
             $builtTicketData = $this->buildTicketData($request, $attachment_urls);
             $supportTicket = SupportTicket::create($builtTicketData);
             $supportTicketId = $builtTicketData['support_ticket_id'];
-
-            if ($request->has('custom_fields') && is_array($request->custom_fields)) {
+            $customFieldsData = [];
+            if ($request->has('custom_fields') && is_string($request->input('custom_fields'))) {
+                $decodedCustomFields = json_decode(
+                    $request->input('custom_fields'),
+                    true
+                );
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decodedCustomFields)) {
+                    $customFieldsData = $decodedCustomFields;
+                } else {
+                    generateLogs('error', 'Invalid JSON for custom_fields: ' . $request->input('custom_fields'));
+                    return $this->apiResponse->getResponseStructure(
+                        trans('message.validation_error'),
+                        ['custom_fields' => ['Invalid JSON format for custom_fields.']],
+                        trans('message.validation_error_message'),
+                        422
+                    );
+                }
+            }
+            // if ($request->has('custom_fields') && is_array($request->custom_fields)) {
+            if (!empty($customFieldsData)) {
                 $customFieldValuesToStore = [];
                 $productId = $supportTicket->product_id;
 
-                foreach ($request->custom_fields as $fieldName => $fieldValue) {
+                // foreach ($request->custom_fields as $fieldName => $fieldValue) {
+                foreach ($customFieldsData as $fieldName => $fieldValue) {
                     if (is_string($fieldName)) {
-                        // $preparedFieldValue = is_array($fieldValue) ? json_encode($fieldValue) : $fieldValue;
-
                         $customFieldValuesToStore[] = [
                             'support_ticket_id' => $supportTicket->id,
                             'product_id' => $productId,
@@ -281,10 +216,11 @@ class SupportTicketRepository
                 }
 
                 if (!empty($customFieldValuesToStore)) {
-                    // Insert all custom field values in a single batch for efficiency
                     SupportTicketCustomFieldValue::insert($customFieldValuesToStore);
                 }
             }
+
+            DB::commit();
 
             $mailTemplate = MailTemplate::where('type', 'created_ticket')->first();
             if ($mailTemplate) {
@@ -300,15 +236,31 @@ class SupportTicketRepository
             }
 
             // Create mail details
-            MailDetail::create($this->buildMailData($request, $apiUser, $attachment_urls, $supportTicketId, $mailTemplate));
+            MailDetail::create($this->buildMailData(
+                $request,
+                $apiUser,
+                $attachment_urls,
+                $supportTicketId,
+                $mailTemplate
+            ));
 
             // Log ticket creation
-            $this->createTicket($supportTicket, "Ticket Created", $apiUser->first_name . " " . $apiUser->last_name . " has created the ticket", $apiUser);
+            $this->createTicket(
+                $supportTicket,
+                "Ticket Created",
+                $apiUser->first_name . " " . $apiUser->last_name . " has created the ticket",
+                $apiUser
+            );
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
             $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0);
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.support_ticket_create_msg'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $supportTicket,
+                trans('message.support_ticket_create_msg')
+            );
         } catch (Exception $ex) {
+            DB::rollBack();
             generateLogs('error', 'Error occurred while creating Support Ticket: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
@@ -316,6 +268,7 @@ class SupportTicketRepository
 
     public function update(Request $request, SupportTicket $supportTicket)
     {
+        DB::beginTransaction();
         try {
             $apiUser = auth()->user();
 
@@ -330,38 +283,86 @@ class SupportTicketRepository
 
             $supportTicket->update($updateData);
 
-            SupportTicketCustomFieldValue::where('support_ticket_id', $supportTicket->id)->delete();
+            // Decode custom_fields consistently with the store method
+            $customFieldsData = [];
+            if ($request->has('custom_fields') && is_string($request->input('custom_fields'))) {
+                $decodedCustomFields = json_decode(
+                    $request->input('custom_fields'),
+                    true
+                );
 
-            if ($request->has('custom_fields') && is_array($request->custom_fields)) {
-                $customFieldValuesToStore = [];
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decodedCustomFields)) {
+                    $customFieldsData = $decodedCustomFields;
+                } else {
+                    generateLogs('error', 'Invalid JSON for custom_fields: ' . $request->input('custom_fields'));
+                    DB::rollBack();
+                    return $this->apiResponse->getResponseStructure(
+                        trans('message.validation_error'),
+                        ['custom_fields' => ['Invalid JSON format for custom_fields.']],
+                        trans('message.validation_error_message'),
+                        422
+                    );
+                }
+            }
+
+            // SupportTicketCustomFieldValue::where('support_ticket_id', $supportTicket->id)->delete();
+
+            // if ($request->has('custom_fields') && is_array($request->custom_fields)) {
+            if (!empty($customFieldsData)) {
+                // $customFieldValuesToStore = [];
                 // Get the current product_id from the *updated* support ticket
                 $productId = $supportTicket->product_id;
 
-                foreach ($request->custom_fields as $fieldName => $fieldValue) {
+                // foreach ($request->custom_fields as $fieldName => $fieldValue) {
+                // foreach ($customFieldsData as $fieldName => $fieldValue) {
+
+                //     if (is_string($fieldName)) {
+                //         $customFieldValuesToStore[] = [
+                //             'support_ticket_id' => $supportTicket->id,
+                //             'product_id' => $productId,
+                //             'field_name' => $fieldName,
+                //             'field_value' => $fieldValue,
+                //             'created_at' => now(),
+                //             'updated_at' => now(),
+                //         ];
+                //     }
+                // }
+
+                foreach ($customFieldsData as $fieldName => $fieldValue) {
                     if (is_string($fieldName)) {
-                        $customFieldValuesToStore[] = [
-                            'support_ticket_id' => $supportTicket->id,
-                            'product_id' => $productId,
-                            'field_name' => $fieldName,
-                            'field_value' => $fieldValue, // Model's mutator handles serialization if needed
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
+                        SupportTicketCustomFieldValue::updateOrInsert(
+                            [
+                                'support_ticket_id' => $supportTicket->id,
+                                'product_id' => $productId,
+                                'field_name' => $fieldName
+                            ],
+                            [
+                                'field_value' => $fieldValue,
+                                'deleted_at' => null, // In case it was soft-deleted before
+                                'updated_at' => now(),
+                            ]
+                        );
                     }
                 }
 
-                if (!empty($customFieldValuesToStore)) {
-                    SupportTicketCustomFieldValue::insert($customFieldValuesToStore);
-                }
+                // if (!empty($customFieldValuesToStore)) {
+                //     SupportTicketCustomFieldValue::insert($customFieldValuesToStore);
+                // }
             }
+            DB::commit();
 
             $this->createTicket($supportTicket, $request->default_status ?? "", "Edit Support Ticket", $apiUser);
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
 
             $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0);
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.support_ticket_update_msg'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $supportTicket,
+                trans('message.support_ticket_update_msg')
+            );
         } catch (Exception $ex) {
+            DB::rollBack();
             generateLogs('error', 'Error occurred while updating Support Ticket: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
@@ -372,7 +373,11 @@ class SupportTicketRepository
         try {
             $supportTicket->delete();
             // Return the response
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.support_ticket_delete_msg'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $supportTicket,
+                trans('message.support_ticket_delete_msg')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error occurred while deleting  Support Tickets : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -383,9 +388,12 @@ class SupportTicketRepository
     {
         try {
             // $response = new TenantsResource($supportTicket);
-            $supportTicket->load('supportTicketCustomFieldValues.productCustomField');
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $supportTicket, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $supportTicket,
+                trans('message.data_fetch')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error fetching SLA setting : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -451,8 +459,38 @@ class SupportTicketRepository
                 $ticketResponse
             );
 
+            $comment = $statusUpdateData['comment'] ?? '';  // Check if 'comment' exists in the data
+
+            if ($comment && preg_match('/Change ticket (status|priority|type) to:\s*(\d+)/i', $comment, $matches)) {
+                $field = strtolower($matches[1]);
+                $id = (int) $matches[2];
+                $name = null;
+
+                // Map ID to the name based on the field (status, priority, or type)
+                switch ($field) {
+                    case 'status':
+                        $name = SupportTicketStatus::find($id)?->name;
+                        break;
+                    case 'priority':
+                        $name = Priority::find($id)?->name;
+                        break;
+                    case 'type':
+                        $name = TicketType::find($id)?->type;
+                        break;
+                }
+
+                // If a name is found, update the comment
+                if ($name) {
+                    $statusUpdateData['comment'] = "Change ticket {$field} to: {$name}";
+                }
+            }
+
             // Return the response
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $statusUpdateData, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $statusUpdateData,
+                trans('message.data_fetch')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error fetching Support Tickets : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -561,8 +599,13 @@ class SupportTicketRepository
         ];
     }
 
-    private function sendSupportEmail(Request $request, array $mail_attachment_urls, int $ticketId, int $assignToId, array $mailTemplate = null)
-    {
+    private function sendSupportEmail(
+        Request $request,
+        array $mail_attachment_urls,
+        int $ticketId,
+        int $assignToId,
+        array $mailTemplate = null
+    ) {
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         if (isset($emailConfig) && !empty($emailConfig)) {
             setEmailConfig();

@@ -30,15 +30,32 @@ class PauseResumeRepository
                 ->first();
 
             if ($liveAgent) {
+                // $previousStatus = $liveAgent->status;
+                // $lastUpdated = $liveAgent->status_last_updated_at;
+
+                // if ($previousStatus && $lastUpdated) {
+                //     // $duration = Carbon::now()->diffInSeconds($lastUpdated);
+                //     $duration = $lastUpdated->diffInSeconds(Carbon::now());
+
+                //     if (strtolower($previousStatus) === 'pause') {
+                //         $liveAgent->pause_seconds += $duration;
+                //     } elseif (strtolower($previousStatus) === 'resume') {
+                //         $liveAgent->ready_seconds += $duration;
+                //     }
+                // }
+
+                // if ($liveAgent->isDirty('status')) {
+                //     $liveAgent->status_last_updated_at = now();
+                // }
                 $liveAgent->status = $action;
-                $liveAgent->save(); 
+                $liveAgent->save();
             }
 
             $this->handleActivityLogging($userId, $campaignId, $action, $pauseCode, $logEntry);
 
             return $logEntry;
         } catch (Exception $e) {
-            generateLogs('error', 'Error in Occupation List : ', $e->getMessage());
+            generateLogs('error', 'Error in Pause/Resume API : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }

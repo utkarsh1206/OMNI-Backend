@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\EvaluationQuestionUsageType;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -38,18 +39,19 @@ class EvaluationQuestionRequest extends FormRequest
                 'array',
                 function ($attribute, $value, $fail) {
                     $type = $this->input('question_type');
-    
+
                     if (in_array($type, ['RADIO', 'DROPDOWN', 'MULTI']) && empty($value)) {
                         $fail('The answers field is required when question type is RADIO, DROPDOWN, or MULTI.');
                     }
-    
+
                     if ($type === 'TEXT' && !empty($value)) {
                         $fail('The answers field must be empty when question type is TEXT.');
                     }
                 }
             ],
             'answers.*' => 'string',
-            'status' => 'sometimes|string|in:active,inactive'
+            'status' => 'sometimes|string|in:active,inactive',
+            'usage_type' => 'required',
         ];
     }
 

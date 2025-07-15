@@ -195,7 +195,15 @@ return [
     'status_updated' => 'Status updated successfully.',
     'status_deleted' => 'Status deleted successfully.',
     'user_limit_exceeds'=>"User limit exceeds",
-    'tenant_inactive'=>"Tenant is inactive please contact to administrator",
+    'tenant_inactive' => "Tenant is inactive please contact to administrator",
+    'token_expired' => 'Token is expired. Please generate new token',
+    'token_missing' => 'Token is missing',
+    'agent_logout' => 'Agent logged out successfully',
+    // Report
+    'report_generated' => 'Report generated successfully',
+    'question_usage_type_created' => 'Question usage type created successfully.',
+    'question_usage_type_updated' => 'Question usage type updated successfully.',
+    'question_usage_type_deleted' => 'Question usage type deleted successfully.',
 ]   
 ?>
 

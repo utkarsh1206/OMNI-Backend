@@ -9,6 +9,9 @@ class MailDetail extends Model
 {
     use HasFactory;
 
+    protected $appends = ['status_name', 'priority_name'];
+    protected $hidden = ['priorityData', 'ticketStatus'];
+
     // Add table name if it doesn't follow the default naming convention
     protected $fillable = [
         'date',
@@ -23,4 +26,24 @@ class MailDetail extends Model
         'attachment',
         'supportticket_id'
     ];
+
+    public function priorityData()
+    {
+        return $this->belongsTo(Priority::class, 'priority', 'id');
+    }
+
+    public function ticketStatus()
+    {
+        return $this->belongsTo(SupportTicketStatus::class, 'status', 'id');
+    }
+
+    public function getStatusNameAttribute()
+    {
+        return $this->ticketStatus?->name;
+    }
+
+    public function getPriorityNameAttribute()
+    {
+        return $this->priorityData?->name;
+    }
 }
