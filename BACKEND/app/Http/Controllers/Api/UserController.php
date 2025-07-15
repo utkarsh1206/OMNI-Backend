@@ -387,7 +387,6 @@ class UserController extends Controller
         return $this->userRepository->show($user);
     }
 
-
     /**
      * @OA\Put(
      *     path="/users/update/{user}",
@@ -964,7 +963,6 @@ class UserController extends Controller
         return $this->userRepository->getBranding($request);
     }
 
-
     /**
      * @OA\Post(
      *     path="/api/check-user-limit",
@@ -1044,8 +1042,8 @@ class UserController extends Controller
         return $this->userRepository->changeStatus($request);
     }
     
-    public function dcUserLogout(DcUserLogoutRequest $request, Detail $detail)
+    public function dcUserLogout(DcUserLogoutRequest $request)
     {
-        $this->userRepository->dcUserLogout($request, $detail);
+        return $this->userRepository->dcUserLogout($request);
     }
 }

@@ -113,7 +113,7 @@ class DynamicListFieldController extends Controller
      *         @OA\JsonContent(
      *               @OA\Property(property="field_name", type="string"),
      *               @OA\Property(property="field_label", type="string"),
-     *               @OA\Property(property="field_type", type="string", enum={"text", "select", "multi", "checkbox", "radio", "textarea", "date"}),
+     *               @OA\Property(property="field_type", type="string", enum={"text", "select", "multi", "checkbox", "radio", "textarea", "date", "number"}),
      *               @OA\Property(property="description", type="string"),
      *               @OA\Property(property="options", type="string"),
      *               @OA\Property(property="mandatory", type="string", enum={"Y", "N"}),

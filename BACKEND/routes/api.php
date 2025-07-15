@@ -92,6 +92,8 @@ use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
+use App\Http\Controllers\Api\EvaluationQuestionUsageTypeController;
+use App\Http\Controllers\Api\EvaluationReviewController;
 use App\Http\Controllers\Api\LiveCallDashboardController;
 use App\Http\Controllers\Api\PriorityController;
 use App\Http\Controllers\Api\ProductCustomFieldController;
@@ -368,8 +370,9 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::prefix('evaluation')->group(function () {
         Route::apiResource('questions', EvaluationQuestionController::class);
-        Route::post('store-review', [EvaluationCallReviewController::class, 'store']);
-        Route::post('get-review', [EvaluationCallReviewController::class, 'getReview']);
+        Route::post('store-review/{type}', [EvaluationReviewController::class, 'store']);
+        Route::post('get-review/{type}', [EvaluationReviewController::class, 'getReview']);
+        Route::get('question-usage-type', [EvaluationQuestionUsageTypeController::class, 'index']);
     });
 
     Route::apiResource('call-backs', CallBackController::class);

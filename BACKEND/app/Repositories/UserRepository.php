@@ -16,6 +16,7 @@ use Exception;
 use Illuminate\Support\Facades\Hash;
 use App\Models\LiveAgents;
 use App\Events\AgentForceLogout;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class UserRepository
@@ -451,20 +452,37 @@ class UserRepository
         }
     }
 
-    public function dcUserLogout($request, $detail)
+    public function dcUserLogout($request)
     {
-        // Delete the matching live agent entry
-        $liveAgents = LiveAgents::where('extension', $request->extension)
-            ->get();
+        try {
+            $liveAgents = LiveAgents::where('extension', $request->extension)->get();
 
-        foreach ($liveAgents as $liveAgent) {
-            $liveAgent->bypassObserver = true;
-            $liveAgent->delete();
-            broadcast(new AgentForceLogout($liveAgent->user_id, $detail->domain));
+            // Handle case where no agents are found
+            if ($liveAgents->isNotEmpty()) {
+                foreach ($liveAgents as $liveAgent) {
+                    $liveAgent->bypassObserver = true;
+                    $liveAgent->delete();
+                    broadcast(new AgentForceLogout($liveAgent->user_id, $request->attributes->get('tenant_domain')));
+                }
+
+                return response()->json(
+                    [
+                        'code' => ResponseHTTP::HTTP_OK,
+                        'message' => trans('message.agent_logout'),
+                    ]
+                );
+            }
+
+
+            return response()->json(
+                [
+                    'code' => ResponseHTTP::HTTP_NOT_FOUND,
+                    'message' => trans('message.user_not_found'),
+                ]
+            );
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in change status Tenant : ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
         }
-
-        return response()->json([
-            'message' => 'Agent logged out successfully.',
-        ]);
     }
 }

@@ -6,40 +6,47 @@ use Closure;
 use Illuminate\Http\Request;
 use App\Models\AuthToken;
 use Carbon\Carbon;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
-use Exception;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
-
+use Exception;
+use Illuminate\Support\Facades\Session;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 class AuthTokenMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
         try {
-            $uinId = $request->route('uinId');
-            getDbConnection($uinId->domain, true);
-            
             $protectedPrefixes = [
                 'api/chatbot-room-id',
-                // 'call-initiate',
-                // 'call-connected',
-                // 'call-hangup',
-                // 'call-history',
-                // 'dc-user-logout',
+                // 'api/call-initiate',
+                // 'api/call-connected',
+                // 'api/call-hangup',
+                // 'api/call-history',
+                'api/dc-user-logout',
             ];
 
             if (Str::startsWith(request()->path(), $protectedPrefixes)) {
-                $header = $request->header('Token');
-                if (!$header) {
-                    return response()->json(['error' => 'Authorization token missing or invalid'], ResponseHTTP::HTTP_UNAUTHORIZED);
+                if (!$request->header('Token')) {
+                    return response()->json(['error' =>  trans('message.token_missing')], ResponseHTTP::HTTP_UNAUTHORIZED);
                 }
+                $decrypted = Crypt::decryptString($request->header('Token'));
+                $parts = explode('+', $decrypted);
+            
+                [$accessTokenValue, $domain] = $parts;
 
-                $authToken = AuthToken::where('token', $header)
+                getDbConnection($domain, true);
+                
+                $authToken = AuthToken::where('token', $accessTokenValue)
                     ->where('expire_at', '>', Carbon::now())
                     ->first();
                 if (!$authToken) {
-                    return response()->json(['error' => 'Token invalid or expired'], ResponseHTTP::HTTP_UNAUTHORIZED);
+                    return response()->json(['error' =>  trans('message.token_expired')], ResponseHTTP::HTTP_UNAUTHORIZED);
                 }
                 $request->attributes->set('auth_token', $authToken);
+                $request->attributes->set('tenant_domain', $domain);
+            } else {
+                $uinId = $request->route('uinId');
+                getDbConnection($uinId->domain, true);
             }
             return $next($request);
         } catch (Exception $e) {
