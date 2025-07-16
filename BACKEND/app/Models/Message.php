@@ -27,6 +27,10 @@ class Message extends Model
         'external_user_phone'
     ];
 
+    protected $casts = [
+        'external_message_time' => 'datetime', // Casts external_message_time to a Carbon instance
+    ];
+    
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

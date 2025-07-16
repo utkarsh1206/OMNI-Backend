@@ -65,9 +65,10 @@ class AgentMessageRepository
                     'name' => $user->first_name . ' ' . $user->last_name,
                     'online_status' => $user->online_status,
                     'last_message' => $lastMessage->text ?? null,
-                    'last_message_time' => $lastMessage && $lastMessage->created_at
-                        ? Carbon::parse($lastMessage->created_at)->format('Y-m-d H:i:s') ?? null
-                        : null,
+                    // 'last_message_time' => $lastMessage && $lastMessage->created_at
+                    //     ? Carbon::parse($lastMessage->created_at)->format('Y-m-d H:i:s') ?? null
+                    //     : null,
+                    'last_message_time' => $lastMessage->created_at ?? null,
                     'unread_count' => $user->unread_message ?? 0,
                 ];
             });
