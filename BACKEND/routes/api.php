@@ -386,17 +386,19 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('ticket-status', SupportTicketStatusController::class);
 
     Route::prefix('roles')->group(function () {
-    Route::get('/', [RoleController::class, 'index']);
-    Route::post('/', [RoleController::class, 'store']);
-    Route::get('{role}', [RoleController::class, 'show']);
-    Route::put('{role}', [RoleController::class, 'update']);
-    Route::delete('{role}', [RoleController::class, 'destroy']);
+        Route::get('/', [RoleController::class, 'index']);
+        Route::post('/', [RoleController::class, 'store']);
+        Route::get('{role}', [RoleController::class, 'show']);
+        Route::put('{role}', [RoleController::class, 'update']);
+        Route::delete('{role}', [RoleController::class, 'destroy']);
     });
 
     Route::post('/check-user-limit', [UserController::class, 'checkUserLimit']);
     Route::get('live-calls', [LiveCallDashboardController::class, 'index']);
     Route::post('tenant/change-status', [TenantController::class, 'changeStatus']);
     Route::post('user/change-status', [UserController::class, 'changeStatus']);
+
+    Route::post('generate-crm-token', [ThirdPartyCrmController::class, 'forward']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
@@ -428,8 +430,6 @@ Route::prefix('user-roles')->group(function () {
     Route::get('/',             [UserRoleController::class, 'index']);
     Route::put('{user}/roles',  [UserRoleController::class, 'update']);
 });
-
-Route::post('generate-crm-token', [ThirdPartyCrmController::class, 'forward']);
 
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
