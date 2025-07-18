@@ -103,6 +103,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SuperAdminDashboardController;
 use App\Http\Controllers\Api\SupportTicketStatusController;
 use App\Http\Controllers\Api\TenantModuleController;
+use App\Http\Controllers\Api\ThirdPartyCrmController;
 use App\Http\Controllers\Api\TicketTypeController;
 
 require base_path('routes/externalUse.php');
@@ -427,6 +428,8 @@ Route::prefix('user-roles')->group(function () {
     Route::get('/',             [UserRoleController::class, 'index']);
     Route::put('{user}/roles',  [UserRoleController::class, 'update']);
 });
+
+Route::post('generate-crm-token', [ThirdPartyCrmController::class, 'forward']);
 
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
