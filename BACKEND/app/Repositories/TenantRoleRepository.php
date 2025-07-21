@@ -241,8 +241,9 @@ class TenantRoleRepository
         foreach ($permissionMap as $module => $actions) {
             $permissionMap[$module] = array_values(array_unique($actions));
         }
-        // Append custom attribute (not persisted, just runtime)
+        
         $roleInfo->setAttribute('permissions', $permissionMap);
+        
         return $this->apiResponse->getResponseStructure(
             trans('message.success'),
             $roleInfo,
