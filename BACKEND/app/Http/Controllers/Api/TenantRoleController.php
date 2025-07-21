@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\TenantRole;
-use App\Http\Resources\TenantsResource;
 use App\Http\Requests\TenantRoleRequest;
 use App\Models\Role;
 use App\Repositories\TenantRoleRepository;
