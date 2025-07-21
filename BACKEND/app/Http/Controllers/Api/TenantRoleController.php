@@ -43,7 +43,7 @@ class TenantRoleController extends Controller
     public function show(Role $tenantrole)
     {
         try {
-            return new TenantsResource($tenantrole);
+             return $this->tenantRoleRepository->show($tenantrole);
         } catch (Exception $e) {
             return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -58,7 +58,7 @@ class TenantRoleController extends Controller
         }
     }
 
-    public function destroy(Role $tenantrole)
+    public function destroy( $tenantrole)
     {
         try {
             return $this->tenantRoleRepository->delete($tenantrole);
@@ -71,4 +71,11 @@ class TenantRoleController extends Controller
     {
         return $this->tenantRoleRepository->menuListPermissions();
     }
+
+    public function fetchPermission()
+    {
+        return $this->tenantRoleRepository->fetchPermissions();
+    }
+
+    
 }

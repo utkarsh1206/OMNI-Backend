@@ -166,6 +166,8 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::apiResource('tenantrole', TenantRoleController::class);
 
+    Route::get('fetch-permissions', [TenantRoleController::class, 'fetchPermission']);
+
     // Route::get('cron-commands', [CronCommandController::class, 'index']);
 
     Route::apiResource('cron-configurations', CronConfigurationController::class);

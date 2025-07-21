@@ -17,4 +17,9 @@ class TenantModule extends Model
             ->withPivot('role_id')
             ->withTimestamps();
     }
+
+    public function permissions()
+    {
+        return $this->hasMany(Permission::class, 'module_id');
+    }
 }
