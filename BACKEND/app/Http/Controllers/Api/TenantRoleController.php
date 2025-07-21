@@ -74,6 +74,4 @@ class TenantRoleController extends Controller
     {
         return $this->tenantRoleRepository->fetchPermissions();
     }
-
-    
 }

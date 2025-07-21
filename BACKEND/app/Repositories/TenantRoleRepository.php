@@ -189,12 +189,31 @@ class TenantRoleRepository
     {
         try {
             $result = [];
-            // Eager load permissions and nested action relationship
+
             $modules = TenantModule::with(['permissions.action'])->get();
+
             foreach ($modules as $module) {
-                $actions = $module->permissions->pluck('action.name')->unique()->toArray();
+                $actions = [];
+
+                foreach ($module->permissions as $permission) {
+                    if ($permission->action) {
+                        $actions[] = [
+                            'id' => $permission->action->id,
+                            'name' => $permission->action->name
+                        ];
+                    }
+                }
+
+                $actions = collect($actions)->unique('id')->values()->all();
+
                 if (!empty($actions)) {
-                    $result["permissions"][$module->name] = $actions;
+                    $result["permissions"][] = [
+                        "id" => $module->id,
+                        "name" => $module->name,
+                        "display_name" => $module->display_name,
+                        "is_module" => $module->is_module,
+                        "actions" => $actions
+                    ];
                 }
             }
 
@@ -204,7 +223,6 @@ class TenantRoleRepository
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
-
 
     public function show($roleInfo)
     {
