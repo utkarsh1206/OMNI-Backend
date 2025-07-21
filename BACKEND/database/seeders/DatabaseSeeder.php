@@ -18,15 +18,16 @@ class DatabaseSeeder extends Seeder
             CronExpressionsSeeder::class,
             IndustryTypesSeeder::class,
             MenuPermissionsSeeder::class,
-            ModuleSeeder::class,
+        //  ModuleSeeder::class,
             NamePrefixesSeeder::class,
             OccupationsSeeder::class,
             PrioritySeeder::class,
             RoleSeeder::class,
             StatesSeeder::class,
-            SubModuleSeeder::class,
+        //  SubModuleSeeder::class,
             SupportTicketStatusSeeder::class,
             TicketTypesSeeder::class,
+            TenantModulesSeeder::class,
             UsersSeeder::class,
         ]);
     }

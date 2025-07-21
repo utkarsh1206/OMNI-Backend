@@ -15,37 +15,58 @@ class TenantModulesSeeder extends Seeder
     public function run(): void
     {
         $modules = [
-            // 'Users',
-            // 'User Groups',
-            'Support Tickets',
-            'Accounts',
-            'Contacts',
-            // 'Departments',
-            // 'Categories',
-            // 'Incident Type',
-            // 'Product',
-            // 'Pause Code',
-            // 'List',
-            // 'Leads',
-            'Ticket Report',
-            'SLA Report',
-            'Audit Report',
-            'Email Logs',
-            'Call Log Report',
-            'User Activity Report',
-            // 'Phones',
-            // 'Live Agents',
-            // 'Settings',
-            'Agent Chat',
+            'accounts',
+            'agent chat',
+            'audit reports',
+            'call log reports',
+            'categories',
+            'chat',
+            'chatbot',
+            'contacts',
+            'departments',
+            'email',
+            'email logs',
+            'evaluation',
+            'incident type',
+            'leads',
+            'list',
+            'live agents',
+            'pause codes',
+            'phones',
+            'product',
+            'settings',
+            'sla reports',
+            'sms',
+            'support tickets',
+            'thirdparty integration',
+            'ticket reports',
+            'user',
+            'user activity reports',
+            'user Groups',
+            'user roles',
+        ];
+
+        $nonModules = [
+            'agent chat',
+            'chat',
+            'chatbot',
+            'email',
+            'evaluation',
+            'live_agents',
+            'sms',
+            'thirdparty integration',
         ];
 
         $now = Carbon::now();
 
         foreach ($modules as $module) {
+            $isModule = in_array($module, $nonModules) ? '0' : '1';
+
             DB::table('tenant_modules')->updateOrInsert(
                 ['name' => Str::slug($module, '_')],
                 [
-                    'display_name' => $module,
+                    'display_name' => ucwords($module),
+                    'is_module' => $isModule,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]
