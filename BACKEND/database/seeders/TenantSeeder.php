@@ -10,12 +10,13 @@ class TenantSeeder extends Seeder
     public function run()
     {
         $this->call([
-            MailTemplateSeeder::class,
-            SmsProviderSeeder::class,
-            ModuleSeeder::class,
-            SubModuleSeeder::class,
-            SmsTemplateSeeder::class,
+            ActionSeeder::class,
             ApiConfigurationTypeSeeder::class,
+            MailTemplateSeeder::class,
+            ModuleSeeder::class,
+            SmsProviderSeeder::class,
+            SmsTemplateSeeder::class,
+            SubModuleSeeder::class,
             TenantPrioritySeeder::class,
             TenantModulesSeeder::class,
             TenantTicketTypeSeeder::class,
