@@ -184,7 +184,6 @@ class TenantRoleRepository
         }
     }
 
-
     public function fetchPermissions()
     {
         try {
