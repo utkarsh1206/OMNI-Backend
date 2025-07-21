@@ -27,6 +27,8 @@ class ContactRepository
             $accountId = $request->input('account_id', '');
             $ownerId = $request->input('owner_id', '');
             $contactNumber = $request->input('contact_number', '');
+            $email = $request->input('email', '');
+
 
             $query = Contact::query();
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
@@ -69,6 +71,11 @@ class ContactRepository
 
             if (!empty($contactNumber)) {
                 $query->where('mobile', 'like', "$contactNumber%");
+            }
+
+            if (!empty($email))
+            {
+                $query->where('email', 'like', "%$email%");
             }
 
             $contact = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);

@@ -86,10 +86,13 @@ class SmsService implements ShouldQueue
             case 'Ticket Resolved':
                 $template_id = config('omni.INCIDENT_RESOLUTION');
                 break;
+            case 'OTP Send':
+                $template_id = config('omni.PROVISIONING_OTP');
+                break;
         }
         try {
-            $queryParams = str_replace("[PHONE_NUMBER]", $phoneNumber, $queryParams);
-            $queryParams = str_replace("[TEMPLATE_ID]", $template_id, $queryParams);
+            $queryParams = str_replace("[PHONE_NUMBER]", $toPhone, $queryParams);
+            // $queryParams = str_replace("[TEMPLATE_ID]", $template_id, $queryParams);
             $queryParams .= "&tempid=" .$template_id;
             $queryParams .= "&message=" . rawurldecode($message);
             $urlWithParams = $apiUrl . $apiName . $queryParams;
