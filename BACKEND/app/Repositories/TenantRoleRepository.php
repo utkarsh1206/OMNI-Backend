@@ -34,7 +34,6 @@ class TenantRoleRepository
 
             $query = Role::query();
 
-            // ✅ LIVE SEARCH — searches across multiple text fields
             if (!empty($searchTerm)) {
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('name', 'like', "%{$searchTerm}%")
@@ -42,7 +41,6 @@ class TenantRoleRepository
                 });
             }
 
-            // ✅ ADVANCED FILTERS — applies only if specific filter field is given
             if (!empty($filters['name'])) {
                 $query->where('name', 'like', "%{$filters['name']}%");
             }
@@ -55,7 +53,6 @@ class TenantRoleRepository
                 $query->where('status', $filters['status']);
             }
 
-            // ✅ PAGINATION
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 

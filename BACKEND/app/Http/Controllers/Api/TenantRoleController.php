@@ -69,10 +69,6 @@ class TenantRoleController extends Controller
 
     public function list()
     {
-        try {
-            return $this->tenantRoleRepository->menuListPermissions();
-        } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
-        }
+        return $this->tenantRoleRepository->menuListPermissions();
     }
 }
