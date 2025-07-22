@@ -6,7 +6,6 @@ use Closure;
 use Illuminate\Http\Request;
 use App\Models\Permission;
 use App\Models\RolePermission;
-use App\Models\Tenant;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckPermissionMiddleware
