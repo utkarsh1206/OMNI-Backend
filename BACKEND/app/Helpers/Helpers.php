@@ -4,7 +4,6 @@ use App\Models\EmailLog;
 use App\Models\EmailConfigure;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\LicenseController;
-use App\Models\Module;
 use App\Services\AESService;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Illuminate\Support\Facades\Http;
@@ -133,7 +132,6 @@ if (! function_exists('establishDatabaseConnect')) {
 }
 
 if (!function_exists('establishMasterConnection')) {
-
     function establishMasterConnection($domain, $masterDB, $connection)
     {
         DB::purge($domain);
@@ -513,24 +511,17 @@ if (!function_exists('exportCsv')) {
 if (! function_exists('getModuleId')) {
     function getModuleId($moduleName)
     {
-        $authUser = auth()->user();
-        if(isset($authUser->user_role_id))
-        {
-            $moduleInfo = TenantModule::where("name",$moduleName)->first();
-             return $moduleInfo->id ?? 0 ;
-        }
-        return 0;
+        $moduleInfo = TenantModule::where("name", $moduleName)->first();
+        return $moduleInfo->id ?? 0;
     }
 }
-
-
 
 if (! function_exists('getPermissionFromRoleIdForTenant')) {
     function getPermissionFromRoleIdForTenant($domain)
     {
         establishMasterConnection($domain, "omnichannel", "mysql");
-         $tenant = Tenant::select("tenant_role_id")->where('domain_name', $domain)
-                ->first();
+        $tenant = Tenant::select("tenant_role_id")->where('domain_name', $domain)
+            ->first();
         $permissionData = RolePermission::where("role_id", $tenant->tenant_role_id)->pluck("permission_id");
         $permissionInfo = Permission::with(["module", "action"])->whereIn("id", $permissionData)->get();
         $permissionInfo = $permissionInfo->toArray();
@@ -550,5 +541,14 @@ if (! function_exists('getPermissionFromRoleIdForTenant')) {
         }
         getdbConnection($domain, false);
         return $formattedPermissions;
+    }
+}
+
+if (! function_exists('setTenantData')) {
+    function setTenantData($userInfo)
+    {
+        establishMasterConnection($userInfo->domain, "omnichannel", "mysql");
+        $tenant = Tenant::select("tenant_role_id")->where('domain_name', $userInfo->domain)->first();
+        return $tenant->tenant_role_id;
     }
 }

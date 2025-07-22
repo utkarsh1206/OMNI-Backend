@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use App\Models\Permission;
 use App\Models\RolePermission;
+use App\Models\Tenant;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckPermissionMiddleware
@@ -22,18 +23,19 @@ class CheckPermissionMiddleware
     public function handle(Request $request, Closure $next, $moduleId, $actionId)
     {
         $token = $request->bearerToken();
-        $payload = extractPayload($token);
-
-        if ($payload["admin_type"] == "Super") {
-            return $next($request);
+        // $payload = extractPayload($token);
+        // if ($payload["admin_type"] == "Super") {
+        //     return $next($request);
+        // }
+        $userInfo = auth()->user();
+        $roleId = $userInfo?->user_role_id;
+        if ($userInfo->usergroup_id == 0) {
+           $roleId = setTenantData($userInfo);
         }
-
-        $roleId = auth()->user()?->user_role_id;
-
+        
         if (!$roleId) {
             return response()->json(['error' => 'Unauthorized.'], Response::HTTP_UNAUTHORIZED);
         }
-
         // Find the permission
         $permission = Permission::where('module_id', $moduleId)
             ->where('action_id', $actionId)
@@ -50,6 +52,9 @@ class CheckPermissionMiddleware
 
         if (!$hasPermission) {
             return response()->json(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
+        }
+        if ($userInfo->usergroup_id == 0) {
+            getdbConnection($userInfo->domain, true);
         }
 
         return $next($request);
