@@ -142,8 +142,8 @@ class TenantRoleRepository
                 RolePermission::where('role_id', $roleId)
                     ->whereNotIn('permission_id', $newPermissionIds)
                     ->delete();
-                Permission::whereNotIn('id', RolePermission::pluck('permission_id'))
-                    ->delete();
+                // Permission::whereNotIn('id', RolePermission::pluck('permission_id'))
+                // ->delete();
             });
             return response()->json($role->load(['permissions', 'tenantModules']));
         } catch (Exception $ex) {
@@ -156,7 +156,11 @@ class TenantRoleRepository
     {
         try {
             $role->delete();
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantrole, trans('message.tenant_role_deleted'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $role,
+                trans('message.tenant_role_deleted')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error during Tenant Role Delete : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -241,9 +245,9 @@ class TenantRoleRepository
         foreach ($permissionMap as $module => $actions) {
             $permissionMap[$module] = array_values(array_unique($actions));
         }
-        
+
         $roleInfo->setAttribute('permissions', $permissionMap);
-        
+
         return $this->apiResponse->getResponseStructure(
             trans('message.success'),
             $roleInfo,

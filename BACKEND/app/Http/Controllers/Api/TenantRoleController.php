@@ -41,7 +41,7 @@ class TenantRoleController extends Controller
     public function show(Role $tenantrole)
     {
         try {
-             return $this->tenantRoleRepository->show($tenantrole);
+            return $this->tenantRoleRepository->show($tenantrole);
         } catch (Exception $e) {
             return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -56,12 +56,15 @@ class TenantRoleController extends Controller
         }
     }
 
-    public function destroy( $tenantrole)
+    public function destroy(Role $tenantrole)
     {
         try {
             return $this->tenantRoleRepository->delete($tenantrole);
         } catch (Exception $e) {
-            return response()->json(['error' => trans('message.wrong_with_system')], ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR);
+            return response()->json(
+                ['error' => trans('message.wrong_with_system')],
+                ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
     }
 
