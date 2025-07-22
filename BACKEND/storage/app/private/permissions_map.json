@@ -21,7 +21,7 @@
   "settings": ["view", "create", "edit", "delete"],
   "sla_reports": ["view", "download"],
   "sms": ["enable"],
-  "support_tickets": ["view", "create", "edit", "delete"],
+  "support_tickets": ["view", "create", "edit", "delete", "merge", "transfer"],
   "thirdparty_integration": ["enable"],
   "ticket_reports": ["view", "download"],
   "user": ["view", "create", "edit", "delete"],

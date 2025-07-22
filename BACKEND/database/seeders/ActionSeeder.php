@@ -14,12 +14,14 @@ class ActionSeeder extends Seeder
     public function run(): void
     {
         $modules = [
+            'view',
             'create',
             'delete',
             'download',
             'edit',
             'enable',
-            'view',
+            'merge',
+            'transfer',
         ];
 
         $now = Carbon::now();
