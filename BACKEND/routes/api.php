@@ -332,8 +332,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Route::apiResource('support-ticket', SupportTicketController::class)->except(['update']);
     Route::post('support-ticket/{support_ticket}', [SupportTicketController::class, 'update'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
     Route::post('update-ticket-status/{supportticket}', [SupportTicketController::class, 'statusUpdate'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
-    Route::post('transfer', [SupportTicketTransferController::class, 'store']);
-    Route::post('merge', [SupportTicketMergeController::class, 'store']);
+    Route::post('transfer', [SupportTicketTransferController::class, 'store'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::MERGE->value);
+    Route::post('merge', [SupportTicketMergeController::class, 'store'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::TRANSFER->value);
     Route::get('notification', [SupportTicketNotificationController::class, 'index']);
 
     // Ticket Report

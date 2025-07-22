@@ -12,6 +12,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Response\CustomApiResponse;
 use App\Models\LiveAgents;
 use App\Models\Phone;
+use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
@@ -111,13 +112,20 @@ class LoginRepository
             }
         }
 
-
-        $formattedPermissions = getPermissionFromRoleId($userData->user_role_id);
+       
+         if ($validator['flag'] == 1) {
+              $formattedPermissions = getPermissionFromRoleIdForTenant($domain);
+         }
+         else{
+             $formattedPermissions = getPermissionFromRoleId($userData->user_role_id);
+         }
+       
         $dataArr = [
             "userInfo" => $userData,
             "token" => $token,
             "permission" => $formattedPermissions
         ];
+
 
         if ($domain) {
             establishMasterConnection($domain, "omnichannel", "mysql");
