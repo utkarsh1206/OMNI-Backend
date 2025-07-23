@@ -93,6 +93,8 @@ use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
+use App\Http\Controllers\Api\EvaluationQuestionUsageTypeController;
+use App\Http\Controllers\Api\EvaluationReviewController;
 use App\Http\Controllers\Api\LiveCallDashboardController;
 use App\Http\Controllers\Api\PriorityController;
 use App\Http\Controllers\Api\ProductCustomFieldController;
@@ -102,6 +104,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SuperAdminDashboardController;
 use App\Http\Controllers\Api\SupportTicketStatusController;
 use App\Http\Controllers\Api\TenantModuleController;
+use App\Http\Controllers\Api\ThirdPartyCrmController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Middleware\CheckPermissionMiddleware;
 
@@ -418,8 +421,9 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::prefix('evaluation')->group(function () {
         Route::apiResource('questions', EvaluationQuestionController::class);
-        Route::post('store-review', [EvaluationCallReviewController::class, 'store']);
-        Route::post('get-review', [EvaluationCallReviewController::class, 'getReview']);
+        Route::post('store-review/{type}', [EvaluationReviewController::class, 'store']);
+        Route::post('get-review/{type}', [EvaluationReviewController::class, 'getReview']);
+        Route::get('question-usage-type', [EvaluationQuestionUsageTypeController::class, 'index']);
     });
 
     Route::apiResource('call-backs', CallBackController::class);
@@ -432,17 +436,19 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('ticket-status', SupportTicketStatusController::class);
 
     Route::prefix('roles')->group(function () {
-    Route::get('/', [RoleController::class, 'index']);
-    Route::post('/', [RoleController::class, 'store']);
-    Route::get('{role}', [RoleController::class, 'show']);
-    Route::put('{role}', [RoleController::class, 'update']);
-    Route::delete('{role}', [RoleController::class, 'destroy']);
+        Route::get('/', [RoleController::class, 'index']);
+        Route::post('/', [RoleController::class, 'store']);
+        Route::get('{role}', [RoleController::class, 'show']);
+        Route::put('{role}', [RoleController::class, 'update']);
+        Route::delete('{role}', [RoleController::class, 'destroy']);
     });
 
     Route::post('/check-user-limit', [UserController::class, 'checkUserLimit']);
     Route::get('live-calls', [LiveCallDashboardController::class, 'index']);
     Route::post('tenant/change-status', [TenantController::class, 'changeStatus']);
     Route::post('user/change-status', [UserController::class, 'changeStatus']);
+
+    Route::post('generate-crm-token', [ThirdPartyCrmController::class, 'forward']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);

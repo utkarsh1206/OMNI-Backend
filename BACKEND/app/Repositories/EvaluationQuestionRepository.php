@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Http\Response\CustomApiResponse;
 use App\Models\EcdialEvaluationQuestion;
+use App\Models\EvaluationQuestionUsageType;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,8 @@ class EvaluationQuestionRepository
 
             $filters = [
                 'search' => $request->input('search', ''),
-                'status' => $request->input('status', '')
+                'status' => $request->input('status', ''),
+                'usage_type' => $request->input('usage_type', ''),
             ];
 
             if (!empty($filters['search'])) {
@@ -39,10 +41,23 @@ class EvaluationQuestionRepository
                 $query->where('status', $filters['status']);
             }
 
+            // if (!empty($filters['usage_type'])) {
+            //     $query->where('usage_type', 'like', "%" . $filters['usage_type'] . "%");
+            // }
+
+            if (!empty($filters['usage_type'])) {
+                $usageTypeId = EvaluationQuestionUsageType::where('usage_type', $filters['usage_type'])->value('id');
+
+                if ($usageTypeId) {
+                    $query->whereRaw("FIND_IN_SET(?, usage_type)", [$usageTypeId]);
+                } else {
+                    $query->whereRaw('0 = 1');
+                }
+            }
+
             $query->with(['creator', 'updater']);
 
             $evaliationQuetions = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
-
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
@@ -59,11 +74,13 @@ class EvaluationQuestionRepository
     {
         try {
             $user = Auth::user();
+
             $question = EcdialEvaluationQuestion::create([
                 'question' => $request->question,
                 'question_type' => $request->question_type,
                 'answers' => $this->prepareAnswers($request->question_type, $request->answers),
                 'status' => $request->status ?? 'active',
+                'usage_type' => $this->usageTypeValid($request->usage_type),
                 'created_by' => $user->id
             ]);
 
@@ -88,6 +105,8 @@ class EvaluationQuestionRepository
                     'message' => trans("message.record_not_found"),
                 ], ResponseHTTP::HTTP_NOT_FOUND);
             }
+
+            $question->usage_type = explode(',', $question->usage_type ?? '');
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $question, trans('message.data_fetch'));
         } catch (Exception $e) {
@@ -121,6 +140,10 @@ class EvaluationQuestionRepository
                 $updateData['status'] = $request->status;
             }
 
+            if ($request->has('usage_type')) {
+                $updateData['usage_type'] = $this->usageTypeValid($request->usage_type);
+            }
+
             $question->update($updateData);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $question, trans('message.question_update'));
@@ -150,7 +173,18 @@ class EvaluationQuestionRepository
             return $answers;
         }
 
-        // If type is TEXT or anything else, answers must be null
         return null;
+    }
+
+    private function usageTypeValid($usageType)
+    {
+        if (is_string($usageType)) {
+            $usageType = explode(',', $usageType);
+        }
+
+        $validIds = EvaluationQuestionUsageType::whereIn('id', $usageType)
+            ->pluck('id')
+            ->toArray();
+        return !empty($validIds) ? implode(',', $validIds) : null;
     }
 }

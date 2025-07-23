@@ -46,6 +46,7 @@ if (! function_exists('setEmailConfig')) {
     function setEmailConfig()
     {
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
+
         $smtpHost = $emailConfig->smtp_host;
         $smtpPort = $emailConfig->smtp_port;
         $smtpUser = $emailConfig->smtp_user;
@@ -54,6 +55,7 @@ if (! function_exists('setEmailConfig')) {
         $sender_email = $emailConfig->sender_email;
 
         config([
+            'mail.default' => 'smtp',
             'mail.mailers.smtp.host' => $smtpHost,
             'mail.mailers.smtp.port' => $smtpPort,
             'mail.mailers.smtp.username' => $smtpUser,
@@ -159,6 +161,7 @@ if (!function_exists('getDbConnection')) {
             ->orWhere('uin', $domainName)->first();
 
         if ($details) {
+
             $connectionDetails = [
                 'database' => $details->db,
                 'username' => $details->username,
@@ -550,5 +553,14 @@ if (! function_exists('setTenantData')) {
         establishMasterConnection($userInfo->domain, "omnichannel", "mysql");
         $tenant = Tenant::select("tenant_role_id")->where('domain_name', $userInfo->domain)->first();
         return $tenant->tenant_role_id;
+    }
+}
+
+if (!function_exists('getDomainByUin')) {
+    function getDomainByUin($uin)
+    {
+        return DB::table('omnichannel.details')
+            ->where('uin', $uin)
+            ->value('domain');
     }
 }

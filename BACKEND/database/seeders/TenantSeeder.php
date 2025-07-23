@@ -21,6 +21,7 @@ class TenantSeeder extends Seeder
             TenantModulesSeeder::class,
             TenantTicketTypeSeeder::class,
             TenantSupportTicketStatusSeeder::class,
+            EvaluationQuestionUsageTypesSeeder::class,
             PermissionSeeder::class,
          ]);
     }
