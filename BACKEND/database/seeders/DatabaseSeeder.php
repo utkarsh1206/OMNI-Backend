@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             TicketTypesSeeder::class,
             TenantModulesSeeder::class,
             UsersSeeder::class,
+            PermissionSeeder::class,
         ]);
     }
 }
