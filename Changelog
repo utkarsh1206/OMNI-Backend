@@ -1,3 +1,14 @@
+2025-07-21 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 3429cdd
+	* Version : Dev
+	* Laravel: The portal allows users to easily access and manage their support tickets.
+	To log in, users can enter either their email address or mobile number. The portal will send an OTP (One-Time Password) to the provided contact information, ensuring that only authorized users can access their accounts. This system ensures that your information remains secure and protected.
+	This email and mobile number verfied in contacts table.
+	After successfully logging in, users can view and track the status of their support tickets. Whether it’s a new issue or an ongoing support case, you’ll get real-time updates on the progress of your ticket.
+
+
 2025-07-14 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

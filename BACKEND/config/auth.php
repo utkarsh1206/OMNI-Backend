@@ -48,6 +48,10 @@ return [
             'driver' => 'jwt',
             'provider' => 'users',
         ],
+        'api_endusers' => [
+            'driver' => 'jwt',
+            'provider' => 'endusers',
+        ],
     ],
 
     /*
@@ -82,6 +86,10 @@ return [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
+        'endusers' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\EndUser::class,
+        ],
     ],
 
     /*

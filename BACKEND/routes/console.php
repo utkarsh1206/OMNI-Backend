@@ -35,13 +35,14 @@ $allTenants = Tenant::orderBy('id')  // Ensures consistent ordering by the ID co
             if (Schema::connection($databaseName)->hasTable('cron_configurations')) {
                 $cronConfiguations = CronConfiguration::on($databaseName)->get();
                 CronConfiguration::on($databaseName)->where('status', 'active')->get()->each(function ($cronJob) {
-                    Artisan::command($cronJob->command_signature, function () use ($cronJob) {
-                        $this->info("Running cron job: {$cronJob->command_signature}");
-                    })
-                    ->cron($cronJob->schedule_expression);
+                    // Artisan::command($cronJob->command_signature, function () use ($cronJob) {
+                    //     $this->info("Running cron job: {$cronJob->command_signature}");
+                    // })
+                    // ->cron($cronJob->schedule_expression);
+                    Schedule::command($cronJob->command_signature)->cron($cronJob->schedule_expression);
                 });
             }
         }
     });
 
-Schedule::command('telescope:prune --hours=168')->daily();
+Schedule::command('telescope:prune --hours=96')->everySixHours();

@@ -36,6 +36,7 @@ class DynamicListField extends Model
         "duplicate_check",
         "status",
         "field_column",
+        "group_name",
     ];
 
     // Define the relationship to the EcdialList model

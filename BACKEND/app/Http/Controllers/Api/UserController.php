@@ -1005,7 +1005,7 @@ class UserController extends Controller
      *     path="/api/user/change-status",
      *     summary="Change user status",
      *     description="Change the status of a User (e.g., Active or Inactive) and update related user statuses.",
-     *     operationId="changeTenantStatus",
+     *     operationId="changeStatus",
      *     tags={"Users"},
      *     security={{"bearerAuth":{}}},
      *     
