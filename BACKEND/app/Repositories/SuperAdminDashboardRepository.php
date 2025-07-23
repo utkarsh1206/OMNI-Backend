@@ -56,7 +56,8 @@ class SuperAdminDashboardRepository
             return [
                 'tenant_id'   => $license->tenant_id,
                 'tenant_name' => $license->tenant_name,
-                'expire_date' => Carbon::createFromTimestamp($license->expire_date)->format('d/m/Y'),
+                // 'expire_date' => Carbon::createFromTimestamp($license->expire_date)->format('d/m/Y'),
+                'expire_date' => Carbon::createFromTimestamp($license->expire_date),
             ];
         });
     }
