@@ -105,13 +105,15 @@ class LiveAgents extends Model
         if (!$this->user_id) {
             return 0;
         }
-
-        $count = UserLoginLog::where('user_id', $this->user_id)
-            ->whereDate('login_date', Carbon::today())
-            ->whereNotNull('logout_time')
-            ->count();
-
-        return $count + 1;
+        try {
+            $count = UserLoginLog::where('user_id', $this->user_id)
+                ->whereDate('login_date', Carbon::today())
+                ->whereNotNull('logout_time')
+                ->count();
+            return $count + 1;
+        } catch (\Throwable $th) {
+            generateLogs("error", "Unable to get the login count today"); // . $th->getMessage()
+        }
     }
 
     public function getPauseDurationElapsedAttribute()
