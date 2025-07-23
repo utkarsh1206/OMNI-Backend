@@ -19,6 +19,10 @@ class Kernel extends HttpKernel
         'modify.request' => \App\Http\Middleware\ModifyRequestMiddleware::class,
     ];
 
+     protected $routeMiddleware = [
+        'check.permission' => \App\Http\Middleware\CheckPermissionMiddleware::class,
+    ];
+
     /**
      * The application's route middleware groups.
      *

@@ -6,7 +6,12 @@ use Illuminate\Http\Request;
 use App\Models\TenantRole;
 use Illuminate\Support\Facades\DB;
 use App\Http\Response\CustomApiResponse;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\RolePermission;
+use App\Models\TenantModule;
 use Exception;
+use Faker\Provider\ar_EG\Person;
 
 class TenantRoleRepository
 {
@@ -29,9 +34,8 @@ class TenantRoleRepository
                 'status' => $request->input('status'),
             ];
 
-            $query = TenantRole::query();
+            $query = Role::query();
 
-            // ✅ LIVE SEARCH — searches across multiple text fields
             if (!empty($searchTerm)) {
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('name', 'like', "%{$searchTerm}%")
@@ -39,7 +43,6 @@ class TenantRoleRepository
                 });
             }
 
-            // ✅ ADVANCED FILTERS — applies only if specific filter field is given
             if (!empty($filters['name'])) {
                 $query->where('name', 'like', "%{$filters['name']}%");
             }
@@ -52,7 +55,6 @@ class TenantRoleRepository
                 $query->where('status', $filters['status']);
             }
 
-            // ✅ PAGINATION
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
@@ -73,42 +75,92 @@ class TenantRoleRepository
 
     public function create(Request $request)
     {
-        try {
-            $tenantrole = TenantRole::create([
-                'name' => $request->name,
-                "permission" => $request->permission,
-                "description" => $request->description,
-                "status" => $request->status
-            ]);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantrole, trans('message.tenant_role_created'));
-        } catch (Exception $ex) {
-            generateLogs('error', 'Error during Tenant Role Create : ', $ex->getMessage());
-            return $this->apiResponse->handleAndResponseException($ex);
-        }
+        // try {
+        // $tenantrole = TenantRole::create([
+        //     'name' => $request->name,
+        //     "permission" => $request->permission,
+        //     "description" => $request->description,
+        //     "status" => $request->status
+        // ]);
+        $role = Role::create($request->validated());
+        $roleId = $role->id;
+
+        $data = $request->all();
+        DB::transaction(function () use ($data, $roleId) {
+            foreach ($data['permissions'] as $permSet) {
+                $moduleId = $permSet['tenant_module_id'];
+                foreach ($permSet['action_ids'] as $actionId) {
+                    $permission = Permission::firstOrCreate([
+                        'module_id' => $moduleId,
+                        'action_id' => $actionId,
+                    ]);
+                    RolePermission::firstOrCreate([
+                        'role_id' => $roleId,
+                        'permission_id' => $permission->id,
+                    ]);
+                }
+            }
+        });
+        return response()->json($role->load(['tenantModules', 'actions']), 201);
+        // } catch (Exception $ex) {
+        //     generateLogs('error', 'Error during Tenant Role Create : ', $ex->getMessage());
+        //     return $this->apiResponse->handleAndResponseException($ex);
+        // }
     }
 
 
-    public function update(Request $request, $tenantrole)
+    public function update(Request $request, Role $role)
     {
         try {
-            $tenantrole->update([
-                'name' => $request->name,
-                "permission" => $request->permission,
-                "description" => $request->description,
-                "status" => $request->status
-            ]);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantrole, trans('message.tenant_role_updated'));
+            // $tenantrole->update([
+            //     'name' => $request->name,
+            //     "permission" => $request->permission,
+            //     "description" => $request->description,
+            //     "status" => $request->status
+            // ]);
+            $role->update($request->validated());
+            //$role->actions()->detach();
+            $roleId = $role->id;
+            $data = $request->all();
+            DB::transaction(function () use ($data, $roleId) {
+                $newPermissionIds = [];
+                foreach ($data['permissions'] as $permSet) {
+                    $moduleId = $permSet['tenant_module_id'];
+                    foreach ($permSet['action_ids'] as $actionId) {
+                        $permission = Permission::firstOrCreate([
+                            'module_id' => $moduleId,
+                            'action_id' => $actionId,
+                        ]);
+
+                        $newPermissionIds[] = $permission->id;
+                        RolePermission::firstOrCreate([
+                            'role_id' => $roleId,
+                            'permission_id' => $permission->id,
+                        ]);
+                    }
+                }
+                RolePermission::where('role_id', $roleId)
+                    ->whereNotIn('permission_id', $newPermissionIds)
+                    ->delete();
+                // Permission::whereNotIn('id', RolePermission::pluck('permission_id'))
+                // ->delete();
+            });
+            return response()->json($role->load(['permissions', 'tenantModules']));
         } catch (Exception $ex) {
             generateLogs('error', 'Error during Tenant Role Update : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
-    public function delete($tenantrole)
+    public function delete(Role $role)
     {
         try {
-            $tenantrole->delete();
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantrole, trans('message.tenant_role_deleted'));
+            $role->delete();
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $role,
+                trans('message.tenant_role_deleted')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error during Tenant Role Delete : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -134,5 +186,72 @@ class TenantRoleRepository
             generateLogs('error', 'Error during Tenant Role Menu Permissions : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
+    }
+
+    public function fetchPermissions()
+    {
+        try {
+            $result = [];
+
+            $modules = TenantModule::with(['permissions.action'])->get();
+
+            foreach ($modules as $module) {
+                $actions = [];
+
+                foreach ($module->permissions as $permission) {
+                    if ($permission->action) {
+                        $actions[] = [
+                            'id' => $permission->action->id,
+                            'name' => $permission->action->name
+                        ];
+                    }
+                }
+
+                $actions = collect($actions)->unique('id')->values()->all();
+
+                if (!empty($actions)) {
+                    $result["permissions"][] = [
+                        "id" => $module->id,
+                        "name" => $module->name,
+                        "display_name" => $module->display_name,
+                        "is_module" => $module->is_module,
+                        "actions" => $actions
+                    ];
+                }
+            }
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $result, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error during Tenant Role Menu Permissions : ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function show($roleInfo)
+    {
+        $permissions = $roleInfo->permissions()->with(['action', 'module'])->get();
+
+        $permissionMap = [];
+
+        foreach ($permissions as $permission) {
+            $moduleName = $permission->module->name ?? null;
+            $actionName = $permission->action->name ?? null;
+
+            if ($moduleName && $actionName) {
+                $permissionMap[$moduleName][] = $actionName;
+            }
+        }
+
+        foreach ($permissionMap as $module => $actions) {
+            $permissionMap[$module] = array_values(array_unique($actions));
+        }
+
+        $roleInfo->setAttribute('permissions', $permissionMap);
+
+        return $this->apiResponse->getResponseStructure(
+            trans('message.success'),
+            $roleInfo,
+            trans('message.data_fetch')
+        );
     }
 }
