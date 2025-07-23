@@ -204,6 +204,8 @@ return [
     'question_usage_type_created' => 'Question usage type created successfully.',
     'question_usage_type_updated' => 'Question usage type updated successfully.',
     'question_usage_type_deleted' => 'Question usage type deleted successfully.',
+    'otp_send' => 'OTP sent successfully',
+    'otp_verified' => 'OTP verified successfully',
 ]   
 ?>
 

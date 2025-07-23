@@ -103,6 +103,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SuperAdminDashboardController;
 use App\Http\Controllers\Api\SupportTicketStatusController;
 use App\Http\Controllers\Api\TenantModuleController;
+use App\Http\Controllers\Api\ThirdPartyCrmController;
 use App\Http\Controllers\Api\TicketTypeController;
 
 require base_path('routes/externalUse.php');
@@ -385,17 +386,19 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('ticket-status', SupportTicketStatusController::class);
 
     Route::prefix('roles')->group(function () {
-    Route::get('/', [RoleController::class, 'index']);
-    Route::post('/', [RoleController::class, 'store']);
-    Route::get('{role}', [RoleController::class, 'show']);
-    Route::put('{role}', [RoleController::class, 'update']);
-    Route::delete('{role}', [RoleController::class, 'destroy']);
+        Route::get('/', [RoleController::class, 'index']);
+        Route::post('/', [RoleController::class, 'store']);
+        Route::get('{role}', [RoleController::class, 'show']);
+        Route::put('{role}', [RoleController::class, 'update']);
+        Route::delete('{role}', [RoleController::class, 'destroy']);
     });
 
     Route::post('/check-user-limit', [UserController::class, 'checkUserLimit']);
     Route::get('live-calls', [LiveCallDashboardController::class, 'index']);
     Route::post('tenant/change-status', [TenantController::class, 'changeStatus']);
     Route::post('user/change-status', [UserController::class, 'changeStatus']);
+
+    Route::post('generate-crm-token', [ThirdPartyCrmController::class, 'forward']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);

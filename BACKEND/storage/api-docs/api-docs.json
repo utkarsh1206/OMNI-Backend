@@ -7061,7 +7061,8 @@
                                             "checkbox",
                                             "radio",
                                             "textarea",
-                                            "date"
+                                            "date",
+                                            "number"
                                         ]
                                     },
                                     "description": {
@@ -11959,6 +11960,315 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/customer-portal/{uin}/request-otp": {
+            "post": {
+                "tags": [
+                    "OTP"
+                ],
+                "summary": "Request an OTP for a user",
+                "operationId": "requestOtp",
+                "parameters": [
+                    {
+                        "name": "uin",
+                        "in": "path",
+                        "description": "Unique Identification Number (UIN) of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "12345"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "mobile",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "mobile": {
+                                        "description": "Mobile number of the user",
+                                        "type": "string",
+                                        "example": "+91234567890"
+                                    },
+                                    "email": {
+                                        "description": "Email of the user",
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "Please enter the OTP sent to your mobile or email"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "application/xml": {
+                            "schema": {
+                                "properties": {
+                                    "mobile": {
+                                        "type": "string",
+                                        "example": "1234567890"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "description": "Empty data for success response",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation or logical error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mobile or Email is required."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Mobile or Email not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mobile or Email does not exist in our records."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/customer-portal/{uin}/verify-otp": {
+            "post": {
+                "tags": [
+                    "OTP"
+                ],
+                "summary": "Verify the OTP for a user",
+                "operationId": "verifyOtp",
+                "parameters": [
+                    {
+                        "name": "uin",
+                        "in": "path",
+                        "description": "Unique Identification Number (UIN) of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "12345"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "otp"
+                                ],
+                                "properties": {
+                                    "otp": {
+                                        "description": "One-time password (OTP) entered by the user",
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP verified successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "description": "User data and access token for the verified user",
+                                            "type": "object"
+                                        },
+                                        "userinfo": {
+                                            "description": "User information such as mobile, email, username",
+                                            "type": "object"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "Bearer <JWT_Token>"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation or logical error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid OTP."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "OTP expired or not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "OTP has expired or not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many OTP verification attempts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Maximum OTP attempts exceeded."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/pause-code": {
@@ -18424,6 +18734,118 @@
                 }
             }
         },
+        "/api/tenant/change-status": {
+            "post": {
+                "tags": [
+                    "Tenant"
+                ],
+                "summary": "Change tenant status",
+                "description": "Change the status of a tenant (e.g., Active or Inactive) and update related user statuses.",
+                "operationId": "changeTenantStatus",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "tenant_id",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "tenant_id": {
+                                        "description": "ID of the tenant to update",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "status": {
+                                        "description": "New status for the tenant",
+                                        "type": "string",
+                                        "example": "Inactive"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tenant status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "Inactive"
+                                                },
+                                                "domain_name": {
+                                                    "type": "string",
+                                                    "example": "example.tenant.com"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "details": {
+                                            "type": "string",
+                                            "example": "Tenant status updated successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Tenant not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tenant not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/tenant-license/{id}": {
             "put": {
                 "tags": [
@@ -22945,6 +23367,90 @@
                 ]
             }
         },
+        "/api/user/change-status": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Change user status",
+                "description": "Change the status of a User (e.g., Active or Inactive) and update related user statuses.",
+                "operationId": "changeStatus",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "tenant_id": {
+                                        "description": "ID of the tenant to update",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "status": {
+                                        "description": "New status for the tenant",
+                                        "type": "string",
+                                        "example": "Inactive"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "data": {
+                                            "description": "Number of affected rows",
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "details": {
+                                            "type": "string",
+                                            "example": "User status updated successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/usergroup": {
             "get": {
                 "tags": [
@@ -25170,6 +25676,10 @@
             "description": "Occupation"
         },
         {
+            "name": "OTP",
+            "description": "OTP"
+        },
+        {
             "name": "Pause Codes",
             "description": "Pause Codes"
         },
@@ -25228,6 +25738,10 @@
         {
             "name": "Tenants",
             "description": "Tenants"
+        },
+        {
+            "name": "Tenant",
+            "description": "Tenant"
         },
         {
             "name": "Tenant License",

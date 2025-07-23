@@ -158,6 +158,7 @@ class DynamicListFieldsRepository
             'duplicate_check' => ['required', Rule::in(['Y', 'N'])],
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'field_column' => ['nullable', 'string', 'max:1'],
+            'group_name' => ['nullable', 'string', 'max:255'],
         ];
 
         try {
