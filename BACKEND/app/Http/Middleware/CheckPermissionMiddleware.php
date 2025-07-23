@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -20,13 +21,21 @@ class CheckPermissionMiddleware
      */
     public function handle(Request $request, Closure $next, $moduleId, $actionId)
     {
-        $roleId = auth()->user()?->user_role_id;
-
+        $token = $request->bearerToken();
+        // $payload = extractPayload($token);
+        // if ($payload["admin_type"] == "Super") {
+        //     return $next($request);
+        // }
+        $userInfo = auth()->user();
+        $roleId = $userInfo?->user_role_id;
+        if ($userInfo->usergroup_id == 0) {
+           $roleId = setTenantData($userInfo);
+        }
+        
         if (!$roleId) {
             return response()->json(['error' => 'Unauthorized.'], Response::HTTP_UNAUTHORIZED);
         }
-
-        // Find the permission
+       
         $permission = Permission::where('module_id', $moduleId)
             ->where('action_id', $actionId)
             ->first();
@@ -35,13 +44,16 @@ class CheckPermissionMiddleware
             return response()->json(['error' => 'Permission not found.'], Response::HTTP_FORBIDDEN);
         }
 
-        // Check if this permission is assigned to the role
         $hasPermission = RolePermission::where('role_id', $roleId)
             ->where('permission_id', $permission->id)
             ->exists();
 
         if (!$hasPermission) {
             return response()->json(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($userInfo->usergroup_id == 0) {
+            getdbConnection($userInfo->domain, true);
         }
 
         return $next($request);
