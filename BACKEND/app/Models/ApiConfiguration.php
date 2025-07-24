@@ -13,4 +13,7 @@ class ApiConfiguration extends Model
         'description',
         'api_config_type_id',
     ];
+
+
+    
 }

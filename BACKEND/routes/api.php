@@ -157,8 +157,6 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::patch('audit-logs/{audit_log}', [AuditController::class, 'update'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::EDIT->value);
     Route::delete('audit-logs/{audit_log}', [AuditController::class, 'destroy'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DELETE->value);
 
-    Route::post('save-user-provider', [SmsProviderController::class, 'saveUserProvider']);  // not in frontend yet
-
     Route::post('logout', [LoginController::class, 'logout']);
 
     Route::post('/logout-agent/{user}/{extension}', [LoginController::class, 'logoutAgent']);
