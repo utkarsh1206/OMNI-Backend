@@ -126,7 +126,7 @@ class LiveAgentRepository
                 DB::raw("SUM(TIMESTAMPDIFF(SECOND, CONCAT(login_date, ' ', login_time), CONCAT(logout_date, ' ', logout_time))) as total_seconds")
             )
             ->whereDate('login_date', $today)
-            ->whereNotNull('logout_time')
+            // ->whereNotNull('logout_time')
             ->groupBy('login_date', 'user_id')
             ->get();
 

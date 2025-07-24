@@ -59,7 +59,7 @@ class UserActivityReportRepository
                 DB::raw("SUM(TIMESTAMPDIFF(SECOND, CONCAT(login_date, ' ', login_time), CONCAT(logout_date, ' ', logout_time))) as total_seconds"),
                 DB::raw("COUNT(*) as login_count")
             ])
-                ->whereNotNull('logout_time')
+                // ->whereNotNull('logout_time')
                 ->whereBetween('login_date', [$startDatetime, $endDatetime])
                 ->groupBy('login_date', 'user_id')
                 ->with('user')

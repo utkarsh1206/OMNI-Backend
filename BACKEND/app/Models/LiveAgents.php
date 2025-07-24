@@ -108,9 +108,9 @@ class LiveAgents extends Model
         try {
             $count = UserLoginLog::where('user_id', $this->user_id)
                 ->whereDate('login_date', Carbon::today())
-                ->whereNotNull('logout_time')
+                // ->whereNotNull('logout_time')
                 ->count();
-            return $count + 1;
+            return $count;
         } catch (\Throwable $th) {
             generateLogs("error", "Unable to get the login count today"); // . $th->getMessage()
         }
