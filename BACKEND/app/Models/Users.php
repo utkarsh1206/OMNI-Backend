@@ -70,9 +70,9 @@ class Users extends Authenticatable implements JWTSubject
             'role_id'  => $this->role_id,
             'domain'   => $postData['domain'] ?? null,
         ];
-
+       
         // if (isset($postData['flag']) && $postData['flag'] == 2) {
-        if (isset($postData['flag']) && ($postData['flag'] == 2 || $postData['flag'] == 3)) {
+        if (isset($postData['flag']) && (in_array($postData['flag'],[1,2,3]))) {
 
             // New permission format using IDs
             $permissions = [];
@@ -112,8 +112,15 @@ class Users extends Authenticatable implements JWTSubject
             //         }
             //     }
             // }
-
-            $permissions = getPermissionFromRoleId($this->user_role_id);
+            if ($postData['flag'] == 1) {
+                $permissions = getPermissionFromRoleIdForTenant($postData['domain']);
+                getdbConnection($postData['domain'], true);
+            }
+            else
+            {
+                 $permissions = getPermissionFromRoleId($this->user_role_id);
+            }
+          
             // Remove duplicates in action ID arrays
             // foreach ($permissions as &$actions) {
             //     $actions = array_values(array_unique($actions));

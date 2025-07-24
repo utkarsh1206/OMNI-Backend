@@ -28,7 +28,7 @@ class RoleRepository
     public function list(Request $request)
     {
         try {
-            
+
             $roles = Role::with(['tenantModules', 'actions'])->paginate($request->per_page ?? 10);
             return response()->json($roles);
         } catch (Exception $e) {
@@ -38,10 +38,9 @@ class RoleRepository
 
     public function create(RoleRequest $request)
     {
-       
+
         try {
-         
-        $role = Role::create($request->validated());
+            $role = Role::create($request->validated());
             // foreach ($request->get('permissions', []) as $perm) {
             //     $module = TenantModule::find($perm['tenant_module_id']);
             //     if (!$module) continue;
@@ -52,7 +51,7 @@ class RoleRepository
             //     }
             // }
             $roleId = $role->id;
-           
+
             $data = $request->all();
             DB::transaction(function () use ($data, $roleId) {
                 foreach ($data['permissions'] as $permSet) {
@@ -97,7 +96,7 @@ class RoleRepository
             $roleId = $role->id;
             $data = $request->all();
             DB::transaction(function () use ($data, $roleId) {
-                  $newPermissionIds = [];
+                $newPermissionIds = [];
                 foreach ($data['permissions'] as $permSet) {
                     $moduleId = $permSet['tenant_module_id'];
                     foreach ($permSet['action_ids'] as $actionId) {
@@ -114,11 +113,11 @@ class RoleRepository
                     }
                 }
                 RolePermission::where('role_id', $roleId)
-                ->whereNotIn('permission_id', $newPermissionIds)
-                ->delete();
+                    ->whereNotIn('permission_id', $newPermissionIds)
+                    ->delete();
                 Permission::whereNotIn('id', RolePermission::pluck('permission_id'))
                     ->delete();
-                });
+            });
             // foreach ($request->get('permissions', []) as $perm) {
             //     $module = TenantModule::find($perm['tenant_module_id']);
             //     if (!$module) continue;
@@ -130,7 +129,7 @@ class RoleRepository
             // }
 
             // return $this->apiResponse->getResponseStructure(trans('message.success'), $role->load(['tenantModules', 'actions']), trans('message.update_success'));
-            return response()->json($role->load(['permissions','tenantModules']));
+            return response()->json($role->load(['permissions', 'tenantModules']));
         } catch (Exception $e) {
             return $this->apiResponse->handleAndResponseException($e);
         }

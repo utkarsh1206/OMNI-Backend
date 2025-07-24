@@ -339,7 +339,7 @@ class ApiConfigurationController extends Controller
      *     )
      * )
      */
-    public function update(SmsProviderConfigurationRequest $request, $providerId)
+    public function update(ApiConfigurationRequest $request, $providerId)
     {
         return $this->apiConfigurationRepository->update($request, $providerId);
     }

@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Http;
 use App\Models\NeoxConfiguration;
 use App\Models\Permission;
 use App\Models\RolePermission;
+use App\Models\Tenant;
+use App\Models\TenantModule;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -132,7 +134,6 @@ if (! function_exists('establishDatabaseConnect')) {
 }
 
 if (!function_exists('establishMasterConnection')) {
-
     function establishMasterConnection($domain, $masterDB, $connection)
     {
         DB::purge($domain);
@@ -507,6 +508,51 @@ if (!function_exists('exportCsv')) {
         fclose($file);
 
         return asset('storage/exports/' . $filename);
+    }
+}
+
+if (! function_exists('getModuleId')) {
+    function getModuleId($moduleName)
+    {
+        $moduleInfo = TenantModule::where("name", $moduleName)->first();
+        return $moduleInfo->id ?? 0;
+    }
+}
+
+if (! function_exists('getPermissionFromRoleIdForTenant')) {
+    function getPermissionFromRoleIdForTenant($domain)
+    {
+        establishMasterConnection($domain, "omnichannel", "mysql");
+        $tenant = Tenant::select("tenant_role_id")->where('domain_name', $domain)
+            ->first();
+        $permissionData = RolePermission::where("role_id", $tenant->tenant_role_id)->pluck("permission_id");
+        $permissionInfo = Permission::with(["module", "action"])->whereIn("id", $permissionData)->get();
+        $permissionInfo = $permissionInfo->toArray();
+        $formattedPermissions = [];
+
+        foreach ($permissionInfo as $permission) {
+            $moduleName = $permission['module']['name'];
+            $actionName = $permission['action']['name'];
+
+            if (!isset($formattedPermissions[$moduleName])) {
+                $formattedPermissions[$moduleName] = [];
+            }
+
+            if (!in_array($actionName, $formattedPermissions[$moduleName])) {
+                $formattedPermissions[$moduleName][] = $actionName;
+            }
+        }
+        getdbConnection($domain, false);
+        return $formattedPermissions;
+    }
+}
+
+if (! function_exists('setTenantData')) {
+    function setTenantData($userInfo)
+    {
+        establishMasterConnection($userInfo->domain, "omnichannel", "mysql");
+        $tenant = Tenant::select("tenant_role_id")->where('domain_name', $userInfo->domain)->first();
+        return $tenant->tenant_role_id;
     }
 }
 
