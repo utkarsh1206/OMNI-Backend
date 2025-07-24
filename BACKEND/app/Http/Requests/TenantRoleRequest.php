@@ -22,7 +22,14 @@ class TenantRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-           'name' => 'required|unique:tenant_roles,name,' . optional($this->tenantrole)->id ?? null,
+           'name' => 'required|unique:roles,name,' . optional($this->tenantrole)->id ?? null,
+             'display_name' => 'required|string',
+            'description' => 'nullable|string',
+            'status'      => 'boolean',
+            'permissions' => 'nullable|array',
+            'permissions.*.tenant_module_id' => 'required_with:permissions.*.action_ids|integer|exists:tenant_modules,id',
+            'permissions.*.action_ids'       => 'required_with:permissions.*.tenant_module_id|array',
+            'permissions.*.action_ids.*'     => 'required|integer|exists:actions,id',
         ];
     }
 }
