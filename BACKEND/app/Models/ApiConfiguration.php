@@ -13,4 +13,9 @@ class ApiConfiguration extends Model
         'description',
         'api_config_type_id',
     ];
+
+    public function providers()
+    {
+        return $this->hasOne(SmsProvider::class, 'id', 'provider_id');
+    }
 }

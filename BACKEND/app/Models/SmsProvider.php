@@ -9,5 +9,8 @@ class SmsProvider extends Model
     protected $fillable = [
         'name',
         'status',
+        'type'
     ];
+
+    protected $table = "providers";
 }
