@@ -11,13 +11,12 @@ return [
    'DEFAULT_PAGE' => env('DEFAULT_PAGE', 1),
    'ALL_PAGE' => env('ALL_PAGE', 'all'),
    
-   'CHAT_360_EMAIL' => env('CHAT_360_EMAIL','sales@chat360.io'),
-   'CHAT_360_PASSWORD' => env('CHAT_360_PASSWORD','Sdr#@1234'),
-   'CHAT_360_API_KEY' => env('CHAT_360_API_KEY','t0HiHfFn.DBswDPdxcrQLeCt7bhpkciR2k7gRBwlN'),
+   'CHAT_360_EMAIL' => env('CHAT_360_EMAIL','prajapati.hitesh@stl.tech'),
+   'CHAT_360_PASSWORD' => env('CHAT_360_PASSWORD','Neoxomni@2025'),
+   'CHAT_360_API_KEY' => env('CHAT_360_API_KEY','eGsKut2S.nZMML3Ipj7kgZltmEV22BcGR9t15M4sU'),
    'CHAT_360_URL' => env('CHAT_360_URL','https://app.chat360.io/'),
-   'CHAT_FROM_PHONE' => env('CHAT_FROM_PHONE', 918799952622),
-   'CHAT_TO_PHONE' => env('CHAT_TO_PHONE', 919111882178), 
-
+   'CHAT_FROM_PHONE' => env('CHAT_FROM_PHONE', "919712900567"),
+   
    'REPORT_DATA_PER_PAGE' => 50,
 
    'RECORDING_FILE_PATH' => env('RECORDING_FILE_PATH', 'storage/app/public/recordings'),
