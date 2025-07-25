@@ -149,7 +149,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/tenant/{id}/license', [TenantLicenseController::class, 'getLicense']);
 
     //Route::apiResource('audit-logs', AuditController::class);
-    $moduleId = getModuleId("audit_report");
+    $moduleId = getModuleId("audit_reports");
     Route::get('audit-logs', [AuditController::class, 'index'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
     Route::post('audit-logs', [AuditController::class, 'store'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::CREATE->value);
     Route::get('audit-logs/{audit_log}', [AuditController::class, 'show'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
@@ -340,7 +340,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('notification', [SupportTicketNotificationController::class, 'index']);
 
     // Ticket Report
-    $moduleId = getModuleId("ticket_report");
+    $moduleId = getModuleId("ticket_reports");
     Route::get('ticketReport', [TicketReportController::class, 'ticketReport'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
     Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DOWNLOAD->value);
 
@@ -355,7 +355,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('sla-settings', SlaSettingController::class);
 
     // SLA Report
-    $moduleId = getModuleId("sla_report");
+    $moduleId = getModuleId("sla_reports");
     Route::get('slareport', [SlaReportController::class, 'generateReport'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
     Route::get('slareport/csv', [SlaReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DOWNLOAD->value);
     Route::get('sla-priority', [SlaReportController::class, 'prioritySLA'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
@@ -402,7 +402,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     });
 
     Route::prefix('call-log-report')->group(function () {
-        $moduleId = getModuleId("call_log_report");
+        $moduleId = getModuleId("call_log_reports");
         Route::get('list', [CallLogReportController::class, 'list'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
         Route::get('csv', [CallLogReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DOWNLOAD->value);
         Route::get('chart-summary', [CallLogReportController::class, 'getChartSummary'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
@@ -412,7 +412,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     });
 
     Route::prefix('user-activity-report')->group(function () {
-        $moduleId = getModuleId("user_activity_report");
+        $moduleId = getModuleId("user_activity_reports");
         Route::get('list', [UserActivityReportController::class, 'list'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
         Route::get('user-activity', [UserActivityReportController::class, 'userActivity'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::VIEW->value);
         Route::get('csv', [UserActivityReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class.":$moduleId,".PermissionAction::DOWNLOAD->value);
