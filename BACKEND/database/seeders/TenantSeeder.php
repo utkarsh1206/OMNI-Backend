@@ -14,7 +14,6 @@ class TenantSeeder extends Seeder
             ApiConfigurationTypeSeeder::class,
             MailTemplateSeeder::class,
             ModuleSeeder::class,
-            SmsProviderSeeder::class,
             SmsTemplateSeeder::class,
             SubModuleSeeder::class,
             TenantPrioritySeeder::class,

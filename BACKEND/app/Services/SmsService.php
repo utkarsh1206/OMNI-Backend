@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\UserSmsGateway;
 use Twilio\Rest\Client as TwilioClient;
 use App\Models\ApiConfiguration;
+use App\Models\SmsProvider;
 use GuzzleHttp\Client as GuzzleClient;
 use Exception;
 use App\Models\SmsProviderLog;
@@ -24,16 +24,16 @@ class SmsService implements ShouldQueue
      */
     public function sendSMS(int $userId, string $templateName, string $message, string $toPhone)
     {
-        $userGateway = UserSmsGateway::where('user_id', $userId)->first();
+        $userGateway = SmsProvider::where(['status'=>"active","type"=>1])->orderBy("id","desc")->first();
        
         // if (!$userGateway) {
         //     throw new Exception('No SMS gateway selected for this user.');
         // }
 
-        if ($userGateway && $userGateway->provider_id) {
-            $providerId = $userGateway->provider_id;
+        if ($userGateway && $userGateway->id) {
+            $providerId = $userGateway->id;
             // Based on the provider, call the respective API
-            switch ($userGateway->provider->name) {
+            switch ($userGateway->name) {
                 case 'twilio':
                     $configArr = ApiConfiguration::where(["provider_id" => $providerId,"api_config_type_id" => 1])->pluck("config_value", "config_key");
                     return $this->sendWithTwilio($message, $toPhone, $configArr);
