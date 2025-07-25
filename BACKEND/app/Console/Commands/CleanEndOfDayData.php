@@ -28,6 +28,7 @@ class CleanEndOfDayData extends Command
      */
     public function handle()
     {
+        generateScheduleLogs('info', 'Cleaning end of day data for all tenants started.');
         Tenant::whereNull('deleted_at')->orderBy('id')
             ->chunkById(100, function ($tenants) {
                 foreach ($tenants as $tenant) {
@@ -39,5 +40,6 @@ class CleanEndOfDayData extends Command
                     LiveAgents::on($newConnectionName)->truncate();
                 }
             });
+        generateScheduleLogs('info', 'Cleaning end of day data for all tenants completed.');
     }
 }

@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-Artisan::command('app:sla-email-notification', function () {
-    $this->comment("Sla Email Notification");
-})->purpose('Sla Email Notification')->everyMinute();
+Schedule::command('app:sla-email-notification')->everyMinute();
 
 $allTenants = Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
     ->chunkById(100, function ($tenants) {

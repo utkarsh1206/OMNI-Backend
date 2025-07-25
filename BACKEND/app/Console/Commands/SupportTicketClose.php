@@ -35,7 +35,7 @@ class SupportTicketClose extends Command
      */
     public function handle()
     {
-
+        generateScheduleLogs('info', 'Support Ticket Close started for all tenants.');
         Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
             ->chunkById(100, function ($tenants) {
                 foreach ($tenants as $tenant) {
@@ -59,6 +59,7 @@ class SupportTicketClose extends Command
                     }
                 }
             });
+        generateScheduleLogs('info', 'Support Ticket Close completed for all tenants.');
     }
 
 
@@ -81,7 +82,7 @@ class SupportTicketClose extends Command
             'mail.from.address' =>  $sender_email,
             'mail.from.name' => $sender_name,
         ]);
-        
+
         try {
             $toEmails = "khanjan.kukadiya@stltech.in";
             $mailTemplate = MailTemplate::on($newConnectionName)->where("type", "closed_ticket")->first();

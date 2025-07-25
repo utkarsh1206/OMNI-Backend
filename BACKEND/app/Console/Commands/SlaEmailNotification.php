@@ -36,7 +36,7 @@ class SlaEmailNotification extends Command
      */
     public function handle()
     {
-
+        generateScheduleLogs('info', 'SLA Email Notification started for all tenants.');
         Tenant::orderBy('id')
             ->chunkById(100, function ($tenants) {
                 foreach ($tenants as $tenant) {
@@ -74,6 +74,7 @@ class SlaEmailNotification extends Command
                     }
                 }
             });
+        generateScheduleLogs('info', 'SLA Email Notification completed for all tenants.');
     }
 
     public function notifyViaEmail($newConnectionName, $tickets, $type)
