@@ -86,7 +86,6 @@ use App\Http\Controllers\Api\UserMessageController;
 use App\Http\Controllers\Api\IncomingCallController;
 use App\Http\Controllers\Api\ApiConfigurationTypeController;
 use App\Http\Controllers\Api\CallLogReportController;
-use App\Http\Controllers\Api\EvaluationCallReviewController;
 use App\Http\Controllers\Api\EvaluationQuestionController;
 use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
@@ -106,6 +105,7 @@ use App\Http\Controllers\Api\SupportTicketStatusController;
 use App\Http\Controllers\Api\TenantModuleController;
 use App\Http\Controllers\Api\ThirdPartyCrmController;
 use App\Http\Controllers\Api\TicketTypeController;
+use App\Http\Controllers\Api\NetworkCheckController;
 use App\Http\Middleware\CheckPermissionMiddleware;
 
 require base_path('routes/externalUse.php');
@@ -467,6 +467,8 @@ Route::prefix('user-roles')->group(function () {
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
 
-Route::post('/network-check', function () {
-    return response()->noContent();
-});
+Route::get('/network-check', [NetworkCheckController::class, 'index']);
+Route::get('/network-check/{live_agent}', [NetworkCheckController::class, 'index']);
+// Route::post('/network-check', function () {
+//     return response()->noContent();
+// });
