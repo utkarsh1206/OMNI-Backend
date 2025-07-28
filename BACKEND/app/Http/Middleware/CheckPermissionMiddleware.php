@@ -34,7 +34,7 @@ class CheckPermissionMiddleware
           
         $moduleId = getModuleId($name);
 
-        if (!$roleId || $moduleId) {
+        if (!$roleId || ($moduleId == 0)) {
             return response()->json(['error' => 'Unauthorized.'], Response::HTTP_UNAUTHORIZED);
         }
         
