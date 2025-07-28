@@ -133,7 +133,7 @@ class LiveAgentRepository
         foreach ($stats as $stat) {
             LiveAgentDailyMetric::updateOrCreate(
                 ['user_id' => $stat->user_id, 'date' => $stat->login_date],
-                ['login_seconds' => $stat->total_seconds]
+                ['login_seconds' => $stat->total_seconds ?? 0]
             );
         }
         // return ['message' => 'Login durations updated for all users.'];
