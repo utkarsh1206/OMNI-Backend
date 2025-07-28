@@ -15,11 +15,11 @@ class CheckPermissionMiddleware
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
-     * @param  int  $moduleId
+     * @param  int  $name
      * @param  int  $actionId
      * @return mixed
      */
-    public function handle(Request $request, Closure $next, $moduleId, $actionId)
+    public function handle(Request $request, Closure $next, $name, $actionId)
     {
         $token = $request->bearerToken();
         // $payload = extractPayload($token);
@@ -31,11 +31,13 @@ class CheckPermissionMiddleware
         if ($userInfo->usergroup_id == 0) {
            $roleId = setTenantData($userInfo);
         }
-        
-        if (!$roleId) {
+          
+        $moduleId = getModuleId($name);
+
+        if (!$roleId || $moduleId) {
             return response()->json(['error' => 'Unauthorized.'], Response::HTTP_UNAUTHORIZED);
         }
-       
+        
         $permission = Permission::where('module_id', $moduleId)
             ->where('action_id', $actionId)
             ->first();
