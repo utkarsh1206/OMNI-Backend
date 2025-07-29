@@ -27,7 +27,7 @@ class ApiConfigurationRequest extends FormRequest
          return [
             'provider_name' => [
                 'required',
-                Rule::unique('providers', 'provider_name')->ignore($providerId),
+                Rule::unique('providers', 'name')->ignore($providerId),
             ],
             'configurations' => 'required|array',
             'api_config_type_id' => 'required|exists:api_configuration_types,id',
