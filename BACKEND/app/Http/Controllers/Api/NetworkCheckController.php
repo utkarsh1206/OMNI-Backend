@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\NetworkCheckRequest;
 use App\Repositories\NetworkCheckRepository;
-use App\Models\LiveAgents;
+use Illuminate\Http\Request;
 
 class NetworkCheckController extends Controller
 {
@@ -16,13 +16,13 @@ class NetworkCheckController extends Controller
         $this->networkCheckRepository = $networkCheckRepository;
     }
 
-    // public function index(NetworkCheckRequest $request)
-    // {
-    //     return $this->networkCheckRepository->index($request);
-    // }
-
-    public function index(LiveAgents $live_agent)
+    public function index(Request $request)
     {
-        return $this->networkCheckRepository->index($live_agent);
+        return $this->networkCheckRepository->index($request);
     }
+
+    // public function index(LiveAgents $live_agent)
+    // {
+    //     return $this->networkCheckRepository->index($live_agent);
+    // }
 }

@@ -432,6 +432,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('user/change-status', [UserController::class, 'changeStatus']);
 
     Route::post('generate-crm-token', [ThirdPartyCrmController::class, 'forward']);
+
+    Route::post('/network-check', [NetworkCheckController::class, 'index']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
@@ -467,8 +469,5 @@ Route::prefix('user-roles')->group(function () {
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
 
-Route::get('/network-check', [NetworkCheckController::class, 'index']);
-Route::get('/network-check/{live_agent}', [NetworkCheckController::class, 'index']);
-// Route::post('/network-check', function () {
-//     return response()->noContent();
-// });
+
+// Route::get('/network-check/{live_agent}', [NetworkCheckController::class, 'index']);

@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use Illuminate\Http\Request;
 use App\Http\Response\CustomApiResponse;
+use Illuminate\Support\Facades\Auth;
 use App\Models\LiveAgents;
 use Carbon\Carbon;
 use Exception;
@@ -17,29 +17,19 @@ class NetworkCheckRepository
         $this->apiResponse = $customApiResponse;
     }
 
-    // public function index($request)
-    // {
-    //     try {
-    //         $liveAgents = LiveAgents::findOrFail($request->user_id);
-
-    //         if ($liveAgents) {
-    //             $liveAgents->status_last_updated_at = Carbon::now();
-    //             $liveAgents->save();
-    //             return response()->noContent();
-    //         }
-    //     } catch (Exception $e) {
-    //         generateLogs('error', 'Error in generating network-check : ', $e->getMessage());
-    //         return $this->apiResponse->handleAndResponseException($e);
-    //     }
-    // }
-
-    public function index(LiveAgents $liveAgent)
+    public function index()
     {
         try {
-            $liveAgent->status_last_updated_at = Carbon::now();
-            $liveAgent->save();
+            $liveAgents = LiveAgents::where('user_id', Auth::user()->id)->first();
 
-            return response()->noContent();
+            if ($liveAgents) {
+                $liveAgents->agent_last_activity = Carbon::now();
+                $liveAgents->save();
+                return response()->noContent();
+            } else {
+                
+            }
+
         } catch (Exception $e) {
             generateLogs('error', 'Error in generating network-check : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);

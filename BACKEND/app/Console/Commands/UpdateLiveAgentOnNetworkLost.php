@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use App\Models\Tenant;
 use App\Models\LiveAgents;
@@ -49,7 +48,7 @@ class UpdateLiveAgentOnNetworkLost extends Command
             $thresholdTime = Carbon::now()->subHour(); 
 
             $staleAgents = LiveAgents::on($newConnectionName)
-                ->where('status_last_updated_at', '<', $thresholdTime)
+                ->where('agent_last_activity', '<', $thresholdTime)
                 ->get();
 
             $count = $staleAgents->count();
