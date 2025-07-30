@@ -5,8 +5,8 @@ namespace Database\Seeders;
 use App\Enums\ProviderType;
 use App\Models\ApiConfiguration;
 use App\Models\SmsProvider;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class Chat360ApiConfigurationSeeder extends Seeder
 {
@@ -15,7 +15,12 @@ class Chat360ApiConfigurationSeeder extends Seeder
      */
     public function run(): void
     {
+        DB::table('providers')->truncate();
+        
+        DB::table('api_configurations')->truncate();
+
         $providers = $this->createProviders("Chat360 Auth Token", ProviderType::CHATBOT->value);
+        
         $configurations = [
             [
                 'method' => 'post',

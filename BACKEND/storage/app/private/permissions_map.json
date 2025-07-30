@@ -3,6 +3,7 @@
   "agent_chat": ["enable"],
   "audit_reports": ["view", "download"],
   "call_log_reports": ["view",  "download"],
+  "calling": ["enable"],
   "categories": ["view", "create", "edit", "delete"],
   "chat": ["enable"],
   "chatbot": ["enable"],
