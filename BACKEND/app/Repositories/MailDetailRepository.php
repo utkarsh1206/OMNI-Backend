@@ -118,7 +118,7 @@ class MailDetailRepository
         // Attempt to send the email
         try {
             generateLogs('info', 'Sending email to: ' . $request->to);
-            Mail::to($request->to)->send(new SendEmail("Test support mail sent", $request->body, $mailAttachmentUrls));
+            Mail::to($request->to)->send(new SendEmail($request->subject, $request->body, $mailAttachmentUrls));
         } catch (Exception $e) {
             generateLogs('error', 'Error in sending email: ' . $e->getMessage());
             logMessage("error", $e->getMessage(), [
