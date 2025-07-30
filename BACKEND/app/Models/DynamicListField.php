@@ -37,6 +37,7 @@ class DynamicListField extends Model
         "status",
         "field_column",
         "group_name",
+        "send_to_crm",
     ];
 
     // Define the relationship to the EcdialList model
