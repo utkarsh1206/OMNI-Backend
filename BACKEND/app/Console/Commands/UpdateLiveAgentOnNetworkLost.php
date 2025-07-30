@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Tenant;
 use App\Models\LiveAgents;
 use App\Models\UserDailyActivity;
+use App\Models\UserLoginLog;
 use App\Services\ApiRequestService;
 use App\Http\Requests\LogoutApiRequest;
 use Carbon\Carbon;
@@ -122,5 +123,40 @@ class UpdateLiveAgentOnNetworkLost extends Command
             generateLogs('error', 'Logout processing failed: ', $e->getMessage());
             return null;
         }
+    }
+
+    private function updateUserLoginLog($userId, $campaignId)
+    {
+        $latestLog = UserLoginLog::where('user_id', $userId)
+            ->where('campaign_id', $campaignId)
+            ->orderByDesc('login_date')
+            ->orderByDesc('login_time')
+            ->first();
+
+        if ($latestLog) {
+            $latestLog->update([
+                'logout_date' => Carbon::today()->toDateString(),
+                'logout_time' => Carbon::now()->toTimeString(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+    }
+
+    private function calculateLoginDuration($userId, $campaignId)
+    {
+        $loginActivity = UserDailyActivity::where('user_id', $userId)
+            ->where('campaign_id', $campaignId)
+            ->where('activity', 'Login')
+            ->whereDate('created_at', Carbon::today())
+            ->orderByDesc('id')
+            ->first();
+
+        if ($loginActivity) {
+            $diffInSeconds = Carbon::parse($loginActivity->created_at)->diffInSeconds(Carbon::now());
+
+            return gmdate('H:i:s', $diffInSeconds);
+        }
+
+        return null;
     }
 }
