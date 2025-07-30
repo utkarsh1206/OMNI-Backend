@@ -2,12 +2,16 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use App\Models\Tenant;
 use App\Models\LiveAgents;
+use App\Models\UserDailyActivity;
+use App\Services\ApiRequestService;
+use App\Http\Requests\LogoutApiRequest;
+use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class UpdateLiveAgentOnNetworkLost extends Command
 {
@@ -25,12 +29,19 @@ class UpdateLiveAgentOnNetworkLost extends Command
      */
     protected $description = 'Remove the live agent from the database if network is lost';
 
+    private $apiRequestService;
+
+    public function __construct(ApiRequestService $apiRequestService)
+    {
+        $this->apiRequestService = $apiRequestService;
+    }
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        Tenant::orderBy('id') 
+        Tenant::orderBy('id')
             ->chunkById(100, function ($tenants) {
                 foreach ($tenants as $tenant) {
                     $newConnectionName = str_replace(".", "_", $tenant->domain_name);
@@ -45,17 +56,23 @@ class UpdateLiveAgentOnNetworkLost extends Command
     public function updateLiveAgents($newConnectionName)
     {
         try {
-            $thresholdTime = Carbon::now()->subHour(); 
+            $thresholdTime = Carbon::now()->subHour();
 
             $staleAgents = LiveAgents::on($newConnectionName)
+                ->with('user')
                 ->where('agent_last_activity', '<', $thresholdTime)
                 ->get();
-
             $count = $staleAgents->count();
 
             if ($count > 0) {
                 foreach ($staleAgents as $agent) {
-                    $this->info("Deleting LiveAgent ID {$agent->id} - Last updated at: {$agent->status_last_updated_at}");
+                    $data = [
+                        'user_id' => $agent->user->username,
+                        'campaign_id' => $agent->campaign_id,
+                        'id' => $agent->user_id,
+                    ];
+                    $this->removeUserFromDialCenter($data);
+                    $this->info("Deleting LiveAgent ID {$agent->id} - Last updated at: {$agent->agent_last_activity}");
                     $agent->delete();
                 }
 
@@ -65,6 +82,44 @@ class UpdateLiveAgentOnNetworkLost extends Command
             }
         } catch (Exception $e) {
             generateLogs('error', 'Error deleting inactive LiveAgents: ', $e->getMessage());
+        }
+    }
+
+    private function removeUserFromDialCenter($userInfo)
+    {
+        try {
+            $request = new Request($userInfo);
+
+            $result = $this->apiRequestService->handleApiRequest(
+                $request,
+                'agent_logout',
+                LogoutApiRequest::class,
+            );
+
+            if ($result instanceof \Illuminate\Http\JsonResponse) {
+                $result = $result->getData(true);
+            }
+
+            if (isset($result['code']) && $result['code'] === 0) {
+                $this->updateUserLoginLog($request->id, $request->campaign_id);
+                $duration = $this->calculateLoginDuration($request->id, $request->campaign_id);
+
+                $activityData = [
+                    'campaign_id' => $request->campaign_id,
+                    'user_id' => $request->id,
+                    'activity' => 'Logout',
+                    'total_login_duration' => $duration,
+                ];
+
+                UserDailyActivity::create($activityData);
+
+                return (response()->json($result))->original + ['neox_status' => true];
+            }
+
+            return $result;
+        } catch (Exception $e) {
+            generateLogs('error', 'Logout processing failed: ', $e->getMessage());
+            return null;
         }
     }
 }
