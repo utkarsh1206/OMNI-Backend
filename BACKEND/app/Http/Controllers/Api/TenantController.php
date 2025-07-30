@@ -25,11 +25,12 @@ class TenantController extends Controller
 
     /**
      * @OA\Get(
-     *     path="api/tenants",
+     *     path="/api/tenants",
      *     summary="List tenants with filters and pagination",
      *     description="Retrieve a list of tenants based on optional filters and pagination.",
      *     operationId="listTenants",
      *     tags={"Tenants"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="searchTerm",
      *         in="query",
@@ -63,7 +64,7 @@ class TenantController extends Controller
      *         description="Filter tenants by mobile number",
      *         required=false,
      *         schema={
-     *             "type": "string"
+     *             "type": "integer"
      *         }
      *     ),
      *     @OA\Parameter(
@@ -153,7 +154,7 @@ class TenantController extends Controller
      *     @OA\Property(property="company_name", type="string"),
      *     @OA\Property(property="domain_name", type="string"),
      *     @OA\Property(property="company_code", type="string"),
-     *     @OA\Property(property="mobile", type="string")
+     *     @OA\Property(property="mobile", type="integer")
      * )
      */
     public function index(Request $request)
@@ -163,11 +164,12 @@ class TenantController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/tenants",
+     *     path="/api/tenants",
      *     summary="Create a new tenant",
      *     description="Create a new tenant with the provided details, including uploading an optional tenant logo image.",
      *     operationId="createTenant",
      *     tags={"Tenants"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -177,14 +179,14 @@ class TenantController extends Controller
      *                 required={
      *                     "username", "first_name", "last_name", "email", "password",
      *                     "mobile", "domain_name", "company_code", "company_name",
-     *                     "server_serialnumber", "server_ip", "server_mac", "domain_url", "status", "tenant_role_id"
+     *                     "domain_url", "status", "tenant_role_id"
      *                 },
      *                 @OA\Property(property="username", type="string", description="Username of the tenant"),
      *                 @OA\Property(property="first_name", type="string", description="First name of the tenant"),
      *                 @OA\Property(property="last_name", type="string", description="Last name of the tenant"),
      *                 @OA\Property(property="email", type="string", format="email", description="Email of the tenant"),
      *                 @OA\Property(property="password", type="string", format="password", description="Password for the tenant account"),
-     *                 @OA\Property(property="mobile", type="string", description="Mobile number of the tenant"),
+     *                 @OA\Property(property="mobile", type="integer", description="Mobile number of the tenant"),
      *                 @OA\Property(property="domain_name", type="string", description="Domain name of the tenant"),
      *                 @OA\Property(property="company_code", type="string", description="Company code of the tenant"),
      *                 @OA\Property(property="company_name", type="string", description="Company name of the tenant"),
@@ -192,8 +194,8 @@ class TenantController extends Controller
      *                 @OA\Property(property="server_ip", type="string", description="Server IP address"),
      *                 @OA\Property(property="server_mac", type="string", description="Server MAC address"),
      *                 @OA\Property(property="domain_url", type="string", description="URL of the domain"),
-     *                 @OA\Property(property="status", type="string", description="Status of the tenant"),
-     *                 @OA\Property(property="tenant_role_id", type="integer", description="Tenant role ID"),
+     *                 @OA\Property(property="status", type="string", description="Status of the tenant", enum={"Active", "Inactive"}),
+     *                 @OA\Property(property="tenant_role_id", type="integer", description="Tenant role ID", example=1),
      *                 @OA\Property(property="title", type="string", description="Title of the tenant (optional)"),
      *                 @OA\Property(property="footer_content", type="string", description="Footer content of the tenant (optional)"),
      *                 @OA\Property(property="footer_url", type="string", description="Footer URL for the tenant (optional)"),
@@ -270,7 +272,7 @@ class TenantController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/tenants/{tenant}",
+     *     path="/api/tenants/{tenant}",
      *     summary="Get tenant details",
      *     description="Retrieve the details of a specific tenant by ID.",
      *     operationId="getTenantDetails",
@@ -336,7 +338,7 @@ class TenantController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/tenants/{tenant}",
+     *     path="/api/tenants/{tenant}",
      *     summary="Update an existing tenant",
      *     description="Update the details of an existing tenant. Optionally, upload a new tenant logo image.",
      *     operationId="updateTenant",
@@ -359,7 +361,7 @@ class TenantController extends Controller
      *                 @OA\Property(property="last_name", type="string"),
      *                 @OA\Property(property="password", type="string", format="password"),
      *                 @OA\Property(property="email", type="string", format="email"),
-     *                 @OA\Property(property="mobile", type="string"),
+     *                 @OA\Property(property="mobile", type="integer"),
      *                 @OA\Property(property="company_code", type="string"),
      *                 @OA\Property(property="company_name", type="string"),
      *                 @OA\Property(property="server_serialnumber", type="string"),
@@ -440,7 +442,7 @@ class TenantController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/tenants/{tenant}",
+     *     path="/api/tenants/{tenant}",
      *     summary="Delete a tenant",
      *     description="Delete a specific tenant by ID.",
      *     operationId="deleteTenant",
