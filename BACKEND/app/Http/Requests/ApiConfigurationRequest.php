@@ -22,8 +22,8 @@ class ApiConfigurationRequest extends FormRequest
      */
     public function rules(): array
     {
-        $providerId = $this->route('provider');
-        
+         $providerId = $this->route('api_configuration');
+      
          return [
             'provider_name' => [
                 'required',
