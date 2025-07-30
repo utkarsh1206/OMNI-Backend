@@ -65,7 +65,7 @@ class Chat360ApiConfigurationSeeder extends Seeder
                 'method' => 'get',
                 'type' => 'json',
                 'url' => 'http://103.16.101.52:80802/bulksms/',
-                'query_params' => '?username=0418-stltest&password=stl@2024&type=0&dlr=1&destination=+919033596476&source=STNEOX&message=testyourknowledge&entityid=1101412400000010905&tempid=10073003394684999533',
+                'query_params' => '?username=0418-stltest&password=stl@2024&type=0&dlr=1&destination=[PHONE_NUMBER]&source=STNEOX&entityid=1101412400000010905',
                 'max_length' => '1024',
                 'success_code' => '200',
                 'enabled' => true,
