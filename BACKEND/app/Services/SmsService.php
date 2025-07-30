@@ -24,8 +24,8 @@ class SmsService implements ShouldQueue
      */
     public function sendSMS(int $userId, string $templateName, string $message, string $toPhone)
     {
-        $userGateway = SmsProvider::where(['status'=>"active","type"=>1])->orderBy("id","desc")->first();
-       
+        $userGateway = SmsProvider::where(['status' => "active", "type" => 1])->orderBy("id", "desc")->first();
+
         // if (!$userGateway) {
         //     throw new Exception('No SMS gateway selected for this user.');
         // }
@@ -33,21 +33,14 @@ class SmsService implements ShouldQueue
         if ($userGateway && $userGateway->id) {
             $providerId = $userGateway->id;
             // Based on the provider, call the respective API
-            switch ($userGateway->name) {
-                case 'twilio':
-                    $configArr = ApiConfiguration::where(["provider_id" => $providerId,"api_config_type_id" => 1])->pluck("config_value", "config_key");
-                    return $this->sendWithTwilio($message, $toPhone, $configArr);
-                case 'custom':
-                    $configArr = [];
 
-                    $configurations = ApiConfiguration::where(["provider_id" => $providerId,"api_config_type_id" =>1 ])->pluck("config_value", "config_key");
-                    if ($configurations->count()) {
-                        $configArr =  $configurations->toArray();
-                    }
-                    return $this->sendWithCustomProvider($templateName, $message, $toPhone, $configArr, $providerId);
-                default:
-                    throw new Exception('Unsupported SMS provider selected.');
+            $configArr = [];
+
+            $configurations = ApiConfiguration::where(["provider_id" => $providerId, "api_config_type_id" => 1])->pluck("config_value", "config_key");
+            if ($configurations->count()) {
+                $configArr =  $configurations->toArray();
             }
+            return $this->sendWithCustomProvider($templateName, $message, $toPhone, $configArr, $providerId);
         }
     }
 
@@ -74,10 +67,10 @@ class SmsService implements ShouldQueue
     private function sendWithCustomProvider(string $templateName, string $message, string $toPhone, array $configArr, $providerId)
     {
         $client = new GuzzleClient();
-        $apiName = $configArr['api_name'] ?? '';
+        // $apiName = $configArr['api_name'] ?? '';
         $queryParams = $configArr['query_params'] ?? '';
         $phoneNumber = $configArr['phone_number'] ?? '';
-        $apiUrl = $configArr['api_url'] ?? '';
+        $apiUrl = $configArr['url'] ?? '';
         $method = $configArr['method'] ?? 'GET';
         switch ($templateName) {
             case 'Ticket Created':
@@ -93,9 +86,9 @@ class SmsService implements ShouldQueue
         try {
             $queryParams = str_replace("[PHONE_NUMBER]", $toPhone, $queryParams);
             // $queryParams = str_replace("[TEMPLATE_ID]", $template_id, $queryParams);
-            $queryParams .= "&tempid=" .$template_id;
+            $queryParams .= "&tempid=" . $template_id;
             $queryParams .= "&message=" . rawurldecode($message);
-            $urlWithParams = $apiUrl . $apiName . $queryParams;
+            $urlWithParams = $apiUrl . $queryParams;
             $response = $client->request($method, $urlWithParams);
             $responseBody = json_decode($response->getBody(), true);
             if (in_array($responseBody, ["1702", "1703", "1704", "1705", "1706", "1707", "1708", "1709", "1710", "1025", "1715", "1032", "1028", "1051", "1052"])) {

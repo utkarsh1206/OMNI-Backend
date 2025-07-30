@@ -40,6 +40,7 @@ class LiveAgents extends Model
         'rank',
         'pause_seconds',
         'ready_seconds',
+        'agent_last_activity',
     ];
 
     protected $casts = [
@@ -47,6 +48,7 @@ class LiveAgents extends Model
         'login_time' => 'datetime',
         'ready_hr' => 'datetime',
         'talk_hr' => 'datetime',
+        'agent_last_activity' => 'datetime',
     ];
 
     public function user()

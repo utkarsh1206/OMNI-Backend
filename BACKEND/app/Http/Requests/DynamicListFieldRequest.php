@@ -47,6 +47,7 @@ class DynamicListFieldRequest extends FormRequest
             'duplicate_check' => ['required', Rule::in(['Y', 'N'])],
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'group_name' => ['nullable', 'string', 'max:255'],
+            'send_to_crm' => ['nullable', Rule::in(['Y', 'N'])],
         ];
 
         return [
