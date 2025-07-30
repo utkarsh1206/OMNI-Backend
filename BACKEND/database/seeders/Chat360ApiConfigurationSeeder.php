@@ -16,11 +16,11 @@ class Chat360ApiConfigurationSeeder extends Seeder
     public function run(): void
     {
         DB::table('providers')->truncate();
-        
+
         DB::table('api_configurations')->truncate();
 
         $providers = $this->createProviders("Chat360 Auth Token", ProviderType::CHATBOT->value);
-        
+
         $configurations = [
             [
                 'method' => 'post',
@@ -69,7 +69,7 @@ class Chat360ApiConfigurationSeeder extends Seeder
             [
                 'method' => 'get',
                 'type' => 'json',
-                'url' => 'http://103.16.101.52:80802/bulksms/',
+                'url' => 'http://103.16.101.52:8080/bulksms/bulksms',
                 'query_params' => '?username=0418-stltest&password=stl@2024&type=0&dlr=1&destination=[PHONE_NUMBER]&source=STNEOX&entityid=1101412400000010905',
                 'max_length' => '1024',
                 'success_code' => '200',
@@ -88,7 +88,7 @@ class Chat360ApiConfigurationSeeder extends Seeder
         ]);
     }
 
-    protected function saveConfiguration($providerId, $configurations,$type)
+    protected function saveConfiguration($providerId, $configurations, $type)
     {
         foreach ($configurations as $config) {
             foreach ($config as $key => $value) {
