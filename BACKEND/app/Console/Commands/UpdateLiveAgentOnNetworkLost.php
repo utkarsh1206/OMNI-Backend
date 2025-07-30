@@ -33,6 +33,7 @@ class UpdateLiveAgentOnNetworkLost extends Command
 
     public function __construct(ApiRequestService $apiRequestService)
     {
+        parent::__construct();
         $this->apiRequestService = $apiRequestService;
     }
 
