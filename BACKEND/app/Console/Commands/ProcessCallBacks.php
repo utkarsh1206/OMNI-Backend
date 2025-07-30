@@ -23,7 +23,7 @@ class ProcessCallBacks extends Command
                 foreach ($tenants as $tenant) {
                     $newConnectionName = str_replace(".", "_", $tenant->domain_name);
                     $databaseName = str_replace(".", "_", $tenant->domain_name);
-                    $this->establishDatabaseConnect($newConnectionName, $databaseName);
+                    establishDatabaseConnect($newConnectionName, $databaseName);
                     DB::reconnect($newConnectionName);
                     $this->updateCustomLead($newConnectionName);
                 }
