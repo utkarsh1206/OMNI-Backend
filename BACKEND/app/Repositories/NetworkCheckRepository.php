@@ -17,9 +17,16 @@ class NetworkCheckRepository
         $this->apiResponse = $customApiResponse;
     }
 
-    public function index()
+    public function index($request)
     {
         try {
+            $authorizationHeader = $request->bearerToken();
+            $payload = extractPayload($authorizationHeader);
+
+            if ($payload['role_id'] == 0) {
+                return response()->noContent();
+            }
+
             $liveAgents = LiveAgents::where('user_id', Auth::user()->id)->first();
 
             if ($liveAgents) {
@@ -27,7 +34,7 @@ class NetworkCheckRepository
                 $liveAgents->save();
                 return response()->noContent();
             } else {
-                
+                // Do Nothing
             }
 
         } catch (Exception $e) {
