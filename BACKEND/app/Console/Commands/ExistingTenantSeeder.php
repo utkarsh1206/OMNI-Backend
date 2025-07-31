@@ -28,17 +28,19 @@ class ExistingTenantSeeder extends Command
      */
     public function handle()
     {
-        Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
+        Tenant::orderBy('id')
             ->chunkById(100, function ($tenants) {
                 foreach ($tenants as $tenant) {
                     $newConnectionName = str_replace(".", "_", $tenant->domain_name);
-                    $databaseName = str_replace(".", "_", $tenant->domain_name);
-                    establishDatabaseConnect($newConnectionName, $databaseName);
+                    // $databaseName = str_replace(".", "_", $tenant->domain_name);
+                    // establishDatabaseConnect($newConnectionName, $databaseName);
+                    // DB::reconnect($newConnectionName);
+                    getDbConnection($tenant->domain_name);
                     DB::reconnect($newConnectionName);
                     Artisan::call('db:seed', [
                         '--database' => $newConnectionName,
                         '--class' => 'TenantSeeder',
-                        '--force' => true, // Run seeders in production if necessary
+                        '--force' => true,
                     ]);
                 }
             });
