@@ -46,28 +46,35 @@ class SlaEmailNotification extends Command
                     DB::reconnect($newConnectionName);
                     // Fetch support tickets for each tenant
                     $supportTickets = Supportticket::on($newConnectionName)
+                        ->whereNotIn('is_notified', [1, 2, 3, 4])
                         ->get();
                     if ($supportTickets->count()) {
                         foreach ($supportTickets as $ticket) {
                             $currentTime = Carbon::now();
                             if ($ticket->default_status == 1) {
+                                if ($currentTime->diffInSeconds($ticket->alert_before_response_notification_time) >= 0) {
+                                    $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_response_email");
+                                     $ticket->is_notified = 1;
+                                }
                                 if ($currentTime->diffInSeconds($ticket->first_response_time) >= 0) {
                                     $this->notifyViaEmail($newConnectionName, $ticket, "first_response_email");
+                                     $ticket->is_notified = 2;
                                 }
-                                if ($currentTime->diffInSeconds($ticket->alert_before_response_notification_time) == 0) {
-                                    $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_response_email");
-                                }
-                                if ($currentTime->diffInSeconds($ticket->alert_before_resolve_notification_time) == 0) {
+                                if ($currentTime->diffInSeconds($ticket->alert_before_resolve_notification_time) >= 0) {
                                     $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_resolve_email");
+                                     $ticket->is_notified = 3;
                                 }
-                                if ($currentTime->diffInSeconds($ticket->resolved_time) == 0) {
+                                if ($currentTime->diffInSeconds($ticket->resolved_time) >= 0) {
                                     $this->notifyViaEmail($newConnectionName, $ticket, "resolve_time_email");
+                                     $ticket->is_notified = 4;
                                     $adminUsers = User::on($newConnectionName)
                                         ->where("type", "=", 0)->first();
                                     $ticket->is_escalated = "Yes";
                                     $ticket->save();
                                     $this->notifyAdminViaEmail($newConnectionName, $ticket, $adminUsers, "resolve_time_email");
                                 }
+
+                                $ticket->save();
                             }
                         }
                         $this->info("Tenant: {$tenant->domain_name} - Notified " . $supportTickets->count());
