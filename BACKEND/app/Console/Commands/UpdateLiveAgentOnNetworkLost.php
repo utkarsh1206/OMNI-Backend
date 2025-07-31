@@ -21,7 +21,7 @@ class UpdateLiveAgentOnNetworkLost extends Command
      *
      * @var string
      */
-    protected $signature = 'app:update-live-agent-on-network-lost';
+    protected $signature = 'app:update-live-agent-on-network-lost {uin?}';
 
     /**
      * The console command description.
@@ -43,25 +43,28 @@ class UpdateLiveAgentOnNetworkLost extends Command
      */
     public function handle()
     {
-        Tenant::orderBy('id')
-            ->chunkById(100, function ($tenants) {
-                foreach ($tenants as $tenant) {
-                    $newConnectionName = str_replace(".", "_", $tenant->domain_name);
-                    getDbConnection($tenant->domain_name);
-                    DB::reconnect($newConnectionName);
-                    $this->updateLiveAgents($newConnectionName);
-                }
-            });
+        generateScheduleLogs('info', 'Remove the live agent from the database if network is lost Started.');
+        getDbConnection($this->argument("uin"), true);
+        $this->updateLiveAgents();
+        // Tenant::orderBy('id')
+        //     ->chunkById(100, function ($tenants) {
+        //         foreach ($tenants as $tenant) {
+        //             $newConnectionName = str_replace(".", "_", $tenant->domain_name);
+        //             getDbConnection($tenant->domain_name);
+        //             DB::reconnect($newConnectionName);
+        //             $this->updateLiveAgents($newConnectionName);
+        //         }
+        //     });
+        generateScheduleLogs('info', 'Remove the live agent from the database if network is lost completed.');
         return Command::SUCCESS;
     }
 
-    public function updateLiveAgents($newConnectionName)
+    public function updateLiveAgents()
     {
         try {
             $thresholdTime = Carbon::now()->subHour();
 
-            $staleAgents = LiveAgents::on($newConnectionName)
-                ->with('user')
+            $staleAgents = LiveAgents::with('user')
                 ->where('agent_last_activity', '<', $thresholdTime)
                 ->get();
             $count = $staleAgents->count();

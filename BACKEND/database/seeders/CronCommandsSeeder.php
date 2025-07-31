@@ -19,10 +19,8 @@ class CronCommandsSeeder extends Seeder
         $cronCommands = [
             ['command_signature' => 'app:support-ticket-close', 'type' => 'cron'],
             ['command_signature' => 'app:sla-email-notification', 'type' => 'other'],
-            ['command_signature' => 'app:existing-tenant-seeder', 'type' => 'other'],
             ['command_signature' => 'app:tenant-queue-listen', 'type' => 'other'],
             ['command_signature' => 'app:process-callbacks', 'type' => 'cron'],
-            ['command_signature' => 'app:migrate-ticket-defaults', 'type' => 'other'],
             ['command_signature' => 'app:clean-end-of-day-data', 'type' => 'cron'],
             ['command_signature' => 'app:update-live-agent-on-network-lost', 'type' => 'cron'],
         ];
