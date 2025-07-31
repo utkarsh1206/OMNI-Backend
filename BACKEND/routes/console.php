@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 // Schedule::command('app:sla-email-notification')->everyMinute();
 
-$allTenants = Tenant::where("domain_name","Tenant2000.com")->orderBy('id')
+$allTenants = Tenant::orderBy('id')
     ->chunkById(100, function ($tenants) {
         foreach ($tenants as $tenant) {
             $detailsInfo = Detail::select("uin")->where("domain",$tenant->domain_name)->first();
