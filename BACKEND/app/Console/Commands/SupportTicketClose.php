@@ -97,6 +97,7 @@ class SupportTicketClose extends Command
         $sender_email = $emailConfig->sender_email;
 
         config([
+            'mail.default' => 'smtp',
             'mail.mailers.smtp.host' => $smtpHost,
             'mail.mailers.smtp.port' => $smtpPort,
             'mail.mailers.smtp.username' => $smtpUser,
@@ -107,7 +108,7 @@ class SupportTicketClose extends Command
         ]);
 
         try {
-            $toEmails = "khanjan.kukadiya@stltech.in";
+            $toEmails = $tickets->assignedUser->email ?? '';
             $mailTemplate = MailTemplate::where("type", "closed_ticket")->first();
             $subject =  $mailTemplate->subject ?? '';
             $body =  $mailTemplate->body ?? '';

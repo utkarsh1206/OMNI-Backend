@@ -61,7 +61,7 @@ class TenantModulesSeeder extends Seeder
 
         $now = Carbon::now();
 
-        DB::table('tenant_modules')->truncate();
+        // DB::table('tenant_modules')->truncate();
 
         foreach ($modules as $module) {
             $isModule = in_array($module, $nonModules) ? '0' : '1';
