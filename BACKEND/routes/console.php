@@ -8,12 +8,12 @@ use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-// Schedule::command('app:sla-email-notification')->everyMinute();
+Schedule::command('app:sla-email-notification')->everyMinute();
 
 $allTenants = Tenant::orderBy('id')
     ->chunkById(100, function ($tenants) {
         foreach ($tenants as $tenant) {
-            $detailsInfo = Detail::select("uin")->where("domain",$tenant->domain_name)->first();
+            $detailsInfo = Detail::select("uin")->where("domain", $tenant->domain_name)->first();
             $databaseName = Str::replace(".", "_", $tenant->domain_name);
             // Config::set("database.connections.$databaseName", [
             //     'driver'    => 'mysql',

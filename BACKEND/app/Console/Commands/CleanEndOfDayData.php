@@ -2,10 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Detail;
 use App\Models\LiveAgents;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class CleanEndOfDayData extends Command
 {
@@ -28,21 +26,12 @@ class CleanEndOfDayData extends Command
      */
     public function handle()
     {
-        generateScheduleLogs('info', 'Cleaning end of day data for all tenants started.');
-        // Tenant::whereNull('deleted_at')->orderBy('id')
-        //     ->chunkById(100, function ($tenants) {
-        //         foreach ($tenants as $tenant) {
-        //             $newConnectionName = str_replace(".", "_", $tenant->domain_name);
-        //             $databaseName = str_replace(".", "_", $tenant->domain_name);
-        //             establishDatabaseConnect($newConnectionName, $databaseName);
-        //             DB::reconnect($newConnectionName);
+        $uin = $this->argument('uin');
 
-        //             LiveAgents::on($newConnectionName)->truncate();
-        //         }
-        //     });
+        generateScheduleLogs('info', "Cleaning end of day data for tenant $uin started.");
 
-        getDbConnection($this->argument("uin"), true);
+        getDbConnection($uin, true);
         LiveAgents::truncate();
-        generateScheduleLogs('info', 'Cleaning end of day data for all tenants completed.');
+        generateScheduleLogs('info', "Cleaning end of day data for tenant $uin completed.");
     }
 }

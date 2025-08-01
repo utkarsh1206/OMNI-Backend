@@ -35,8 +35,9 @@ class SupportTicketClose extends Command
      */
     public function handle()
     {
-        generateScheduleLogs('info', 'Support Ticket Close started for all tenants.');
-        getDbConnection($this->argument("uin"), true);
+        $uin = $this->argument('uin');
+        generateScheduleLogs('info', "Support Ticket Close started for $uin.");
+        getDbConnection($uin, true);
         $this->updateSupportTicket();
         // Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
         //     ->chunkById(100, function ($tenants) {
@@ -61,7 +62,7 @@ class SupportTicketClose extends Command
         //             }
         //         }
         //     });
-        generateScheduleLogs('info', 'Support Ticket Close completed for all tenants.');
+        generateScheduleLogs('info', "Support Ticket Close completed for $uin.");
     }
 
     public function updateSupportTicket()

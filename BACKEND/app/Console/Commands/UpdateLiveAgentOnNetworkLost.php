@@ -43,8 +43,9 @@ class UpdateLiveAgentOnNetworkLost extends Command
      */
     public function handle()
     {
-        generateScheduleLogs('info', 'Remove the live agent from the database if network is lost Started.');
-        getDbConnection($this->argument("uin"), true);
+        $uin = $this->argument('uin');
+        generateScheduleLogs('info', "Remove the live agent from the database if network is lost Started for $uin.");
+        getDbConnection($uin, true);
         $this->updateLiveAgents();
         // Tenant::orderBy('id')
         //     ->chunkById(100, function ($tenants) {
@@ -55,7 +56,7 @@ class UpdateLiveAgentOnNetworkLost extends Command
         //             $this->updateLiveAgents($newConnectionName);
         //         }
         //     });
-        generateScheduleLogs('info', 'Remove the live agent from the database if network is lost completed.');
+        generateScheduleLogs('info', "Remove the live agent from the database if network is lost completed for $uin.");
         return Command::SUCCESS;
     }
 

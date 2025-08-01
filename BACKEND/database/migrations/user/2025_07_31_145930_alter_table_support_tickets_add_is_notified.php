@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('support_tickets', function (Blueprint $table) {
-            $table->enum('is_notified',['1','2','3','4'])->after("is_escalated")->nullable();
+            $table->enum('is_notified', ['1', '2', '3', '4'])->after("is_escalated")->nullable();
+            $table->dateTime('response_time')->after("is_notified")->nullable();
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('support_tickets', function (Blueprint $table) {
             $table->dropColumn("is_notified");
+            $table->dropColumn("response_time");
         });
     }
 };

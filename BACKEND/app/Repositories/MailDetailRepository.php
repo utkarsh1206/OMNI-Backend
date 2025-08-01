@@ -11,6 +11,7 @@ use App\Models\EmailConfigure;
 use App\Models\SupportTicketNotification;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendEmail;
+use App\Models\SupportTicket;
 
 class MailDetailRepository
 {
@@ -53,7 +54,6 @@ class MailDetailRepository
                     'mime' => $attachment->getMimeType(),
                 ];
             }
-
             return [$attachmentUrls, $mailAttachmentUrls];
         };
 
@@ -65,6 +65,16 @@ class MailDetailRepository
             // Ensure files is an array, whether single or multiple files
             $files = is_array($files) ? $files : [$files];
             [$attachmentUrls, $mailAttachmentUrls] = $handleAttachments($files);
+        }
+
+        $supportTicket = SupportTicket::where('support_ticket_id', $request->supportticket_id)->first();
+        if ($supportTicket) {
+            $supportTicket->update([
+                'default_type' => $request->default_type,
+                'default_priority' => $request->default_priority,
+                'default_status' => $request->default_status,
+                'response_time' => now(),
+            ]);
         }
 
         // Store the mail detail

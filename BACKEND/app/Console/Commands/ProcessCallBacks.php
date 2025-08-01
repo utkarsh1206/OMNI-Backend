@@ -13,13 +13,14 @@ use Exception;
 class ProcessCallBacks extends Command
 {
     protected $signature = 'app:process-callbacks {uin?}';
- 
+
     protected $description = 'Process call backs and update custom lead tables directly';
 
     public function handle()
     {
-        generateScheduleLogs('info', 'Process call backs and update custom lead tables directly started.');
-        getDbConnection($this->argument("uin"), true);
+        $uin = $this->argument('uin');
+        generateScheduleLogs('info', "Process call backs and update custom lead tables directly started for $uin ");
+        getDbConnection($uin, true);
         $this->updateCustomLead();
         // Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
         //     ->chunkById(100, function ($tenants) {
@@ -31,7 +32,7 @@ class ProcessCallBacks extends Command
         //             $this->updateCustomLead($newConnectionName);
         //         }
         //     });
-        generateScheduleLogs('info', 'Process call backs and update custom lead tables directly completed.');
+        generateScheduleLogs('info', "Process call backs and update custom lead tables directly completed for $uin ");
         return Command::SUCCESS;
     }
 
