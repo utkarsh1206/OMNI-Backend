@@ -159,6 +159,7 @@ class DynamicListFieldsRepository
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'field_column' => ['nullable', 'string', 'max:1'],
             'group_name' => ['nullable', 'string', 'max:255'],
+            'send_to_crm' => ['nullable', Rule::in(['Y', 'N'])],
         ];
 
         try {

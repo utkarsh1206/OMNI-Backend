@@ -2,13 +2,13 @@
 
 namespace App\Mail;
 
+use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SendEmail extends Mailable implements ShouldQueue
+class SendEmail extends Mailable
 {
-    use SerializesModels;
+    use Queueable, SerializesModels;
 
     public $subject;
     public $content;

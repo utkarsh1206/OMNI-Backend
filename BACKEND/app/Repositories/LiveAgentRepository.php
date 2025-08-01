@@ -126,14 +126,14 @@ class LiveAgentRepository
                 DB::raw("SUM(TIMESTAMPDIFF(SECOND, CONCAT(login_date, ' ', login_time), CONCAT(logout_date, ' ', logout_time))) as total_seconds")
             )
             ->whereDate('login_date', $today)
-            ->whereNotNull('logout_time')
+            // ->whereNotNull('logout_time')
             ->groupBy('login_date', 'user_id')
             ->get();
 
         foreach ($stats as $stat) {
             LiveAgentDailyMetric::updateOrCreate(
                 ['user_id' => $stat->user_id, 'date' => $stat->login_date],
-                ['login_seconds' => $stat->total_seconds]
+                ['login_seconds' => $stat->total_seconds ?? 0]
             );
         }
         // return ['message' => 'Login durations updated for all users.'];

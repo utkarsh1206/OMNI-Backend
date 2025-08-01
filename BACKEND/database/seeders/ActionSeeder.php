@@ -25,6 +25,8 @@ class ActionSeeder extends Seeder
         ];
 
         $now = Carbon::now();
+        
+        // DB::table('actions')->truncate();
 
         foreach ($modules as $module) {
             DB::table('actions')->updateOrInsert(

@@ -11,6 +11,7 @@ use App\Models\EmailConfigure;
 use App\Models\SupportTicketNotification;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendEmail;
+use App\Models\SupportTicket;
 
 class MailDetailRepository
 {
@@ -53,7 +54,6 @@ class MailDetailRepository
                     'mime' => $attachment->getMimeType(),
                 ];
             }
-
             return [$attachmentUrls, $mailAttachmentUrls];
         };
 
@@ -67,12 +67,23 @@ class MailDetailRepository
             [$attachmentUrls, $mailAttachmentUrls] = $handleAttachments($files);
         }
 
+        $supportTicket = SupportTicket::where('support_ticket_id', $request->supportticket_id)->first();
+        if ($supportTicket) {
+            $supportTicket->update([
+                'default_type' => $request->default_type,
+                'default_priority' => $request->default_priority,
+                'default_status' => $request->default_status,
+                'response_time' => now(),
+            ]);
+        }
+
         // Store the mail detail
         $mailDetail = MailDetail::create([
             'supportticket_id' => $request->supportticket_id,
             // 'date' => gmdate('Y-m-d H:i:s'),
             'date' => date('Y-m-d H:i:s'),
-            'user_id' => $request->user_id,
+            // 'user_id' => $request->user_id,
+            "user_id" => auth()->user()->id,
             'type' => $request->default_type,
             'priority' => $request->default_priority,
             'status' => $request->default_status,
@@ -87,28 +98,39 @@ class MailDetailRepository
         SupportTicketNotification::create([
             'type' => $request->default_status ?? "",
             'comment' => "",
-            'support_ticket_id' => $request->supportticket_id,
+            'support_ticket_id' => $request->id,
             'date' => gmdate('Y-m-d H:i:s'),
+            'created_by' => auth()->user()->id,
+            'status' => '1',
+            'comment' => "Ticket Replied",
+            'icon' => 'cilSend',
+            'color' => 'info',
         ]);
 
         // Get email configuration settings
-        $emailConfig = EmailConfigure::where('type', 'gmail')->first();
+        // $emailConfig = EmailConfigure::where('type', 'gmail')->first();
+        // generateLogs('info', 'Email configuration fetched ' . json_encode($emailConfig));
+        // // Update mail configuration dynamically based on the stored settings
+        // config([
+        //     'mail.default' => 'smtp',
+        //     'mail.mailers.smtp.host' => $emailConfig->smtp_host,
+        //     'mail.mailers.smtp.port' => $emailConfig->smtp_port,
+        //     'mail.mailers.smtp.username' => $emailConfig->smtp_user,
+        //     'mail.mailers.smtp.password' => $emailConfig->smtp_password,
+        //     'mail.mailers.smtp.encryption' => $emailConfig->smtp_port == 587 ? 'TLS' : 'SSL',
+        //     'mail.from.address' => $emailConfig->sender_email,
+        //     'mail.from.name' => $emailConfig->sender_name,
+        // ]);
+        // generateLogs('info', 'Mail configuration updated dynamically');
 
-        // Update mail configuration dynamically based on the stored settings
-        config([
-            'mail.mailers.smtp.host' => $emailConfig->smtp_host,
-            'mail.mailers.smtp.port' => $emailConfig->smtp_port,
-            'mail.mailers.smtp.username' => $emailConfig->smtp_user,
-            'mail.mailers.smtp.password' => $emailConfig->smtp_password,
-            'mail.mailers.smtp.encryption' => $emailConfig->smtp_port == 587 ? 'TLS' : 'SSL',
-            'mail.from.address' => $emailConfig->sender_email,
-            'mail.from.name' => $emailConfig->sender_name,
-        ]);
+        setEmailConfig();
 
         // Attempt to send the email
         try {
-            Mail::to($request->to)->send(new SendEmail("Test support mail sent", $request->body, $mailAttachmentUrls));
+            generateLogs('info', 'Sending email to: ' . $request->to);
+            Mail::to($request->to)->send(new SendEmail($request->subject, $request->body, $mailAttachmentUrls));
         } catch (Exception $e) {
+            generateLogs('error', 'Error in sending email: ' . $e->getMessage());
             logMessage("error", $e->getMessage(), [
                 'error' => $e->getMessage(),
                 'recipient' => $request->to,
@@ -116,7 +138,7 @@ class MailDetailRepository
             ]);
             return $this->apiResponse->handleAndResponseException($e);
         }
-
+        generateLogs('info', 'Email sent successfully to: ' . $request->to);
         // Return a successful response
         return $this->apiResponse->getResponseStructure(
             trans('message.success'),

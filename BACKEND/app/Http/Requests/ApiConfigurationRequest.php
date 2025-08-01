@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ApiConfigurationRequest extends FormRequest
 {
@@ -21,8 +22,13 @@ class ApiConfigurationRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'provider_name' => 'required',
+         $providerId = $this->route('api_configuration');
+      
+         return [
+            'provider_name' => [
+                'required',
+                Rule::unique('providers', 'name')->ignore($providerId),
+            ],
             'configurations' => 'required|array',
             'api_config_type_id' => 'required|exists:api_configuration_types,id',
         ];

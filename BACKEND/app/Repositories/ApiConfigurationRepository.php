@@ -2,11 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Enums\ProviderType;
 use Illuminate\Http\Request;
 use App\Models\ApiConfiguration;
 use App\Models\SmsProvider;
-use App\Models\ChatBotProvider;
 use App\Http\Response\CustomApiResponse;
+use App\Models\ApiConfigurationType;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use App\Models\Detail;
@@ -68,28 +69,24 @@ class ApiConfigurationRepository
     public function store($request)
     {
         try {
-            if($request->api_config_type_id == 1)
-            {
-                $smsProviers = SmsProvider::Create([
+            $smsProviers = SmsProvider::Create([
                     "name" => $request->provider_name,
+                    "type"=>$request->api_config_type_id,
                 ]);
-            }
+            
             $requestConfig = $request->configurations;
-            if($request->api_config_type_id == 3)
+            if($request->api_config_type_id == ProviderType::CHATBOT->value)
             {
-                $smsProviers = ChatBotProvider::Create([
-                    "name" => $request->provider_name,
-                ]);
                 establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
                 $detailsInfo = Detail::where("domain",auth()->user()->domain)->first();
-                $uid = $detailsInfo->uin ?? '';
+                $uid = $detailsInfo->uin;
                 $webhookUrl = url("api/fetch-session-messages/".$uid);
                 $requestConfig[0]['web_hook_url'] = $webhookUrl;
-
-                $webhookUrl = url("api/chatbot-room-id/".$uid);
+                $webhookUrl = url("api/chatbot-room-id/");
                 $requestConfig[0]['web_hook_auth_url'] = $webhookUrl;
+                getDbConnection($detailsInfo->domain, true);
             }
-            // getDbConnection($detailsInfo->domain);
+           
             if (count($requestConfig) > 0) {
                 foreach ($requestConfig as $config) {
                     foreach ($config as $key => $value) {
@@ -183,8 +180,14 @@ class ApiConfigurationRepository
               $providerInfo->where(["api_config_type_id" => request()->api_config_type_id]);
             }
             $providerInfo = $providerInfo->get();
-
+            $typeArr = [];
+            $apiConfigTypes = ApiConfigurationType::pluck("name","id");
+            if($apiConfigTypes->count())
+            {
+                 $typeArr = $apiConfigTypes->toArray();
+            }
             return [
+                'provider_type' =>  $typeArr[$item->type] ?? '' ,
                 'provider_id' => $item->id ?? '',
                 'provider_name' => $item->name ?? '',
                 'configurations' => $providerInfo

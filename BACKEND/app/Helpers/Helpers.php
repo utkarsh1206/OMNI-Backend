@@ -325,6 +325,26 @@ if (!function_exists('generateLogs')) {
     }
 }
 
+if (!function_exists('generateScheduleLogs')) {
+
+    function generateScheduleLogs($type, $msg, $error = null)
+    {
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0] ?? null;
+        $file = isset($backtrace['file']) ? basename($backtrace['file']) : 'unknown_file';
+        $line = $backtrace['line'] ?? 'unknown_line';
+
+        $logMessage = "{$msg} | File: {$file} | Line: {$line}";
+        if ($error) {
+            $logMessage .= " | Error: {$error}";
+        }
+
+        // Log file specific to scheduler logs
+        $logFilePath = storage_path('logs/cron/schedule-' . date('Y-m-d') . '.log');
+        
+        // Log to the scheduler channel (you must define this in config/logging.php)
+        Log::channel('scheduler')->$type($logMessage);
+    }
+}
 
 if (!function_exists('logMessage')) {
     function logMessage($level, $message, $data = [])
