@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\ProviderType;
+use App\Models\ApiConfiguration;
 use Illuminate\Support\Facades\Http;
 use Exception;
 
@@ -12,7 +14,6 @@ class Chat360Service
     protected $url;
     protected $apiKey;
     protected $fromPhone;
-    protected $toPhone;
 
     public function __construct()
     {
@@ -21,22 +22,31 @@ class Chat360Service
         $this->url =  config('omni.CHAT_360_URL');
         $this->apiKey = config('omni.CHAT_360_API_KEY');
         $this->fromPhone = config('omni.CHAT_FROM_PHONE');
-        $this->toPhone = config('omni.CHAT_TO_PHONE');
     }
 
     public function login()
     {
         try {
-            $response = Http::post($this->url . 'api/auth/login', [
-                'email' => $this->email,
-                'password' => $this->password,
+            $apiData = $this->getApiConfig('Chat360 Auth Token');
+            $method = $apiData['method'] ?? 'post';
+            $url = $apiData['url'] ?? $this->url . 'api/auth/login';
+            $email = $apiData['params']['email'] ?? $this->email;
+            $password = $apiData['params']['password'] ?? $this->password;
+          
+            $response = Http::$method($url, [
+                'email' => $email,
+                'password' => $password,
             ]);
-
-            if ($response->status() == 200) {
-                return $response->json();
+            if (! $response->ok()) {
+                generateLogs('error', 'Failed for Authentication for Chat360.');
+                return null;
             }
 
-            return null;
+            // if ($response->status() == $apiData['success_code']) {
+                
+            // }
+
+            return $response->json();
         } catch (Exception $e) {
             generateLogs('error', 'Error in Login API Calling : ', $e->getMessage());
             return $e->getMessage();
@@ -58,11 +68,16 @@ class Chat360Service
     public function getChatHistory($roomId)
     {
         try {
+            $apiData = $this->getApiConfig('Chat360 Fetch Message');
+            $method = $apiData['method'] ?? 'get'; 
+            $url = $apiData['url'] ?? $this->url . 'api/clientwidget_updated/chatroom/';
+            $apiKey = $apiData['params']['APIKEY'] ?? $this->apiKey;
+          
             $response = Http::withHeaders([
                 'Authorization' => 'Basic ' . $this->getAccessToken(),
                 'Cookie' => 'csrftoken=P8PSxHtwF5mI9grg1qhGrYtL55ScXbQoruVlnrdZXj8HWNF0pPcp7MDhpXGt1pDR',
-            ])->get($this->url . 'api/clientwidget_updated/chatroom/' . $roomId, [
-                'api_key' => $this->apiKey,
+            ])->$method($url . $roomId, [
+                'api_key' => $apiKey,
             ]);
 
             if (! $response->ok()) {
@@ -80,10 +95,16 @@ class Chat360Service
     public function sendMessage(string $type, array $payload, string $phoneNumber)
     {
         try {
+            $apiData = $this->getApiConfig('Chat360 Send Message');
+            $method = $apiData['method'] ?? 'post'; 
+            $url = $apiData['url'] ?? $this->url . 'api/whatsapp/whatsapp-session-messages';
+            $apiKey = $apiData['params']['APIKEY'] ?? $this->apiKey;
+            $fromPhone = $apiData['params']['PHONE'] ?? $this->fromPhone;
+
             $message = [
-                'api_key' => $this->apiKey,
-                'from' => $this->fromPhone,
-                'to' => (string)$phoneNumber, // $this->toPhone,
+                'api_key' => $apiKey,
+                'from' => $fromPhone,
+                'to' => (string)$phoneNumber,
                 'recipient_type' => 'individual',
                 'type' => $type,
             ];
@@ -137,8 +158,8 @@ class Chat360Service
             }
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->getAccessToken(),
-            ])->post($this->url . 'api/whatsapp/whatsapp-session-messages', $message);
-           
+            ])->$method($url, $message);
+
             if (! $response->ok()) {
                 generateLogs('error', 'Failed send data to Chat360.');
                 return $response->body();
@@ -149,5 +170,25 @@ class Chat360Service
             generateLogs('error', 'Error in API Calling : ', $e->getMessage());
             return $e->getMessage();
         }
+    }
+
+    protected function getApiConfig($type)
+    {
+        $apiData = ApiConfiguration::whereHas('providers', function ($q) use ($type) {
+            $q->where('name', $type);
+            $q->where('type', ProviderType::CHATBOT->value);
+        })->pluck('config_value', 'config_key');
+
+        $params = [];
+        if (!empty($apiData['query_params'])) {
+            parse_str($apiData['query_params'], $params);
+        }
+
+        return [
+            'method' => $apiData['method'],
+            'url' => $apiData['url'],
+            'params' =>  $params,
+            'successCode' => $apiData['success_code'],
+        ];
     }
 }

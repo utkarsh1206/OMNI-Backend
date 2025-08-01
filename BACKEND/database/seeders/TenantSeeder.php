@@ -12,9 +12,9 @@ class TenantSeeder extends Seeder
         $this->call([
             ActionSeeder::class,
             ApiConfigurationTypeSeeder::class,
+            Chat360ApiConfigurationSeeder::class,
             MailTemplateSeeder::class,
             ModuleSeeder::class,
-            SmsProviderSeeder::class,
             SmsTemplateSeeder::class,
             SubModuleSeeder::class,
             TenantPrioritySeeder::class,

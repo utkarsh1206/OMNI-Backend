@@ -22,8 +22,8 @@ class MailDetailRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date' => 'required|date',
-            'user_id' => 'required|integer|exists:users,id', // assuming you have a users table
+            'date' => 'nullable|date',
+            'user_id' => 'nullable|integer|exists:users,id', // assuming you have a users table
             'default_type' => 'required|string',
             'default_priority' => 'required|string',
             'default_status' => 'required|string',

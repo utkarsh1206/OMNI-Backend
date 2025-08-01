@@ -21,7 +21,7 @@ class SupportTicketClose extends Command
      *
      * @var string
      */
-    protected $signature = 'app:support-ticket-close';
+    protected $signature = 'app:support-ticket-close {uin?}';
 
     /**
      * The console command description.
@@ -35,36 +35,60 @@ class SupportTicketClose extends Command
      */
     public function handle()
     {
+        $uin = $this->argument('uin');
+        generateScheduleLogs('info', "Support Ticket Close started for $uin.");
+        getDbConnection($uin, true);
+        $this->updateSupportTicket();
+        // Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
+        //     ->chunkById(100, function ($tenants) {
+        //         foreach ($tenants as $tenant) {
+        //             $newConnectionName = str_replace(".", "_", $tenant->domain_name);
+        //             $databaseName = str_replace(".", "_", $tenant->domain_name);
+        //             establishDatabaseConnect($newConnectionName, $databaseName);
+        //             DB::reconnect($newConnectionName);
+        //             // Fetch support tickets for each tenant
+        //             $supportTickets = Supportticket::on($newConnectionName)
+        //                 ->where("default_status", "Resolved")
+        //                 ->whereDate('updated_at', '<=', Carbon::now()->subDays(7))
+        //                 ->get();
+        //             if ($supportTickets->count()) {
+        //                 foreach ($supportTickets as $ticket) {
+        //                     $ticket->default_status = 'Closed';
+        //                     $ticket->save();
+        //                     $this->notifyViaEmail($newConnectionName, $ticket);
+        //                 }
 
-        Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
-            ->chunkById(100, function ($tenants) {
-                foreach ($tenants as $tenant) {
-                    $newConnectionName = str_replace(".", "_", $tenant->domain_name);
-                    $databaseName = str_replace(".", "_", $tenant->domain_name);
-                    $this->establishDatabaseConnect($newConnectionName, $databaseName);
-                    DB::reconnect($newConnectionName);
-                    // Fetch support tickets for each tenant
-                    $supportTickets = Supportticket::on($newConnectionName)
-                        ->where("default_status", "Resolved")
-                        ->whereDate('updated_at', '<=', Carbon::now()->subDays(7))
-                        ->get();
-                    if ($supportTickets->count()) {
-                        foreach ($supportTickets as $ticket) {
-                            $ticket->default_status = 'Closed';
-                            $ticket->save();
-                            $this->notifyViaEmail($newConnectionName, $ticket);
-                        }
-
-                        $this->info("Tenant: {$tenant->domain_name} - Updated " . $supportTickets->count() . " tickets to 'Closed'.");
-                    }
-                }
-            });
+        //                 $this->info("Tenant: {$tenant->domain_name} - Updated " . $supportTickets->count() . " tickets to 'Closed'.");
+        //             }
+        //         }
+        //     });
+        generateScheduleLogs('info', "Support Ticket Close completed for $uin.");
     }
 
-
-    public function notifyViaEmail($newConnectionName, $tickets)
+    public function updateSupportTicket()
     {
-        $emailConfig = EmailConfigure::on($newConnectionName)->where('type', 'custom')->first();
+        try {
+            $supportTickets = Supportticket::where("default_status", "Resolved")
+                ->whereDate('updated_at', '<=', Carbon::now()->subDays(7))
+                ->get();
+            if ($supportTickets->count()) {
+                foreach ($supportTickets as $ticket) {
+                    $ticket->default_status = 'Closed';
+                    $ticket->save();
+                    $this->notifyViaEmail($ticket);
+                }
+
+                $this->info("Tenant - Updated " . $supportTickets->count() . " tickets to 'Closed'.");
+            }
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in notifyViaEmail : ', $e->getMessage());
+            exit;
+        }
+    }
+
+    public function notifyViaEmail($tickets)
+    {
+        $emailConfig = EmailConfigure::where('type', 'custom')->first();
         $smtpHost = $emailConfig->smtp_host;
         $smtpPort = $emailConfig->smtp_port;
         $smtpUser = $emailConfig->smtp_user;
@@ -73,6 +97,7 @@ class SupportTicketClose extends Command
         $sender_email = $emailConfig->sender_email;
 
         config([
+            'mail.default' => 'smtp',
             'mail.mailers.smtp.host' => $smtpHost,
             'mail.mailers.smtp.port' => $smtpPort,
             'mail.mailers.smtp.username' => $smtpUser,
@@ -81,44 +106,27 @@ class SupportTicketClose extends Command
             'mail.from.address' =>  $sender_email,
             'mail.from.name' => $sender_name,
         ]);
-        
+
         try {
-            $toEmails = "khanjan.kukadiya@stltech.in";
-            $mailTemplate = MailTemplate::on($newConnectionName)->where("type", "closed_ticket")->first();
+            $toEmails = $tickets->assignedUser->email ?? '';
+            $mailTemplate = MailTemplate::where("type", "closed_ticket")->first();
             $subject =  $mailTemplate->subject ?? '';
             $body =  $mailTemplate->body ?? '';
             $subject = str_replace("{ticket_number}", $tickets->support_ticket_id, $subject);
             $body = str_replace("{ticket_number}", $tickets->support_ticket_id, $body);
             Mail::to($toEmails)->send(new SendEmail($subject, $body));
 
-            logEmail([
-                "user_id" => $tickets->assign_to_id,
-                "email_template_id" => $mailTemplate->id,
-                "from_email" => $sender_email,
-                "module_name" => "Support Ticket",
-                "entity_id" => $tickets->id,
-                "status" => "sent",
-            ], $newConnectionName);
+            // logEmail([
+            //     "user_id" => $tickets->assign_to_id,
+            //     "email_template_id" => $mailTemplate->id,
+            //     "from_email" => $sender_email,
+            //     "module_name" => "Support Ticket",
+            //     "entity_id" => $tickets->id,
+            //     "status" => "sent",
+            // ], $newConnectionName);
         } catch (Exception $e) {
             generateLogs('error', 'Error in notifyViaEmail : ', $e->getMessage());
             exit;
         }
-    }
-
-    public function establishDatabaseConnect($newConnectionName, $databaseName)
-    {
-        Config::set("database.connections.$newConnectionName", [
-            'driver'    => 'mysql',
-            'host'      => env('DB_HOST', '127.0.0.1'),
-            'port'      => env('DB_PORT', '3306'),
-            'database'  => $databaseName,
-            'username'  => env('DB_USERNAME'),
-            'password'  => env('DB_PASSWORD'),
-            'charset'   => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix'    => '',
-            'strict'    => true,
-            'engine'    => null,
-        ]);
     }
 }

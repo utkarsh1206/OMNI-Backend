@@ -40,6 +40,7 @@ class LiveAgents extends Model
         'rank',
         'pause_seconds',
         'ready_seconds',
+        'agent_last_activity',
     ];
 
     protected $casts = [
@@ -47,6 +48,7 @@ class LiveAgents extends Model
         'login_time' => 'datetime',
         'ready_hr' => 'datetime',
         'talk_hr' => 'datetime',
+        'agent_last_activity' => 'datetime',
     ];
 
     public function user()
@@ -108,9 +110,9 @@ class LiveAgents extends Model
         try {
             $count = UserLoginLog::where('user_id', $this->user_id)
                 ->whereDate('login_date', Carbon::today())
-                ->whereNotNull('logout_time')
+                // ->whereNotNull('logout_time')
                 ->count();
-            return $count + 1;
+            return $count;
         } catch (\Throwable $th) {
             generateLogs("error", "Unable to get the login count today"); // . $th->getMessage()
         }

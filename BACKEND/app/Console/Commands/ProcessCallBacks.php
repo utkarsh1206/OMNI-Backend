@@ -12,32 +12,36 @@ use Exception;
 
 class ProcessCallBacks extends Command
 {
-    protected $signature = 'app:process-callbacks';
- 
+    protected $signature = 'app:process-callbacks {uin?}';
+
     protected $description = 'Process call backs and update custom lead tables directly';
 
     public function handle()
     {
-        Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
-            ->chunkById(100, function ($tenants) {
-                foreach ($tenants as $tenant) {
-                    $newConnectionName = str_replace(".", "_", $tenant->domain_name);
-                    $databaseName = str_replace(".", "_", $tenant->domain_name);
-                    $this->establishDatabaseConnect($newConnectionName, $databaseName);
-                    DB::reconnect($newConnectionName);
-                    $this->updateCustomLead($newConnectionName);
-                }
-            });
+        $uin = $this->argument('uin');
+        generateScheduleLogs('info', "Process call backs and update custom lead tables directly started for $uin ");
+        getDbConnection($uin, true);
+        $this->updateCustomLead();
+        // Tenant::orderBy('id')  // Ensures consistent ordering by the ID column
+        //     ->chunkById(100, function ($tenants) {
+        //         foreach ($tenants as $tenant) {
+        //             $newConnectionName = str_replace(".", "_", $tenant->domain_name);
+        //             $databaseName = str_replace(".", "_", $tenant->domain_name);
+        //             establishDatabaseConnect($newConnectionName, $databaseName);
+        //             DB::reconnect($newConnectionName);
+        //             $this->updateCustomLead($newConnectionName);
+        //         }
+        //     });
+        generateScheduleLogs('info', "Process call backs and update custom lead tables directly completed for $uin ");
         return Command::SUCCESS;
     }
 
-    public function updateCustomLead($newConnectionName)
+    public function updateCustomLead()
     {
         try {
             $now = Carbon::now()->format('Y-m-d H:i:00');
 
-            $callbacks = CallBack::on($newConnectionName)
-                ->select('call_back_time', 'lead_id', 'list_id')
+            $callbacks = CallBack::select('call_back_time', 'lead_id', 'list_id')
                 ->where('call_back_time', $now)
                 ->get();
 
@@ -51,9 +55,8 @@ class ProcessCallBacks extends Command
                 // Find the corresponding custom lead table
                 $tableName = "custom_lead_{$listId}";
 
-                if (Schema::connection($newConnectionName)->hasTable($tableName)) {
-                    $updated = DB::connection($newConnectionName)
-                        ->table($tableName)
+                if (Schema::hasTable($tableName)) {
+                    $updated = DB::table($tableName)
                         ->where('id', $leadId)
                         ->update(['updated_at' => $callbackTime]);
 
@@ -70,25 +73,5 @@ class ProcessCallBacks extends Command
             generateLogs('error', 'Error Updating Custom Leads : ', $e->getMessage());
             exit;
         }
-    }
-
-    protected function establishDatabaseConnect($connectionName, $databaseName)
-    {
-        // Placeholder — replace with your actual logic
-        config([
-            "database.connections.$connectionName" => [
-                'driver' => 'mysql',
-                'host' => env('DB_HOST'),
-                'port' => env('DB_PORT'),
-                'database' => $databaseName,
-                'username' => env('DB_USERNAME'),
-                'password' => env('DB_PASSWORD'),
-                'charset' => 'utf8mb4',
-                'collation' => 'utf8mb4_unicode_ci',
-                'prefix' => '',
-                'strict' => true,
-                'engine' => null,
-            ]
-        ]);
     }
 }

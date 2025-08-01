@@ -44,7 +44,9 @@ class SupportTicket extends Model
         "alert_before_resolve_notification_time",
         "is_escalated",
         "category_id",
-        "usergroup_id"
+        "usergroup_id",
+        "response_time",
+        "is_notified"
     ];
 
     protected static function boot()

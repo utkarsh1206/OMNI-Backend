@@ -251,7 +251,8 @@ class SupportTicketRepository
                 $apiUser->first_name . " " . $apiUser->last_name . " has created the ticket",
                 $apiUser
             );
-            $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
+            // $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
+            $this->sendSms($apiUser, "Ticket Created", $request->contact_number, $supportTicket);
             $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0);
 
             return $this->apiResponse->getResponseStructure(
@@ -532,7 +533,7 @@ class SupportTicketRepository
         $template = $templateInfo->content ?? '';
         $template = str_replace("{#ticket ##}", $supportticket->support_ticket_id, $template);
         $template = str_replace("{#customer name#}", $apiUser->first_name . ' ' . $apiUser->last_name, $template);
-        // $smsInfo->sendSMS($apiUser->id, $templateName, $template, $phone);
+        $smsInfo->sendSMS($apiUser->id, $templateName, $template, $phone);
     }
 
     private function processAttachments(Request $request): array
@@ -613,7 +614,7 @@ class SupportTicketRepository
             establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
             $subject = $mailTemplate['subject'] ?? $request->subject;
             $body = $mailTemplate['body'] ?? $request->description;
-            $result = Mail::to($request->to_emails)->send(new SendEmail($subject, $body, $mail_attachment_urls));
+            $result = Mail::to($request->to_emails)->cc($request->cc)->bcc($request->bcc)->send(new SendEmail($subject, $body, $mail_attachment_urls));
             getDbConnection(auth()->user()->domain);
             logEmail([
                 "user_id" => $assignToId,

@@ -24,6 +24,8 @@ class PermissionSeeder extends Seeder
         $now = Carbon::now();
         $permissions = [];
 
+        DB::table('permissions')->truncate();
+
         foreach ($mapping as $module => $actions) {
             if (!isset($moduleIds[$module])) {
                 echo "Skipping: module $module not found in DB\n";

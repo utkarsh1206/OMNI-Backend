@@ -19,6 +19,7 @@ class TenantModulesSeeder extends Seeder
             'agent chat',
             'audit reports',
             'call log reports',
+            'calling',
             'categories',
             'chat',
             'chatbot',
@@ -50,6 +51,7 @@ class TenantModulesSeeder extends Seeder
             'agent chat',
             'chat',
             'chatbot',
+            'calling',
             'email',
             'evaluation',
             'live_agents',
@@ -58,6 +60,8 @@ class TenantModulesSeeder extends Seeder
         ];
 
         $now = Carbon::now();
+
+        // DB::table('tenant_modules')->truncate();
 
         foreach ($modules as $module) {
             $isModule = in_array($module, $nonModules) ? '0' : '1';
