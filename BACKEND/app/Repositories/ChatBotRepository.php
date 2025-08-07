@@ -2,12 +2,13 @@
 
 namespace App\Repositories;
 
-use App\Models\Chatbot;
-use Illuminate\Http\Request;
+use App\Events\CustomerChatbotRequest;
+use App\Http\Response\CustomApiResponse;
 use App\Http\Resources\ChatbotResource;
+use App\Models\Chatbot;
 use App\Services\ChatbotService;
 use Exception;
-use App\Http\Response\CustomApiResponse;
+use Illuminate\Http\Request;
 
 class ChatBotRepository
 {
@@ -148,6 +149,20 @@ class ChatBotRepository
             return $this->apiResponse->getResponseStructure(trans('message.success'), $chatHistory, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Message Listing of custom Chatbot: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function connectWithAgent(Request $request)
+    {
+        try {
+            $boradCastData = [
+                'session_id' => $request->session_id,
+            ];
+            broadcast(new CustomerChatbotRequest($boradCastData));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

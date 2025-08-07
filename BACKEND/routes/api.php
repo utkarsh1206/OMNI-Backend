@@ -472,3 +472,4 @@ Route::get('/actions', [ActionController::class, 'index']);
 // Route::get('/network-check/{live_agent}', [NetworkCheckController::class, 'index']);
 
 Route::post('/ask-question', [ChatBotController::class, 'askQuestion']);
+Route::post('/connect-with-agent', [ChatBotController::class, 'connectWithAgent']);
