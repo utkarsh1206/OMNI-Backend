@@ -30,6 +30,7 @@ class NetworkCheckRepository
             $liveAgents = LiveAgents::where('user_id', Auth::user()->id)->first();
 
             if ($liveAgents) {
+                $liveAgents->bypassObserver = true;
                 $liveAgents->agent_last_activity = Carbon::now();
                 $liveAgents->save();
                 return response()->noContent();
