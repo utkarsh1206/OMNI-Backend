@@ -115,8 +115,8 @@ class RoleRepository
                 RolePermission::where('role_id', $roleId)
                     ->whereNotIn('permission_id', $newPermissionIds)
                     ->delete();
-                Permission::whereNotIn('id', RolePermission::pluck('permission_id'))
-                    ->delete();
+                // Permission::whereNotIn('id', RolePermission::pluck('permission_id'))
+                    // ->delete();
             });
             // foreach ($request->get('permissions', []) as $perm) {
             //     $module = TenantModule::find($perm['tenant_module_id']);
