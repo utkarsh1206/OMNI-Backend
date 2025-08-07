@@ -8,6 +8,7 @@ use App\Models\Chatbot;
 use App\Http\Resources\ChatbotResource;
 use App\Repositories\ChatBotRepository;
 use App\Http\Requests\ChatbotRequest;
+use App\Http\Requests\ChatbotAskQuestionRequest;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 
@@ -154,8 +155,6 @@ class ChatBotController extends Controller
         return $this->chatBotRepository->create($request);
     }
 
-
-
     public function show($chatbot)
     {
         try {
@@ -255,5 +254,10 @@ class ChatBotController extends Controller
     public function destroy($id)
     {
         return $this->chatBotRepository->delete($id);
+    }
+
+    public function askQuestion(ChatbotAskQuestionRequest $request)
+    {
+        return $this->chatBotRepository->askQuestion($request);
     }
 }
