@@ -20,5 +20,5 @@ return [
    'REPORT_DATA_PER_PAGE' => 50,
 
    'RECORDING_FILE_PATH' => env('RECORDING_FILE_PATH', 'storage/app/public/recordings'),
-
+   'CHATBOT_URL' => env('PROVISIONING_OTP', 'http://10.121.25.165:8000') ,
 ];

@@ -2,19 +2,22 @@
 
 namespace App\Repositories;
 
-use App\Models\Chatbot;
-use Illuminate\Http\Request;
-use App\Http\Resources\ChatbotResource;
-use Exception;
+use App\Events\CustomerChatbotRequest;
 use App\Http\Response\CustomApiResponse;
+use App\Http\Resources\ChatbotResource;
+use App\Models\Chatbot;
+use App\Services\ChatbotService;
+use Exception;
+use Illuminate\Http\Request;
 
 class ChatBotRepository
 {
-    private $apiResponse;
+    private $apiResponse, $chatbotService;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(CustomApiResponse $customApiResponse, ChatbotService $chatbotService)
     {
         $this->apiResponse = $customApiResponse;
+        $this->chatbotService = $chatbotService;
     }
 
     public function list(Request $request)
@@ -84,7 +87,6 @@ class ChatBotRepository
             // $status = filter_var($request->input('status'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
             // $request->merge(['status' => $status]);
-
             $chatbot = Chatbot::create([
                 'question' => $request->question,
                 'answer' => $request->answer,
@@ -134,6 +136,33 @@ class ChatBotRepository
             return $this->apiResponse->getResponseStructure(trans('message.success'), $id, trans('message.chatbot_delete_success'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in deleting Chatboat: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function askQuestion(Request $request)
+    {
+        try {
+            $sessionId = $request->session_id ?? '';
+            $query = $request->question;
+            $chatHistory = $this->chatbotService->ask($sessionId, $query);
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $chatHistory, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Message Listing of custom Chatbot: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function connectWithAgent(Request $request)
+    {
+        try {
+            $boradCastData = [
+                'session_id' => $request->session_id,
+            ];
+            broadcast(new CustomerChatbotRequest($boradCastData));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
