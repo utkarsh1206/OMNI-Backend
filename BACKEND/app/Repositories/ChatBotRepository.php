@@ -6,7 +6,7 @@ use App\Events\CustomerChatbotRequest;
 use App\Http\Response\CustomApiResponse;
 use App\Http\Resources\ChatbotResource;
 use App\Models\Chatbot;
-use App\Services\ChatbotService;
+use App\Services\ChatBotService;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -14,7 +14,7 @@ class ChatBotRepository
 {
     private $apiResponse, $chatbotService;
 
-    public function __construct(CustomApiResponse $customApiResponse, ChatbotService $chatbotService)
+    public function __construct(CustomApiResponse $customApiResponse, ChatBotService $chatbotService)
     {
         $this->apiResponse = $customApiResponse;
         $this->chatbotService = $chatbotService;
@@ -96,7 +96,11 @@ class ChatBotRepository
 
             $data = new ChatbotResource($chatbot);
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.chatbot_create_success'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $data,
+                trans('message.chatbot_create_success')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in storing Chatboat: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -119,7 +123,11 @@ class ChatBotRepository
 
             $data = new ChatbotResource($chatbot);
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.chatbot_update_success'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $data,
+                trans('message.chatbot_update_success')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in updating Chatboat: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -133,7 +141,11 @@ class ChatBotRepository
 
             $chatbot->delete();
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $id, trans('message.chatbot_delete_success'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $id,
+                trans('message.chatbot_delete_success')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in deleting Chatboat: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -146,7 +158,11 @@ class ChatBotRepository
             $sessionId = $request->session_id ?? '';
             $query = $request->question;
             $chatHistory = $this->chatbotService->ask($sessionId, $query);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $chatHistory, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $chatHistory,
+                trans('message.data_fetch')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Message Listing of custom Chatbot: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
