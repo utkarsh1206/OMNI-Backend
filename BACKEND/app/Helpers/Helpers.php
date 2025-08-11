@@ -242,7 +242,7 @@ if (!function_exists('getNeoxConfig')) {
  * @throws \Exception if any error occurs during the HTTP request.
  */
 if (!function_exists('sendHttpRequest')) {
-    function sendHttpRequest($url, $method = 'POST', $data = [], $headers = [], $verifySSL = false)
+    function sendHttpRequest($url, $method = 'POST', $data = [], $headers = [], $verifySSL = false, $standardizeResponse = true)
     {
         try {
             // Set headers and prepare the request
@@ -264,6 +264,10 @@ if (!function_exists('sendHttpRequest')) {
             if ($response->successful()) {
                 // If the response contains a code, handle it
                 $responseData = $response->json();
+                if (!$standardizeResponse) {
+                    return $responseData;
+                }
+
                 if (isset($responseData['code'])) {
                     $formattedResponse = [
                         'code' => $responseData['code'],
@@ -340,7 +344,7 @@ if (!function_exists('generateScheduleLogs')) {
 
         // Log file specific to scheduler logs
         $logFilePath = storage_path('logs/cron/schedule-' . date('Y-m-d') . '.log');
-        
+
         // Log to the scheduler channel (you must define this in config/logging.php)
         Log::channel('scheduler')->$type($logMessage);
     }
