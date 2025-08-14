@@ -9,7 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class CustomerChatbotRequest implements ShouldBroadcastNow
+class CustomChatbotRequest implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -22,7 +22,7 @@ class CustomerChatbotRequest implements ShouldBroadcastNow
     {
         $this->customerChat = $data;
         // $this->domain = $domain;
-        generateLogs('info', 'broadcast Data: '.json_encode(['customerChat' => $this->customerChat]));
+        generateLogs('info', 'broadcast Data: '.json_encode(['customChatbotRequest' => $this->customerChat]));
     }
 
     /**
@@ -35,19 +35,19 @@ class CustomerChatbotRequest implements ShouldBroadcastNow
         generateLogs(
             'info',
             'Channel Name: ' . json_encode([
-                'Channel' => "customer-chat-request"
+                'Channel' => "custom-chatbot-request"
             ])
         );
         return [
-            new PrivateChannel("customer-chat-request"),
+            new PrivateChannel("custom-chatbot-request"),
         ];
     }
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: '.json_encode(['customerChat' => $this->customerChat]));
+        generateLogs('info', 'broadcastWith Data: '.json_encode(['customChatbotRequest' => $this->customerChat]));
         return [
-            'customerChat' => $this->customerChat, 
+            'customChatbotRequest' => $this->customerChat, 
         ];
     }
 }
