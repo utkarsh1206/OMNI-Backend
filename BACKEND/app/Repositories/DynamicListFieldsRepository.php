@@ -196,7 +196,7 @@ class DynamicListFieldsRepository
             $field = DynamicListField::findOrFail($id);
             $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_name));
             $tableName = 'custom_lead_' . $field->list_id;
-            
+
             if ($field->allow_field_deletion == 'N') {
                 return $this->apiResponse->getResponseStructure(
                     trans('message.error'),
@@ -204,22 +204,31 @@ class DynamicListFieldsRepository
                     trans('message.field_deletion_not_allowed')
                 );
             }
-            
+
             if ($field->allow_data_delete == 'Y') {
                 if (Schema::hasColumn($tableName, $columnName)) {
                     Schema::table($tableName, function (Blueprint $table) use ($columnName) {
                         $table->dropColumn($columnName);
                     });
                 }
-                $field->forceDelete();
             } else {
                 if (Schema::hasColumn($tableName, $columnName)) {
                     Schema::table($tableName, function (Blueprint $table) use ($columnName) {
                         $table->renameColumn($columnName, $columnName . '_deleted');
                     });
                 }
-                $field->delete();
             }
+
+            $listId = $field->list_id;
+            $fieldColumn = $field->field_column;
+            $fieldOrder = $field->field_order;
+
+            $field->delete();
+
+            DynamicListField::where('list_id', $listId)
+                ->where('field_column', $fieldColumn)
+                ->where('field_order', '>', $fieldOrder)
+                ->decrement('field_order');
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
