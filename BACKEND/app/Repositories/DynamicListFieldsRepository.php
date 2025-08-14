@@ -199,7 +199,7 @@ class DynamicListFieldsRepository
 
             if ($field->allow_field_deletion == 'N') {
                 return $this->apiResponse->getResponseStructure(
-                    trans('message.error'),
+                    false,
                     [],
                     trans('message.field_deletion_not_allowed')
                 );
