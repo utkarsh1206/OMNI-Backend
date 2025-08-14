@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ecdial_lists_fields', function (Blueprint $table) {
-            $table->enum('allow_field_deletion', ['Y', 'N'])->default('N');
+            $table->enum('allow_field_deletion', ['Y', 'N'])->default('Y');
             $table->enum('allow_data_delete', ['Y', 'N'])->default('N')->after('allow_field_deletion');
-            $table->softDeletes();
         });
     }
 
@@ -26,7 +25,6 @@ return new class extends Migration
         Schema::table('ecdial_lists_fields', function (Blueprint $table) {
             $table->dropColumn('allow_field_deletion');
             $table->dropColumn('allow_data_delete');
-            $table->dropSoftDeletes();
         });
     }
 };
