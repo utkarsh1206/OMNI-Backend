@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DynamicListField extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'ecdial_lists_fields';
 
@@ -38,6 +39,8 @@ class DynamicListField extends Model
         "field_column",
         "group_name",
         "send_to_crm",
+        "allow_field_deletion",
+        "allow_data_delete",
     ];
 
     // Define the relationship to the EcdialList model

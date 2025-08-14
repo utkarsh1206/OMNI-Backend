@@ -192,9 +192,41 @@ class DynamicListFieldsRepository
     {
         try {
             $field = DynamicListField::findOrFail($id);
-            $field->delete();
+            $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_name));
+            $tableName = 'custom_lead_' . $field->list_id;
+            
+            if ($field->allow_field_deletion == 'N') {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    [],
+                    trans('message.field_deletion_not_allowed')
+                );
+            }
+            
+            if ($field->allow_data_delete == 'Y') {
+                if (Schema::hasColumn($tableName, $columnName)) {
+                    Schema::table($tableName, function (Blueprint $table) use ($columnName) {
+                        $table->dropColumn($columnName);
+                    });
+                }
+                $field->forceDelete();
+            } else {
+                if (Schema::hasColumn($tableName, $columnName)) {
+                    Schema::table($tableName, function (Blueprint $table) use ($columnName) {
+                        $table->renameColumn($columnName, $columnName . '_deleted');
+                    });
+                }
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $id, trans('message.list_field_delete_success'));
+                $field->field_name = $field->field_name . '_deleted';
+                $field->save();
+                $field->delete();
+            }
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $id,
+                trans('message.list_field_delete_success')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in Delete EcDial: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
