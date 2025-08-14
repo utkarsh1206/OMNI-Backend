@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Events\CustomChatbotRequest;
+use App\Events\NotifyCustomer;
 use App\Http\Response\CustomApiResponse;
 use App\Http\Resources\ChatbotResource;
 use App\Models\Chatbot;
@@ -177,6 +178,21 @@ class ChatBotRepository
                 'customer_id' => 2
             ];
             broadcast(new CustomChatbotRequest($boradCastData));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function notifyCustomer(Request $request)
+    {
+        try {
+            $boradCastData = [
+                'session_id' => $request->session_id,
+                'customer_id' => $request->customer_id
+            ];
+            broadcast(new NotifyCustomer($boradCastData, auth()->user()->domain));
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());

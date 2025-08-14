@@ -308,4 +308,9 @@ class ChatBotController extends Controller
     {
         return $this->chatBotRepository->connectWithAgent($request);
     }
+
+    public function notifyCustomer(ChatbotConnectWithAgentRequest $request)
+    {
+        return $this->chatBotRepository->notifyCustomer($request);
+    }
 }
