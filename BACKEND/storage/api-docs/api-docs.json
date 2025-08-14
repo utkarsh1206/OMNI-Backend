@@ -4461,7 +4461,7 @@
         "/ask-question": {
             "post": {
                 "tags": [
-                    "ChatBot"
+                    "Chatbots"
                 ],
                 "summary": "Ask a question to the chatbot",
                 "description": "Sends a user question to the chatbot service and returns the chat history.",
@@ -25657,10 +25657,6 @@
         {
             "name": "Chatbots",
             "description": "Chatbots"
-        },
-        {
-            "name": "ChatBot",
-            "description": "ChatBot"
         },
         {
             "name": "City",

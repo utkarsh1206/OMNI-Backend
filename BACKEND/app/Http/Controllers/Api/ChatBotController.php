@@ -263,7 +263,7 @@ class ChatBotController extends Controller
      *     summary="Ask a question to the chatbot",
      *     description="Sends a user question to the chatbot service and returns the chat history.",
      *     operationId="askQuestion",
-     *     tags={"ChatBot"},
+     *     tags={"Chatbots"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
