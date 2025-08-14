@@ -160,6 +160,8 @@ class DynamicListFieldsRepository
             'field_column' => ['nullable', 'string', 'max:1'],
             'group_name' => ['nullable', 'string', 'max:255'],
             'send_to_crm' => ['nullable', Rule::in(['Y', 'N'])],
+            'allow_field_deletion' => ['nullable', Rule::in(['Y', 'N'])],
+            'allow_data_delete' => ['nullable', Rule::in(['Y', 'N'])],
         ];
 
         try {
@@ -192,9 +194,47 @@ class DynamicListFieldsRepository
     {
         try {
             $field = DynamicListField::findOrFail($id);
+            $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_name));
+            $tableName = 'custom_lead_' . $field->list_id;
+
+            if ($field->allow_field_deletion == 'N') {
+                return $this->apiResponse->getResponseStructure(
+                    false,
+                    [],
+                    trans('message.field_deletion_not_allowed')
+                );
+            }
+
+            if ($field->allow_data_delete == 'Y') {
+                if (Schema::hasColumn($tableName, $columnName)) {
+                    Schema::table($tableName, function (Blueprint $table) use ($columnName) {
+                        $table->dropColumn($columnName);
+                    });
+                }
+            } else {
+                if (Schema::hasColumn($tableName, $columnName)) {
+                    Schema::table($tableName, function (Blueprint $table) use ($columnName) {
+                        $table->renameColumn($columnName, $columnName . '_deleted');
+                    });
+                }
+            }
+
+            $listId = $field->list_id;
+            $fieldColumn = $field->field_column;
+            $fieldOrder = $field->field_order;
+
             $field->delete();
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $id, trans('message.list_field_delete_success'));
+            DynamicListField::where('list_id', $listId)
+                ->where('field_column', $fieldColumn)
+                ->where('field_order', '>', $fieldOrder)
+                ->decrement('field_order');
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $id,
+                trans('message.list_field_delete_success')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in Delete EcDial: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);

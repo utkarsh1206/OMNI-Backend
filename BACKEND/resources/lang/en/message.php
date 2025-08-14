@@ -206,6 +206,7 @@ return [
     'question_usage_type_deleted' => 'Question usage type deleted successfully.',
     'otp_send' => 'OTP sent successfully',
     'otp_verified' => 'OTP verified successfully',
+    'field_deletion_not_allowed' => 'Field deletion is not allowed for this field.',
 ]   
 ?>
 
