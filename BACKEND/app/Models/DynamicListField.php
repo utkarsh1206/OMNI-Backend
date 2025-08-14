@@ -38,6 +38,8 @@ class DynamicListField extends Model
         "field_column",
         "group_name",
         "send_to_crm",
+        "allow_field_deletion",
+        "allow_data_delete",
     ];
 
     // Define the relationship to the EcdialList model
