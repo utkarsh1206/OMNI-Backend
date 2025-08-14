@@ -174,6 +174,7 @@ class ChatBotRepository
         try {
             $boradCastData = [
                 'session_id' => $request->session_id,
+                'customer_id' => 2
             ];
             broadcast(new CustomerChatbotRequest($boradCastData));
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
