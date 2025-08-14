@@ -434,6 +434,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('generate-crm-token', [ThirdPartyCrmController::class, 'forward']);
 
     Route::post('/network-check', [NetworkCheckController::class, 'index']);
+
+    Route::post('/notify-customer', [ChatBotController::class, 'notifyCustomer']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
