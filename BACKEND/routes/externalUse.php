@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\AuthTokenController;
 use App\Http\Controllers\Api\OtpController;
 use  App\Http\Middleware\AuthTokenMiddleware;
 use App\Http\Controllers\Api\UserMessageController;
-use App\Http\Controllers\Api\WebhookCallController;
+use App\Http\Controllers\Api\ChatBotController;
 use App\Http\Controllers\Api\UserController;
 
 Route::get('generate-auth-token/{uinId}', [AuthTokenController::class, 'index']);
@@ -21,6 +21,7 @@ Route::middleware(AuthTokenMiddleware::class)->group(function () {
     // Route::post('call-hangup', [WebhookCallController::class, 'callHangup']); 
     // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
     Route::post('dc-user-logout', [UserController::class, 'dcUserLogout']);
+    Route::get('fetch-chatbot-templates', [ChatBotController::class, 'index']);
 });
 
 Route::prefix('customer-portal/{uin}')->group(function () {
