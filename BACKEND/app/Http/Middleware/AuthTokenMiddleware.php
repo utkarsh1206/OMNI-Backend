@@ -48,6 +48,7 @@ class AuthTokenMiddleware
             } else {
                 $uinId = $request->route('uinId');
                 getDbConnection($uinId->domain, true);
+                $request->attributes->set('tenant_uin', $uinId->uin);
             }
             return $next($request);
         } catch (Exception $e) {
