@@ -22,9 +22,9 @@ Route::middleware(AuthTokenMiddleware::class)->group(function () {
     // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
     Route::post('dc-user-logout', [UserController::class, 'dcUserLogout']);
     Route::get('fetch-chatbot-templates', [ChatBotController::class, 'index']);
-});
 
-Route::prefix('customer-portal/{uin}')->group(function () {
-    Route::post('/request-otp', [OtpController::class, 'requestOtp']);
-    Route::post('/verify-otp', [OtpController::class, 'verifyOtp']);
+    Route::prefix('customer-portal')->group(function () {
+        Route::post('/request-otp/{uinId}', [OtpController::class, 'requestOtp']);
+        Route::post('/verify-otp/{uinId}', [OtpController::class, 'verifyOtp']);
+    });
 });
