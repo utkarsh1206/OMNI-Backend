@@ -9,7 +9,6 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 use Exception;
-use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 class AuthTokenMiddleware
 {

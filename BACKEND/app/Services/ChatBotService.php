@@ -13,7 +13,7 @@ class ChatbotService
         $this->url = config('omni.CHATBOT_URL');
     }
 
-    protected function createSession()
+    protected function createSession($customerId)
     {
         try {
             $url = $this->url . "/create-session";
@@ -70,6 +70,58 @@ class ChatbotService
                 generateLogs(
                     'error',
                     'ChatbotService: Failed to ask query.',
+                    json_encode([
+                        'session_id' => $sessionId,
+                        'query' => $query,
+                        'response' => $response,
+                    ])
+                );
+
+                return [
+                    'answer' => 'Sorry, I could not process your request at this time.',
+                    'sources' => [],
+                    'session_id' => $sessionId
+                ];
+            }
+        } catch (\Throwable $e) {
+            generateLogs(
+                'error',
+                'ChatbotService: Exception during ask query.',
+                $e->getMessage()
+            );
+
+            return [
+                'answer' => 'An unexpected error occurred. Please try again.',
+                'sources' => [],
+                'session_id' => $sessionId
+            ];
+        }
+    }
+
+    public function getQuestions($customerId)
+    {
+        $sessionId = $this->createSession($customerId);
+
+        try {
+            $url = $this->url . "/ask";
+            $payload = [
+                'session_id' => $sessionId,
+                'query' => $query,
+            ];
+
+            $response = sendHttpRequest($url, 'POST', $payload, [], false, false);
+
+            if ($response instanceof \Illuminate\Http\JsonResponse) {
+                $response = $response->getData(true);
+            }
+
+            if (!empty($response) && isset($response['answer'])) {
+                $response['session_id'] = $sessionId;
+                return $response;
+            } else {
+                generateLogs(
+                    'error',
+                    'ChatbotService: Failed to get questions.',
                     json_encode([
                         'session_id' => $sessionId,
                         'query' => $query,

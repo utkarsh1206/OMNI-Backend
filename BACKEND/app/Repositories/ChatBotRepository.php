@@ -153,6 +153,23 @@ class ChatBotRepository
         }
     }
 
+    public function getQuestions(Request $request)
+    {
+        try {
+            $payload = extractPayload($request->bearerToken());
+            dd($payload['userid']);
+            $questions = $this->chatbotService->getQuestions($payload['userid']);
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $questions,
+                trans('message.data_fetch')
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Message Listing of custom Chatbot: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
     public function askQuestion(Request $request)
     {
         try {
