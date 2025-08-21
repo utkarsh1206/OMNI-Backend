@@ -49,6 +49,9 @@ class DatabaseServiceProvider extends ServiceProvider
             // 'api/call-hangup',
             // 'api/call-history',
             'api/dc-user-logout',
+            'api/fetch-chatbot-templates',
+            'api/customer-portal/request-otp',
+            'api/customer-portal/verify-otp',
         ];
         if (!Str::startsWith($currentRoute, $protectedPrefixes)) {
             $details = Detail::where('domain', $domain)->first();
