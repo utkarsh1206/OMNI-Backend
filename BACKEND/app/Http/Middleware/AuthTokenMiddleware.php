@@ -23,6 +23,7 @@ class AuthTokenMiddleware
                 // 'api/call-hangup',
                 // 'api/call-history',
                 'api/dc-user-logout',
+                'api/fetch-chatbot-templates',
             ];
 
             if (Str::startsWith(request()->path(), $protectedPrefixes)) {
@@ -47,6 +48,7 @@ class AuthTokenMiddleware
             } else {
                 $uinId = $request->route('uinId');
                 getDbConnection($uinId->domain, true);
+                $request->attributes->set('tenant_uin', $uinId->uin);
             }
             return $next($request);
         } catch (Exception $e) {

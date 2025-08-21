@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RequestOtpRequest;
+use App\Http\Requests\VerifyOtpRequest;
 use App\Repositories\OtpRepository;
 use Illuminate\Http\Request;
 
@@ -17,7 +19,7 @@ class OtpController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/customer-portal/{uin}/request-otp",
+     *     path="/api/customer-portal/request-otp/{uin}",
      *     summary="Request an OTP for a user",
      *     tags={"OTP"},
      *     operationId="requestOtp",
@@ -79,14 +81,14 @@ class OtpController extends Controller
      *     )
      * )
      */
-    public function requestOtp(Request $request, $uin)
+    public function requestOtp(RequestOtpRequest $request)
     {
-        return  $this->otpRepository->requestOtp($request, $uin);
+        return  $this->otpRepository->requestOtp($request);
     }
 
     /**
      * @OA\Post(
-     *     path="/api/customer-portal/{uin}/verify-otp",
+     *     path="/api/customer-portal/verify-otp/{uin}",
      *     summary="Verify the OTP for a user",
      *     tags={"OTP"},
      *     operationId="verifyOtp",
@@ -153,8 +155,8 @@ class OtpController extends Controller
      * )
      */
 
-    public function verifyOtp(Request $request, $uin)
+    public function verifyOtp(VerifyOtpRequest $request)
     {
-        return  $this->otpRepository->verifyOtp($request, $uin);
+        return  $this->otpRepository->verifyOtpNew($request);
     }
 }
