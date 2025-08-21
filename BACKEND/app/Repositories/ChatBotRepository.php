@@ -157,8 +157,14 @@ class ChatBotRepository
     {
         try {
             $payload = extractPayload($request->bearerToken());
-            dd($payload['userid']);
-            $questions = $this->chatbotService->getQuestions($payload['userid']);
+        
+            $apiPayload = [
+                'userid' => $payload['userid'],
+                'uin' => $payload['uin'],
+                'lang' => $request->lang,
+            ];
+
+            $questions = $this->chatbotService->getQuestions($apiPayload);
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $questions,

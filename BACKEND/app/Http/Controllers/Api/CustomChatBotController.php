@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetQuestionsRequest;
 use App\Http\Requests\ChatbotAskQuestionRequest;
 use App\Http\Requests\ChatbotConnectWithAgentRequest;
 use App\Repositories\ChatBotRepository;
@@ -17,7 +18,7 @@ class CustomChatBotController extends Controller
         $this->chatBotRepository = $chatBotRepository;
     }
 
-    public function getQuestions(Request $request)
+    public function getQuestions(GetQuestionsRequest $request)
     {
         return $this->chatBotRepository->getQuestions($request);
     }

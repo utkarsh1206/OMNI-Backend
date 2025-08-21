@@ -13,12 +13,16 @@ class ChatbotService
         $this->url = config('omni.CHATBOT_URL');
     }
 
-    protected function createSession($customerId)
+    protected function createSession($uin, $customerId)
     {
         try {
             $url = $this->url . "/create-session";
+            $payload = [
+                'tenant_id' => $uin,
+                'customer_id' => $customerId,
+            ];
 
-            $response = sendHttpRequest($url, 'POST', [], [], false, false);
+            $response = sendHttpRequest($url, 'POST', $payload, [], false, false);
 
             if (isset($response['session_id'])) {
                 $payload = [
@@ -98,15 +102,15 @@ class ChatbotService
         }
     }
 
-    public function getQuestions($customerId)
+    public function getQuestions($payload)
     {
-        $sessionId = $this->createSession($customerId);
+        $sessionId = $this->createSession($payload['uin'], $payload['userid']);
 
         try {
             $url = $this->url . "/ask";
             $payload = [
                 'session_id' => $sessionId,
-                'query' => $query,
+                'lang' => $payload['lang'],
             ];
 
             $response = sendHttpRequest($url, 'POST', $payload, [], false, false);
