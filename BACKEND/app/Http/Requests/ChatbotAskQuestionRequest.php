@@ -20,6 +20,16 @@ class ChatbotAskQuestionRequest extends FormRequest
     {
         return [
             'question' => 'required|string',
+            'lang' => 'required|in:english,hindi',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'question.required' => 'question is required.',
+            'lang.required' => 'Language is required.',
+            'lang.in'       => 'Language must be either english or hindi.',
         ];
     }
 
