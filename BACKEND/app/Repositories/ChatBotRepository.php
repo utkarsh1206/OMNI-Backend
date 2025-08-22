@@ -212,7 +212,8 @@ class ChatBotRepository
     {
         try {
             $boradCastData = [
-                'customer_id' => $request->customer_id
+                'customer_id' => $request->customer_id,
+                'username' => auth()->user()->username,
             ];
             broadcast(new NotifyCustomer($boradCastData, auth()->user()->domain));
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
