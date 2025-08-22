@@ -157,6 +157,6 @@ class OtpController extends Controller
 
     public function verifyOtp(VerifyOtpRequest $request)
     {
-        return  $this->otpRepository->verifyOtpNew($request);
+        return  $this->otpRepository->verifyOtp($request);
     }
 }

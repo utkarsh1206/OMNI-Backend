@@ -439,7 +439,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/get-questions', [CustomChatBotController::class, 'getQuestions']);
     Route::post('/ask-question', [CustomChatBotController::class, 'askQuestion']);
     Route::post('/connect-with-agent', [CustomChatBotController::class, 'connectWithAgent']);
-    Route::post('/notify-customer', [ChatBotController::class, 'notifyCustomer']);
+    Route::post('/notify-customer', [CustomChatBotController::class, 'notifyCustomer']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);

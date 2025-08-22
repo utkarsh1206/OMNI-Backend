@@ -8,8 +8,6 @@ use App\Models\Chatbot;
 use App\Http\Resources\ChatbotResource;
 use App\Repositories\ChatBotRepository;
 use App\Http\Requests\ChatbotRequest;
-use App\Http\Requests\ChatbotAskQuestionRequest;
-use App\Http\Requests\ChatbotConnectWithAgentRequest;
 use App\Http\Response\CustomApiResponse;
 use Exception;
 

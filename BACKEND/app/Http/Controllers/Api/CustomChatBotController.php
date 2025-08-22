@@ -70,7 +70,7 @@ class CustomChatBotController extends Controller
         return $this->chatBotRepository->askQuestion($request);
     }
 
-    public function connectWithAgent(ChatbotConnectWithAgentRequest $request)
+    public function connectWithAgent(Request $request)
     {
         return $this->chatBotRepository->connectWithAgent($request);
     }

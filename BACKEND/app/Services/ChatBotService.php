@@ -107,13 +107,9 @@ class ChatbotService
         $sessionId = $this->createSession($payload['uin'], $payload['userid']);
 
         try {
-            $url = $this->url . "/ask";
-            $payload = [
-                'session_id' => $sessionId,
-                'lang' => $payload['lang'],
-            ];
-
-            $response = sendHttpRequest($url, 'POST', $payload, [], false, false);
+            $url = $this->url . "/get-questions?language=".$payload['lang']."&session_id=";
+           
+            $response = sendHttpRequest($url, 'GET', [], [], false, false);
 
             if ($response instanceof \Illuminate\Http\JsonResponse) {
                 $response = $response->getData(true);

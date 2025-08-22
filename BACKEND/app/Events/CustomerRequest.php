@@ -8,8 +8,9 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
-class CustomChatbotRequest implements ShouldBroadcastNow
+class CustomerRequest implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -18,11 +19,11 @@ class CustomChatbotRequest implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public function __construct($data)
+    public function __construct($data, $domain)
     {
-        $this->customerChat = $data;
-        // $this->domain = $domain;
-        generateLogs('info', 'broadcast Data: '.json_encode(['customChatbotRequest' => $this->customerChat]));
+        $this->customerChat = $data['customer_id'];
+        $this->domain = convertToLower(Str::replace('.', '_', $domain));
+        generateLogs('info', 'broadcast Data: '.json_encode(['CustomerId' => $this->customerChat]));
     }
 
     /**
@@ -35,19 +36,19 @@ class CustomChatbotRequest implements ShouldBroadcastNow
         generateLogs(
             'info',
             'Channel Name: ' . json_encode([
-                'Channel' => "custom-chatbot-request"
+                'Channel' => "{$this->domain}-connect-customer"
             ])
         );
         return [
-            new PrivateChannel("custom-chatbot-request"),
+            new PrivateChannel("{$this->domain}-connect-customer"),
         ];
     }
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: '.json_encode(['customChatbotRequest' => $this->customerChat]));
+        generateLogs('info', 'broadcastWith Data: '.json_encode(['CustomerId' => $this->customerChat]));
         return [
-            'customChatbotRequest' => $this->customerChat, 
+            'CustomerId' => $this->customerChat, 
         ];
     }
 }
