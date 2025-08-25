@@ -91,6 +91,9 @@ use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
+use App\Http\Controllers\Api\ApiEndpointController;
+use App\Http\Controllers\Api\ApiImportController;
+use App\Http\Controllers\Api\ApiMappingController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
 use App\Http\Controllers\Api\EvaluationQuestionUsageTypeController;
 use App\Http\Controllers\Api\EvaluationReviewController;
@@ -475,3 +478,91 @@ Route::get('/actions', [ActionController::class, 'index']);
 
 Route::post('/ask-question', [ChatBotController::class, 'askQuestion']);
 Route::post('/connect-with-agent', [ChatBotController::class, 'connectWithAgent']);
+
+Route::prefix('endpoints')->group(function () {
+    Route::get('/', [ApiEndpointController::class, 'index']);
+    Route::post('/', [ApiEndpointController::class, 'store']);
+    Route::get('/{id}', [ApiEndpointController::class, 'getById']);
+    Route::put('/{id}', [ApiEndpointController::class, 'update']);
+    Route::delete('/{id}', [ApiEndpointController::class, 'destroy']);
+    Route::get('/{endpointId}/mappings', [ApiMappingController::class, 'getByEndpointId']);
+});
+
+Route::prefix('mappings')->group(function () {
+    Route::get('/', [ApiMappingController::class, 'index']);
+    Route::post('/', [ApiMappingController::class, 'store']);
+    Route::get('/{id}', [ApiMappingController::class, 'getById']);
+    Route::put('/{id}', [ApiMappingController::class, 'update']);
+    Route::delete('/{id}', [ApiMappingController::class, 'destroy']);
+});
+
+Route::prefix('lists')->group(function () {
+    Route::get('{listId}/endpoints', [ApiEndpointController::class, 'getByListId']);
+    Route::get('{listId}/mappings', [ApiMappingController::class, 'getByListId']);
+});
+
+Route::post('/import', [ApiImportController::class, 'import']);
+
+
+Route::get('/test-endpoint-1', function (\Illuminate\Http\Request $request) {
+    generateLogs('info', 'Test endpoint 1 accessed with data ' . json_encode($request->all()));
+    return response()->json([
+        [
+            'firstName'   => 'John',
+            'lastName'    => 'Doe',
+            'email'       => 'john.doe@example.com',
+            'phone'      => '1234567890',
+            'dob'         => '1990-01-01',
+            'description' => 'Test lead record',
+            'laptopModel' => 'HP Pavilion',
+        ],
+        [
+            'firstName'   => 'Jane',
+            'lastName'    => 'Smith',
+            'email'       => 'jane.smith@example.com',
+            'mobile'      => '9876543210',
+            'dob'         => '1992-05-05',
+            'description' => 'Second test record',
+            'laptopModel' => 'Dell XPS',
+            'subject'     => 'Follow-up',
+        ]
+    ]);
+});
+
+Route::post('/test-endpoint-2', function (\Illuminate\Http\Request $request) {
+    generateLogs('info', 'Test endpoint 2 accessed with data ' . json_encode($request->all()));
+    return response()->json([
+        'firstName'   => $request->input('firstName', 'Default'),
+        'lastName'    => $request->input('lastName', 'Default'),
+        'email'       => $request->input('email', 'test@example.com'),
+        'mobile'      => $request->input('mobile', '0000000000'),
+        'dob'         => '1985-12-12',
+        'description' => 'Returned from POST endpoint',
+        'laptopModel' => 'HP Spectre 2',
+    ]);
+});
+
+Route::get('/test-auth-endpoint-3', function (\Illuminate\Http\Request $request) {
+    generateLogs('info', 'Test auth endpoint 3 accessed');
+    $expectedKey = '123456qwerty';
+    generateLogs('info', 'Expected API key: ' . $expectedKey);
+    $authHeader = $request->header('Authorization');
+    generateLogs('info', 'Received Authorization header: ' . $authHeader);
+    if ($authHeader !== 'Apikey ' . $expectedKey) {
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Unauthorized'
+        ], 401);
+    }
+    generateLogs('info', 'Authorization successful');
+    return response()->json([
+        [
+            'firstName'   => 'Secure',
+            'lastName'    => 'User',
+            'email'       => 'secure.user@example.com',
+            'mobile'      => '1231231234',
+            'description' => 'Data from secured endpoint',
+            'laptopModel' => 'MacBook Pro'
+        ]
+    ]);
+});
