@@ -44,3 +44,13 @@ Broadcast::channel('{domain}-{id}-force-logout', function ($user, $domain, $id) 
     // return true;
     return (string) $user->id === (string) $id;
 });
+
+Broadcast::channel('custom-chatbot-request', function ($user) {
+    generateLogs('info', 'User trying to access the channel: ' . json_encode(['user' => $user]));
+    return true;
+});
+
+Broadcast::channel('notify-customer', function ($user, $domain) {
+    generateLogs('info', 'User trying to access the channel: ' . json_encode(['user' => $user]));
+    return true;
+});

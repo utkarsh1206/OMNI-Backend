@@ -8,6 +8,7 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class ChatMessagesStored implements ShouldBroadcastNow
 {
@@ -21,7 +22,7 @@ class ChatMessagesStored implements ShouldBroadcastNow
     public function __construct($data, $domain, $id)
     {
         $this->message = $data;
-        $this->domain = $domain;
+        $this->domain  = convertToLower(Str::replace('.', '_', $domain));
         $this->id = $id;
         generateLogs('info', 'broadcast Data: '.json_encode(['customerChat' => $this->message]));
     }

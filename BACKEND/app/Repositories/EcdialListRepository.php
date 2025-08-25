@@ -95,6 +95,8 @@ class EcdialListRepository
                     'duplicate_check' => 'N',
                     'status' => 1,
                     'field_column' => 'A',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
                 [
                     'field_name' => 'Last Name',
@@ -117,6 +119,8 @@ class EcdialListRepository
                     'duplicate_check' => 'N',
                     'status' => 1,
                     'field_column' => 'B',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
                 [
                     'field_name' => 'Email',
@@ -139,6 +143,8 @@ class EcdialListRepository
                     'duplicate_check' => 'Y',
                     'status' => 1,
                     'field_column' => 'C',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
                 [
                     'field_name' => 'Mobile',
@@ -152,8 +158,8 @@ class EcdialListRepository
                     'agent_view' => 'Y',
                     'field_order' => 1,
                     'field_help' => 'Enter the mobile number',
-                    'field_size' => 15,
-                    'field_max_length' => 15,
+                    'field_size' => 20,
+                    'field_max_length' => 20,
                     'search_filter' => 'Y',
                     'editable' => 'N',
                     'default_value' => null,
@@ -161,6 +167,8 @@ class EcdialListRepository
                     'duplicate_check' => 'Y',
                     'status' => 1,
                     'field_column' => 'D',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
                 [
                     'field_name' => 'Subject',
@@ -183,6 +191,8 @@ class EcdialListRepository
                     'duplicate_check' => 'N',
                     'status' => 1,
                     'field_column' => 'A',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
                 [
                     'field_name' => 'Description',
@@ -205,6 +215,8 @@ class EcdialListRepository
                     'duplicate_check' => 'N',
                     'status' => 1,
                     'field_column' => 'B',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
             ];
 

@@ -32,7 +32,7 @@ class Chat360Service
             $url = $apiData['url'] ?? $this->url . 'api/auth/login';
             $email = $apiData['params']['email'] ?? $this->email;
             $password = $apiData['params']['password'] ?? $this->password;
-          
+
             $response = Http::$method($url, [
                 'email' => $email,
                 'password' => $password,
@@ -43,7 +43,7 @@ class Chat360Service
             }
 
             // if ($response->status() == $apiData['success_code']) {
-                
+
             // }
 
             return $response->json();
@@ -69,10 +69,10 @@ class Chat360Service
     {
         try {
             $apiData = $this->getApiConfig('Chat360 Fetch Message');
-            $method = $apiData['method'] ?? 'get'; 
+            $method = $apiData['method'] ?? 'get';
             $url = $apiData['url'] ?? $this->url . 'api/clientwidget_updated/chatroom/';
             $apiKey = $apiData['params']['APIKEY'] ?? $this->apiKey;
-          
+
             $response = Http::withHeaders([
                 'Authorization' => 'Basic ' . $this->getAccessToken(),
                 'Cookie' => 'csrftoken=P8PSxHtwF5mI9grg1qhGrYtL55ScXbQoruVlnrdZXj8HWNF0pPcp7MDhpXGt1pDR',
@@ -96,7 +96,7 @@ class Chat360Service
     {
         try {
             $apiData = $this->getApiConfig('Chat360 Send Message');
-            $method = $apiData['method'] ?? 'post'; 
+            $method = $apiData['method'] ?? 'post';
             $url = $apiData['url'] ?? $this->url . 'api/whatsapp/whatsapp-session-messages';
             $apiKey = $apiData['params']['APIKEY'] ?? $this->apiKey;
             $fromPhone = $apiData['params']['PHONE'] ?? $this->fromPhone;
@@ -108,7 +108,6 @@ class Chat360Service
                 'recipient_type' => 'individual',
                 'type' => $type,
             ];
-
             switch ($type) {
                 case 'text':
                     $message['text'] = [
@@ -160,7 +159,7 @@ class Chat360Service
                 'Authorization' => 'Bearer ' . $this->getAccessToken(),
             ])->$method($url, $message);
 
-            if (! $response->ok()) {
+            if (!in_array($response->status(), [200, 201])) {
                 generateLogs('error', 'Failed send data to Chat360.');
                 return $response->body();
             }

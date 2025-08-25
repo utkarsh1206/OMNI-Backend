@@ -95,6 +95,11 @@ class UserMessageRepository
                     }
 
                     if (!empty($chatMessage)) {
+                        $boradCastData = [
+                            'room_id' => $request->room_id,
+                            'user_id' => auth()->user()->id
+                        ];
+                        broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));
                         // broadcast(new ReceivedCustomerMessages($chatMessage));
                         Message::insert($chatMessage);
                         generateLogs('info', "Inserted " . count($chatMessage) . " chat messages successfully.");

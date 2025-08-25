@@ -8,6 +8,7 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class CustomerChatRequest implements ShouldBroadcastNow
 {
@@ -21,7 +22,7 @@ class CustomerChatRequest implements ShouldBroadcastNow
     public function __construct($data, $domain)
     {
         $this->customerChat = $data;
-        $this->domain = $domain;
+        $this->domain  = convertToLower(Str::replace('.', '_', $domain));
         generateLogs('info', 'broadcast Data: '.json_encode(['customerChat' => $this->customerChat]));
     }
 

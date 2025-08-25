@@ -377,10 +377,10 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('get-messages', [UserMessageController::class, 'getMessages']);
     Route::post('send-message', [UserMessageController::class, 'storeMessage']);
 
-    Route::get('get-agent-status', [AgentMessageController::class, 'getStatus'])->middleware(CheckPermissionMiddleware::class.":agent_chat,".PermissionAction::VIEW->value);
-    Route::get('get-agent-messages/{agent_id}', [AgentMessageController::class, 'getMessages'])->middleware(CheckPermissionMiddleware::class.":agent_chat,".PermissionAction::VIEW->value);
-    Route::post('send-agent-messages', [AgentMessageController::class, 'storeMessage'])->middleware(CheckPermissionMiddleware::class.":agent_chat,".PermissionAction::EDIT->value);
-    Route::post('last-read-message', [AgentMessageController::class, 'lastReadMessage'])->middleware(CheckPermissionMiddleware::class.":agent_chat,".PermissionAction::EDIT->value);
+    Route::get('get-agent-status', [AgentMessageController::class, 'getStatus'])->middleware(CheckPermissionMiddleware::class.":agent_chat,".PermissionAction::ENABLE->value);
+    Route::get('get-agent-messages/{agent_id}', [AgentMessageController::class, 'getMessages'])->middleware(CheckPermissionMiddleware::class.":agent_chat,".PermissionAction::ENABLE->value);
+    Route::post('send-agent-messages', [AgentMessageController::class, 'storeMessage'])->middleware(CheckPermissionMiddleware::class.":agent_chat,".PermissionAction::ENABLE->value);
+    Route::post('last-read-message', [AgentMessageController::class, 'lastReadMessage'])->middleware(CheckPermissionMiddleware::class.":agent_chat,".PermissionAction::ENABLE->value);
 
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::get('neox-call-incoming', [IncomingCallController::class, 'checkIncoming']);
@@ -434,6 +434,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('generate-crm-token', [ThirdPartyCrmController::class, 'forward']);
 
     Route::post('/network-check', [NetworkCheckController::class, 'index']);
+
+    Route::post('/notify-customer', [ChatBotController::class, 'notifyCustomer']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
@@ -469,5 +471,7 @@ Route::prefix('user-roles')->group(function () {
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
 
-
 // Route::get('/network-check/{live_agent}', [NetworkCheckController::class, 'index']);
+
+Route::post('/ask-question', [ChatBotController::class, 'askQuestion']);
+Route::post('/connect-with-agent', [ChatBotController::class, 'connectWithAgent']);
