@@ -4458,6 +4458,107 @@
                 ]
             }
         },
+        "/ask-question": {
+            "post": {
+                "tags": [
+                    "Chatbots"
+                ],
+                "summary": "Ask a question to the chatbot",
+                "description": "Sends a user question to the chatbot service and returns the chat history.",
+                "operationId": "askQuestion",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "question"
+                                ],
+                                "properties": {
+                                    "session_id": {
+                                        "description": "Optional session ID for continuing conversation",
+                                        "type": "string",
+                                        "example": "abc123-session-id"
+                                    },
+                                    "question": {
+                                        "description": "User's question to the chatbot",
+                                        "type": "string",
+                                        "example": "What is Laravel?"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data fetched successfully"
+                                        },
+                                        "data": {
+                                            "description": "Chat history or chatbot response",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid input"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An unexpected error occurred"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/cities": {
             "get": {
                 "tags": [
@@ -17914,7 +18015,7 @@
                 }
             }
         },
-        "api/tenants": {
+        "/api/tenants": {
             "get": {
                 "tags": [
                     "Tenants"
@@ -17956,7 +18057,7 @@
                         "description": "Filter tenants by mobile number",
                         "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     },
                     {
@@ -18047,10 +18148,13 @@
                             }
                         }
                     }
-                }
-            }
-        },
-        "/tenants": {
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
             "post": {
                 "tags": [
                     "Tenants"
@@ -18073,9 +18177,6 @@
                                     "domain_name",
                                     "company_code",
                                     "company_name",
-                                    "server_serialnumber",
-                                    "server_ip",
-                                    "server_mac",
                                     "domain_url",
                                     "status",
                                     "tenant_role_id"
@@ -18105,7 +18206,7 @@
                                     },
                                     "mobile": {
                                         "description": "Mobile number of the tenant",
-                                        "type": "string"
+                                        "type": "integer"
                                     },
                                     "domain_name": {
                                         "description": "Domain name of the tenant",
@@ -18137,11 +18238,16 @@
                                     },
                                     "status": {
                                         "description": "Status of the tenant",
-                                        "type": "string"
+                                        "type": "string",
+                                        "enum": [
+                                            "Active",
+                                            "Inactive"
+                                        ]
                                     },
                                     "tenant_role_id": {
                                         "description": "Tenant role ID",
-                                        "type": "integer"
+                                        "type": "integer",
+                                        "example": 1
                                     },
                                     "title": {
                                         "description": "Title of the tenant (optional)",
@@ -18222,10 +18328,15 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/tenants/{tenant}": {
+        "/api/tenants/{tenant}": {
             "get": {
                 "tags": [
                     "Tenants"
@@ -18346,7 +18457,7 @@
                                         "format": "email"
                                     },
                                     "mobile": {
-                                        "type": "string"
+                                        "type": "integer"
                                     },
                                     "company_code": {
                                         "type": "string"
@@ -25411,7 +25522,7 @@
                         "type": "string"
                     },
                     "mobile": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "type": "object"
