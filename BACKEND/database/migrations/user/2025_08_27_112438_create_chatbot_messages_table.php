@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('customer_id')->nullable();
             $table->uuid('session_id')->nullable();
             $table->string('sender')->nullable();
+            $table->timestamp('external_message_time')->nullable();
 //          $table->string('first_name')->nullable();
 //          $table->string('last_name')->nullable();
             $table->text('text');

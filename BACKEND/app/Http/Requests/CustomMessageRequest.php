@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
-
+use Illuminate\Validation\Rule;
 class CustomMessageRequest extends FormRequest
 {
     /**
@@ -26,6 +26,9 @@ class CustomMessageRequest extends FormRequest
         return [
             'sender' => 'required|in:agent,customer',
             'text' => 'required',
+            'customer_id' => [
+                Rule::requiredIf($this->input('sender') === 'agent'),
+            ],
         ];
     }
 
@@ -33,6 +36,7 @@ class CustomMessageRequest extends FormRequest
     {
         return [
             'sender.in' => 'The sender must be either "agent" or "customer".',
+            'customer_id.required' => 'The customer ID is required when the sender is an agent.',
         ];
     }
 

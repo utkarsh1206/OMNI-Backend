@@ -19,11 +19,11 @@ class NotifyCustomer implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public function __construct($data, $domain)
+    public function __construct($data, $domain, $customerId)
     {
-        $this->customerId = $data['customer_id'];
+        $this->customerId = $customerId;
         $this->domain  = convertToLower(Str::replace('.', '_', $domain));
-        $this->message = "You are now connected with agent".$data['username'];
+        $this->message = "";
         generateLogs('info', 'broadcast Data: '.json_encode(['notifyCustomer' => $this->message]));
     }
 

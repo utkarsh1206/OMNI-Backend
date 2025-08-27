@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Events\CustomerRequest;
 use App\Events\NotifyCustomer;
+use App\Events\ReceiveChatMessage;
 use App\Http\Response\CustomApiResponse;
 use App\Http\Resources\ChatbotResource;
 use App\Models\Chatbot;
@@ -215,10 +216,10 @@ class ChatBotRepository
     {
         try {
             $boradCastData = [
-                'customer_id' => $request->customer_id,
-                'username' => auth()->user()->username,
+                'agent_id' => auth()->user()->id,
+                'message' => "You are now connected with agent".auth()->user()->username,
             ];
-            broadcast(new NotifyCustomer($boradCastData, auth()->user()->domain));
+            broadcast(new NotifyCustomer($boradCastData, auth()->user()->domain, $request->customer_id));
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
@@ -228,17 +229,25 @@ class ChatBotRepository
 
     public function storeMessage(Request $request)
     {
-        dd($request->all());
         try {
+            $agentId = '';
+            $payload = extractPayload($request->bearerToken());
+            if($request->sender == 'agent') {
+                $customerId = $request->customer_id;
+                $agentId = auth()->user()->id;
+            } else {
+                $customerId = $payload['userid'];
+            }
             $files = uploadAttachment($request, "attachment", "attachment");
-
+            
             $message = ChatbotMessage::Create([
-                'user_id' => auth()->user()->id,
+                'agent_id' => $agentId,
+                'customer_id' => $customerId,
                 'text' => $request->text,
                 'sender' => $request->sender,
                 'external_message_time' => Carbon::now()
             ]);
-
+        
             if ($message) {
                 if ($files) {
                     foreach ($files as $file) {
@@ -251,11 +260,14 @@ class ChatBotRepository
                     }
                     ChatbotMessageAttachment::insert($fileData);
                 }
-
-                $msg =  ChatbotMessage::where('user_id', auth()->user()->id)
-                        ->where('type', 'user_chat')->first();
-                if($msg) {
-                    $this->chat360Service->sendMessage('text', ['body' => $request->text], $msg->external_user_phone);
+                
+                if($request->sender == 'agent') {
+                    $boradCastData = [
+                        'customer_id' => $customerId,
+                        'msg' => $request->text,
+                    ];
+                    broadcast(new ReceiveChatMessage($boradCastData, auth()->user()->domain));
+                } else {
                 }
             }
 

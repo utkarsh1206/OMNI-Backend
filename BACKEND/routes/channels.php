@@ -35,7 +35,6 @@ Broadcast::channel('{domain}-{id}-agent-chat', function ($user, $domain, $id) {
 
 Broadcast::channel('{domain}-{id}-force-logout', function ($user, $domain, $id) {
     generateLogs('info', 'Admin trying to force logout the Agent: ' . json_encode(['user' => $user]));
-    // return true;
     return (string) $user->id === (string) $id;
 });
 
@@ -45,6 +44,12 @@ Broadcast::channel('{domain}-connect-customer', function ($user) {
 });
 
 Broadcast::channel('{domain}-customer_{id}-custom-chatbot', function ($user, $domain) {
+    generateLogs('info', 'User trying to access the channel: ' . json_encode(['user' => $user]));
+    return true;
+});
+
+
+Broadcast::channel('{domain}-agent_{id}-custom-chatbot-message', function ($user) {
     generateLogs('info', 'User trying to access the channel: ' . json_encode(['user' => $user]));
     return true;
 });
