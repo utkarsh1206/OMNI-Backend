@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class MessageAttachment extends Model
+class ChatbotMessageAttachment extends Model
 {
     protected $fillable = [
         'message_id',

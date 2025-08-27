@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -10,11 +9,6 @@ Route::post('/broadcasting/auth', ['middleware' => ['jwt.auth'], function (Reque
 
     return Broadcast::auth($request);
 }]);
-
-// Broadcast::channel('dialer_{type}', function ($user, $type) {
-//     generateLogs('info', 'User trying to access the channel: ' . json_encode(['user' => $user]));
-//     return true;
-// });
 
 Broadcast::channel('{domain}-{id}-call-events', function ($user, $domain, $id) {
     return true;
@@ -50,7 +44,7 @@ Broadcast::channel('{domain}-connect-customer', function ($user) {
     return true;
 });
 
-Broadcast::channel('{domain}-{id}-notify-customer', function ($user, $domain) {
+Broadcast::channel('{domain}-customer_{id}-custom-chatbot', function ($user, $domain) {
     generateLogs('info', 'User trying to access the channel: ' . json_encode(['user' => $user]));
     return true;
 });

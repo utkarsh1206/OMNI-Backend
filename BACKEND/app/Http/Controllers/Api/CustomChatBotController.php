@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GetQuestionsRequest;
 use App\Http\Requests\ChatbotAskQuestionRequest;
 use App\Http\Requests\ChatbotConnectWithAgentRequest;
+use App\Http\Requests\CustomMessageRequest;
 use App\Repositories\ChatBotRepository;
 use Illuminate\Http\Request;
 
@@ -78,5 +79,10 @@ class CustomChatBotController extends Controller
     public function notifyCustomer(ChatbotConnectWithAgentRequest $request)
     {
         return $this->chatBotRepository->notifyCustomer($request);
+    }
+
+    public function storeMessage(CustomMessageRequest $request)
+    {
+        return $this->chatBotRepository->storeMessage($request);
     }
 }

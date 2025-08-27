@@ -7,7 +7,10 @@ use App\Events\NotifyCustomer;
 use App\Http\Response\CustomApiResponse;
 use App\Http\Resources\ChatbotResource;
 use App\Models\Chatbot;
+use App\Models\ChatbotMessage;
+use App\Models\ChatbotMessageAttachment;
 use App\Services\ChatBotService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -219,6 +222,46 @@ class ChatBotRepository
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function storeMessage(Request $request)
+    {
+        dd($request->all());
+        try {
+            $files = uploadAttachment($request, "attachment", "attachment");
+
+            $message = ChatbotMessage::Create([
+                'user_id' => auth()->user()->id,
+                'text' => $request->text,
+                'sender' => $request->sender,
+                'external_message_time' => Carbon::now()
+            ]);
+
+            if ($message) {
+                if ($files) {
+                    foreach ($files as $file) {
+                        $fileData[] = [
+                            'message_id' => $message->id,
+                            'attachments' => $file['fileName'],
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now(),
+                        ];
+                    }
+                    ChatbotMessageAttachment::insert($fileData);
+                }
+
+                $msg =  ChatbotMessage::where('user_id', auth()->user()->id)
+                        ->where('type', 'user_chat')->first();
+                if($msg) {
+                    $this->chat360Service->sendMessage('text', ['body' => $request->text], $msg->external_user_phone);
+                }
+            }
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in storing Message: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
