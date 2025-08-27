@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Events\CustomerRequest;
 use App\Events\NotifyCustomer;
 use App\Events\ReceiveChatMessage;
+use App\Events\CustomChatbotMessage;
 use App\Http\Response\CustomApiResponse;
 use App\Http\Resources\ChatbotResource;
 use App\Models\Chatbot;
@@ -230,13 +231,13 @@ class ChatBotRepository
     public function storeMessage(Request $request)
     {
         try {
-            $agentId = '';
             $payload = extractPayload($request->bearerToken());
             if($request->sender == 'agent') {
-                $customerId = $request->customer_id;
+                $customerId = $request->receiver_id;
                 $agentId = auth()->user()->id;
             } else {
                 $customerId = $payload['userid'];
+                $agentId = $request->receiver_id;
             }
             $files = uploadAttachment($request, "attachment", "attachment");
             
@@ -268,9 +269,13 @@ class ChatBotRepository
                     ];
                     broadcast(new ReceiveChatMessage($boradCastData, auth()->user()->domain));
                 } else {
+                    $boradCastData = [
+                        'agent_id' => $customerId,
+                        'msg' => $request->text,
+                    ];
+                    broadcast(new CustomChatbotMessage($boradCastData, auth()->user()->domain));
                 }
             }
-
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in storing Message: ', $ex->getMessage());

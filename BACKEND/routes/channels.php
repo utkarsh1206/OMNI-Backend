@@ -48,7 +48,6 @@ Broadcast::channel('{domain}-customer_{id}-custom-chatbot', function ($user, $do
     return true;
 });
 
-
 Broadcast::channel('{domain}-agent_{id}-custom-chatbot-message', function ($user) {
     generateLogs('info', 'User trying to access the channel: ' . json_encode(['user' => $user]));
     return true;

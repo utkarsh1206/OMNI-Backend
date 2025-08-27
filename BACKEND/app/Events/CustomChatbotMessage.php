@@ -14,14 +14,14 @@ class CustomChatbotMessage implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $customerId, $domain, $message;
+    private $agentId, $domain, $message;
 
     /**
      * Create a new event instance.
      */
     public function __construct($data, $domain)
     {
-        $this->customerId = $data['customer_id'];
+        $this->agentId = $data['customer_id'];
         $this->message = $data['msg'];
         $this->domain  = convertToLower(Str::replace('.', '_', $domain));
         generateLogs('info', 'broadcast Data: '.json_encode(['ReceiveChatMessage' => $this->message]));
@@ -37,11 +37,11 @@ class CustomChatbotMessage implements ShouldBroadcastNow
         generateLogs(
             'info',
             'Channel Name: ' . json_encode([
-                'Channel' => "{$this->domain}-agent_{$this->customerId}-custom-chatbot-message"
+                'Channel' => "{$this->domain}-agent_{$this->agentId}-custom-chatbot-message"
             ])
         );
         return [
-            new PrivateChannel("{$this->domain}-agent_{$this->customerId}-custom-chatbot-message"),
+            new PrivateChannel("{$this->domain}-agent_{$this->agentId}-custom-chatbot-message"),
         ];
     }
 
