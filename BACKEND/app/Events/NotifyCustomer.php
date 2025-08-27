@@ -23,7 +23,7 @@ class NotifyCustomer implements ShouldBroadcastNow
     {
         $this->customerId = $customerId;
         $this->domain  = convertToLower(Str::replace('.', '_', $domain));
-        $this->message = "";
+        $this->message = $data;
         generateLogs('info', 'broadcast Data: '.json_encode(['notifyCustomer' => $this->message]));
     }
 

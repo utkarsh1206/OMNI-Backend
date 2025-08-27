@@ -6,6 +6,7 @@ use App\Events\CustomerRequest;
 use App\Events\NotifyCustomer;
 use App\Events\ReceiveChatMessage;
 use App\Events\CustomChatbotMessage;
+use App\Events\EndConversationCustomer;
 use App\Http\Response\CustomApiResponse;
 use App\Http\Resources\ChatbotResource;
 use App\Models\Chatbot;
@@ -279,6 +280,21 @@ class ChatBotRepository
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in storing Message: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function endConversationCustomer(Request $request)
+    {
+        try {
+            $boradCastData = [
+            //    'agent_id' => auth()->user()->id,
+                'message' => "Thank you for connecting with us",
+            ];
+            broadcast(new EndConversationCustomer($boradCastData, auth()->user()->domain, $request->customer_id));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

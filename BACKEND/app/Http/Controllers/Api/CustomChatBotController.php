@@ -85,4 +85,9 @@ class CustomChatBotController extends Controller
     {
         return $this->chatBotRepository->storeMessage($request);
     }
+
+    public function endConversationCustomer(ChatbotConnectWithAgentRequest $request)
+    {
+        return $this->chatBotRepository->endConversationCustomer($request);
+    }
 }
