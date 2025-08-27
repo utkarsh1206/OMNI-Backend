@@ -270,7 +270,7 @@ class ChatBotRepository
                     broadcast(new ReceiveChatMessage($boradCastData, auth()->user()->domain));
                 } else {
                     $boradCastData = [
-                        'agent_id' => $customerId,
+                        'agent_id' => $agentId,
                         'msg' => $request->text,
                     ];
                     broadcast(new CustomChatbotMessage($boradCastData, auth()->user()->domain));

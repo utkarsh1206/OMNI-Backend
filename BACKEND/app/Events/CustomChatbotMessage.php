@@ -21,7 +21,7 @@ class CustomChatbotMessage implements ShouldBroadcastNow
      */
     public function __construct($data, $domain)
     {
-        $this->agentId = $data['customer_id'];
+        $this->agentId = $data['agent_id'];
         $this->message = $data['msg'];
         $this->domain  = convertToLower(Str::replace('.', '_', $domain));
         generateLogs('info', 'broadcast Data: '.json_encode(['ReceiveChatMessage' => $this->message]));
