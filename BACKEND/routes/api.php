@@ -91,6 +91,9 @@ use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
+use App\Http\Controllers\Api\ApiEndpointController;
+use App\Http\Controllers\Api\ApiImportController;
+use App\Http\Controllers\Api\ApiMappingController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
 use App\Http\Controllers\Api\EvaluationQuestionUsageTypeController;
 use App\Http\Controllers\Api\EvaluationReviewController;
@@ -475,3 +478,27 @@ Route::get('/actions', [ActionController::class, 'index']);
 
 Route::post('/ask-question', [ChatBotController::class, 'askQuestion']);
 Route::post('/connect-with-agent', [ChatBotController::class, 'connectWithAgent']);
+
+Route::prefix('endpoints')->group(function () {
+    Route::get('/', [ApiEndpointController::class, 'index']);
+    Route::post('/', [ApiEndpointController::class, 'store']);
+    Route::get('/{id}', [ApiEndpointController::class, 'getById']);
+    Route::put('/{id}', [ApiEndpointController::class, 'update']);
+    Route::delete('/{id}', [ApiEndpointController::class, 'destroy']);
+    Route::get('/{endpointId}/mappings', [ApiMappingController::class, 'getByEndpointId']);
+});
+
+Route::prefix('mappings')->group(function () {
+    Route::get('/', [ApiMappingController::class, 'index']);
+    Route::post('/', [ApiMappingController::class, 'store']);
+    Route::get('/{id}', [ApiMappingController::class, 'getById']);
+    Route::put('/{id}', [ApiMappingController::class, 'update']);
+    Route::delete('/{id}', [ApiMappingController::class, 'destroy']);
+});
+
+Route::prefix('lists')->group(function () {
+    Route::get('{listId}/endpoints', [ApiEndpointController::class, 'getByListId']);
+    Route::get('{listId}/mappings', [ApiMappingController::class, 'getByListId']);
+});
+
+Route::post('/import', [ApiImportController::class, 'import']);
