@@ -6,33 +6,30 @@ use App\Models\ApiEndpoint;
 use App\Models\ApiMapping;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class ApiImportService
 {
     public function importData(int $listId, int $endpointId, array $payload = []): array
     {
-        generateLogs('info', 'Starting data import');
+        // generateLogs('info', 'Starting data import');
         try {
-            generateLogs('info', 'Fetching endpoint and mappings');
-            // Fetch endpoint + mappings
+            // generateLogs('info', 'Fetching endpoint and mappings');
             $endpoint = ApiEndpoint::where('id', $endpointId)
                 ->where('list_id', $listId)
                 ->firstOrFail();
 
             $mappings = ApiMapping::where('endpoint_id', $endpoint->id)->get();
 
-            generateLogs('info', 'Fetched mappings for endpoint ' . $endpoint->id);
+            // generateLogs('info', 'Fetched mappings for endpoint ' . $endpoint->id);
             if ($mappings->isEmpty()) {
                 generateLogs('info', 'No mappings defined for endpoint ' . $endpoint->id);
                 return ['status' => 'error', 'message' => 'No mappings defined for this endpoint.'];
             }
 
-            generateLogs('info', 'Building request for endpoint ' . $endpoint->id);
-            // Build request
+            // generateLogs('info', 'Building request for endpoint ' . $endpoint->id);
             $client = Http::withOptions(['verify' => false]); // allow self-signed SSL
-            generateLogs('info', 'Sending request to ' . $endpoint->url);
+            // generateLogs('info', 'Sending request to ' . $endpoint->url);
 
             // Apply authentication if provided
             if ($endpoint->auth_config) {
@@ -71,7 +68,7 @@ class ApiImportService
                 }
             }
 
-            generateLogs('info', 'after Case Sending request to ' . $endpoint->url);
+            // generateLogs('info', 'after Case Sending request to ' . $endpoint->url);
             // Send request
             if ($endpoint->method === 'POST') {
                 if ($endpoint->payload_type === 'json') {
@@ -86,10 +83,10 @@ class ApiImportService
                     $response = $client->get($endpoint->url);
                 }
             }
-            generateLogs('info', 'after sending request to ' . $endpoint->url);
+            // generateLogs('info', 'after sending request to ' . $endpoint->url);
 
             if (!$response->successful()) {
-                Log::error("API Request failed for endpoint {$endpoint->id}: " . $response->body());
+                generateLogs('error', "API Request failed for endpoint {$endpoint->id}: " . $response->body());
                 return ['status' => 'error', 'message' => 'API request failed.'];
             }
 
@@ -112,7 +109,7 @@ class ApiImportService
                     if (Schema::hasColumn("custom_lead_{$listId}", $map->column_name)) {
                         $row[$map->column_name] = $value;
                     } else {
-                        Log::warning("Column {$map->column_name} not found in custom_lead_{$listId}");
+                        generateLogs('warning', "Column {$map->column_name} not found in custom_lead_{$listId}");
                         $failedCount++;
                     }
                 }
@@ -145,7 +142,7 @@ class ApiImportService
                 ]
             ];
         } catch (\Exception $e) {
-            Log::error("Import failed for endpoint {$endpointId}: " . $e->getMessage());
+            generateLogs('error', "Import failed for endpoint {$endpointId}: ", $e->getMessage());
             return ['status' => 'error', 'message' => 'Import failed.'];
         }
     }
