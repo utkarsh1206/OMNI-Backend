@@ -97,6 +97,7 @@ class ApiImportService
             $records = isset($data[0]) ? $data : [$data];
 
             $insertData = [];
+            $failedCount = 0;
 
             foreach ($records as $record) {
                 $row = [];
@@ -112,11 +113,13 @@ class ApiImportService
                         $row[$map->column_name] = $value;
                     } else {
                         Log::warning("Column {$map->column_name} not found in custom_lead_{$listId}");
+                        $failedCount++;
                     }
                 }
 
                 $row['created_at'] = now();
                 $row['updated_at'] = now();
+                $row['omni_lead_source'] = 'api-' . $endpoint->id;
 
                 if (!empty($row)) {
                     $insertData[] = $row;
@@ -133,7 +136,13 @@ class ApiImportService
 
             return [
                 'status' => 'success',
-                'message' => count($insertData) . ' records inserted.'
+                // 'message' => count($insertData) . ' records inserted.',
+                'message' => 'Data inserted successfully.',
+                'data' => [
+                    'failed_count' => $failedCount,
+                    'imported_data' => $insertData,
+                    'inserted_count' => count($insertData)
+                ]
             ];
         } catch (\Exception $e) {
             Log::error("Import failed for endpoint {$endpointId}: " . $e->getMessage());

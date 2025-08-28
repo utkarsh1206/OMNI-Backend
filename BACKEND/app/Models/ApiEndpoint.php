@@ -8,6 +8,7 @@ class ApiEndpoint extends Model
 {
     protected $fillable = [
         'list_id',
+        'name',
         'url',
         'method',
         'payload_type',

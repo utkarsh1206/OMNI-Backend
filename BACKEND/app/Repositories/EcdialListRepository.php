@@ -227,7 +227,7 @@ class EcdialListRepository
 
             EcdialListField::insert($fields);
 
-            $tableName = 'custom_lead_' . $ecdialLists->list_id; // Replace with your actual table name
+            $tableName = 'custom_lead_' . $ecdialLists->list_id;
 
             foreach ($baseFields as $field) {
                 $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field['field_name'])); // Convert field label to snake case for column name
@@ -299,6 +299,7 @@ class EcdialListRepository
         Schema::create($tableName, function (Blueprint $table) {
             $table->id(); // Primary Key (Auto Increment)
             $table->timestamps(); // Created & Updated timestamps
+            $table->string('omni_lead_source')->nullable();
         });
     }
 

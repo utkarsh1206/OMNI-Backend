@@ -29,14 +29,14 @@ class ApiEndpointRequest extends FormRequest
                 'integer',
                 Rule::exists('ecdial_lists', 'list_id'),
             ],
+            'name' => 'required|string|max:255',
             'url' => 'required|url',
             'method' => 'required|in:GET,POST',
             'payload_type' => 'required|in:json,query',
             'auth_config' => 'nullable|array',
-            'mappings' => 'required|array', // New rule for the mappings array
-            'mappings.*.api_key' => 'required|string', // Rule for each api_key in the mappings array
-            'mappings.*.column_name' => 'required|string', // Rule for each column_name in the mappings array
-
+            'mappings' => 'required|array',
+            'mappings.*.api_key' => 'required|string',
+            'mappings.*.column_name' => 'required|string',
         ];
 
         // For the 'update' method
@@ -47,6 +47,7 @@ class ApiEndpointRequest extends FormRequest
                     'integer',
                     Rule::exists('ecdial_lists', 'list_id'),
                 ],
+                'name' => 'sometimes|string|max:255',
                 'url' => 'sometimes|url',
                 'method' => 'sometimes|in:GET,POST',
                 'payload_type' => 'sometimes|in:json,query',

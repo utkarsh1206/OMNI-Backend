@@ -287,6 +287,7 @@ class CustomLeadRepository
             $timestamp = now();
             $data['created_at'] = $timestamp;
             $data['updated_at'] = $timestamp;
+            $data['omni_lead_source'] = 'manual';
 
             // Insert and get ID
             $leadId = DB::table($table)->insertGetId($data);
