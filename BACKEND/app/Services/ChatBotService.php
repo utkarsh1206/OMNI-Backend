@@ -4,7 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 
-class ChatbotService
+class ChatBotService
 {
     protected $url;
 
