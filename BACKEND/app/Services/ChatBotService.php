@@ -16,7 +16,8 @@ class ChatbotService
     protected function createSession($uin, $customerId)
     {
         try {
-            $url = $this->url . "/create-session";
+            $url = $this->url."/create-session";
+            
             $payload = [
                 'tenant_id' => $uin,
                 'customer_id' => $customerId,
@@ -41,27 +42,14 @@ class ChatbotService
         }
     }
 
-    public function ask(string $sessionId, string $query)
+    public function getQuestions($payload)
     {
-        if (is_null($sessionId) || $sessionId === '') {
-            $sessionId = $this->createSession();
-            if (is_null($sessionId)) {
-                return [
-                    'answer' => 'Could not establish a session. Please try again.',
-                    'sources' => [],
-                    'session_id' => null
-                ];
-            }
-        }
+        $sessionId = $this->createSession($payload['uin'], $payload['userid']);
 
         try {
-            $url = $this->url . "/ask";
-            $payload = [
-                'session_id' => $sessionId,
-                'query' => $query,
-            ];
-
-            $response = sendHttpRequest($url, 'POST', $payload, [], false, false);
+            $url = $this->url . "/get-questions?language=".$payload['lang']."&session_id=";
+           
+            $response = sendHttpRequest($url, 'GET', [], [], false, false);
 
             if ($response instanceof \Illuminate\Http\JsonResponse) {
                 $response = $response->getData(true);
@@ -73,7 +61,7 @@ class ChatbotService
             } else {
                 generateLogs(
                     'error',
-                    'ChatbotService: Failed to ask query.',
+                    'ChatbotService: Failed to get questions.',
                     json_encode([
                         'session_id' => $sessionId,
                         'query' => $query,
@@ -101,15 +89,28 @@ class ChatbotService
             ];
         }
     }
-
-    public function getQuestions($payload)
+    
+    public function ask(string $sessionId, string $query)
     {
-        $sessionId = $this->createSession($payload['uin'], $payload['userid']);
+        if (is_null($sessionId) || $sessionId === '') {
+            $sessionId = $this->createSession();
+            if (is_null($sessionId)) {
+                return [
+                    'answer' => 'Could not establish a session. Please try again.',
+                    'sources' => [],
+                    'session_id' => null
+                ];
+            }
+        }
 
         try {
-            $url = $this->url . "/get-questions?language=".$payload['lang']."&session_id=";
-           
-            $response = sendHttpRequest($url, 'GET', [], [], false, false);
+            $url = $this->url."/ask";
+            $payload = [
+                'session_id' => $sessionId,
+                'query' => $query,
+            ];
+
+            $response = sendHttpRequest($url, 'POST', $payload, [], false, false);
 
             if ($response instanceof \Illuminate\Http\JsonResponse) {
                 $response = $response->getData(true);
@@ -121,7 +122,7 @@ class ChatbotService
             } else {
                 generateLogs(
                     'error',
-                    'ChatbotService: Failed to get questions.',
+                    'ChatbotService: Failed to ask query.',
                     json_encode([
                         'session_id' => $sessionId,
                         'query' => $query,
