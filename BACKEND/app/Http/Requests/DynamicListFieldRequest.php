@@ -48,6 +48,8 @@ class DynamicListFieldRequest extends FormRequest
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'group_name' => ['nullable', 'string', 'max:255'],
             'send_to_crm' => ['nullable', Rule::in(['Y', 'N'])],
+            'allow_field_deletion' => ['nullable', Rule::in(['Y', 'N'])],
+            'allow_data_delete' => ['nullable', Rule::in(['Y', 'N'])],
         ];
 
         return [

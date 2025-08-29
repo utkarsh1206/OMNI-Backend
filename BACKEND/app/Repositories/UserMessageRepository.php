@@ -116,11 +116,30 @@ class UserMessageRepository
         }
     }
 
-    public function getMessages()
+    public function getUserPhones()
+    {
+        try {
+            $messages  = Message::select('external_user_phone')->where("type", "user_chat")
+                ->where('user_id', auth()->user()->id)
+                ->whereNotNull('external_user_phone')
+                ->distinct()
+                ->orderBy('external_user_phone', 'desc')
+                ->pluck('external_user_phone');
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Message Listing: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function getMessages($request)
     {
         try {
             $messages  = Message::where("type", "user_chat")
-                ->where('user_id', auth()->user()->id)->get();
+                ->where('user_id', auth()->user()->id)
+                ->where('external_user_phone', $request->phone)
+                ->get();
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
         } catch (Exception $ex) {

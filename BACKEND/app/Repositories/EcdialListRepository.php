@@ -95,6 +95,8 @@ class EcdialListRepository
                     'duplicate_check' => 'N',
                     'status' => 1,
                     'field_column' => 'A',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
                 [
                     'field_name' => 'Last Name',
@@ -117,6 +119,8 @@ class EcdialListRepository
                     'duplicate_check' => 'N',
                     'status' => 1,
                     'field_column' => 'B',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
                 [
                     'field_name' => 'Email',
@@ -139,6 +143,8 @@ class EcdialListRepository
                     'duplicate_check' => 'Y',
                     'status' => 1,
                     'field_column' => 'C',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
                 [
                     'field_name' => 'Mobile',
@@ -161,6 +167,8 @@ class EcdialListRepository
                     'duplicate_check' => 'Y',
                     'status' => 1,
                     'field_column' => 'D',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
                 [
                     'field_name' => 'Subject',
@@ -183,6 +191,8 @@ class EcdialListRepository
                     'duplicate_check' => 'N',
                     'status' => 1,
                     'field_column' => 'A',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
                 [
                     'field_name' => 'Description',
@@ -205,6 +215,8 @@ class EcdialListRepository
                     'duplicate_check' => 'N',
                     'status' => 1,
                     'field_column' => 'B',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
                 ],
             ];
 
@@ -215,7 +227,7 @@ class EcdialListRepository
 
             EcdialListField::insert($fields);
 
-            $tableName = 'custom_lead_' . $ecdialLists->list_id; // Replace with your actual table name
+            $tableName = 'custom_lead_' . $ecdialLists->list_id;
 
             foreach ($baseFields as $field) {
                 $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field['field_name'])); // Convert field label to snake case for column name
@@ -287,6 +299,7 @@ class EcdialListRepository
         Schema::create($tableName, function (Blueprint $table) {
             $table->id(); // Primary Key (Auto Increment)
             $table->timestamps(); // Created & Updated timestamps
+            $table->string('omni_lead_source')->nullable();
         });
     }
 
