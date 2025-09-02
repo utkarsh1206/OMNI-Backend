@@ -185,12 +185,15 @@ class ChatBotRepository
     public function askQuestion(Request $request)
     {
         try {
-            $sessionId = $request->session_id ?? '';
-            $query = $request->question;
-            $chatHistory = $this->chatbotService->ask($sessionId, $query);
+            $apiPayload = [
+                'session_id' => $request->session_id,
+                'lang' => $request->lang,
+                'query' => $request->question,
+            ];
+            $askQuestion = $this->chatbotService->ask($apiPayload);
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
-                $chatHistory,
+                $askQuestion,
                 trans('message.data_fetch')
             );
         } catch (Exception $ex) {
@@ -217,6 +220,7 @@ class ChatBotRepository
     public function notifyCustomer(Request $request)
     {
         try {
+            $chatHisotory = $this->chatbotService->fetchHistory();
             $boradCastData = [
                 'agent_id' => auth()->user()->id,
                 'message' => "You are now connected with agent".auth()->user()->username,
@@ -288,7 +292,7 @@ class ChatBotRepository
     {
         try {
             $boradCastData = [
-            //    'agent_id' => auth()->user()->id,
+            //  'agent_id' => auth()->user()->id,
                 'message' => "Thank you for connecting with us",
             ];
             broadcast(new EndConversationCustomer($boradCastData, auth()->user()->domain, $request->customer_id));

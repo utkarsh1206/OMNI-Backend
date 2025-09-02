@@ -24,7 +24,7 @@ class GetQuestionsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'lang' => 'required|in:english,hindi',
+            'lang' => 'required|in:en,hi',
         ];
     }
 
