@@ -34,12 +34,12 @@ class SupportTicketNotificationObserver
             $updateData['alert_before_resolve_notification_time'] = $openTicketData['alert_before_resolve_notification_time'];
         }
 
-        if ($supportticket->first_response_time != null && $supportticket->alert_before_response_notification_time != null && $supportticket->default_status != 'Open' && $supportticket->default_status != 'Resolved' && $supportticket->default_status != 'Closed') {
+        if ($supportticket->first_response_time != null && $supportticket->alert_before_response_notification_time != null && $supportticket->status_name != 'Open' && $supportticket->status_name != 'Resolved' && $supportticket->status_name != 'Closed') {
             $updateData['first_response_time'] =  $supportticket->first_response_time;
             $updateData['alert_before_response_notification_time'] = $supportticket->alert_before_response_notification_time;
             $updateData['resolved_time'] = null;
             $updateData['alert_before_resolve_notification_time'] = null;
-        } elseif ($supportticket->first_response_time != null && $supportticket->alert_before_response_notification_time != null && $supportticket->default_status == 'Open') {
+        } elseif ($supportticket->first_response_time != null && $supportticket->alert_before_response_notification_time != null && $supportticket->status_name == 'Open') {
             $updateData['first_response_time'] =  $supportticket->first_response_time;
             $updateData['alert_before_response_notification_time'] = $supportticket->alert_before_response_notification_time;
             $updateData['resolved_time'] = $openTicketData['resolved_time'];
@@ -49,6 +49,7 @@ class SupportTicketNotificationObserver
         //     // $updateData['actual_resolved_time'] =  $openTicketData['actual_resolved_time'];
         // }
 
+        generateLogs("info", "updateData". json_encode($updateData));
         // Update the support ticket with the available data
         if (!empty($updateData)) {
             //$supportticket->update($updateData);

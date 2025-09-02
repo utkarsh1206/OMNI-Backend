@@ -12,7 +12,7 @@ class SupportTicket extends Model
 {
     use SoftDeletes;
 
-    protected $appends = ['contact_name', 'assigned_agent_name', 'custom_fields'];
+    protected $appends = ['contact_name', 'assigned_agent_name', 'custom_fields', 'status_name', 'user_email'];
 
     protected $hidden = ['contact', 'assignedAgent', 'supportTicketCustomFieldValues'];
 
@@ -158,6 +158,11 @@ class SupportTicket extends Model
         return $this->belongsTo(SupportTicketStatus::class, 'default_status');
     }
 
+    public function getStatusNameAttribute()
+    {
+        return $this->ticketStatus ? $this->ticketStatus->name : null;
+    }
+
     public function supportTicketCustomFieldValues(): HasMany
     {
         return $this->hasMany(SupportTicketCustomFieldValue::class, 'support_ticket_id', 'id');
@@ -168,5 +173,10 @@ class SupportTicket extends Model
         return $this->supportTicketCustomFieldValues->mapWithKeys(function ($item) {
             return [$item->field_name => $item->field_value];
         });
+    }
+
+    public function getUserEmailAttribute()
+    {
+        return $this->assignedUser ? $this->assignedUser->email : null;
     }
 }

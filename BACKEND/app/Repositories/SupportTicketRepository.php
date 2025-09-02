@@ -222,13 +222,15 @@ class SupportTicketRepository
 
             DB::commit();
 
-            $mailTemplate = MailTemplate::where('type', 'created_ticket')->first();
+            $mailTemplate = MailTemplate::where('type', 'created_ticket')->where('status', 'Active')->where('mail_for', 'agent')->first();
             if ($mailTemplate) {
                 $templateData = [
-                    '{customer_name}' => $apiUser->first_name . ' ' . $apiUser->last_name,
+                    '{assigned_user}' => $supportTicket->assigned_agent_name,
                     '{ticket_number}' => $supportTicketId,
-                    '{company_email}' => 'support@ezeedesk.com',
-                    '{signature}' => 'The Ezeedesk Team',
+                    '{ticket_subject}' => $supportTicket->subject,
+                    '{ticket_status}' => $supportTicket->status_name,
+                    '{ticket_created_date}' => $supportTicket->created_at->timezone(config('app.timezone'))->format('d M Y, H:i:s A T'),
+                    '{ticket_description}' => $supportTicket->description
                 ];
 
                 $mailTemplate->subject = strtr($mailTemplate->subject, $templateData);
@@ -253,7 +255,7 @@ class SupportTicketRepository
             );
             // $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
             $this->sendSms($apiUser, "Ticket Created", $request->contact_number, $supportTicket);
-            $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0);
+            $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket, $request->assign_to_id ?? 0, $mailTemplate);
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
@@ -445,7 +447,7 @@ class SupportTicketRepository
                 $toEmails = $supportTicket->assignedUser->email ?? '';
                 setEmailConfig();
 
-                $mailTemplate = MailTemplate::where("type", "agent_solve_the_ticket")->first();
+                $mailTemplate = MailTemplate::where("type", "agent_solve_the_ticket")->where('status', 'Active')->first();
                 $subject =  $mailTemplate->subject ?? '';
                 $body =  $mailTemplate->body ?? '';
                 $body = str_replace("{ticket_number}", $supportTicket->support_ticket_id, $body);
@@ -603,25 +605,60 @@ class SupportTicketRepository
     private function sendSupportEmail(
         Request $request,
         array $mail_attachment_urls,
-        int $ticketId,
+        $ticket,
         int $assignToId,
-        array $mailTemplate = null
+        $mailTemplate
     ) {
+        generateLogs("info", "ticket data " . $ticket);
+
+
+        $customerMailTemplate = MailTemplate::where('type', 'create_ticket_customer')->where('status', 'Active')->where('mail_for', 'request')->first();
+
         $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         if (isset($emailConfig) && !empty($emailConfig)) {
             setEmailConfig();
             $sender_email = $emailConfig->sender_email ?? config('mail.from.address');
             establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
-            $subject = $mailTemplate['subject'] ?? $request->subject;
-            $body = $mailTemplate['body'] ?? $request->description;
-            $result = Mail::to($request->to_emails)->cc($request->cc)->bcc($request->bcc)->send(new SendEmail($subject, $body, $mail_attachment_urls));
+
+            $ticket_subject = "A new ticket $ticket->support_ticket_id has been created";
+            $subject = $mailTemplate['subject'] ?? $ticket_subject;
+
+            $body = $mailTemplate['body'] ?? '';
+            $result = Mail::to($request->to_emails)->cc($request->cc)->bcc($request->bcc)->send(new SendEmail($subject, $body, $mail_attachment_urls, $ticket));
+
+            $subject =  $customerMailTemplate->subject ?? $ticket_subject;
+            $subject = str_replace("{ticket_number}", $ticket->support_ticket_id, $subject);
+
+            $templateBody = $customerMailTemplate['body'] ?? '';
+            $templateBody = str_replace(
+                [
+                    "{customer_name}",
+                    "{ticket_number}",
+                    "{ticket_subject}",
+                    "{ticket_status}",
+                    "{ticket_created}",
+                    "{ticket_description}",
+                ],
+                [
+                    $ticket->contact_name,
+                    $ticket->support_ticket_id,
+                    $ticket->subject,
+                    $ticket->status_name,
+                    optional($ticket->created_at)->format('d M Y, H:i:s A T'),
+                    $ticket->description,
+                ],
+                $templateBody
+            );
+
+            Mail::to($ticket->user_email)->send(new SendEmail($subject, $templateBody, $mail_attachment_urls, $ticket));
+
             getDbConnection(auth()->user()->domain);
             logEmail([
                 "user_id" => $assignToId,
                 "email_template_id" => 0,
                 "from_email" => $sender_email,
                 "module_name" => "Support Ticket",
-                "entity_id" => $ticketId,
+                "entity_id" => $ticket->id,
                 "status" => "Sent",
             ]);
         }
