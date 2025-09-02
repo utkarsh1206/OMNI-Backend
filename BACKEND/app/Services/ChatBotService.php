@@ -6,7 +6,7 @@ use Throwable;
 
 class ChatBotService
 {
-    protected $url, $apiToken, $tanentId, $customerId;
+    protected $url, $apiToken, $tanentId, $customerId, $customerToken;
 
     public function __construct()
     {
@@ -28,6 +28,7 @@ class ChatBotService
                 $this->apiToken = $response['session_api_token'];
                 $this->tanentId = $response['tenant_id'];
                 $this->customerId = $response['customer_id'];
+                $this->customerToken = $response['custocustomer_token'];
                 return $response;
             } else {
                 generateLogs('error', 'ChatbotService: Failed to create session.' . json_encode($response));
@@ -108,7 +109,7 @@ class ChatBotService
             ];
 
             $headers = [
-                'Authorization' => 'Bearer ' . $this->apiToken,
+                'Authorization' => 'Bearer ' . $this->customerToken,
             ];
 
             $response = sendHttpRequest($url, 'POST', $payload, $headers, false, false);
