@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Throwable;
+use Illuminate\Http\JsonResponse; 
 
 class ChatBotService
 {
@@ -24,6 +25,11 @@ class ChatBotService
             ];
 
             $response = sendHttpRequest($url, 'POST', $payload, [], false, false);
+
+            if ($response instanceof JsonResponse) {
+                $response = $response->getData(true);
+            }
+
             if (!empty($response['session_id']) && !empty($response['session_api_token'])) {
                 $this->apiToken = $response['session_api_token'];
                 $this->tanentId = $response['tenant_id'];
@@ -55,7 +61,7 @@ class ChatBotService
     {
         try {
             $sessionId = $this->createSession($payload['uin'], $payload['userid']);
-            
+            dd($sessionId);    
             $url = $this->url . "/get-questions?session_id=".$sessionId['session_id']."&language=".$payload['lang'];
           
             $headers = [
@@ -64,9 +70,9 @@ class ChatBotService
 
             $response = sendHttpRequest($url, 'GET', [], $headers, false, false);
             
-            // if ($response instanceof \Illuminate\Http\JsonResponse) {
-            //     $response = $response->getData(true);
-            // }
+            if ($response instanceof JsonResponse) {
+                $response = $response->getData(true);
+            }
 
             if (!empty($response) && isset($response['answer'])) {
                 $response['session_id'] = $sessionId['session_id'];
@@ -114,9 +120,9 @@ class ChatBotService
 
             $response = sendHttpRequest($url, 'POST', $payload, $headers, false, false);
 
-            // if ($response instanceof \Illuminate\Http\JsonResponse) {
-            //     $response = $response->getData(true);
-            // }
+            if ($response instanceof JsonResponse) {
+                $response = $response->getData(true);
+            }
 
             if (!empty($response)) {
                 return $response;
@@ -159,9 +165,9 @@ class ChatBotService
 
             $response = sendHttpRequest($url, 'GET', [], $headers, false, false);
 
-            // if ($response instanceof \Illuminate\Http\JsonResponse) {
-            //     $response = $response->getData(true);
-            // }
+            if ($response instanceof JsonResponse) {
+                $response = $response->getData(true);
+            }
 
             if (!empty($response)) {
                 return $response;
