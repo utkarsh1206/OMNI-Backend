@@ -69,13 +69,12 @@ class ChatBotService
             ];
 
             $response = sendHttpRequest($url, 'GET', [], $headers, false, false, true);
-
+        
             if ($response instanceof JsonResponse) {
                 $response = $response->getData(true);
             }
 
-            if (!empty($response) && isset($response['answer'])) {
-                $response['session_id'] = $sessionId['session_id'];
+            if (!empty($response) && isset($response['questions'])) {
                 return $response;
             } else {
                 generateLogs(
@@ -119,7 +118,7 @@ class ChatBotService
             ];
 
             $response = sendHttpRequest($url, 'POST', $payload, $headers, false, false, false);
-
+        
             if ($response instanceof JsonResponse) {
                 $response = $response->getData(true);
             }
