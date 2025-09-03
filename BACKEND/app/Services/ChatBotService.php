@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use Throwable;
+use App\Models\ChatbotSession;
 use Illuminate\Http\JsonResponse;
-
+use Throwable;
 class ChatBotService
 {
-    protected $url, $apiToken, $tanentId, $customerId, $customerToken;
+    protected $url, $apiToken;
 
     public function __construct()
     {
@@ -31,26 +31,25 @@ class ChatBotService
             }
 
             if (!empty($response['session_id']) && !empty($response['session_api_token'])) {
+                ChatbotSession::updateOrCreate(
+                    [
+                        'tenant_id'   => $response['tenant_id'],
+                        'customer_id' => $response['customer_id'],
+                    ],
+                    [
+                        'session_id'        => $response['session_id'],
+                        'session_api_token' => $response['session_api_token'],
+                        'customer_token'    => $response['customer_token'] ?? null,
+                    ]
+                );
+
                 $this->apiToken = $response['session_api_token'];
-                $this->tanentId = $response['tenant_id'];
-                $this->customerId = $response['customer_id'];
-                $this->customerToken = $response['customer_token'];
+                
                 return $response;
             } else {
                 generateLogs('error', 'ChatbotService: Failed to create session.' . json_encode($response));
                 return null;
             }
-            // if (isset($response['session_id'])) {
-            //     $payload = [
-            //         'session_id' => $response['session_id'],
-            //         'language' => 'en',
-            //     ];
-            //     $response_lang = sendHttpRequest($this->url . "/select-language", 'POST', $payload, [], false, false);
-            //     return $response['session_id'];
-            // } else {
-            //     generateLogs('error', 'ChatbotService: Failed to create session.' . json_encode($response));
-            //     return null;
-            // }
         } catch (Throwable $e) {
             generateLogs('error', 'ChatbotService: Exception during session creation.' . $e->getMessage());
             return null;
@@ -107,6 +106,8 @@ class ChatBotService
     public function ask($apiPayload)
     {
         try {
+            $chatSession = ChatbotSession::where('session_id', $apiPayload['session_id'])->first();
+
             $url = $this->url . "/ask?session_id=" . $apiPayload['session_id'] . "&language=" . $apiPayload['lang'];;
 
             $payload = [
@@ -114,11 +115,11 @@ class ChatBotService
             ];
 
             $headers = [
-                'Authorization' => 'Bearer ' . $this->customerToken,
+                'Authorization' => 'Bearer ' . $chatSession->session_api_token,
             ];
 
             $response = sendHttpRequest($url, 'POST', $payload, $headers, false, false, false);
-        
+            
             if ($response instanceof JsonResponse) {
                 $response = $response->getData(true);
             }
@@ -159,7 +160,7 @@ class ChatBotService
             $url = $this->url . "/chat-history/?tanent_id=" . $this->tanentId . "&customer_id=" . $this->customerId;
 
             $headers = [
-                'Authorization' => 'Bearer ' . $this->apiToken,
+                'Authorization' => 'Bearer ' . $this->customerToken,
             ];
 
             $response = sendHttpRequest($url, 'GET', [], $headers, false, false, true);
