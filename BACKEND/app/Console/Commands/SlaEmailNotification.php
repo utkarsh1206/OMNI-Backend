@@ -12,8 +12,9 @@ use App\Models\EmailConfigure;
 use App\Models\MailTemplate;
 use Illuminate\Support\Facades\Mail;
 use Exception;
-use App\Mail\SendEmail;
+use App\Mail\SlaSendEmail;
 use App\Models\EmailNotification;
+use Illuminate\Support\Facades\Schema;
 
 class SlaEmailNotification extends Command
 {
@@ -44,19 +45,27 @@ class SlaEmailNotification extends Command
                     $databaseName = str_replace(".", "_", $tenant->domain_name);
                     establishDatabaseConnect($newConnectionName, $databaseName);
                     DB::reconnect($newConnectionName);
+
+                    // Check if support_tickets table exists
+                    if (!Schema::connection($newConnectionName)->hasTable('support_tickets')) {
+                        $this->warn("Tenant: {$tenant->domain_name} - support_tickets table not found, skipping...");
+                        continue;
+                    }
+
                     $supportTickets = SupportTicket::on($newConnectionName)
                         ->where(function ($query) {
                             $query->whereNull('is_notified')
                                 ->orWhere('is_notified', '!=', 4);
                         })
                         ->whereNull('actual_resolved_time')
+                        ->whereNotNull('resolved_time')
                         ->get();
                     if ($supportTickets->count()) {
 
                         foreach ($supportTickets as $ticket) {
 
                             $currentTime = Carbon::now();
-                            
+
                             if ($ticket->default_status != 2 && $ticket->default_status != 3) {
                                 if (
                                     $currentTime > $ticket->alert_before_response_notification_time
@@ -111,6 +120,7 @@ class SlaEmailNotification extends Command
 
     public function notifyViaEmail($newConnectionName, $tickets, $type)
     {
+        generateScheduleLogs('info', 'tickets ' . json_encode($tickets));
         $emailConfig = EmailConfigure::on($newConnectionName)->where('type', 'gmail')->first();
         $smtpHost = $emailConfig->smtp_host ?? '';
         $smtpPort = $emailConfig->smtp_port ?? '';
@@ -129,13 +139,36 @@ class SlaEmailNotification extends Command
             'mail.from.name' => $sender_name,
         ]);
         try {
-            $toEmails = $tickets->assignedUser->email ?? '';
-            $mailTemplate = MailTemplate::on($newConnectionName)->where("type", "sla_email")->first();
-            $subject =  $mailTemplate->subject ?? '';
+            $toEmails = $tickets->user_email ?? '';
+            $mailTemplate = MailTemplate::on($newConnectionName)
+                ->where("type", $type)
+                ->where('status', 'Active')
+                ->where('mail_for', 'agent')
+                ->first();
+            $tickets_subject = "SLA Reminder: For Ticket $tickets->support_ticket_id"; 
+            $subject =  $mailTemplate->subject ?? $tickets_subject;
             $body =  $mailTemplate->body ?? '';
             $subject = str_replace("{ticket_number}", $tickets->support_ticket_id, $subject);
-            $body = str_replace("{ticket_number}", $tickets->support_ticket_id, $body);
-            Mail::to($toEmails)->send(new SendEmail($subject, $body));
+            $body = str_replace(
+                [
+                    "{assigned_user}",
+                    "{ticket_number}",
+                    "{ticket_subject}",
+                    "{ticket_created}",
+                    "{first_response_due}",
+                    "{resolve_time_due}"
+                ],
+                [
+                    $tickets->assigned_agent_name ?? 'Agent',
+                    $tickets->support_ticket_id,
+                    $tickets->subject,
+                    optional($tickets->created_at)->format('d M Y, H:i:s A T'),
+                    optional($tickets->first_response_time)->format('d M Y, H:i:s A T'),
+                    optional($tickets->resolved_time)->format('d M Y, H:i:s A T'),
+                ],
+                $body
+            );
+            Mail::to($toEmails)->send(new SlaSendEmail($subject, $body, $tickets, $type));
 
             $notification = new EmailNotification();
             $notification->setConnection($newConnectionName);
@@ -160,7 +193,10 @@ class SlaEmailNotification extends Command
 
     public function notifyAdminViaEmail($newConnectionName, $tickets, $adminUser, $type)
     {
-        $emailConfig = EmailConfigure::on($newConnectionName)->where('type', 'custom')->first();
+        generateScheduleLogs('info', 'adminUser ' . json_encode($adminUser));
+        $emailConfig = EmailConfigure::on($newConnectionName)
+            ->where('type', 'custom')
+            ->first();
         $smtpHost = $emailConfig->smtp_host ?? '';
         $smtpPort = $emailConfig->smtp_port ?? '';
         $smtpUser = $emailConfig->smtp_user ?? '';
@@ -179,12 +215,34 @@ class SlaEmailNotification extends Command
         ]);
         try {
             $toEmails = $adminUser->email ?? '';
-            $mailTemplate = MailTemplate::on($newConnectionName)->where("type", "sla_email")->first();
-            $subject =  $mailTemplate->subject ?? '';
+            $mailTemplate = MailTemplate::on($newConnectionName)->where("type", 'resolve_time_email_admin')->where('status', 'Active')->where('mail_for', 'admin')->first();
+            
+            $tickets_subject = "SLA Reminder: For Ticket $tickets->support_ticket_id";
+            $subject =  $mailTemplate->subject ?? $tickets_subject;
             $body =  $mailTemplate->body ?? '';
             $subject = str_replace("{ticket_number}", $tickets->support_ticket_id, $subject);
-            $body = str_replace("{ticket_number}", $tickets->support_ticket_id, $body);
-            Mail::to($toEmails)->send(new SendEmail($subject, $body));
+            $body = str_replace(
+                [
+                    "{admin_user}",
+                    "{assigned_user}",
+                    "{ticket_number}",
+                    "{ticket_subject}",
+                    "{ticket_created}",
+                    "{first_response_due}",
+                    "{resolve_time_due}"
+                ],
+                [
+                    $adminUser->username ?? 'Admin',
+                    $tickets->assigned_agent_name ?? 'Agent',
+                    $tickets->support_ticket_id,
+                    $tickets->subject,
+                    optional($tickets->created_at)->format('d M Y, H:i:s A T'),
+                    optional($tickets->first_response_time)->format('d M Y, H:i:s A T'),
+                    optional($tickets->resolved_time)->format('d M Y, H:i:s A T'),
+                ],
+                $body
+            );
+            Mail::to($toEmails)->send(new SlaSendEmail($subject, $body, $tickets, $type));
             $notification =  EmailNotification::on($newConnectionName);
             $notification = new EmailNotification();
             $notification->setConnection($newConnectionName);

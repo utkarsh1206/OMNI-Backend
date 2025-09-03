@@ -13,23 +13,34 @@ class SendEmail extends Mailable
     public $subject;
     public $content;
     public $attach;
+    public $ticket;
 
     // Constructor to accept dynamic content
-    public function __construct($subject, $content, $attach = [])
+    public function __construct($subject, $content, $attach = [], $ticket = null)
     {
         $this->subject = $subject;
         $this->content = $content;
         $this->attach = $attach;
+        $this->ticket = $ticket;
     }
 
     // Build the email
     public function build()
     {
-        $email = $this->view('emails.send')
-            ->with([
-                'content' => $this->content,
-            ])
-            ->subject($this->subject);
+        if (!empty($this->ticket)) {
+            $email = $this->view('emails.support_ticket')
+                ->with([
+                    'content' => $this->content,
+                ])
+                ->subject($this->subject);
+        } else {
+            $email = $this->view('emails.send')
+                ->with([
+                    'content' => $this->content,
+                ])
+                ->subject($this->subject);
+        }
+
         // Add attachments
         if (count($this->attach) > 0) {
             foreach ($this->attach as $attachment) {
