@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use Throwable;
-use Illuminate\Http\JsonResponse; 
+use Illuminate\Http\JsonResponse;
 
 class ChatBotService
 {
@@ -17,8 +17,8 @@ class ChatBotService
     protected function createSession($uin, $customerId)
     {
         try {
-            $url = $this->url."/create-session";
-            
+            $url = $this->url . "/create-session";
+
             $payload = [
                 'tenant_id' => $uin,
                 'customer_id' => $customerId,
@@ -34,7 +34,7 @@ class ChatBotService
                 $this->apiToken = $response['session_api_token'];
                 $this->tanentId = $response['tenant_id'];
                 $this->customerId = $response['customer_id'];
-                $this->customerToken = $response['custocustomer_token'];
+                $this->customerToken = $response['customer_token'];
                 return $response;
             } else {
                 generateLogs('error', 'ChatbotService: Failed to create session.' . json_encode($response));
@@ -61,15 +61,15 @@ class ChatBotService
     {
         try {
             $sessionId = $this->createSession($payload['uin'], $payload['userid']);
-            dd($sessionId);    
-            $url = $this->url . "/get-questions?session_id=".$sessionId['session_id']."&language=".$payload['lang'];
-          
+
+            $url = $this->url . "/get-questions?session_id=" . $sessionId['session_id'] . "&language=" . $payload['lang'];
+
             $headers = [
                 'Authorization' => 'Bearer ' . $this->apiToken,
             ];
 
-            $response = sendHttpRequest($url, 'GET', [], $headers, false, false);
-            
+            $response = sendHttpRequest($url, 'GET', [], $headers, false, false, true);
+
             if ($response instanceof JsonResponse) {
                 $response = $response->getData(true);
             }
@@ -104,12 +104,12 @@ class ChatBotService
             ];
         }
     }
-    
+
     public function ask($apiPayload)
     {
         try {
-            $url = $this->url."/ask?session_id=".$apiPayload['session_id']."&language=".$apiPayload['lang'];;
-            
+            $url = $this->url . "/ask?session_id=" . $apiPayload['session_id'] . "&language=" . $apiPayload['lang'];;
+
             $payload = [
                 'query' => $apiPayload['query'],
             ];
@@ -118,7 +118,7 @@ class ChatBotService
                 'Authorization' => 'Bearer ' . $this->customerToken,
             ];
 
-            $response = sendHttpRequest($url, 'POST', $payload, $headers, false, false);
+            $response = sendHttpRequest($url, 'POST', $payload, $headers, false, false, false);
 
             if ($response instanceof JsonResponse) {
                 $response = $response->getData(true);
@@ -157,13 +157,13 @@ class ChatBotService
     public function fetchHistory()
     {
         try {
-            $url = $this->url."/chat-history/?tanent_id=".$this->tanentId."&customer_id=".$this->customerId;
-            
+            $url = $this->url . "/chat-history/?tanent_id=" . $this->tanentId . "&customer_id=" . $this->customerId;
+
             $headers = [
                 'Authorization' => 'Bearer ' . $this->apiToken,
             ];
 
-            $response = sendHttpRequest($url, 'GET', [], $headers, false, false);
+            $response = sendHttpRequest($url, 'GET', [], $headers, false, false, true);
 
             if ($response instanceof JsonResponse) {
                 $response = $response->getData(true);
