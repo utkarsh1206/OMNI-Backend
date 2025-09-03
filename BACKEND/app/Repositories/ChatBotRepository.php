@@ -220,7 +220,7 @@ class ChatBotRepository
     public function notifyCustomer(Request $request)
     {
         try {
-            $chatHisotory = $this->chatbotService->fetchHistory();
+            $chatHisotory = $this->chatbotService->fetchHistory($request);
             $boradCastData = [
                 'agent_id' => auth()->user()->id,
                 'message' => "You are now connected with agent".auth()->user()->username,

@@ -154,13 +154,15 @@ class ChatBotService
         }
     }
 
-    public function fetchHistory()
+    public function fetchHistory($request)
     {
         try {
-            $url = $this->url . "/chat-history/?tanent_id=" . $this->tanentId . "&customer_id=" . $this->customerId;
+            $chatSession = ChatbotSession::where('customer_id', $request->customer_id)->first();
+
+            $url = $this->url . "/chat-history/?tanent_id=" . $chatSession->tenant_id . "&customer_id=" . $chatSession->customer_id;
 
             $headers = [
-                'Authorization' => 'Bearer ' . $this->customerToken,
+                'Authorization' => 'Bearer ' . $chatSession->customer_token,
             ];
 
             $response = sendHttpRequest($url, 'GET', [], $headers, false, false, true);
