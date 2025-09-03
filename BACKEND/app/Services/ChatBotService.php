@@ -159,14 +159,14 @@ class ChatBotService
         try {
             $chatSession = ChatbotSession::where('customer_id', $request->customer_id)->first();
 
-            $url = $this->url . "/chat-history/?tanent_id=" . $chatSession->tenant_id . "&customer_id=" . $chatSession->customer_id;
+            $url = $this->url . "/chat-history/?tenant_id=" . $chatSession->tenant_id . "&customer_id=" . $chatSession->customer_id;
 
             $headers = [
                 'Authorization' => 'Bearer ' . $chatSession->customer_token,
             ];
 
             $response = sendHttpRequest($url, 'GET', [], $headers, false, false, true);
-
+        
             if ($response instanceof JsonResponse) {
                 $response = $response->getData(true);
             }

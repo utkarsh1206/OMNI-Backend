@@ -221,6 +221,20 @@ class ChatBotRepository
     {
         try {
             $chatHisotory = $this->chatbotService->fetchHistory($request);
+            
+            if (!empty($chatHisotory['history'])) {
+                foreach ($chatHisotory['history'] as $item) {
+                    ChatbotMessage::create([
+                        'customer_id'           => $item['customer_id'] ?? null,
+                        'session_id'            => $item['session_id'] ?? null,
+                        'sender'                => $item['role'],
+                        'text'                  => $item['message'],
+                        'external_message_time' => $item['timestamp'],
+                        'created_at'            => now(),
+                        'updated_at'            => now(),
+                    ]);
+                }
+            }
             $boradCastData = [
                 'agent_id' => auth()->user()->id,
                 'message' => "You are now connected with agent".auth()->user()->username,
