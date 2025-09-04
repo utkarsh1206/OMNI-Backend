@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use App\Repositories\UserMessageRepository;
 use App\Http\Requests\UserMessageRequest;
 use App\Http\Requests\ChatBotRoomId;
+use App\Http\Requests\GetMessagesRequest;
 use App\Models\Detail;
+
 class UserMessageController extends Controller
 {
     private $messageRepository;
@@ -73,41 +75,22 @@ class UserMessageController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/get-messages",
-     *     summary="Get messages for the authenticated user",
-     *     description="Fetches all messages for the currently authenticated user.",
-     *     operationId="getMessages",
+     *     path="/api/get-user-phones",
+     *     summary="Get phones of customer",
+     *     description="Fetches all unique customer phone numbers for user messages.",
+     *     operationId="getUserPhones",
      *     tags={"User Messages"},
-     *     security={{
-     *         "bearerAuth": {}
-     *     }},
+     *     security={{"bearerAuth": {}}},
      *     @OA\Response(
      *         response=200,
-     *         description="Successful retrieval of messages",
+     *         description="Successful retrieval of phone numbers",
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="message", type="string", example="Data has been fetched successfully !"),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
-     *                 @OA\Items(
-     *                     type="object",
-     *                     @OA\Property(property="id", type="integer", example=1),
-     *                     @OA\Property(property="user_id", type="integer", nullable=true, example=null),
-     *                     @OA\Property(property="text", type="string", example="What's your Name?"),
-     *                     @OA\Property(property="attachment", type="string", nullable=true, example=null),
-     *                     @OA\Property(property="is_read", type="string", example="unread"),
-     *                     @OA\Property(property="room_id", type="string", example="367731a6-7f9b-431b-8432-8e958c71c17e"),
-     *                     @OA\Property(property="sender", type="string", example="bot"),
-     *                     @OA\Property(property="external_message_time", type="string", format="date-time", example="2025-03-12 13:06:46"),
-     *                     @OA\Property(property="node_type", type="string", example="USERNAME"),
-     *                     @OA\Property(property="session_id", type="string", example="47497830-512b-4f07-ae7b-7602dfa38a8b"),
-     *                     @OA\Property(property="first_name", type="string", example="System"),
-     *                     @OA\Property(property="last_name", type="string", example="Message"),
-     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-04-24T19:32:02.000000Z"),
-     *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-04-24T19:32:02.000000Z"),
-     *                     @OA\Property(property="attachment_url", type="string", nullable=true, example=null)
-     *                 )
+     *                 @OA\Items(type="string", example="919725958612")
      *             )
      *         )
      *     ),
@@ -131,7 +114,78 @@ class UserMessageController extends Controller
      *     )
      * )
      */
-    public function getMessages(Request $request)
+
+    public function getUserPhones(Request $request)
+    {
+        return $this->messageRepository->getUserPhones($request);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/get-messages",
+     *     summary="Get messages by phone",
+     *     description="Fetches all messages for a given customer phone number (for the authenticated user).",
+     *     operationId="getMessages",
+     *     tags={"User Messages"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="phone",
+     *         in="query",
+     *         required=true,
+     *         description="Customer phone number to filter messages",
+     *         @OA\Schema(type="string", example="919725958612")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful retrieval of messages",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Data has been fetched successfully !"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=130),
+     *                     @OA\Property(property="user_id", type="integer", example=4),
+     *                     @OA\Property(property="text", type="string", example="Hello, how can I help you?"),
+     *                     @OA\Property(property="is_read", type="string", example="read"),
+     *                     @OA\Property(property="room_id", type="string", example="26539560-b38f-43ad-a5de-8278fcb6cb85"),
+     *                     @OA\Property(property="sender", type="string", example="bot"),
+     *                     @OA\Property(property="external_message_time", type="string", format="date-time", example="2025-08-13 13:18:50"),
+     *                     @OA\Property(property="node_type", type="string", example="MESSAGE"),
+     *                     @OA\Property(property="session_id", type="string", example="3ace155d-1acd-426e-af02-8ff95be8f1ac"),
+     *                     @OA\Property(property="first_name", type="string", example="System"),
+     *                     @OA\Property(property="last_name", type="string", example="Message"),
+     *                     @OA\Property(property="external_user_phone", type="string", example="919725958612"),
+     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-08-13T13:33:04.000000Z"),
+     *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-08-13T13:33:04.000000Z")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Phone parameter is required")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
+     * )
+     */
+
+    public function getMessages(GetMessagesRequest $request)
     {
         return $this->messageRepository->getMessages($request);
     }
@@ -153,8 +207,18 @@ class UserMessageController extends Controller
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 type="object",
-     *                 required={"text"},
-     *                 @OA\Property(property="text", type="string", example="This is a message"),
+     *                 required={"text","phone_number"},
+     *                 @OA\Property(
+     *                     property="phone_number",
+     *                     type="string",
+     *                     example="+919876543210",
+     *                     description="Recipient's phone number in international format"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="text",
+     *                     type="string",
+     *                     example="This is a message"
+     *                 ),
      *                 @OA\Property(
      *                     property="attachment",
      *                     type="string",
@@ -175,6 +239,7 @@ class UserMessageController extends Controller
      *                 type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
      *                 @OA\Property(property="user_id", type="integer", example=12),
+     *                 @OA\Property(property="phone_number", type="string", example="+919876543210"),
      *                 @OA\Property(property="text", type="string", example="This is a message"),
      *                 @OA\Property(property="attachment", type="string", nullable=true, example="uploads/messages/file.jpg"),
      *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-03T10:00:00Z"),
@@ -209,6 +274,6 @@ class UserMessageController extends Controller
 
     public function fetchChatResponse(Request $request, Detail $detail)
     {
-       return $this->messageRepository->fetchChatResponse($request, $detail);
+        return $this->messageRepository->fetchChatResponse($request, $detail);
     }
 }

@@ -1,3 +1,25 @@
+2025-09-02 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 
+	* Version : Dev
+	* Laravel: Enhances SLA email notifications for tickets
+
+	Improves the SLA email notification system for support tickets by adding
+	functionality to send reminders and alerts to agents and admins
+	regarding ticket resolution deadlines and breaches. 
+
+	This includes:
+	- Modifying the email sending process to use a dedicated `SlaSendEmail`
+	mail class.
+	- Adding checks for table existence to prevent errors when processing
+	tenants.
+	- Adding admin notification when SLA is breached.
+	- Enhancing mail templates to include ticket details and relevant
+	information for admins and agents and customer.
+	- If Template found than send email with template othervise send email from html blade file.
+	- Functionality work for ticket create and SLA reminders.
+
 2025-07-21 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

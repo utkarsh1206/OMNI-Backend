@@ -1,8 +1,6 @@
 <?php
 
 use App\Enums\PermissionAction;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CountryController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\TenantController;
@@ -91,6 +89,9 @@ use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
+use App\Http\Controllers\Api\ApiEndpointController;
+use App\Http\Controllers\Api\ApiImportController;
+use App\Http\Controllers\Api\ApiMappingController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
 use App\Http\Controllers\Api\EvaluationQuestionUsageTypeController;
 use App\Http\Controllers\Api\EvaluationReviewController;
@@ -106,7 +107,9 @@ use App\Http\Controllers\Api\TenantModuleController;
 use App\Http\Controllers\Api\ThirdPartyCrmController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\NetworkCheckController;
+use App\Http\Controllers\Api\CustomChatBotController;
 use App\Http\Middleware\CheckPermissionMiddleware;
+use Illuminate\Support\Facades\Route;
 
 require base_path('routes/externalUse.php');
 
@@ -374,6 +377,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
 
     Route::post('assign-chat-to-agent', [UserMessageController::class, 'assignChatToAgent']);
+    Route::get('get-user-phones', [UserMessageController::class, 'getUserPhones']);
     Route::get('get-messages', [UserMessageController::class, 'getMessages']);
     Route::post('send-message', [UserMessageController::class, 'storeMessage']);
 
@@ -435,7 +439,13 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::post('/network-check', [NetworkCheckController::class, 'index']);
 
-    Route::post('/notify-customer', [ChatBotController::class, 'notifyCustomer']);
+    // Custom Chatbot Routes
+    Route::get('/get-questions', [CustomChatBotController::class, 'getQuestions']);
+    Route::post('/ask-question', [CustomChatBotController::class, 'askQuestion']);
+    Route::post('/connect-with-agent', [CustomChatBotController::class, 'connectWithAgent']);
+    Route::post('/notify-customer', [CustomChatBotController::class, 'notifyCustomer']);
+    Route::post('/send-message-customer', [CustomChatBotController::class, 'storeMessage']);
+    Route::post('/end-conversation-customer', [CustomChatBotController::class, 'endConversationCustomer']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
@@ -471,7 +481,26 @@ Route::prefix('user-roles')->group(function () {
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
 
-// Route::get('/network-check/{live_agent}', [NetworkCheckController::class, 'index']);
+Route::prefix('endpoints')->group(function () {
+    Route::get('/', [ApiEndpointController::class, 'index']);
+    Route::post('/', [ApiEndpointController::class, 'store']);
+    Route::get('/{id}', [ApiEndpointController::class, 'getById']);
+    Route::put('/{id}', [ApiEndpointController::class, 'update']);
+    Route::delete('/{id}', [ApiEndpointController::class, 'destroy']);
+    Route::get('/{endpointId}/mappings', [ApiMappingController::class, 'getByEndpointId']);
+});
 
-Route::post('/ask-question', [ChatBotController::class, 'askQuestion']);
-Route::post('/connect-with-agent', [ChatBotController::class, 'connectWithAgent']);
+Route::prefix('mappings')->group(function () {
+    Route::get('/', [ApiMappingController::class, 'index']);
+    Route::post('/', [ApiMappingController::class, 'store']);
+    Route::get('/{id}', [ApiMappingController::class, 'getById']);
+    Route::put('/{id}', [ApiMappingController::class, 'update']);
+    Route::delete('/{id}', [ApiMappingController::class, 'destroy']);
+});
+
+Route::prefix('lists')->group(function () {
+    Route::get('{listId}/endpoints', [ApiEndpointController::class, 'getByListId']);
+    Route::get('{listId}/mappings', [ApiMappingController::class, 'getByListId']);
+});
+
+Route::post('/import', [ApiImportController::class, 'import']);

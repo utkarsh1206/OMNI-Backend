@@ -8,21 +8,23 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
-class CustomChatbotRequest implements ShouldBroadcastNow
+class EndConversationCustomer implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $customerChat, $domain;
+    private $customerId, $domain, $message;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($data)
+    public function __construct($data, $domain, $customerId)
     {
-        $this->customerChat = $data;
-        // $this->domain = $domain;
-        generateLogs('info', 'broadcast Data: '.json_encode(['customChatbotRequest' => $this->customerChat]));
+        $this->customerId = $customerId;
+        $this->domain  = convertToLower(Str::replace('.', '_', $domain));
+        $this->message = $data;
+        generateLogs('info', 'broadcast Data: '.json_encode(['EndConversationCustomer' => $this->message]));
     }
 
     /**
@@ -35,19 +37,19 @@ class CustomChatbotRequest implements ShouldBroadcastNow
         generateLogs(
             'info',
             'Channel Name: ' . json_encode([
-                'Channel' => "custom-chatbot-request"
+                'Channel' => "{$this->domain}-customer_{$this->customerId}-custom-chatbot"
             ])
         );
         return [
-            new PrivateChannel("custom-chatbot-request"),
+            new PrivateChannel("{$this->domain}-customer_{$this->customerId}-custom-chatbot"),
         ];
     }
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: '.json_encode(['customChatbotRequest' => $this->customerChat]));
+        generateLogs('info', 'broadcastWith Data: '.json_encode(['notifyCustomer' => $this->message]));
         return [
-            'customChatbotRequest' => $this->customerChat, 
+            'EndConversationCustomer' => $this->message, 
         ];
     }
 }
