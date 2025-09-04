@@ -2,12 +2,18 @@
 
 namespace App\Repositories;
 
-use App\Events\CustomChatbotRequest;
+use App\Events\CustomerRequest;
 use App\Events\NotifyCustomer;
+use App\Events\ReceiveChatMessage;
+use App\Events\CustomChatbotMessage;
+use App\Events\EndConversationCustomer;
 use App\Http\Response\CustomApiResponse;
 use App\Http\Resources\ChatbotResource;
 use App\Models\Chatbot;
+use App\Models\ChatbotMessage;
+use App\Models\ChatbotMessageAttachment;
 use App\Services\ChatBotService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -153,15 +159,41 @@ class ChatBotRepository
         }
     }
 
+    public function getQuestions(Request $request)
+    {
+        try {
+            $payload = extractPayload($request->bearerToken());
+        
+            $apiPayload = [
+                'userid' => $payload['userid'],
+                'uin' => $payload['uin'],
+                'lang' => $request->lang,
+            ];
+
+            $questions = $this->chatbotService->getQuestions($apiPayload);
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $questions,
+                trans('message.data_fetch')
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Message Listing of custom Chatbot: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
     public function askQuestion(Request $request)
     {
         try {
-            $sessionId = $request->session_id ?? '';
-            $query = $request->question;
-            $chatHistory = $this->chatbotService->ask($sessionId, $query);
+            $apiPayload = [
+                'session_id' => $request->session_id,
+                'lang' => $request->lang,
+                'query' => $request->question,
+            ];
+            $askQuestion = $this->chatbotService->ask($apiPayload);
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
-                $chatHistory,
+                $askQuestion,
                 trans('message.data_fetch')
             );
         } catch (Exception $ex) {
@@ -172,12 +204,12 @@ class ChatBotRepository
 
     public function connectWithAgent(Request $request)
     {
+        $payload = extractPayload($request->bearerToken());
         try {
             $boradCastData = [
-                'session_id' => $request->session_id,
-                'customer_id' => 2
+                'customer_id' => $payload['userid'],
             ];
-            broadcast(new CustomChatbotRequest($boradCastData));
+            broadcast(new CustomerRequest($boradCastData, $payload['domain']));
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
@@ -188,11 +220,96 @@ class ChatBotRepository
     public function notifyCustomer(Request $request)
     {
         try {
+            $chatHisotory = $this->chatbotService->fetchHistory($request);
+            
+            if (!empty($chatHisotory['history'])) {
+                foreach ($chatHisotory['history'] as $item) {
+                    ChatbotMessage::create([
+                        'customer_id'           => $item['customer_id'] ?? null,
+                        'session_id'            => $item['session_id'] ?? null,
+                        'sender'                => $item['role'],
+                        'text'                  => $item['message'],
+                        'external_message_time' => $item['timestamp'],
+                        'created_at'            => now(),
+                        'updated_at'            => now(),
+                    ]);
+                }
+            }
             $boradCastData = [
-                'session_id' => $request->session_id,
-                'customer_id' => $request->customer_id
+                'agent_id' => auth()->user()->id,
+                'message' => "You are now connected with agent".auth()->user()->username,
             ];
-            broadcast(new NotifyCustomer($boradCastData, auth()->user()->domain));
+            broadcast(new NotifyCustomer($boradCastData, auth()->user()->domain, $request->customer_id));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function storeMessage(Request $request)
+    {
+        try {
+            $payload = extractPayload($request->bearerToken());
+            if($request->sender == 'agent') {
+                $customerId = $request->receiver_id;
+                $agentId = auth()->user()->id;
+            } else {
+                $customerId = $payload['userid'];
+                $agentId = $request->receiver_id;
+            }
+            $files = uploadAttachment($request, "attachment", "attachment");
+            
+            $message = ChatbotMessage::Create([
+                'agent_id' => $agentId,
+                'customer_id' => $customerId,
+                'text' => $request->text,
+                'sender' => $request->sender,
+                'external_message_time' => Carbon::now()
+            ]);
+        
+            if ($message) {
+                if ($files) {
+                    foreach ($files as $file) {
+                        $fileData[] = [
+                            'message_id' => $message->id,
+                            'attachments' => $file['fileName'],
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now(),
+                        ];
+                    }
+                    ChatbotMessageAttachment::insert($fileData);
+                }
+                
+                if($request->sender == 'agent') {
+                    $boradCastData = [
+                        'customer_id' => $customerId,
+                        'msg' => $request->text,
+                    ];
+                    broadcast(new ReceiveChatMessage($boradCastData, auth()->user()->domain));
+                } else {
+                    $boradCastData = [
+                        'agent_id' => $agentId,
+                        'msg' => $request->text,
+                    ];
+                    broadcast(new CustomChatbotMessage($boradCastData, auth()->user()->domain));
+                }
+            }
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in storing Message: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function endConversationCustomer(Request $request)
+    {
+        try {
+            $boradCastData = [
+            //  'agent_id' => auth()->user()->id,
+                'message' => "Thank you for connecting with us",
+            ];
+            broadcast(new EndConversationCustomer($boradCastData, auth()->user()->domain, $request->customer_id));
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());

@@ -1,8 +1,6 @@
 <?php
 
 use App\Enums\PermissionAction;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CountryController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\TenantController;
@@ -109,7 +107,9 @@ use App\Http\Controllers\Api\TenantModuleController;
 use App\Http\Controllers\Api\ThirdPartyCrmController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\NetworkCheckController;
+use App\Http\Controllers\Api\CustomChatBotController;
 use App\Http\Middleware\CheckPermissionMiddleware;
+use Illuminate\Support\Facades\Route;
 
 require base_path('routes/externalUse.php');
 
@@ -439,7 +439,13 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::post('/network-check', [NetworkCheckController::class, 'index']);
 
-    Route::post('/notify-customer', [ChatBotController::class, 'notifyCustomer']);
+    // Custom Chatbot Routes
+    Route::get('/get-questions', [CustomChatBotController::class, 'getQuestions']);
+    Route::post('/ask-question', [CustomChatBotController::class, 'askQuestion']);
+    Route::post('/connect-with-agent', [CustomChatBotController::class, 'connectWithAgent']);
+    Route::post('/notify-customer', [CustomChatBotController::class, 'notifyCustomer']);
+    Route::post('/send-message-customer', [CustomChatBotController::class, 'storeMessage']);
+    Route::post('/end-conversation-customer', [CustomChatBotController::class, 'endConversationCustomer']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
@@ -474,11 +480,6 @@ Route::prefix('user-roles')->group(function () {
 
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
-
-// Route::get('/network-check/{live_agent}', [NetworkCheckController::class, 'index']);
-
-Route::post('/ask-question', [ChatBotController::class, 'askQuestion']);
-Route::post('/connect-with-agent', [ChatBotController::class, 'connectWithAgent']);
 
 Route::prefix('endpoints')->group(function () {
     Route::get('/', [ApiEndpointController::class, 'index']);

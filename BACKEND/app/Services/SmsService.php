@@ -25,15 +25,9 @@ class SmsService implements ShouldQueue
     public function sendSMS(int $userId, string $templateName, string $message, string $toPhone)
     {
         $userGateway = SmsProvider::where(['status' => "active", "type" => 1])->orderBy("id", "desc")->first();
-
-        // if (!$userGateway) {
-        //     throw new Exception('No SMS gateway selected for this user.');
-        // }
-
+       
         if ($userGateway && $userGateway->id) {
             $providerId = $userGateway->id;
-            // Based on the provider, call the respective API
-
             $configArr = [];
 
             $configurations = ApiConfiguration::where(["provider_id" => $providerId, "api_config_type_id" => 1])->pluck("config_value", "config_key");
@@ -67,9 +61,7 @@ class SmsService implements ShouldQueue
     private function sendWithCustomProvider(string $templateName, string $message, string $toPhone, array $configArr, $providerId)
     {
         $client = new GuzzleClient();
-        // $apiName = $configArr['api_name'] ?? '';
         $queryParams = $configArr['query_params'] ?? '';
-        $phoneNumber = $configArr['phone_number'] ?? '';
         $apiUrl = $configArr['url'] ?? '';
         $method = $configArr['method'] ?? 'GET';
         switch ($templateName) {
@@ -79,13 +71,13 @@ class SmsService implements ShouldQueue
             case 'Ticket Resolved':
                 $template_id = config('omni.INCIDENT_RESOLUTION');
                 break;
-            case 'OTP Send':
+            default:
                 $template_id = config('omni.PROVISIONING_OTP');
                 break;
         }
         try {
             $queryParams = str_replace("[PHONE_NUMBER]", $toPhone, $queryParams);
-            // $queryParams = str_replace("[TEMPLATE_ID]", $template_id, $queryParams);
+//          $queryParams = str_replace("[TEMPLATE_ID]", $template_id, $queryParams);
             $queryParams .= "&tempid=" . $template_id;
             $queryParams .= "&message=" . rawurldecode($message);
             $urlWithParams = $apiUrl . $queryParams;

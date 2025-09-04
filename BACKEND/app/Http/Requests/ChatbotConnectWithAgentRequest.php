@@ -19,7 +19,7 @@ class ChatbotConnectWithAgentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'session_id' => 'required',
+            'customer_id' => 'required',
         ];
     }
 
