@@ -25,6 +25,7 @@ class UserMessageRequest extends FormRequest
     {
         return [
             'text' => 'required',
+            'phone_number' => 'required',
         ];
     }
 

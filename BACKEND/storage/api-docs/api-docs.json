@@ -2270,6 +2270,463 @@
                 }
             }
         },
+        "/api/endpoints": {
+            "get": {
+                "tags": [
+                    "API Endpoints"
+                ],
+                "summary": "Get all API endpoints",
+                "operationId": "bb6a3cc4dd379158bfd33c334319e1e5",
+                "responses": {
+                    "200": {
+                        "description": "List of API endpoints",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Endpoints retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "url": {
+                                                        "type": "string"
+                                                    },
+                                                    "method": {
+                                                        "type": "string"
+                                                    },
+                                                    "list_id": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "API Endpoints"
+                ],
+                "summary": "Create a new API endpoint",
+                "operationId": "4866d0a78c4d43d7f8fea02512f1d6a1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "url",
+                                    "method",
+                                    "list_id",
+                                    "mappings"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "User Endpoint"
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "example": "/users"
+                                    },
+                                    "method": {
+                                        "type": "string",
+                                        "example": "GET"
+                                    },
+                                    "list_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "mappings": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "api_key": {
+                                                    "type": "string",
+                                                    "example": "api_field"
+                                                },
+                                                "column_name": {
+                                                    "type": "string",
+                                                    "example": "db_column"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "API endpoint created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Endpoint and mappings created"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/endpoints/{id}": {
+            "get": {
+                "tags": [
+                    "API Endpoints"
+                ],
+                "summary": "Get API endpoint by ID",
+                "operationId": "65de3e0ed222b1049d40d4fa84c6ea13",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the API endpoint",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Endpoint found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "API Endpoints"
+                ],
+                "summary": "Update an API endpoint",
+                "operationId": "f6c43a62205e36828e6dbb4a0e7f5484",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the endpoint to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Updated Endpoint"
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "example": "/users/updated"
+                                    },
+                                    "method": {
+                                        "type": "string",
+                                        "example": "POST"
+                                    },
+                                    "list_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "mappings": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "source": {
+                                                    "type": "string",
+                                                    "example": "api_field"
+                                                },
+                                                "target": {
+                                                    "type": "string",
+                                                    "example": "db_column"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Endpoint updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "API Endpoints"
+                ],
+                "summary": "Delete an API endpoint",
+                "operationId": "bd3fa5279b0991209e328083eefe7bde",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the endpoint to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Endpoint deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/lists/{listId}/endpoints": {
+            "get": {
+                "tags": [
+                    "API Endpoints"
+                ],
+                "summary": "Get API endpoints by list ID",
+                "operationId": "8b3147ecb820dfbda5b1807d465defa6",
+                "parameters": [
+                    {
+                        "name": "listId",
+                        "in": "path",
+                        "description": "List ID to filter endpoints",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Endpoints for the list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/import": {
+            "post": {
+                "tags": [
+                    "API Import"
+                ],
+                "summary": "Import data from an external API into a custom list table",
+                "operationId": "971685806e7f8bad352c88608b8f7a2c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "list_id",
+                                    "endpoint_id"
+                                ],
+                                "properties": {
+                                    "list_id": {
+                                        "description": "Target list ID",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "endpoint_id": {
+                                        "description": "API endpoint ID to import from",
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "payload": {
+                                        "description": "Optional payload/query parameters to send to the API",
+                                        "type": "object",
+                                        "example": {
+                                            "user_id": 123,
+                                            "status": "active"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Import successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data inserted successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "failed_count": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "inserted_count": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "imported_data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation or import error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No mappings defined for this endpoint."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/audit-logs": {
             "get": {
                 "tags": [
@@ -12063,7 +12520,7 @@
                 }
             }
         },
-        "/api/customer-portal/{uin}/request-otp": {
+        "/api/customer-portal/request-otp/{uin}": {
             "post": {
                 "tags": [
                     "OTP"
@@ -12216,7 +12673,7 @@
                 ]
             }
         },
-        "/api/customer-portal/{uin}/verify-otp": {
+        "/api/customer-portal/verify-otp/{uin}": {
             "post": {
                 "tags": [
                     "OTP"
@@ -25625,6 +26082,14 @@
         {
             "name": "Api Configuration Types",
             "description": "Api Configuration Types"
+        },
+        {
+            "name": "API Endpoints",
+            "description": "API Endpoints"
+        },
+        {
+            "name": "API Import",
+            "description": "API Import"
         },
         {
             "name": "Audit Logs",

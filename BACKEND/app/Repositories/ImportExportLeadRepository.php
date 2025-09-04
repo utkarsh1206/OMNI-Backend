@@ -105,6 +105,7 @@ class ImportExportLeadRepository
 
             $insertData['created_at'] = now();
             $insertData['updated_at'] = now();
+            $insertData['omni_lead_source'] = 'csv';
 
             try {
                 DB::table($tableName)->insert($insertData);

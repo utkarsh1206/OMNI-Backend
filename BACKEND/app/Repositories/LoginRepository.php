@@ -104,6 +104,7 @@ class LoginRepository
                             'login_time' => $timeNow,
                             'ready_hr' => $timeNow,
                             'campaign_id' => $request->campaign,
+                            'dial_method' => $request->dial_method,
                         ]);
                     }
                 } else {

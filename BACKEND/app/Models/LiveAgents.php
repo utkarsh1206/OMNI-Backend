@@ -41,6 +41,7 @@ class LiveAgents extends Model
         'pause_seconds',
         'ready_seconds',
         'agent_last_activity',
+        'dial_method',
     ];
 
     protected $casts = [

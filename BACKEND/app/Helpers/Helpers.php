@@ -242,27 +242,30 @@ if (!function_exists('getNeoxConfig')) {
  * @throws \Exception if any error occurs during the HTTP request.
  */
 if (!function_exists('sendHttpRequest')) {
-    function sendHttpRequest($url, $method = 'POST', $data = [], $headers = [], $verifySSL = false, $standardizeResponse = true)
+    function sendHttpRequest($url, $method = 'POST', $data = [], $headers = [], $verifySSL = false, $standardizeResponse = true, $rawGet = false)
     {
         try {
-            // Set headers and prepare the request
-            $defaultHeaders = [
-                'Content-Type' => 'application/json',
-            ];
+            $defaultHeaders = [];
+
+            if (!$rawGet) {
+                $defaultHeaders['Content-Type'] = 'application/json';
+            }
 
             if (!empty($headers)) {
                 $defaultHeaders = array_merge($defaultHeaders, $headers);
             }
 
-            // Send the HTTP request using Laravel's Http facade
-            $response = Http::withHeaders($defaultHeaders)
-                ->withOptions(['verify' => $verifySSL])  // Set SSL verification option
-                ->$method($url, $data);  // Use dynamic HTTP method (GET, POST, etc.)
-
-
-            // Check if the request was successful
+            if ($rawGet) { 
+                $response = Http::withHeaders($defaultHeaders)
+                ->withOptions(['verify' => $verifySSL])  
+                ->$method($url);
+            } else {
+                $response = Http::withHeaders($defaultHeaders)
+                ->withOptions(['verify' => $verifySSL])  
+                ->$method($url, $data);
+            }
+            
             if ($response->successful()) {
-                // If the response contains a code, handle it
                 $responseData = $response->json();
                 if (!$standardizeResponse) {
                     return $responseData;
@@ -286,7 +289,6 @@ if (!function_exists('sendHttpRequest')) {
                     'data' => $responseData,
                 ], $response->status());
             } else {
-                // Handle errors by getting the response message and code
                 $responseData = $response->json();
                 return response()->json([
                     'message' => $responseData["message"] ?? 'Error communicating with the API.',

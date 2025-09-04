@@ -69,6 +69,7 @@ class LiveAgentRepository
             'ingroup' => 'nullable|string',
             'lagged_duration' => 'nullable|integer',
             'rank' => 'nullable|integer',
+            'dial_method' => 'nullable|string',
         ]);
 
         $agent = LiveAgents::create($data);

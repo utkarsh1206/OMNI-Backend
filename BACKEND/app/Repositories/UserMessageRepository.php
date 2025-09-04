@@ -34,7 +34,8 @@ class UserMessageRepository
             if ($agentAssigned) {
                 $boradCastData = [
                     'room_id' => $request->room_id,
-                    'user_id' => auth()->user()->id
+                    'user_id' => auth()->user()->id,
+                    'external_user_phone'=> $agentAssigned->external_user_phone,
                 ];
                 broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));
             } else {
@@ -97,7 +98,8 @@ class UserMessageRepository
                     if (!empty($chatMessage)) {
                         $boradCastData = [
                             'room_id' => $request->room_id,
-                            'user_id' => auth()->user()->id
+                            'user_id' => auth()->user()->id,
+                            'external_user_phone'=> $phoneNumber,
                         ];
                         broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));
                         // broadcast(new ReceivedCustomerMessages($chatMessage));
@@ -116,11 +118,30 @@ class UserMessageRepository
         }
     }
 
-    public function getMessages()
+    public function getUserPhones()
+    {
+        try {
+            $messages  = Message::select('external_user_phone')->where("type", "user_chat")
+                ->where('user_id', auth()->user()->id)
+                ->whereNotNull('external_user_phone')
+                ->distinct()
+                ->orderBy('external_user_phone', 'desc')
+                ->pluck('external_user_phone');
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Message Listing: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function getMessages($request)
     {
         try {
             $messages  = Message::where("type", "user_chat")
-                ->where('user_id', auth()->user()->id)->get();
+                ->where('user_id', auth()->user()->id)
+                ->where('external_user_phone', $request->phone)
+                ->get();
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
         } catch (Exception $ex) {
@@ -155,12 +176,12 @@ class UserMessageRepository
                     }
                     MessageAttachment::insert($fileData);
                 }
-
-                $msg =  Message::where('user_id', auth()->user()->id)
-                        ->where('type', 'user_chat')->first();
-                if($msg) {
-                    $this->chat360Service->sendMessage('text', ['body' => $request->text], $msg->external_user_phone);
-                }
+                $this->chat360Service->sendMessage('text', ['body' => $request->text], $request->phone_number);
+                // $msg =  Message::where('user_id', auth()->user()->id)
+                //         ->where('type', 'user_chat')->first();
+                // if($msg) {
+                //     $this->chat360Service->sendMessage('text', ['body' => $request->text], $msg->external_user_phone);
+                // }
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
