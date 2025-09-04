@@ -34,7 +34,8 @@ class UserMessageRepository
             if ($agentAssigned) {
                 $boradCastData = [
                     'room_id' => $request->room_id,
-                    'user_id' => auth()->user()->id
+                    'user_id' => auth()->user()->id,
+                    'external_user_phone'=> $agentAssigned->external_user_phone,
                 ];
                 broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));
             } else {
@@ -97,7 +98,8 @@ class UserMessageRepository
                     if (!empty($chatMessage)) {
                         $boradCastData = [
                             'room_id' => $request->room_id,
-                            'user_id' => auth()->user()->id
+                            'user_id' => auth()->user()->id,
+                            'external_user_phone'=> $phoneNumber,
                         ];
                         broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));
                         // broadcast(new ReceivedCustomerMessages($chatMessage));
@@ -174,12 +176,12 @@ class UserMessageRepository
                     }
                     MessageAttachment::insert($fileData);
                 }
-
-                $msg =  Message::where('user_id', auth()->user()->id)
-                        ->where('type', 'user_chat')->first();
-                if($msg) {
-                    $this->chat360Service->sendMessage('text', ['body' => $request->text], $msg->external_user_phone);
-                }
+                $this->chat360Service->sendMessage('text', ['body' => $request->text], $request->phone_number);
+                // $msg =  Message::where('user_id', auth()->user()->id)
+                //         ->where('type', 'user_chat')->first();
+                // if($msg) {
+                //     $this->chat360Service->sendMessage('text', ['body' => $request->text], $msg->external_user_phone);
+                // }
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
