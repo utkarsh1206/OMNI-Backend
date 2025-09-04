@@ -207,8 +207,18 @@ class UserMessageController extends Controller
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 type="object",
-     *                 required={"text"},
-     *                 @OA\Property(property="text", type="string", example="This is a message"),
+     *                 required={"text","phone_number"},
+     *                 @OA\Property(
+     *                     property="phone_number",
+     *                     type="string",
+     *                     example="+919876543210",
+     *                     description="Recipient's phone number in international format"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="text",
+     *                     type="string",
+     *                     example="This is a message"
+     *                 ),
      *                 @OA\Property(
      *                     property="attachment",
      *                     type="string",
@@ -229,6 +239,7 @@ class UserMessageController extends Controller
      *                 type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
      *                 @OA\Property(property="user_id", type="integer", example=12),
+     *                 @OA\Property(property="phone_number", type="string", example="+919876543210"),
      *                 @OA\Property(property="text", type="string", example="This is a message"),
      *                 @OA\Property(property="attachment", type="string", nullable=true, example="uploads/messages/file.jpg"),
      *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-03T10:00:00Z"),

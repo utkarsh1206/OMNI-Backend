@@ -176,12 +176,12 @@ class UserMessageRepository
                     }
                     MessageAttachment::insert($fileData);
                 }
-
-                $msg =  Message::where('user_id', auth()->user()->id)
-                        ->where('type', 'user_chat')->first();
-                if($msg) {
-                    $this->chat360Service->sendMessage('text', ['body' => $request->text], $msg->external_user_phone);
-                }
+                $this->chat360Service->sendMessage('text', ['body' => $request->text], $request->phone_number);
+                // $msg =  Message::where('user_id', auth()->user()->id)
+                //         ->where('type', 'user_chat')->first();
+                // if($msg) {
+                //     $this->chat360Service->sendMessage('text', ['body' => $request->text], $msg->external_user_phone);
+                // }
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
