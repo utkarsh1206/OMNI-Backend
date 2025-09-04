@@ -1,3 +1,27 @@
+2025-09-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 
+	* Version : Dev
+	* Laravel:
+	Enhance the SLA email notification process by sending emails only when the ticket status changes. Two notifications will be triggered based on status changes:
+	Alert Before Resolve Time
+	Resolve Time Notification
+
+	Key Changes:
+	Status Change Check: A function is added to check if the ticket status has changed. Emails are sent only if there’s a valid status change.
+
+	Notification Triggers:
+	Before Resolve Time Alert: Sent if the ticket status changes.
+	Resolve Time Notification: Sent at the defined resolve time, if the status has changed.
+
+	Conditional Logic: If no status change occurs or the times are null, no notifications are sent.
+
+	Benefits:
+	Reduces unnecessary email notifications.
+	Ensures timely updates based on actual status changes.
+	Improves SLA tracking by sending relevant alerts only when needed.
+
 2025-09-02 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

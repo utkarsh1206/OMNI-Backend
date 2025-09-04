@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Mail;
 use Exception;
 use App\Mail\SlaSendEmail;
 use App\Models\EmailNotification;
+use App\Models\SupportTicketNotification;
 use Illuminate\Support\Facades\Schema;
 
 class SlaEmailNotification extends Command
@@ -58,7 +59,7 @@ class SlaEmailNotification extends Command
                                 ->orWhere('is_notified', '!=', 4);
                         })
                         ->whereNull('actual_resolved_time')
-                        ->whereNotNull('resolved_time')
+                        // ->whereNotNull('resolved_time')
                         ->get();
                     if ($supportTickets->count()) {
 
@@ -67,47 +68,78 @@ class SlaEmailNotification extends Command
                             $currentTime = Carbon::now();
 
                             if ($ticket->default_status != 2 && $ticket->default_status != 3) {
-                                if (
-                                    $currentTime > $ticket->alert_before_response_notification_time
-                                    && $ticket->response_time == null && $ticket->is_notified == null
-                                    &&  $ticket->is_notified != 1
-                                ) {
-                                    $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_response_email");
-                                    $ticket->is_notified = 1;
+
+                                $hasStatusChange = $this->checkFirstResponse($newConnectionName, $ticket->id);
+
+                                if ($hasStatusChange > 0) {
+                                    if ($ticket->alert_before_resolve_notification_time &&
+                                        $currentTime > $ticket->alert_before_resolve_notification_time
+                                        && $ticket->is_notified != 3
+                                    ) {
+                                        $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_resolve_email");
+                                        $ticket->is_notified = 3;
+                                    }
+
+                                    if ($ticket->resolved_time && $currentTime > $ticket->resolved_time && $ticket->is_notified != 4) {
+                                        $this->notifyViaEmail($newConnectionName, $ticket, "resolve_time_email");
+                                        $ticket->is_notified = 4;
+                                        $adminUsers = User::on($newConnectionName)
+                                            ->where("type", "=", 0)->first();
+                                        $ticket->is_escalated = "Yes";
+                                        // $ticket->save();
+                                        $this->notifyAdminViaEmail(
+                                            $newConnectionName,
+                                            $ticket,
+                                            $adminUsers,
+                                            "resolve_time_email"
+                                        );
+                                    }
+                                } else {
+                                    if (
+                                        $currentTime > $ticket->alert_before_response_notification_time
+                                        && $ticket->response_time == null && $ticket->is_notified == null
+                                        &&  $ticket->is_notified != 1
+                                    ) {
+                                        $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_response_email");
+                                        $ticket->is_notified = 1;
+                                    }
+
+                                    if (
+                                        $currentTime > $ticket->first_response_time
+                                        && $ticket->response_time == null &&
+                                        ($ticket->is_notified == 1 || $ticket->is_notified == null)
+                                        &&  $ticket->is_notified != 2
+                                    ) {
+                                        $this->notifyViaEmail($newConnectionName, $ticket, "first_response_email");
+                                        $ticket->is_notified = 2;
+                                    }
+
+                                    if (
+                                        $currentTime > $ticket->alert_before_resolve_notification_time
+                                        && $ticket->is_notified != 3
+                                    ) {
+                                        $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_resolve_email");
+                                        $ticket->is_notified = 3;
+                                    }
+
+                                    if ($currentTime > $ticket->resolved_time && $ticket->is_notified != 4) {
+                                        $this->notifyViaEmail($newConnectionName, $ticket, "resolve_time_email");
+                                        $ticket->is_notified = 4;
+                                        $adminUsers = User::on($newConnectionName)
+                                            ->where("type", "=", 0)->first();
+                                        $ticket->is_escalated = "Yes";
+                                        // $ticket->save();
+                                        $this->notifyAdminViaEmail(
+                                            $newConnectionName,
+                                            $ticket,
+                                            $adminUsers,
+                                            "resolve_time_email"
+                                        );
+                                    }
                                 }
 
-                                if (
-                                    $currentTime > $ticket->first_response_time
-                                    && $ticket->response_time == null &&
-                                    ($ticket->is_notified == 1 || $ticket->is_notified == null)
-                                    &&  $ticket->is_notified != 2
-                                ) {
-                                    $this->notifyViaEmail($newConnectionName, $ticket, "first_response_email");
-                                    $ticket->is_notified = 2;
-                                }
 
-                                if (
-                                    $currentTime > $ticket->alert_before_resolve_notification_time
-                                    && $ticket->is_notified != 3
-                                ) {
-                                    $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_resolve_email");
-                                    $ticket->is_notified = 3;
-                                }
 
-                                if ($currentTime > $ticket->resolved_time) {
-                                    $this->notifyViaEmail($newConnectionName, $ticket, "resolve_time_email");
-                                    $ticket->is_notified = 4;
-                                    $adminUsers = User::on($newConnectionName)
-                                        ->where("type", "=", 0)->first();
-                                    $ticket->is_escalated = "Yes";
-                                    // $ticket->save();
-                                    $this->notifyAdminViaEmail(
-                                        $newConnectionName,
-                                        $ticket,
-                                        $adminUsers,
-                                        "resolve_time_email"
-                                    );
-                                }
                                 $ticket->save();
                             }
                         }
@@ -145,7 +177,7 @@ class SlaEmailNotification extends Command
                 ->where('status', 'Active')
                 ->where('mail_for', 'agent')
                 ->first();
-            $tickets_subject = "SLA Reminder: For Ticket $tickets->support_ticket_id"; 
+            $tickets_subject = "SLA Reminder: For Ticket $tickets->support_ticket_id";
             $subject =  $mailTemplate->subject ?? $tickets_subject;
             $body =  $mailTemplate->body ?? '';
             $subject = str_replace("{ticket_number}", $tickets->support_ticket_id, $subject);
@@ -216,7 +248,7 @@ class SlaEmailNotification extends Command
         try {
             $toEmails = $adminUser->email ?? '';
             $mailTemplate = MailTemplate::on($newConnectionName)->where("type", 'resolve_time_email_admin')->where('status', 'Active')->where('mail_for', 'admin')->first();
-            
+
             $tickets_subject = "SLA Reminder: For Ticket $tickets->support_ticket_id";
             $subject =  $mailTemplate->subject ?? $tickets_subject;
             $body =  $mailTemplate->body ?? '';
@@ -263,5 +295,13 @@ class SlaEmailNotification extends Command
             echo  $e->getMessage();
             exit;
         }
+    }
+
+    private function checkFirstResponse($newConnectionName, $ticketId)
+    {
+        return SupportTicketNotification::on($newConnectionName)
+            ->where('support_ticket_id', $ticketId)
+            ->where('type', 'Status Changed')
+            ->exists();
     }
 }
