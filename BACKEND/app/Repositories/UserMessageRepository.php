@@ -34,7 +34,8 @@ class UserMessageRepository
             if ($agentAssigned) {
                 $boradCastData = [
                     'room_id' => $request->room_id,
-                    'user_id' => auth()->user()->id
+                    'user_id' => auth()->user()->id,
+                    'external_user_phone'=> $agentAssigned->external_user_phone,
                 ];
                 broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));
             } else {
@@ -97,7 +98,8 @@ class UserMessageRepository
                     if (!empty($chatMessage)) {
                         $boradCastData = [
                             'room_id' => $request->room_id,
-                            'user_id' => auth()->user()->id
+                            'user_id' => auth()->user()->id,
+                            'external_user_phone'=> $phoneNumber,
                         ];
                         broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));
                         // broadcast(new ReceivedCustomerMessages($chatMessage));
