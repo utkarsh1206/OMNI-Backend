@@ -14,16 +14,17 @@ class NotifyCustomer implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private $customerChat, $domain;
+    private $customerId, $domain, $message;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($data, $domain)
+    public function __construct($data, $domain, $customerId)
     {
-        $this->customerChat = $data;
+        $this->customerId = $customerId;
         $this->domain  = convertToLower(Str::replace('.', '_', $domain));
-        generateLogs('info', 'broadcast Data: '.json_encode(['notifyCustomer' => $this->customerChat]));
+        $this->message = $data;
+        generateLogs('info', 'broadcast Data: '.json_encode(['notifyCustomer' => $this->message]));
     }
 
     /**
@@ -36,19 +37,19 @@ class NotifyCustomer implements ShouldBroadcastNow
         generateLogs(
             'info',
             'Channel Name: ' . json_encode([
-                'Channel' => "notify-customer"
+                'Channel' => "{$this->domain}-customer_{$this->customerId}-custom-chatbot"
             ])
         );
         return [
-            new PrivateChannel("notify-customer"),
+            new PrivateChannel("{$this->domain}-customer_{$this->customerId}-custom-chatbot"),
         ];
     }
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: '.json_encode(['notifyCustomer' => $this->customerChat]));
+        generateLogs('info', 'broadcastWith Data: '.json_encode(['notifyCustomer' => $this->message]));
         return [
-            'notifyCustomer' => $this->customerChat, 
+            'notifyCustomer' => $this->message, 
         ];
     }
 }

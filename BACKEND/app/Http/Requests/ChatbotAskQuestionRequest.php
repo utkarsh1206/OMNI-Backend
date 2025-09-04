@@ -19,7 +19,19 @@ class ChatbotAskQuestionRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'session_id' => 'required',
             'question' => 'required|string',
+            'lang' => 'required|in:en,hi',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'session_id.required' => 'session id is required.',
+            'question.required' => 'question is required.',
+            'lang.required' => 'Language is required.',
+            'lang.in'       => 'Language must be either en or hindi.',
         ];
     }
 
