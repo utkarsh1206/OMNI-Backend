@@ -128,25 +128,20 @@ class UserMessageRepository
             //     ->orderBy('external_user_phone', 'desc')
             //     ->pluck('external_user_phone');
 
-            $messages = Message::select('first_name', 'last_name', 'external_user_phone')
-                ->where("type", "user_chat")
+            $messages = Message::where("type", "user_chat")
                 ->where("user_id", auth()->id())
                 ->whereNotNull("external_user_phone")
-                ->orderBy("external_user_phone", "desc")
+                ->where("external_user_phone", '!=', '')
+                ->orderBy("id", "desc") // newest first
                 ->get()
                 ->groupBy('external_user_phone')
                 ->map(function ($group) {
-                    $name = $group->pluck('first_name')
-                        ->zip($group->pluck('last_name'))
-                        ->map(function ($pair) {
-                            return trim(($pair[0] ?? '') . ' ' . ($pair[1] ?? ''));
-                        })
-                        ->first(function ($fullName) {
-                            return !empty($fullName);
-                        });
+                    // Pick the first non-system valid name
+                    $name = $group->map(fn($msg) => trim(($msg->first_name ?? '') . ' ' . ($msg->last_name ?? '')))
+                        ->first(fn($n) => !empty($n) && strtolower($n) !== 'system message');
 
                     return [
-                        'name'  => $name ?: 'Unknown',
+                        'name'  => $name ?: 'System Message',
                         'phone' => $group->first()->external_user_phone,
                     ];
                 })
@@ -238,6 +233,7 @@ class UserMessageRepository
                 'external_message_time' => $request->input('timestamp') ?? Carbon::now(),
                 'node_type' => $messageType ?? 'MESSAGE',
                 'first_name' => $request->input('receiver_name') ?? null,
+                'external_user_phone' => $request->input('receiver_num') ?? null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
