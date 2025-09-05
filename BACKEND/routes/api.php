@@ -108,6 +108,7 @@ use App\Http\Controllers\Api\ThirdPartyCrmController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\NetworkCheckController;
 use App\Http\Controllers\Api\CustomChatBotController;
+use App\Http\Controllers\Api\ListTemplateMapController;
 use App\Http\Middleware\CheckPermissionMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -504,3 +505,8 @@ Route::prefix('lists')->group(function () {
 });
 
 Route::post('/import', [ApiImportController::class, 'import']);
+
+Route::prefix('list-template-map')->group(function () {
+    Route::post('/', [ListTemplateMapController::class, 'store']);
+    Route::get('/{listId}', [ListTemplateMapController::class, 'show']);
+});
