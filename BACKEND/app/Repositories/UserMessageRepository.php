@@ -121,13 +121,36 @@ class UserMessageRepository
     public function getUserPhones()
     {
         try {
-            $messages  = Message::select('external_user_phone')->where("type", "user_chat")
-                ->where('user_id', auth()->user()->id)
-                ->whereNotNull('external_user_phone')
-                ->distinct()
-                ->orderBy('external_user_phone', 'desc')
-                ->pluck('external_user_phone');
+            // $messages  = Message::select('external_user_phone')->where("type", "user_chat")
+            //     ->where('user_id', auth()->user()->id)
+            //     ->whereNotNull('external_user_phone')
+            //     ->distinct()
+            //     ->orderBy('external_user_phone', 'desc')
+            //     ->pluck('external_user_phone');
 
+            $messages = Message::select('first_name', 'last_name', 'external_user_phone')
+                ->where("type", "user_chat")
+                ->where("user_id", auth()->id())
+                ->whereNotNull("external_user_phone")
+                ->orderBy("external_user_phone", "desc")
+                ->get()
+                ->groupBy('external_user_phone')
+                ->map(function ($group) {
+                    $name = $group->pluck('first_name')
+                        ->zip($group->pluck('last_name'))
+                        ->map(function ($pair) {
+                            return trim(($pair[0] ?? '') . ' ' . ($pair[1] ?? ''));
+                        })
+                        ->first(function ($fullName) {
+                            return !empty($fullName);
+                        });
+
+                    return [
+                        'name'  => $name ?: 'Unknown',
+                        'phone' => $group->first()->external_user_phone,
+                    ];
+                })
+                ->values();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Message Listing: ', $ex->getMessage());
@@ -176,7 +199,7 @@ class UserMessageRepository
                     }
                     MessageAttachment::insert($fileData);
                 }
-                $this->chat360Service->sendMessage('text', ['body' => $request->text], $request->phone_number);
+                $this->chat360Service->sendMessage('text', ['body' => $request->text], $request->external_user_phone);
                 // $msg =  Message::where('user_id', auth()->user()->id)
                 //         ->where('type', 'user_chat')->first();
                 // if($msg) {
