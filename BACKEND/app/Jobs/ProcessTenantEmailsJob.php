@@ -38,24 +38,24 @@ class ProcessTenantEmailsJob implements ShouldQueue
         $connection   = str_replace(".", "_", $tenant->domain_name);
         $databaseName = str_replace(".", "_", $tenant->domain_name);
 
-        generateLogs("info", "Starting ProcessTenantEmailsJob", [
+        generateLogs("info", "Starting ProcessTenantEmailsJob". json_encode([
             'command_run_id' => $this->commandRunId,
             'job_run_id'     => $this->jobRunId,
             'tenant_id'      => $tenant->id,
             'domain_name'    => $tenant->domain_name,
             'connection'     => $connection,
-        ]);
+        ]));
 
         try {
             establishDatabaseConnect($connection, $databaseName);
             DB::reconnect($connection);
 
             if (!Schema::connection($connection)->hasTable('email_configures')) {
-                generateLogs("warning", "email_configures table missing", [
+                generateLogs("warning", "email_configures table missing" .json_encode([
                     'command_run_id' => $this->commandRunId,
                     'job_run_id'     => $this->jobRunId,
                     'tenant_id'      => $tenant->id,
-                ]);
+                ]));
                 return;
             }
 
@@ -64,11 +64,11 @@ class ProcessTenantEmailsJob implements ShouldQueue
                 ->first();
 
             if (!$emailConfig) {
-                generateLogs("warning", "No email configuration found", [
+                generateLogs("warning", "No email configuration found" .json_encode([
                     'command_run_id' => $this->commandRunId,
                     'job_run_id'     => $this->jobRunId,
                     'tenant_id'      => $tenant->id,
-                ]);
+                ]));
                 return;
             }
 
@@ -85,12 +85,12 @@ class ProcessTenantEmailsJob implements ShouldQueue
             $folder   = $client->getFolder('INBOX', 'UNSEEN');
             $messages = $folder->messages()->unseen()->limit(20)->get();
 
-            generateLogs("info", "Fetched unseen emails", [
+            generateLogs("info", "Fetched unseen emails" .json_encode([
                 'command_run_id' => $this->commandRunId,
                 'job_run_id'     => $this->jobRunId,
                 'tenant_id'      => $tenant->id,
                 'count'          => $messages->count(),
-            ]);
+            ]));
 
             // Configure SMTP dynamically
             config([
@@ -108,18 +108,18 @@ class ProcessTenantEmailsJob implements ShouldQueue
                 $this->storeEmailAsTicket($message, $emailConfig, $connection);
             }
 
-            generateLogs("info", "Finished processing tenant emails", [
+            generateLogs("info", "Finished processing tenant emails" .json_encode([
                 'command_run_id' => $this->commandRunId,
                 'job_run_id'     => $this->jobRunId,
                 'tenant_id'      => $tenant->id,
-            ]);
+            ]));
         } catch (Exception $e) {
-            generateLogs("error", "Error processing tenant emails", [
+            generateLogs("error", "Error processing tenant emails" .json_encode([
                 'command_run_id' => $this->commandRunId,
                 'job_run_id'     => $this->jobRunId,
                 'tenant_id'      => $tenant->id,
                 'error'          => $e->getMessage(),
-            ]);
+            ]));
         }
     }
 
@@ -169,7 +169,7 @@ class ProcessTenantEmailsJob implements ShouldQueue
         $ticket->support_ticket_id = $datePrefix . $ticket->id;
         $ticket->save();
 
-        generateLogs("info", "Created support ticket", [
+        generateLogs("info", "Created support ticket" .json_encode([
             'command_run_id' => $this->commandRunId,
             'job_run_id'     => $this->jobRunId,
             'tenant_id'      => $this->tenant->id,
@@ -177,7 +177,7 @@ class ProcessTenantEmailsJob implements ShouldQueue
             'ticket_no'      => $ticket->support_ticket_id,
             'subject'        => $subject_final,
             'attachments'    => count($attachment_urls),
-        ]);
+        ]));
 
         // Mark email as read
         $message->setFlag('\\Seen');
@@ -192,12 +192,12 @@ class ProcessTenantEmailsJob implements ShouldQueue
         ];
         Mail::to($emailAddress)->send(new SupportTicketMail($mailData));
 
-        generateLogs("info", "Sent confirmation mail", [
+        generateLogs("info", "Sent confirmation mail" .json_encode([
             'command_run_id' => $this->commandRunId,
             'job_run_id'     => $this->jobRunId,
             'tenant_id'      => $this->tenant->id,
             'to'             => $emailAddress,
             'ticket_no'      => $ticket->support_ticket_id,
-        ]);
+        ]));
     }
 }
