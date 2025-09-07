@@ -194,7 +194,7 @@ class UserMessageRepository
                     }
                     MessageAttachment::insert($fileData);
                 }
-                $this->chat360Service->sendMessage('text', ['body' => $request->text], $request->external_user_phone);
+                $this->chat360Service->sendMessage('text', ['body' => $request->text], $request->phone_number);
                 // $msg =  Message::where('user_id', auth()->user()->id)
                 //         ->where('type', 'user_chat')->first();
                 // if($msg) {
