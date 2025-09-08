@@ -179,7 +179,8 @@ class UserMessageRepository
                 'is_read' => 'read',
                 'type' => 'user_chat',
                 'sender' => 'agent',
-                'external_message_time' => Carbon::now()
+                'external_message_time' => Carbon::now(),
+                'external_user_phone' => $request->phone_number
             ]);
 
             if ($message) {
