@@ -12,6 +12,7 @@ use App\Http\Resources\ChatbotResource;
 use App\Models\Chatbot;
 use App\Models\ChatbotMessage;
 use App\Models\ChatbotMessageAttachment;
+use App\Models\Contact;
 use App\Services\ChatBotService;
 use Carbon\Carbon;
 use Exception;
@@ -250,7 +251,7 @@ class ChatBotRepository
             //             ]);
             //         }
             //     }
-               
+
             //     // Notify to customer
             //     $boradCastData = [
             //         'agent_id' => auth()->user()->id,
@@ -364,6 +365,52 @@ class ChatBotRepository
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function getCustomerIds()
+    {
+        try {
+            $messages = ChatbotMessage::whereNotNull("customer_id")
+                ->orderBy("id", "desc")
+                ->get()
+                ->groupBy('customer_id')
+                ->map(function ($group) {
+                    $contact = Contact::where('id', $group->first()->customer_id)
+                        ->whereNull('deleted_at')
+                        ->first();
+
+                    return [
+                        'customer_id' => (string) $group->first()->customer_id,
+                        'name'        => $contact
+                            ? trim(($contact->first_name ?? '') . ' ' . ($contact->last_name ?? ''))
+                            : 'Unknown',
+                    ];
+                })
+                ->values();
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $messages,
+                trans('message.data_fetch')
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Message Listing: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function getCustomerMessages($request)
+    {
+        try {
+            $messages  = ChatbotMessage::where('customer_id', $request->id)
+                // ->where('agent_id', auth()->user()->id)
+                ->get();
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in generating Message Listing: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

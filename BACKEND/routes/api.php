@@ -445,6 +445,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('/connect-with-agent', [CustomChatBotController::class, 'connectWithAgent']);
     Route::post('/notify-customer', [CustomChatBotController::class, 'notifyCustomer']);
     Route::post('/send-message-customer', [CustomChatBotController::class, 'storeMessage']);
+    Route::get('/get-customer-ids', [CustomChatBotController::class, 'getCustomerIds']);
+    Route::get('/get-customer-messages', [CustomChatBotController::class, 'getCustomerMessages']);
     Route::post('/end-conversation-customer', [CustomChatBotController::class, 'endConversationCustomer']);
 });
 
