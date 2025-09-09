@@ -121,22 +121,14 @@ class UserMessageRepository
     public function getUserPhones()
     {
         try {
-            // $messages  = Message::select('external_user_phone')->where("type", "user_chat")
-            //     ->where('user_id', auth()->user()->id)
-            //     ->whereNotNull('external_user_phone')
-            //     ->distinct()
-            //     ->orderBy('external_user_phone', 'desc')
-            //     ->pluck('external_user_phone');
-
             $messages = Message::where("type", "user_chat")
                 ->where("user_id", auth()->id())
                 ->whereNotNull("external_user_phone")
                 ->where("external_user_phone", '!=', '')
-                ->orderBy("id", "desc") // newest first
+                ->orderBy("id", "desc")
                 ->get()
                 ->groupBy('external_user_phone')
                 ->map(function ($group) {
-                    // Pick the first non-system valid name
                     $name = $group->map(fn($msg) => trim(($msg->first_name ?? '') . ' ' . ($msg->last_name ?? '')))
                         ->first(fn($n) => !empty($n) && strtolower($n) !== 'system message');
 
