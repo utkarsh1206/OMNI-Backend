@@ -64,7 +64,7 @@
 </body>
 
 </html>
-@else
 <!-- Render the provided template content if $content is not empty -->
+@else
 {!! $content !!}
 @endif
