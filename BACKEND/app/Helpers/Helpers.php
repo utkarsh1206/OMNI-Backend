@@ -254,8 +254,15 @@ if (!function_exists('getNeoxConfig')) {
  * @throws \Exception if any error occurs during the HTTP request.
  */
 if (!function_exists('sendHttpRequest')) {
-    function sendHttpRequest($url, $method = 'POST', $data = [], $headers = [], $verifySSL = false, $standardizeResponse = true, $rawGet = false)
-    {
+    function sendHttpRequest(
+        $url,
+        $method = 'POST',
+        $data = [],
+        $headers = [],
+        $verifySSL = false,
+        $standardizeResponse = true,
+        $rawGet = false
+    ) {
         try {
             $defaultHeaders = [];
 
@@ -395,8 +402,9 @@ if (! function_exists('uploadAttachment')) {
             $attachment = $request->file($fieldName);
             if (is_array($attachment)) {
                 foreach ($attachment as $value) {
-                    $filename = getSanitizedOriginalName($value->getClientOriginalName()) . '_' . now()->timestamp . '.' . $value->getClientOriginalExtension();
-                    // $filename = now()->format('Y_m_d_H_i_s') . '.' . $value->getClientOriginalExtension();
+                    $filename = getSanitizedOriginalName(
+                        $value->getClientOriginalName()
+                    ) . '_' . now()->timestamp . '.' . $value->getClientOriginalExtension();
                     $filePath = $value->storeAs($directory, $filename, 'public');
                     $fileInfo[] = [
                         'fileName' => $filename,
@@ -405,8 +413,9 @@ if (! function_exists('uploadAttachment')) {
                     ];
                 }
             } else {
-                // $filename = now()->format('Y_m_d_H_i_s') . '.' . $attachment->getClientOriginalExtension();
-                $filename = getSanitizedOriginalName($attachment->getClientOriginalName()) . '_' . now()->timestamp . '.' . $attachment->getClientOriginalExtension();
+                $filename = getSanitizedOriginalName(
+                    $attachment->getClientOriginalName()
+                ) . '_' . now()->timestamp . '.' . $attachment->getClientOriginalExtension();
                 $filePath = $attachment->storeAs($directory, $filename, 'public');
                 $fileInfo = [
                     'fileName' => $filename,
@@ -611,27 +620,30 @@ if (! function_exists('getTemplatePlaceholders')) {
      * @param  array  $extra    Additional placeholders to merge
      * @return array
      */
-    function getTemplatePlaceholders($body, $ticket, $extra = [])
+    function getTemplatePlaceholders($body, $ticket = null, $extra = [])
     {
-        $placeholders = [
-            "customer_name"      => $ticket->contact_name ?? '',
-            "ticket_number"      => $ticket->support_ticket_id ?? '',
-            "ticket_subject"     => $ticket->subject ?? '',
-            "ticket_status"      => $ticket->status_name ?? '',
-            "ticket_created"     => optional($ticket->created_at)->format('d M Y, H:i:s A T'),
-            "ticket_description" => $ticket->description ?? '',
-            "assigned_user"      => $ticket->assigned_agent_name ?? '',
-            "first_response_due" => optional($ticket->first_response_time)->format('d M Y, H:i:s A T'),
-            "resolve_time_due"   => optional($ticket->resolved_time)->format('d M Y, H:i:s A T'),
-        ];
+        if ($ticket) {
+            $placeholders = [
+                "customer_name"      => $ticket->contact_name ?? '',
+                "ticket_number"      => $ticket->support_ticket_id ?? '',
+                "ticket_subject"     => $ticket->subject ?? '',
+                "ticket_status"      => $ticket->status_name ?? '',
+                "ticket_created"     => optional($ticket->created_at)->format('d M Y, H:i:s A T') ?? '',
+                "ticket_description" => $ticket->description ?? '',
+                "assigned_user"      => $ticket->assigned_agent_name ?? '',
+                "first_response_due" => optional($ticket->first_response_time)->format('d M Y, H:i:s A T') ?? '',
+                "resolve_time_due"   => optional($ticket->resolved_time)->format('d M Y, H:i:s A T') ?? '',
+            ];
 
-        $placeholders = array_merge($placeholders, $extra);
+            $placeholders = array_merge($placeholders, $extra);
 
-        return str_replace(
-            array_map(fn($key) => "{" . $key . "}", array_keys($placeholders)),
-            array_values($placeholders),
-            $body
-        );
+            return str_replace(
+                array_map(fn($key) => "{" . $key . "}", array_keys($placeholders)),
+                array_values($placeholders),
+                $body
+            );
+        }
+        return $body;
     }
 }
 
@@ -669,40 +681,33 @@ if (! function_exists('sendProcessedEmail')) {
         $body = !empty($bodyTemplate)
             ? getTemplatePlaceholders($bodyTemplate, $ticket)
             : '';
-
         $emailJson = [
             'to'  => $to,
             'cc'  => $cc,
             'bcc' => $bcc,
         ];
-
         $sendEmailData = new SendEmail($subject, $body, $mailAttachments, $ticket);
         $renderedHtml  = $sendEmailData->render();
-
         if (preg_match('/<body[^>]*>(.*?)<\/body>/is', $renderedHtml, $matches)) {
             $bodyContent = $matches[1];
         } else {
             $bodyContent = $renderedHtml;
         }
-
         // Final body to be logged
         $finalBody = $bodyContent;
-
         try {
             Mail::to($to)->cc($cc)->bcc($bcc)->send($sendEmailData);
-
             $status = "Sent";
         } catch (Exception $e) {
             $status = "Fail";
             generateLogs('error', "{$module} mail failed: " . $e->getMessage());
         }
-
         logEmail([
             "user_id"           => $assignToId,
             "email_template_id" => $mailTemplateId,
             "from_email"        => $senderEmail,
             "module_name"       => $module,
-            "entity_id"         => $ticket->id,
+            "entity_id"         => $ticket->id ?? 0,
             "status"            => $status,
             "email_json"        => json_encode($emailJson),
             "subject"           => $subject,

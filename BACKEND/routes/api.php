@@ -486,33 +486,35 @@ Route::prefix('user-roles')->group(function () {
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
 
-Route::prefix('endpoints')->group(function () {
-    Route::get('/', [ApiEndpointController::class, 'index']);
-    Route::post('/', [ApiEndpointController::class, 'store']);
-    Route::get('/{id}', [ApiEndpointController::class, 'getById']);
-    Route::put('/{id}', [ApiEndpointController::class, 'update']);
-    Route::delete('/{id}', [ApiEndpointController::class, 'destroy']);
-    Route::get('/{endpointId}/mappings', [ApiMappingController::class, 'getByEndpointId']);
+Route::middleware(['jwt.auth'])->group(function () {
+    Route::prefix('endpoints')->group(function () {
+        Route::get('/', [ApiEndpointController::class, 'index']);
+        Route::post('/', [ApiEndpointController::class, 'store']);
+        Route::get('/{id}', [ApiEndpointController::class, 'getById']);
+        Route::put('/{id}', [ApiEndpointController::class, 'update']);
+        Route::delete('/{id}', [ApiEndpointController::class, 'destroy']);
+        Route::get('/{endpointId}/mappings', [ApiMappingController::class, 'getByEndpointId']);
+    });
+
+    Route::prefix('mappings')->group(function () {
+        Route::get('/', [ApiMappingController::class, 'index']);
+        Route::post('/', [ApiMappingController::class, 'store']);
+        Route::get('/{id}', [ApiMappingController::class, 'getById']);
+        Route::put('/{id}', [ApiMappingController::class, 'update']);
+        Route::delete('/{id}', [ApiMappingController::class, 'destroy']);
+    });
+
+    Route::prefix('lists')->group(function () {
+        Route::get('{listId}/endpoints', [ApiEndpointController::class, 'getByListId']);
+        Route::get('{listId}/mappings', [ApiMappingController::class, 'getByListId']);
+    });
+
+    Route::post('/import', [ApiImportController::class, 'import']);
+
+    Route::prefix('list-template-map')->group(function () {
+        Route::post('/', [ListTemplateMapController::class, 'store']);
+        Route::get('/{listId}', [ListTemplateMapController::class, 'show']);
+    });
+
+    Route::post('send-lead-mail/{template_id}', [LeadMailController::class, 'send']);
 });
-
-Route::prefix('mappings')->group(function () {
-    Route::get('/', [ApiMappingController::class, 'index']);
-    Route::post('/', [ApiMappingController::class, 'store']);
-    Route::get('/{id}', [ApiMappingController::class, 'getById']);
-    Route::put('/{id}', [ApiMappingController::class, 'update']);
-    Route::delete('/{id}', [ApiMappingController::class, 'destroy']);
-});
-
-Route::prefix('lists')->group(function () {
-    Route::get('{listId}/endpoints', [ApiEndpointController::class, 'getByListId']);
-    Route::get('{listId}/mappings', [ApiMappingController::class, 'getByListId']);
-});
-
-Route::post('/import', [ApiImportController::class, 'import']);
-
-Route::prefix('list-template-map')->group(function () {
-    Route::post('/', [ListTemplateMapController::class, 'store']);
-    Route::get('/{listId}', [ListTemplateMapController::class, 'show']);
-});
-
-Route::post('send-lead-mail/{template_id}', [LeadMailController::class, 'send']);

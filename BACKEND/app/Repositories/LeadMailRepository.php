@@ -19,11 +19,11 @@ class LeadMailRepository
         $this->apiResponse = $customApiResponse;
     }
 
-    public function sendMail(Request $request, $template_id)
+    public function sendMail(Request $request, $templateId)
     {
         try {
             // Fetch mail template
-            $template = MailTemplate::find($template_id);
+            $template = MailTemplate::find($templateId);
 
             if (!$template) {
                 return response()->json([
@@ -33,7 +33,17 @@ class LeadMailRepository
 
             setEmailConfig();
 
-            Mail::to($request->email)->send(new SendEmail($template->subject, $template->body));
+            sendProcessedEmail(
+                $request->email,
+                $template->subject,
+                $template->body,
+                $template->id,
+                [],     // attachement empty array
+                null,
+                config('mail.from.address'),
+                auth()->user()->id,
+                "Agent to Lead Mail"
+            );
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
