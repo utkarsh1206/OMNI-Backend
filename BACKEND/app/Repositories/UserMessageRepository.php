@@ -121,22 +121,14 @@ class UserMessageRepository
     public function getUserPhones()
     {
         try {
-            // $messages  = Message::select('external_user_phone')->where("type", "user_chat")
-            //     ->where('user_id', auth()->user()->id)
-            //     ->whereNotNull('external_user_phone')
-            //     ->distinct()
-            //     ->orderBy('external_user_phone', 'desc')
-            //     ->pluck('external_user_phone');
-
             $messages = Message::where("type", "user_chat")
                 ->where("user_id", auth()->id())
                 ->whereNotNull("external_user_phone")
                 ->where("external_user_phone", '!=', '')
-                ->orderBy("id", "desc") // newest first
+                ->orderBy("id", "desc")
                 ->get()
                 ->groupBy('external_user_phone')
                 ->map(function ($group) {
-                    // Pick the first non-system valid name
                     $name = $group->map(fn($msg) => trim(($msg->first_name ?? '') . ' ' . ($msg->last_name ?? '')))
                         ->first(fn($n) => !empty($n) && strtolower($n) !== 'system message');
 
@@ -179,7 +171,8 @@ class UserMessageRepository
                 'is_read' => 'read',
                 'type' => 'user_chat',
                 'sender' => 'agent',
-                'external_message_time' => Carbon::now()
+                'external_message_time' => Carbon::now(),
+                'external_user_phone' => $request->phone_number
             ]);
 
             if ($message) {
@@ -194,7 +187,7 @@ class UserMessageRepository
                     }
                     MessageAttachment::insert($fileData);
                 }
-                $this->chat360Service->sendMessage('text', ['body' => $request->text], $request->external_user_phone);
+                $this->chat360Service->sendMessage('text', ['body' => $request->text], $request->phone_number);
                 // $msg =  Message::where('user_id', auth()->user()->id)
                 //         ->where('type', 'user_chat')->first();
                 // if($msg) {
