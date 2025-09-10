@@ -340,6 +340,7 @@ class ChatBotRepository
                     broadcast(new ReceiveChatMessage($boradCastData, auth()->user()->domain));
                 } else {
                     $boradCastData = [
+                        'customer_id' => $customerId,
                         'agent_id' => $agentId,
                         'msg' => $request->text,
                     ];
