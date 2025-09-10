@@ -264,7 +264,7 @@ class ChatBotRepository
             $insertedMessages = [];
             if (!empty($chatHisotory['history'])) {
                 foreach ($chatHisotory['history'] as $item) {
-                    ChatbotMessage::create([
+                    $message = ChatbotMessage::create([
                         'agent_id'              => auth()->user()->id ?? null,
                         'customer_id'           => $item['customer_id'] ?? null,
                         'session_id'            => $item['session_id'] ?? null,
@@ -277,7 +277,6 @@ class ChatBotRepository
 
                     $insertedMessages[] = $message;
                 }
-
 
                 $boradCastData = [
                     'agent_id' => auth()->user()->id,
