@@ -7,7 +7,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
-
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 class EvaluationQuestionRequest extends FormRequest
 {
     /**
@@ -61,7 +61,7 @@ class EvaluationQuestionRequest extends FormRequest
             response()->json([
                 'error' => 'Validation failed',
                 'messages' => $validator->errors(),
-            ], 400)
+            ], ResponseHTTP::HTTP_BAD_REQUEST)
         );
     }
 }

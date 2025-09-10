@@ -3,6 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class CronConfigurationRequest extends FormRequest
 {
@@ -26,5 +29,22 @@ class CronConfigurationRequest extends FormRequest
             'schedule_type' => 'required',
             'schedule_expression' => 'required',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(
+            response()->json([
+                'error' => 'Validation failed',
+                'messages' => $validator->errors(),
+            ], ResponseHTTP::HTTP_BAD_REQUEST)
+        );
     }
 }

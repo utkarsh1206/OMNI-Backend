@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class CallTransferApiRequest extends FormRequest
 {
@@ -45,7 +46,7 @@ class CallTransferApiRequest extends FormRequest
             response()->json([
                 'error' => 'Validation failed',
                 'messages' => $validator->errors(),
-            ])
+            ], ResponseHTTP::HTTP_BAD_REQUEST)
         );
     }
 }

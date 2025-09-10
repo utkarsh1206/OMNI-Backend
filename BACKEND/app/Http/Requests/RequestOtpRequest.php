@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
-
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 class RequestOtpRequest extends FormRequest
 {
     /**
@@ -64,7 +64,7 @@ class RequestOtpRequest extends FormRequest
             response()->json([
                 'error' => 'Validation failed',
                 'messages' => $validator->errors(),
-            ])
+            ], ResponseHTTP::HTTP_BAD_REQUEST)
         );
     }
 }
