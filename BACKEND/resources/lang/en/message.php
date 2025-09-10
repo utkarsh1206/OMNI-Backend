@@ -214,3 +214,4 @@ return [
 
     'mapping_modified' => 'List Mail Template Mapping Modified successfully.',
 ]
+?>

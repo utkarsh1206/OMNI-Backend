@@ -319,4 +319,9 @@ class MailTemplateController extends Controller
     {
         return $this->mailTemplateRepository->delete($id);
     }
+
+    public function listActive()
+    {
+        return $this->mailTemplateRepository->listActive();
+    }
 }

@@ -50,7 +50,7 @@ class ListTemplateMapRepository
         try {
             $templates = MailTemplate::select('mail_template.id', 'mail_template.title', 'mail_template.subject')
                 ->join('list_template_maps', 'mail_template.id', '=', 'list_template_maps.template_id')
-                ->where('list_template_maps.list_id', $listId)
+                ->where('list_template_maps.list_id', $listId)->where('mail_template.status', 'active')
                 ->get();
 
             return $this->apiResponse->getResponseStructure(
