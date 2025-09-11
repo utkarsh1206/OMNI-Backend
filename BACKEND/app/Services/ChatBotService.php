@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ChatbotSession;
 use Illuminate\Http\JsonResponse;
 use Throwable;
+
 class ChatBotService
 {
     protected $url, $apiToken;
@@ -29,7 +30,6 @@ class ChatBotService
             if ($response instanceof JsonResponse) {
                 $response = $response->getData(true);
             }
-
             if (!empty($response['session_id']) && !empty($response['session_api_token'])) {
                 ChatbotSession::updateOrCreate(
                     [
@@ -44,15 +44,18 @@ class ChatBotService
                 );
 
                 $this->apiToken = $response['session_api_token'];
-                
+
                 return $response;
             } else {
                 generateLogs('error', 'ChatbotService: Failed to create session.' . json_encode($response));
-                return null;
+                return $response;   
             }
         } catch (Throwable $e) {
             generateLogs('error', 'ChatbotService: Exception during session creation.' . $e->getMessage());
-            return null;
+
+            return response()->json([
+                'message' => 'Failed to create session',
+            ], 500);
         }
     }
 
@@ -60,7 +63,14 @@ class ChatBotService
     {
         try {
             $sessionId = $this->createSession($payload['uin'], $payload['userid']);
-
+        
+            if (!isset($sessionId['session_id'])) {
+                return [
+                    'status_code' => $sessionId['status_code'] ?? $sessionId['code'],
+                    'message'     => $sessionId['message'] ?? 'Failed to create session',
+                ];
+            }
+        
             $url = $this->url . "/get-questions?session_id=" . $sessionId['session_id'] . "&language=" . $payload['lang'];
 
             $headers = [
@@ -68,7 +78,7 @@ class ChatBotService
             ];
 
             $response = sendHttpRequest($url, 'GET', [], $headers, false, false, true);
-        
+
             if ($response instanceof JsonResponse) {
                 $response = $response->getData(true);
             }
@@ -79,16 +89,8 @@ class ChatBotService
                 generateLogs(
                     'error',
                     'ChatbotService: Failed to get questions API.',
-                    json_encode([
-                        'session_id' => $sessionId,
-                    ])
                 );
-
-                return [
-                    'answer' => 'Sorry, I could not process your request at this time.',
-                    'sources' => [],
-                    'session_id' => $sessionId
-                ];
+                return $response;
             }
         } catch (Throwable $e) {
             generateLogs(
@@ -119,7 +121,7 @@ class ChatBotService
             ];
 
             $response = sendHttpRequest($url, 'POST', $payload, $headers, false, false, false);
-            
+
             if ($response instanceof JsonResponse) {
                 $response = $response->getData(true);
             }
@@ -166,7 +168,7 @@ class ChatBotService
             ];
 
             $response = sendHttpRequest($url, 'GET', [], $headers, false, false, true);
-        
+
             if ($response instanceof JsonResponse) {
                 $response = $response->getData(true);
             }

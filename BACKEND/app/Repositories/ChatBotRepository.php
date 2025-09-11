@@ -172,6 +172,16 @@ class ChatBotRepository
             ];
 
             $questions = $this->chatbotService->getQuestions($apiPayload);
+            
+            if (isset($questions['status_code']) && $questions['status_code'] != 200) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    '',
+                    $questions['message'] ?? 'Something went wrong',
+                    $questions['status_code']
+                );
+            }
+
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $questions,
