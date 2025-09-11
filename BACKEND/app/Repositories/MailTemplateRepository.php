@@ -34,8 +34,12 @@ class MailTemplateRepository
                         ->orWhere('mail_for', 'like', "%$searchTerm%");
                 });
             }
-            $incidentType = $page == config('omni.ALL_PAGE') ?  $query->get() : $query->paginate($perPage);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $incidentType, trans('message.fetch_data'));
+            $mailTemplates = $page == config('omni.ALL_PAGE') ?  $query->get() : $query->paginate($perPage);
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $mailTemplates,
+                trans('message.fetch_data')
+            );
         } catch (Exception $e) {
             generateLogs('error', 'Error in generating failed MailDetail List: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -46,7 +50,12 @@ class MailTemplateRepository
     {
         try {
             $mailTemplate = MailTemplate::create($request->all());
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $mailTemplate, trans('message.mail_template_created'), ResponseHTTP::HTTP_CREATED);
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $mailTemplate,
+                trans('message.mail_template_created'),
+                ResponseHTTP::HTTP_CREATED
+            );
         } catch (Exception $e) {
             generateLogs('error', 'Error in generating failed Store MailTemplate : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -67,7 +76,12 @@ class MailTemplateRepository
             }
 
             $mailTemplate->update($request->all());
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $mailTemplate, trans('message.mail_template_updated'), ResponseHTTP::HTTP_CREATED);
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $mailTemplate,
+                trans('message.mail_template_updated'),
+                ResponseHTTP::HTTP_CREATED
+            );
         } catch (Exception $e) {
             generateLogs('error', 'Error in generating failed Update MailTemplate : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -94,7 +108,11 @@ class MailTemplateRepository
                 ], ResponseHTTP::HTTP_FORBIDDEN);
             }
             $mailTemplate->delete();
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $mailTemplate, trans('message.mail_template_deleted'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $mailTemplate,
+                trans('message.mail_template_deleted')
+            );
         } catch (Exception $e) {
             generateLogs('error', 'Error in generating failed Delete MailTemplate : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -103,6 +121,29 @@ class MailTemplateRepository
 
     public function show($mailTemplate)
     {
-        return $this->apiResponse->getResponseStructure(trans('message.success'), $mailTemplate, trans('message.fetch_data'));
+        return $this->apiResponse->getResponseStructure(
+            trans('message.success'),
+            $mailTemplate,
+            trans('message.fetch_data')
+        );
+    }
+
+    public function listActive()
+    {
+        try {
+            $query = MailTemplate::where('status', 'Active');
+
+            $mailTemplates = $query->get();
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $mailTemplates,
+                trans('message.fetch_data')
+            );
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in generating active MailDetail List: ', $e->getMessage());
+
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 }

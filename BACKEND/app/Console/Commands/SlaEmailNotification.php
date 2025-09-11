@@ -77,22 +77,37 @@ class SlaEmailNotification extends Command
                                         $currentTime > $ticket->alert_before_resolve_notification_time
                                         && $ticket->is_notified != 3
                                     ) {
-                                        $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_resolve_email", "SLA Alert Before Resolve");
+                                        $this->notifyViaEmail(
+                                            $newConnectionName,
+                                            $ticket,
+                                            "alert_before_resolve_email",
+                                            "SLA Alert Before Resolve"
+                                        );
                                         $ticket->is_notified = 3;
                                     }
 
-                                    if ($ticket->resolved_time && $currentTime > $ticket->resolved_time && $ticket->is_notified != 4) {
-                                        $this->notifyViaEmail($newConnectionName, $ticket, "resolve_time_email", "SLA Alert Resolve");
+                                    if (
+                                        $ticket->resolved_time
+                                        && $currentTime > $ticket->resolved_time
+                                        && $ticket->is_notified != 4
+                                    ) {
+                                        $this->notifyViaEmail(
+                                            $newConnectionName,
+                                            $ticket,
+                                            "resolve_time_email",
+                                            "SLA Alert Resolve"
+                                        );
                                         $ticket->is_notified = 4;
                                         $adminUsers = User::on($newConnectionName)
                                             ->where("type", "=", 0)->first();
                                         $ticket->is_escalated = "Yes";
-                                        // $ticket->save();
+
                                         $this->notifyAdminViaEmail(
                                             $newConnectionName,
                                             $ticket,
                                             $adminUsers,
-                                            "resolve_time_email", "SLA Alert Resolve"
+                                            "resolve_time_email",
+                                            "SLA Alert Resolve"
                                         );
                                     }
                                 } else {
@@ -101,7 +116,12 @@ class SlaEmailNotification extends Command
                                         && $ticket->response_time == null && $ticket->is_notified == null
                                         &&  $ticket->is_notified != 1
                                     ) {
-                                        $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_response_email", "SLA Alert Before Response");
+                                        $this->notifyViaEmail(
+                                            $newConnectionName,
+                                            $ticket,
+                                            "alert_before_response_email",
+                                            "SLA Alert Before Response"
+                                        );
                                         $ticket->is_notified = 1;
                                     }
 
@@ -111,7 +131,12 @@ class SlaEmailNotification extends Command
                                         ($ticket->is_notified == 1 || $ticket->is_notified == null)
                                         &&  $ticket->is_notified != 2
                                     ) {
-                                        $this->notifyViaEmail($newConnectionName, $ticket, "first_response_email", "SLA Alert Response");
+                                        $this->notifyViaEmail(
+                                            $newConnectionName,
+                                            $ticket,
+                                            "first_response_email",
+                                            "SLA Alert Response"
+                                        );
                                         $ticket->is_notified = 2;
                                     }
 
@@ -120,27 +145,39 @@ class SlaEmailNotification extends Command
                                         $currentTime > $ticket->alert_before_resolve_notification_time
                                         && $ticket->is_notified != 3
                                     ) {
-                                        $this->notifyViaEmail($newConnectionName, $ticket, "alert_before_resolve_email", "SLA Alert Before Resolve");
+                                        $this->notifyViaEmail(
+                                            $newConnectionName,
+                                            $ticket,
+                                            "alert_before_resolve_email",
+                                            "SLA Alert Before Resolve"
+                                        );
                                         $ticket->is_notified = 3;
                                     }
 
-                                    if ($ticket->resolved_time && $currentTime > $ticket->resolved_time && $ticket->is_notified != 4) {
-                                        $this->notifyViaEmail($newConnectionName, $ticket, "resolve_time_email", "SLA Alert Resolve");
+                                    if (
+                                        $ticket->resolved_time
+                                        && $currentTime > $ticket->resolved_time
+                                        && $ticket->is_notified != 4
+                                    ) {
+                                        $this->notifyViaEmail(
+                                            $newConnectionName,
+                                            $ticket,
+                                            "resolve_time_email",
+                                            "SLA Alert Resolve"
+                                        );
                                         $ticket->is_notified = 4;
                                         $adminUsers = User::on($newConnectionName)
                                             ->where("type", "=", 0)->first();
                                         $ticket->is_escalated = "Yes";
-                                        // $ticket->save();
                                         $this->notifyAdminViaEmail(
                                             $newConnectionName,
                                             $ticket,
                                             $adminUsers,
-                                            "resolve_time_email", "SLA Alert Resolve"
+                                            "resolve_time_email",
+                                            "SLA Alert Resolve"
                                         );
                                     }
                                 }
-
-
 
                                 $ticket->save();
                             }
@@ -154,10 +191,9 @@ class SlaEmailNotification extends Command
 
     public function notifyViaEmail($newConnectionName, $tickets, $type, $module)
     {
-        $emailConfig = EmailConfigure::on($newConnectionName)->where('type', 'gmail')->first();
         setEmailConfig($newConnectionName);
 
-        $senderEmail = $emailConfig->sender_email ?? config('mail.from.address');
+        $senderEmail = config('mail.from.address');
 
         try {
             $toEmails = $tickets->user_email ?? '';
@@ -207,10 +243,9 @@ class SlaEmailNotification extends Command
 
     public function notifyAdminViaEmail($newConnectionName, $tickets, $adminUser, $type, $module)
     {
-        $emailConfig = EmailConfigure::on($newConnectionName)->where('type', 'gmail')->first();
         setEmailConfig($newConnectionName);
 
-        $senderEmail = $emailConfig->sender_email ?? config('mail.from.address');
+        $senderEmail = config('mail.from.address');
 
         try {
             $toEmails = $adminUser->email ?? '';
