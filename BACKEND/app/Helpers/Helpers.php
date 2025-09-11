@@ -701,6 +701,18 @@ if (! function_exists('sendProcessedEmail')) {
         } catch (Exception $e) {
             $status = "Fail";
             generateLogs('error', "{$module} mail failed: " . $e->getMessage());
+            logEmail([
+                "user_id"           => $assignToId,
+                "email_template_id" => $mailTemplateId,
+                "from_email"        => $senderEmail,
+                "module_name"       => $module,
+                "entity_id"         => $ticket->id ?? 0,
+                "status"            => $status,
+                "email_json"        => json_encode($emailJson),
+                "subject"           => $subject,
+                "body"              => $finalBody,
+            ], $newConnectionName);
+            throw $e;
         }
         logEmail([
             "user_id"           => $assignToId,

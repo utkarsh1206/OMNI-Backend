@@ -51,7 +51,7 @@ class LeadMailRepository
                 'Mail sent successfully'
             );
         } catch (Exception $ex) {
-            generateLogs('error', 'Error in sending lead mail: ', $ex->getMessage());
+            generateLogs('error', 'Error in sending lead mail ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }

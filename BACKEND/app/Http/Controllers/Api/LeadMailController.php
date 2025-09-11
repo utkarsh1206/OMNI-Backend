@@ -20,7 +20,6 @@ class LeadMailController extends Controller
      */
     public function send(SendLeadMailRequest $request, $template_id)
     {
-        generateLogs('info', 'Sending lead mail');
         return $this->leadMailRepository->sendMail($request, $template_id);
     }
 }
