@@ -697,33 +697,31 @@ if (! function_exists('sendProcessedEmail')) {
         $finalBody = $bodyContent;
         try {
             Mail::to($to)->cc($cc)->bcc($bcc)->send($sendEmailData);
-            $status = "Sent";
-        } catch (Exception $e) {
-            $status = "Fail";
-            generateLogs('error', "{$module} mail failed: " . $e->getMessage());
             logEmail([
                 "user_id"           => $assignToId,
                 "email_template_id" => $mailTemplateId,
                 "from_email"        => $senderEmail,
                 "module_name"       => $module,
                 "entity_id"         => $ticket->id ?? 0,
-                "status"            => $status,
+                "status"            => "Sent",
                 "email_json"        => json_encode($emailJson),
                 "subject"           => $subject,
                 "body"              => $finalBody,
             ], $newConnectionName);
+        } catch (Exception $e) {
+            logEmail([
+                "user_id"           => $assignToId,
+                "email_template_id" => $mailTemplateId,
+                "from_email"        => $senderEmail,
+                "module_name"       => $module,
+                "entity_id"         => $ticket->id ?? 0,
+                "status"            => "Fail",
+                "email_json"        => json_encode($emailJson),
+                "subject"           => $subject,
+                "body"              => $finalBody,
+            ], $newConnectionName);
+            generateLogs('error', "{$module} mail failed: " . $e->getMessage());
             throw $e;
         }
-        logEmail([
-            "user_id"           => $assignToId,
-            "email_template_id" => $mailTemplateId,
-            "from_email"        => $senderEmail,
-            "module_name"       => $module,
-            "entity_id"         => $ticket->id ?? 0,
-            "status"            => $status,
-            "email_json"        => json_encode($emailJson),
-            "subject"           => $subject,
-            "body"              => $finalBody,
-        ], $newConnectionName);
     }
 }
