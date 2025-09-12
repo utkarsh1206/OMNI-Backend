@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class TenantRequest extends FormRequest
 {
@@ -28,5 +29,17 @@ class TenantRequest extends FormRequest
             'email' => 'required|unique:tenants',
             'tenant_logo' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

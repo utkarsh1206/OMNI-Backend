@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class TenantRoleRequest extends FormRequest
 {
@@ -22,8 +23,8 @@ class TenantRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-           'name' => 'required|unique:roles,name,' . optional($this->tenantrole)->id ?? null,
-             'display_name' => 'required|string',
+            'name' => 'required|unique:roles,name,' . optional($this->tenantrole)->id ?? null,
+            'display_name' => 'required|string',
             'description' => 'nullable|string',
             'status'      => 'boolean',
             'permissions' => 'nullable|array',
@@ -31,5 +32,17 @@ class TenantRoleRequest extends FormRequest
             'permissions.*.action_ids'       => 'required_with:permissions.*.tenant_module_id|array',
             'permissions.*.action_ids.*'     => 'required|integer|exists:actions,id',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

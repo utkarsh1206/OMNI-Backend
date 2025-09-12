@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-
+use Illuminate\Contracts\Validation\Validator;
 class IncidentTypeRequest extends FormRequest
 {
     /**
@@ -44,5 +44,17 @@ class IncidentTypeRequest extends FormRequest
         // }
 
         return $rules;
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-
+use Illuminate\Contracts\Validation\Validator;
 class ApiConfigurationRequest extends FormRequest
 {
     /**
@@ -22,9 +22,9 @@ class ApiConfigurationRequest extends FormRequest
      */
     public function rules(): array
     {
-         $providerId = $this->route('api_configuration');
-      
-         return [
+        $providerId = $this->route('api_configuration');
+
+        return [
             'provider_name' => [
                 'required',
                 Rule::unique('providers', 'name')->ignore($providerId),
@@ -32,5 +32,17 @@ class ApiConfigurationRequest extends FormRequest
             'configurations' => 'required|array',
             'api_config_type_id' => 'required|exists:api_configuration_types,id',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

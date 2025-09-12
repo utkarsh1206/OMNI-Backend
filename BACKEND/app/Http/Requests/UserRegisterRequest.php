@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class UserRegisterRequest extends FormRequest
 {
@@ -26,5 +27,17 @@ class UserRegisterRequest extends FormRequest
             'email' => 'required|string|email|max:255|unique:users', // Add unique rule
             'password' => 'required|string|min:6|confirmed',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

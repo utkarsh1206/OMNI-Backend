@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-
+use Illuminate\Contracts\Validation\Validator;
 class NeoxConfigurationRequest extends FormRequest
 {
     /**
@@ -25,5 +25,17 @@ class NeoxConfigurationRequest extends FormRequest
             'neox_token' => 'required|string',
             'neox_local_ip' => 'required|ip',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }
