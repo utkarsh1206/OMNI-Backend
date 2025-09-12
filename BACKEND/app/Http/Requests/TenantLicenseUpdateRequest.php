@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Carbon\Carbon;
+use Illuminate\Contracts\Validation\Validator;
 
 class TenantLicenseUpdateRequest extends FormRequest
 {
@@ -44,5 +45,17 @@ class TenantLicenseUpdateRequest extends FormRequest
                 'expire_date' => $date->setTime(12, 0)->timestamp,
             ]);
         }
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

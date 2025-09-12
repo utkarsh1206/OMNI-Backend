@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-
+use Illuminate\Contracts\Validation\Validator;
 class DialCallApiRequest extends FormRequest
 {
     /**
@@ -25,5 +25,17 @@ class DialCallApiRequest extends FormRequest
             'user_id' => 'required|string',
             'dialed_phone_number' => 'required|string',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }
