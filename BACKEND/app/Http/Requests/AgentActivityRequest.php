@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class AgentActivityRequest extends FormRequest
 {
@@ -28,5 +29,17 @@ class AgentActivityRequest extends FormRequest
             'campaign' => 'nullable|string',
             'format' => 'nullable|string|in:json,csv,pdf,graph',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

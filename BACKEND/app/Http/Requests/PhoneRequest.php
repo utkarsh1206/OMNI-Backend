@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class PhoneRequest extends FormRequest
 {
@@ -21,21 +22,33 @@ class PhoneRequest extends FormRequest
      */
     public function rules(): array
     {
-        
+
         $phoneId = $this->route('phone');
 
         return [
             'extension' => $this->isMethod('post')
                 ? 'required|unique:phones,extension' // Add: check uniqueness when adding
                 : "required|unique:phones,extension,{$phoneId}", // Update: ignore unique check for current record
-            
+
             'login' => $this->isMethod('post')
                 ? 'required|unique:phones,login|alpha_num|between:2,320' // Add: check uniqueness when adding
                 : "required|unique:phones,login,{$phoneId}|alpha_num|between:2,320", // Update: ignore unique check for current record
-            
+
             'pass' => 'required|alpha_num|between:2,320',
             'status' => 'required',
             'local_gmt' => 'nullable|numeric',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

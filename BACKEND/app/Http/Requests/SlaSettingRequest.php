@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class SlaSettingRequest extends FormRequest
 {
@@ -45,5 +46,17 @@ class SlaSettingRequest extends FormRequest
             'targets.*.*.resolve_time_value' => 'required|integer|min:1',
             'targets.*.*.alert_before_resolve_value' => 'required|integer|min:1',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

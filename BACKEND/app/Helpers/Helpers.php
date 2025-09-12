@@ -2,12 +2,9 @@
 
 use App\Models\EmailLog;
 use App\Models\EmailConfigure;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Api\LicenseController;
 use App\Mail\SendEmail;
 use App\Services\AESService;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
-use Illuminate\Support\Facades\Http;
 use App\Models\NeoxConfiguration;
 use App\Models\Permission;
 use App\Models\RolePermission;
@@ -16,10 +13,15 @@ use App\Models\TenantModule;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
  * Format price with a currency symbol.
@@ -723,5 +725,24 @@ if (! function_exists('sendProcessedEmail')) {
             generateLogs('error', "{$module} mail failed: " . $e->getMessage());
             throw $e;
         }
+    }
+}
+
+if (!function_exists('failedValidation')) {
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    function failedValidation($validator)
+    {
+        throw new HttpResponseException(
+            response()->json([
+                'error' => 'Validation failed',
+                'messages' => $validator->errors(),
+            ], ResponseHTTP::HTTP_BAD_REQUEST)
+        );
     }
 }

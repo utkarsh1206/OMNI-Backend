@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class StoreCallBackRequest extends FormRequest
 {
@@ -24,5 +25,17 @@ class StoreCallBackRequest extends FormRequest
             'lead_status' => 'nullable|string',
             'last_modified_user' => 'nullable|string',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }
