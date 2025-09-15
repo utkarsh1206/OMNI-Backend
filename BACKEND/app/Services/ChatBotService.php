@@ -84,13 +84,23 @@ class ChatBotService
 
             if (!empty($response) && isset($response['questions'])) {
                 return $response;
-            } else {
-                generateLogs(
-                    'error',
-                    'ChatbotService: Failed to get questions API.',
-                );
-                return $response;
             }
+
+            generateLogs('error', 'ChatbotService: Failed to get questions API.' . json_encode($response));
+            return [
+                'status_code' => $response['status_code'] ?? $response['code'],
+                'message'     => $response['message'] ?? 'Failed to get question',
+            ];
+            // else {
+            //     generateLogs('error', 'ChatbotService: Failed to get questions API.' . json_encode($response));
+            //     if (!isset($response['session_id'])) {
+            //         return [
+            //             'status_code' => $response['status_code'] ?? $response['code'],
+            //             'message'     => $response['message'] ?? 'Failed to get questions',
+            //         ];
+            //     }
+            //     // return $response;   
+            // }
         } catch (Throwable $e) {
             generateLogs(
                 'error',
@@ -125,22 +135,32 @@ class ChatBotService
                 $response = $response->getData(true);
             }
 
-            if (!empty($response)) {
+            if (!empty($response) && isset($response['answer'], $response['sources'])) {
                 return $response;
-            } else {
-                generateLogs(
-                    'error',
-                    'ChatbotService: Failed to ask API.',
-                    json_encode([
-                        'response' => $response,
-                    ])
-                );
-
-                return [
-                    'answer' => 'Sorry, I could not process your request at this time.',
-                    'sources' => [],
-                ];
             }
+
+            generateLogs('error', 'ChatbotService: Failed to ask questions API.' . json_encode($response));
+            return [
+                'status_code' => $response['status_code'] ?? $response['code'],
+                'message'     => $response['message'] ?? 'Failed to ask question',
+            ];
+
+            // if (!empty($response)) {
+            //     return $response;
+            // } else {
+            //     generateLogs(
+            //         'error',
+            //         'ChatbotService: Failed to ask API.',
+            //         json_encode([
+            //             'response' => $response,
+            //         ])
+            //     );
+
+            //     return [
+            //         'answer' => 'Sorry, I could not process your request at this time.',
+            //         'sources' => [],
+            //     ];
+            // }
         } catch (Throwable $e) {
             generateLogs(
                 'error',
@@ -150,7 +170,6 @@ class ChatBotService
 
             return [
                 'answer' => 'An unexpected error occurred. Please try again.',
-                'sources' => [],
             ];
         }
     }
@@ -172,32 +191,41 @@ class ChatBotService
                 $response = $response->getData(true);
             }
 
-            if (!empty($response)) {
+            if (!empty($response) && isset($response['history'])) {
                 return $response;
-            } else {
-                generateLogs(
-                    'error',
-                    'ChatbotService: Failed to ask query.',
-                    json_encode([
-                        'response' => $response,
-                    ])
-                );
-
-                return [
-                    'answer' => 'Sorry, I could not process your request at this time.',
-                    'sources' => [],
-                ];
             }
+
+            generateLogs('error', 'ChatbotService: Failed to fetch history API.' . json_encode($response));
+            return [
+                'status_code' => $response['status_code'] ?? $response['code'],
+                'message'     => $response['message'] ?? 'Failed to fetch history',
+            ];
+
+            // if (!empty($response)) {
+            //     return $response;
+            // } else {
+            //     generateLogs(
+            //         'error',
+            //         'ChatbotService: Failed to ask query.',
+            //         json_encode([
+            //             'response' => $response,
+            //         ])
+            //     );
+
+            //     return [
+            //         'answer' => 'Sorry, I could not process your request at this time.',
+            //         'sources' => [],
+            //     ];
+            // }
         } catch (Throwable $e) {
             generateLogs(
                 'error',
-                'ChatbotService: Exception during ask query.',
+                'ChatbotService: Exception during fetch history.',
                 $e->getMessage()
             );
 
             return [
                 'answer' => 'An unexpected error occurred. Please try again.',
-                'sources' => [],
             ];
         }
     }
