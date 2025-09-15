@@ -14,6 +14,9 @@ class Chat360Service
     protected $url;
     protected $apiKey;
     protected $fromPhone;
+    protected $retryAttempts;
+    protected $retryWait;
+    protected $timeout;
 
     public function __construct()
     {
@@ -22,6 +25,9 @@ class Chat360Service
         $this->url =  config('omni.CHAT_360_URL');
         $this->apiKey = config('omni.CHAT_360_API_KEY');
         $this->fromPhone = config('omni.CHAT_FROM_PHONE');
+        $this->retryAttempts =  config('omni.RETRY_ATTEMPTS');
+        $this->retryWait = config('omni.RETRY_WAIT');
+        $this->timeout = config('omni.TIMEOUT');
     }
 
     public function login()
@@ -33,7 +39,7 @@ class Chat360Service
             $email = $apiData['params']['email'] ?? $this->email;
             $password = $apiData['params']['password'] ?? $this->password;
 
-            $response = Http::$method($url, [
+            $response = $this->httpClient()->$method($url, [
                 'email' => $email,
                 'password' => $password,
             ]);
@@ -73,7 +79,7 @@ class Chat360Service
             $url = $apiData['url'] ?? $this->url . 'api/clientwidget_updated/chatroom/';
             $apiKey = $apiData['params']['APIKEY'] ?? $this->apiKey;
 
-            $response = Http::withHeaders([
+            $response = $this->httpClient()->withHeaders([
                 'Authorization' => 'Basic ' . $this->getAccessToken(),
                 'Cookie' => 'csrftoken=P8PSxHtwF5mI9grg1qhGrYtL55ScXbQoruVlnrdZXj8HWNF0pPcp7MDhpXGt1pDR',
             ])->$method($url . $roomId, [
@@ -155,7 +161,7 @@ class Chat360Service
                     generateLogs('error', "Unsupported message type: {$type}");
                     return "Unsupported message type: {$type}";
             }
-            $response = Http::withHeaders([
+            $response = $this->httpClient()->withHeaders([
                 'Authorization' => 'Bearer ' . $this->getAccessToken(),
             ])->$method($url, $message);
 
@@ -189,5 +195,35 @@ class Chat360Service
             'params' =>  $params,
             'successCode' => $apiData['success_code'],
         ];
+    }
+
+    protected function httpClient()
+    {
+        $attempt = 0;
+        $lastUrl = 'unknown';
+
+        try {
+            return Http::timeout($this->timeout)->retry(
+                $this->retryAttempts,   // attempts
+                $this->retryWait,       // wait in ms
+                function ($exception, $request) use (&$attempt, &$lastUrl) {
+                    $attempt++;
+                    $lastUrl = $request->url();
+
+                    generateLogs(
+                        'warning',
+                        "Retry attempt {$attempt}/{$this->retryAttempts} for Chat360 API request to {$lastUrl}" .
+                            $exception->getMessage()
+                    );
+                }
+            );
+        } catch (\Exception $e) {
+            generateLogs(
+                'error',
+                "All {$this->retryAttempts} attempts failed for Chat360 API request to {$lastUrl}" .
+                    $e->getMessage()
+            );
+            throw $e;
+        }
     }
 }
