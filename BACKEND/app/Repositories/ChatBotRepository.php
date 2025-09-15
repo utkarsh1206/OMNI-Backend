@@ -170,7 +170,6 @@ class ChatBotRepository
                 'uin' => $payload['uin'],
                 'lang' => $request->lang,
             ];
-
             $questions = $this->chatbotService->getQuestions($apiPayload);
             
             if (isset($questions['status_code']) && $questions['status_code'] != 200) {
@@ -279,7 +278,7 @@ class ChatBotRepository
                         'customer_id'           => $item['customer_id'] ?? null,
                         'session_id'            => $item['session_id'] ?? null,
                         'sender'                => $item['role'],
-                        'text'                  => $item['content'],
+                        'text'                  => $item['message'] ?? $item['content'],
                         'external_message_time' => $item['timestamp'],
                         'created_at'            => now(),
                         'updated_at'            => now(),

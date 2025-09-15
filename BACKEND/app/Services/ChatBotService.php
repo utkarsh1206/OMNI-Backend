@@ -71,8 +71,7 @@ class ChatBotService
                 ];
             }
         
-            $url = $this->url . "/get-questions?session_id=" . $sessionId['session_id'] . "&language=" . $payload['lang'];
-
+            $url = $this->url . "/get-questions?session_id=" . $sessionId['session_id'] . "&lang=" . $payload['lang'];
             $headers = [
                 'Authorization' => 'Bearer ' . $this->apiToken,
             ];
@@ -110,7 +109,7 @@ class ChatBotService
         try {
             $chatSession = ChatbotSession::where('session_id', $apiPayload['session_id'])->first();
 
-            $url = $this->url . "/ask?session_id=" . $apiPayload['session_id'] . "&language=" . $apiPayload['lang'];;
+            $url = $this->url . "/ask?session_id=" . $apiPayload['session_id'] . "&lang=" . $apiPayload['lang'];;
 
             $payload = [
                 'query' => $apiPayload['query'],
