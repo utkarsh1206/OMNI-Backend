@@ -711,6 +711,7 @@ if (! function_exists('sendProcessedEmail')) {
                 "body"              => $finalBody,
             ], $newConnectionName);
         } catch (Exception $e) {
+            $reason = !empty($e->getMessage()) ? substr($e->getMessage(), 0, 250) : 'Unknown error occurred.';
             logEmail([
                 "user_id"           => $assignToId,
                 "email_template_id" => $mailTemplateId,
@@ -721,6 +722,7 @@ if (! function_exists('sendProcessedEmail')) {
                 "email_json"        => json_encode($emailJson),
                 "subject"           => $subject,
                 "body"              => $finalBody,
+                "fail_reason"       => $reason,
             ], $newConnectionName);
             generateLogs('error', "{$module} mail failed: " . $e->getMessage());
             throw $e;
