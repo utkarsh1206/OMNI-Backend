@@ -277,11 +277,15 @@ if (!function_exists('sendHttpRequest')) {
             }
 
             if ($rawGet) {
-                $response = Http::withHeaders($defaultHeaders)
+                $response = Http::timeout(config('omni.TIMEOUT'))
+                    ->retry(config('omni.RETRY_ATTEMPTS'), config('omni.RETRY_WAIT'))
+                    ->withHeaders($defaultHeaders)
                     ->withOptions(['verify' => $verifySSL])
                     ->$method($url);
             } else {
-                $response = Http::withHeaders($defaultHeaders)
+                $response = Http::timeout(config('omni.TIMEOUT'))
+                    ->retry(config('omni.RETRY_ATTEMPTS'), config('omni.RETRY_WAIT'))
+                    ->withHeaders($defaultHeaders)
                     ->withOptions(['verify' => $verifySSL])
                     ->$method($url, $data);
             }
@@ -317,6 +321,7 @@ if (!function_exists('sendHttpRequest')) {
                 ], $response->status());
             }
         } catch (\Exception $e) {
+            dd($e->getMessage());
             return [
                 'status_code' => ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR,
                 'message' => $e->getMessage(),
