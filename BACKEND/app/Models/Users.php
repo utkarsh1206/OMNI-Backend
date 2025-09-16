@@ -46,12 +46,24 @@ class Users extends Authenticatable implements JWTSubject
 
     protected $addPhoneToJWT = false;
 
+    protected $uin, $userId;
+
     // Method to toggle the addition of phone
     public function setAddPhoneToJWT($flag)
     {
         if ($flag == 2) {
             $this->addPhoneToJWT = true;
         }
+    }
+
+    public function setUIN($uin)
+    {
+        $this->uin = $uin;
+    }
+
+    public function setUserId($userId)
+    {
+        $this->userId = $userId;
     }
 
     public function getJWTIdentifier()
@@ -134,6 +146,14 @@ class Users extends Authenticatable implements JWTSubject
             }
             if (!empty($postData['phone'])) {
                 $claims['phone'] = $postData['phone'];
+            }
+
+            if (!empty($this->uin)) {
+                $claims['uin'] = $this->uin;
+            }
+
+            if (!empty($this->userId)) {
+                $claims['userid'] = $this->userId;
             }
         } else {
             // Old logic: build permission array from omnichannel.tenant_roles
