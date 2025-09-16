@@ -178,7 +178,6 @@ class EmailLogRepository
         //     'file_url' => $fileUrl
         // ]);
 
-        generateLogs("info", "test csv ");
         return $this->apiResponse->getResponseStructure(
             trans('message.success'),
             ['file_url' => $fileUrl],

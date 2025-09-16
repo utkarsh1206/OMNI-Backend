@@ -251,31 +251,27 @@ class SlaReportRepository
             // Prepare CSV content
             $headers = ['User Name', 'Ticket ID', 'Ticket Type', 'Priority', 'Opened Date', 'Resolved Date', 'SLA Compliance'];
 
-            $callback = function () use ($headers, $tickets) {
-                $file = fopen('php://output', 'w');
-                fputcsv($file, $headers);
+            $rows = $tickets->map(function ($ticket) {
+                $resolvedDate = $ticket->notifications->first()->resolved_date ?? null;
+                $openedDate = Carbon::parse($ticket->opened_date)->toDateTimeString();
+                return [
+                    $ticket->user_name ?? 'Unknown',
+                    $ticket->ticket_id,
+                    $ticket->ticketType->type ?? 'Unknown',
+                    $ticket->priority->name ?? 'Unknown',
+                    $openedDate,
+                    $resolvedDate ? Carbon::parse($resolvedDate)->toDateTimeString() : null,
+                    $ticket->sla_compliance,
+                ];
+            })->toArray();
 
-                foreach ($tickets as $ticket) {
-                    $resolvedDate = $ticket->notifications->first()->resolved_date ?? null;
-                    $openedDate = Carbon::parse($ticket->opened_date)->toDateTimeString();
-                    $row = [
-                        $ticket->user_name ?? 'Unknown',
-                        $ticket->ticket_id,
-                        $ticket->ticketType->type ?? 'Unknown',
-                        $ticket->priority->name ?? 'Unknown',
-                        $openedDate,
-                        $resolvedDate ? Carbon::parse($resolvedDate)->toDateTimeString() : null,
-                        $ticket->sla_compliance,
-                    ];
-                    fputcsv($file, $row);
-                }
-                fclose($file);
-            };
+            $fileUrl = exportCsv($headers, $rows, 'sla_reports');
 
-            return new StreamedResponse($callback, ResponseHTTP::HTTP_OK, [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment;"',
-            ]);
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                ['file_url' => $fileUrl],
+                trans('message.report_generated')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in Sla exportCsv List : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);

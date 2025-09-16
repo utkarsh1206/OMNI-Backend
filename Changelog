@@ -1,5 +1,15 @@
 2025-09-12 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
+	* Jira ID : NOC-337, 338, 339, 340
+	* Previous Commit ID : 
+	* Version : Dev
+	* Laravel: Improves email logging and reporting
+	Adds failure reason logging for emails to facilitate debugging.
+	Refactors report generation to use a common CSV export function, improving code reusability and consistency across SLA and Ticket reports.
+	Addresses filtering issues in ticket reports by ensuring that empty string values for priority and status are handled correctly.
+
+2025-09-12 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
 	* Jira ID : NOC-207
 	* Previous Commit ID : 
 	* Version : Dev
