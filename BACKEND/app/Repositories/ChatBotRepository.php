@@ -164,7 +164,6 @@ class ChatBotRepository
     {
         try {
             $payload = extractPayload($request->bearerToken());
-
             $apiPayload = [
                 'userid' => $payload['userid'],
                 'uin' => $payload['uin'],
@@ -201,6 +200,16 @@ class ChatBotRepository
                 'query' => $request->question,
             ];
             $askQuestion = $this->chatbotService->ask($apiPayload);
+
+            if (isset($askQuestion['status_code']) && $askQuestion['status_code'] != 200) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    '',
+                    $askQuestion['message'] ?? 'Something went wrong',
+                    $askQuestion['status_code']
+                );
+            }
+
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $askQuestion,
