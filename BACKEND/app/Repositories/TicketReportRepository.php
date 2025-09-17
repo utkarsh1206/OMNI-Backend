@@ -216,21 +216,14 @@ class TicketReportRepository
             $headers = ['Ticket ID', 'Customer Name', 'Ticket Type', 'Priority', 'Status', 'Created Date', 'Last Updated', 'Assigned Agent', 'Resolution Time', 'Comments', 'Escalation'];
 
             $csvData = $this->formatTickets($tickets, true);
+            $csvDataArray = $csvData->toArray();
 
-            $callback = function () use ($headers, $csvData) {
-                $file = fopen('php://output', 'w');
-                fputcsv($file, $headers); // Write the header row
-                foreach ($csvData as $row) {
-                    fputcsv($file, $row); // Write data rows
-                }
-                fclose($file);
-            };
-
-            // Create a response to download the file
-            return new StreamedResponse($callback, ResponseHTTP::HTTP_OK, [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment;filename="ticket_report.csv"',
-            ]);
+            $url = exportCsv($headers, $csvDataArray, 'ticket_report');
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                ['file_url' => $url],
+                trans('message.report_generated')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error during Ticket Export CSV : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -249,11 +242,11 @@ class TicketReportRepository
             $query->where('support_ticket_id', $request->input('ticket_id'));
         }
 
-        if ($request->has('priority')) {
+        if ($request->has('priority') && $request->input('priority') !== '') {
             $query->where('default_priority', $request->input('priority'));
         }
 
-        if ($request->has('status')) {
+        if ($request->has('status') && $request->input('status') !== '') {
             $query->where('default_status', $request->input('status'));
         }
 

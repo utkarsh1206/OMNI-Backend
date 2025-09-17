@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Carbon\Carbon;
+use Illuminate\Contracts\Validation\Validator;
 
 class TenantLicenseUpdateRequest extends FormRequest
 {
@@ -39,10 +40,22 @@ class TenantLicenseUpdateRequest extends FormRequest
     {
         // Convert expire_date to epoch timestamp
         if ($this->has('expire_date')) {
-                $date = Carbon::createFromFormat('Y-m-d', $this->expire_date);
-                $this->merge([
-                    'expire_date' => $date->setTime(12, 0)->timestamp,
-                ]);
+            $date = Carbon::createFromFormat('Y-m-d', $this->expire_date);
+            $this->merge([
+                'expire_date' => $date->setTime(12, 0)->timestamp,
+            ]);
         }
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

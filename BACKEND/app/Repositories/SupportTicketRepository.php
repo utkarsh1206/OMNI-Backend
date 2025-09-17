@@ -607,60 +607,56 @@ class SupportTicketRepository
         array $mail_attachment_urls,
         $ticket,
         int $assignToId,
-        $mailTemplate
+        $agentMailTemplate
     ) {
         generateLogs("info", "ticket data " . $ticket);
 
-
         $customerMailTemplate = MailTemplate::where('type', 'create_ticket_customer')->where('status', 'Active')->where('mail_for', 'request')->first();
 
-        $emailConfig = EmailConfigure::where('type', 'gmail')->first();
-        if (isset($emailConfig) && !empty($emailConfig)) {
-            setEmailConfig();
-            $sender_email = $emailConfig->sender_email ?? config('mail.from.address');
-            establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
+        // $emailConfig = EmailConfigure::where('type', 'gmail')->first();
+        // if (isset($emailConfig) && !empty($emailConfig)) {
 
-            $ticket_subject = "A new ticket $ticket->support_ticket_id has been created";
-            $subject = $mailTemplate['subject'] ?? $ticket_subject;
+        setEmailConfig();
+        $sender_email = config('mail.from.address');
 
-            $body = $mailTemplate['body'] ?? '';
-            $result = Mail::to($request->to_emails)->cc($request->cc)->bcc($request->bcc)->send(new SendEmail($subject, $body, $mail_attachment_urls, $ticket));
+        $defaultSubject = "A new ticket $ticket->support_ticket_id has been created";
 
-            $subject =  $customerMailTemplate->subject ?? $ticket_subject;
-            $subject = str_replace("{ticket_number}", $ticket->support_ticket_id, $subject);
+        /** ------------------------
+         * Send Email to Agent
+         * ---------------------- */
+        sendProcessedEmail(
+            to: $ticket->user_email,
+            subject: $agentMailTemplate['subject'] ?? $defaultSubject,
+            bodyTemplate: $agentMailTemplate['body'] ?? '',
+            mailTemplateId: $agentMailTemplate->id ?? 0,
+            mailAttachments: $mail_attachment_urls,
+            ticket: $ticket,
+            senderEmail: $sender_email,
+            assignToId: $assignToId,
+            module: "Create Support Ticket"
+        );
 
-            $templateBody = $customerMailTemplate['body'] ?? '';
-            $templateBody = str_replace(
-                [
-                    "{customer_name}",
-                    "{ticket_number}",
-                    "{ticket_subject}",
-                    "{ticket_status}",
-                    "{ticket_created}",
-                    "{ticket_description}",
-                ],
-                [
-                    $ticket->contact_name,
-                    $ticket->support_ticket_id,
-                    $ticket->subject,
-                    $ticket->status_name,
-                    optional($ticket->created_at)->format('d M Y, H:i:s A T'),
-                    $ticket->description,
-                ],
-                $templateBody
-            );
+        /** ------------------------
+         * Send Email to Customer
+         * ---------------------- */
+        $customerSubject = str_replace(
+            "{ticket_number}",
+            $ticket->support_ticket_id,
+            $customerMailTemplate->subject ?? $defaultSubject
+        );
 
-            Mail::to($ticket->user_email)->send(new SendEmail($subject, $templateBody, $mail_attachment_urls, $ticket));
-
-            getDbConnection(auth()->user()->domain);
-            logEmail([
-                "user_id" => $assignToId,
-                "email_template_id" => 0,
-                "from_email" => $sender_email,
-                "module_name" => "Support Ticket",
-                "entity_id" => $ticket->id,
-                "status" => "Sent",
-            ]);
-        }
+        sendProcessedEmail(
+            to: $request->to_emails,
+            cc: $request->cc,
+            bcc: $request->bcc,
+            subject: $customerSubject,
+            bodyTemplate: $customerMailTemplate['body'] ?? '',
+            mailTemplateId: $customerMailTemplate->id ?? 0,
+            mailAttachments: $mail_attachment_urls,
+            ticket: $ticket,
+            senderEmail: $sender_email,
+            assignToId: $assignToId,
+            module: "Create Support Ticket"
+        );
     }
 }

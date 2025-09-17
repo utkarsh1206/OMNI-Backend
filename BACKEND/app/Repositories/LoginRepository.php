@@ -91,9 +91,20 @@ class LoginRepository
                         return response()->json(['error' => trans('message.user_or_phone_already_logged_in')], ResponseHTTP::HTTP_UNAUTHORIZED);
                     }
 
+                    if ($domain) {
+                        establishMasterConnection($domain, "omnichannel", "mysql");
+                        $detail = DB::table('details')->where('domain', $domain)->first();
+                        getdbConnection($domain, true);
+                    }
+
+                    if (!empty($detail)) {
+                        $userData->setUIN($detail->uin);
+                        $userData->setUserId($userData->id); 
+                    }
                     // Set the flag to include phone in JWT
                     $userData->setAddPhoneToJWT($validator['flag']);
-                    $token = JWTAuth::attempt($credentials);
+                    $token = JWTAuth::fromUser($userData);
+                    // $token = JWTAuth::attempt($credentials);
                     if ($userData['role_id'] == 3) {
                         $timeNow = Carbon::now();
                         LiveAgents::create([

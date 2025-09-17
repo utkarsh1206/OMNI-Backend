@@ -21,4 +21,8 @@ return [
 
    'RECORDING_FILE_PATH' => env('RECORDING_FILE_PATH', 'storage/app/public/recordings'),
    'CHATBOT_URL' => env('CHATBOT_URL', 'http://10.121.25.165:8000') ,
+
+   'RETRY_ATTEMPTS' => env('RETRY_ATTEMPTS', 3),
+   'RETRY_WAIT' => env('RETRY_WAIT', 500),
+   'TIMEOUT' => env('TIMEOUT', 360) ,
 ];

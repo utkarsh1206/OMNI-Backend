@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 
 class WebhookCallRequest extends FormRequest
 {
@@ -43,11 +42,6 @@ class WebhookCallRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(
-            response()->json([
-                'error' => 'Validation failed',
-                'messages' => $validator->errors(),
-            ])
-        );
+        return failedValidation($validator);
     }
 }

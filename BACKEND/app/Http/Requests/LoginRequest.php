@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-
+use Illuminate\Contracts\Validation\Validator;
 class LoginRequest extends FormRequest
 {
     /**
@@ -28,5 +28,17 @@ class LoginRequest extends FormRequest
             'phone' => 'required_if:flag,2',
             'phone_password' => 'required_if:flag,2'
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

@@ -164,11 +164,6 @@ class CallLogReportRepository
     }
 
     /**
-     * Generates CSV export for the call logs.
-     */
-
-
-    /**
      * Formats the call logs for CSV export.
      */
 

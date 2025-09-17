@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class SupportTicketRequest extends FormRequest
 {
@@ -28,5 +29,17 @@ class SupportTicketRequest extends FormRequest
             'default_priority' => 'required|exists:priorities,id',
             'default_type' => 'required|exists:ticket_types,id',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }
