@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class MailDetailRequest extends FormRequest
 {
@@ -32,5 +33,17 @@ class MailDetailRequest extends FormRequest
             'bcc' => 'nullable|email',
             'body' => 'required|string',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

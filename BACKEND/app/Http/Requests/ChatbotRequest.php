@@ -1,8 +1,9 @@
 <?php
-    
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class ChatbotRequest extends FormRequest
 {
@@ -33,5 +34,17 @@ class ChatbotRequest extends FormRequest
             'keywords' => 'nullable|array|max:5',
             'keywords.*' => 'string',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

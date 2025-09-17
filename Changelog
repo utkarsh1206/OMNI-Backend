@@ -1,3 +1,49 @@
+2025-09-12 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID : NOC-337, 338, 339, 340
+	* Previous Commit ID : 
+	* Version : Dev
+	* Laravel: Improves email logging and reporting
+	Adds failure reason logging for emails to facilitate debugging.
+	Refactors report generation to use a common CSV export function, improving code reusability and consistency across SLA and Ticket reports.
+	Addresses filtering issues in ticket reports by ensuring that empty string values for priority and status are handled correctly.
+
+2025-09-12 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID : NOC-207
+	* Previous Commit ID : 
+	* Version : Dev
+	* Laravel: Enhances email log listing and export
+	Improves the email log listing API by adding date range filtering and
+	validating required parameters.
+	Updates the export to CSV functionality to include more relevant data
+	and filtering options, such as user ID, status, and email address. The
+	query is also optimized for better performance.
+
+2025-09-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID :
+	* Previous Commit ID : 
+	* Version : Dev
+	* Laravel:
+	Enhance the SLA email notification process by sending emails only when the ticket status changes. Two notifications will be triggered based on status changes:
+	Alert Before Resolve Time
+	Resolve Time Notification
+
+	Key Changes:
+	Status Change Check: A function is added to check if the ticket status has changed. Emails are sent only if there’s a valid status change.
+
+	Notification Triggers:
+	Before Resolve Time Alert: Sent if the ticket status changes.
+	Resolve Time Notification: Sent at the defined resolve time, if the status has changed.
+
+	Conditional Logic: If no status change occurs or the times are null, no notifications are sent.
+
+	Benefits:
+	Reduces unnecessary email notifications.
+	Ensures timely updates based on actual status changes.
+	Improves SLA tracking by sending relevant alerts only when needed.
+
 2025-09-02 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID :

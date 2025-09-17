@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class DepartmentRequest extends FormRequest
 {
@@ -33,5 +34,17 @@ class DepartmentRequest extends FormRequest
             $rules['name'] = 'required|string|unique:departments,name,' . $departmentID;
         }
         return $rules;
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

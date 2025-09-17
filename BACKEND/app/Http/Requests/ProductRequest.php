@@ -1,8 +1,9 @@
 <?php
-    
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class ProductRequest extends FormRequest
 {
@@ -34,5 +35,17 @@ class ProductRequest extends FormRequest
             'description' => 'nullable|string',
             'status' => 'required|boolean'
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

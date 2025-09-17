@@ -8,6 +8,7 @@ use App\Http\Requests\ChatbotAskQuestionRequest;
 use App\Http\Requests\ChatbotConnectWithAgentRequest;
 use App\Http\Requests\CustomMessageRequest;
 use App\Repositories\ChatBotRepository;
+use App\Http\Requests\GetCustomerMessagesRequest;
 use Illuminate\Http\Request;
 
 class CustomChatBotController extends Controller
@@ -89,5 +90,15 @@ class CustomChatBotController extends Controller
     public function endConversationCustomer(ChatbotConnectWithAgentRequest $request)
     {
         return $this->chatBotRepository->endConversationCustomer($request);
+    }
+
+    public function getCustomerIds(Request $request)
+    {
+        return $this->chatBotRepository->getCustomerIds($request);
+    }
+
+    public function getCustomerMessages(GetCustomerMessagesRequest $request)
+    {
+        return $this->chatBotRepository->getCustomerMessages($request);
     }
 }

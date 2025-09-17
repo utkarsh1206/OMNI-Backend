@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-
+use Illuminate\Contracts\Validation\Validator;
 class UserSmsProviderRequest extends FormRequest
 {
     /**
@@ -24,5 +24,17 @@ class UserSmsProviderRequest extends FormRequest
         return [
             'provider_id' => 'required',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param Validator $validator
+     * @return void
+     * @throws HttpResponseException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        return failedValidation($validator);
     }
 }

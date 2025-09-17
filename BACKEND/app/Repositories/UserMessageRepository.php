@@ -121,13 +121,23 @@ class UserMessageRepository
     public function getUserPhones()
     {
         try {
-            $messages  = Message::select('external_user_phone')->where("type", "user_chat")
-                ->where('user_id', auth()->user()->id)
-                ->whereNotNull('external_user_phone')
-                ->distinct()
-                ->orderBy('external_user_phone', 'desc')
-                ->pluck('external_user_phone');
+            $messages = Message::where("type", "user_chat")
+                ->where("user_id", auth()->id())
+                ->whereNotNull("external_user_phone")
+                ->where("external_user_phone", '!=', '')
+                ->orderBy("id", "desc")
+                ->get()
+                ->groupBy('external_user_phone')
+                ->map(function ($group) {
+                    $name = $group->map(fn($msg) => trim(($msg->first_name ?? '') . ' ' . ($msg->last_name ?? '')))
+                        ->first(fn($n) => !empty($n) && strtolower($n) !== 'system message');
 
+                    return [
+                        'name'  => $name ?: 'System Message',
+                        'phone' => $group->first()->external_user_phone,
+                    ];
+                })
+                ->values();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Message Listing: ', $ex->getMessage());
@@ -161,7 +171,8 @@ class UserMessageRepository
                 'is_read' => 'read',
                 'type' => 'user_chat',
                 'sender' => 'agent',
-                'external_message_time' => Carbon::now()
+                'external_message_time' => Carbon::now(),
+                'external_user_phone' => $request->phone_number
             ]);
 
             if ($message) {
@@ -215,6 +226,7 @@ class UserMessageRepository
                 'external_message_time' => $request->input('timestamp') ?? Carbon::now(),
                 'node_type' => $messageType ?? 'MESSAGE',
                 'first_name' => $request->input('receiver_name') ?? null,
+                'external_user_phone' => $request->input('receiver_num') ?? null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);

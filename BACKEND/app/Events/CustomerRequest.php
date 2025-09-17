@@ -21,7 +21,7 @@ class CustomerRequest implements ShouldBroadcastNow
      */
     public function __construct($data, $domain)
     {
-        $this->customerChat = $data['customer_id'];
+        $this->customerChat = $data;
         $this->domain = convertToLower(Str::replace('.', '_', $domain));
         generateLogs('info', 'broadcast Data: '.json_encode(['CustomerId' => $this->customerChat]));
     }
