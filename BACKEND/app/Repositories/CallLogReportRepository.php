@@ -176,7 +176,9 @@ class CallLogReportRepository
             $firstDecode = json_decode($log->lead_json, true); // returns a string
             $leadJson = is_string($firstDecode) ? json_decode($firstDecode, true) : $firstDecode;
             if (is_array($leadJson)) {
-                $dynamicKeys = array_unique(array_merge($dynamicKeys, array_keys($leadJson)));
+                // $dynamicKeys = array_unique(array_merge($dynamicKeys, array_keys($leadJson)));
+                $keys = array_diff(array_keys($leadJson), ['created_at', 'updated_at', 'omni_lead_source']);
+                $dynamicKeys = array_unique(array_merge($dynamicKeys, $keys));
             }
         }
 
@@ -258,6 +260,9 @@ class CallLogReportRepository
             }
 
             foreach ($dynamicKeys as $key) {
+                if (in_array($key, ['created_at', 'updated_at', 'omni_lead_source'])) {
+                    continue; // skip these keys
+                }
                 $row[] = $leadJson[$key] ?? '';
             }
             return $row;
