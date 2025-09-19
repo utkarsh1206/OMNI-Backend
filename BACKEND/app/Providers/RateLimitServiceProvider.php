@@ -21,8 +21,7 @@ class RateLimitServiceProvider extends ServiceProvider
                 ? 'user:' . $request->user()->id
                 : 'ip:' . $request->ip();
 
-            // Fetch the API limit dynamically
-            $limit = (int) config('omni.API_LIMIT', 100);
+            $limit = (int) config('omni.API_LIMIT');
 
             return Limit::perMinute($limit)
                 ->by($key)
