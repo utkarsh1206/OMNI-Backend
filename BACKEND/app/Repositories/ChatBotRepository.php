@@ -391,6 +391,7 @@ class ChatBotRepository
     {
         try {
             $messages = ChatbotMessage::whereNotNull("customer_id")
+                ->where('agent_id', auth()->user()->id)
                 ->orderBy("id", "desc")
                 ->get()
                 ->groupBy('customer_id')
