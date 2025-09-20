@@ -240,44 +240,7 @@ class ChatBotRepository
     {
         try {
             $payload = extractPayload($request->bearerToken());
-            // $agentAssigned = ChatbotMessage::where('customer_id', $request->room_id)
-            //     ->where('agent_id', auth()->user()->id)->first();
-
-            // // Use this query only if above query won't work    
-            // // $agentAssigned = ChatbotMessage::where('customer_id', $request->room_id)
-            // //     ->first();    
-
-            // if ($agentAssigned) {
-            //     $boradCastData = [
-            //         'customer_id' => $request->customer_id,
-            //         'agent_id' => auth()->user()->id,
-            //     ];
-            //     broadcast(new CustomerRequest($boradCastData, $payload['domain']));
-            // } else {
-            //     $chatHisotory = $this->chatbotService->fetchHistory($request);
-
-            //     if (!empty($chatHisotory['history'])) {
-            //         foreach ($chatHisotory['history'] as $item) {
-            //             ChatbotMessage::create([
-            //                 'customer_id'           => $item['customer_id'] ?? null,
-            //                 'session_id'            => $item['session_id'] ?? null,
-            //                 'sender'                => $item['role'],
-            //                 'text'                  => $item['message'],
-            //                 'external_message_time' => $item['timestamp'],
-            //                 'created_at'            => now(),
-            //                 'updated_at'            => now(),
-            //             ]);
-            //         }
-            //     }
-
-            //     // Notify to customer
-            //     $boradCastData = [
-            //         'agent_id' => auth()->user()->id,
-            //         'message' => "You are now connected with agent" . auth()->user()->username,
-            //     ];
-            //     broadcast(new NotifyCustomer($boradCastData, auth()->user()->domain, $request->customer_id));
-            // }
-
+            
             $chatHisotory = $this->chatbotService->fetchHistory($request);
             $insertedMessages = [];
             if (!empty($chatHisotory['history'])) {
