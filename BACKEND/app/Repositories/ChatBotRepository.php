@@ -19,7 +19,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Support\Str;
 
 class ChatBotRepository
 {
@@ -242,8 +242,7 @@ class ChatBotRepository
     public function notifyCustomer(Request $request)
     {
         try {
-            $payload = extractPayload($request->bearerToken());
-
+            // $payload = extractPayload($request->bearerToken());
             // $chatHisotory = $this->chatbotService->fetchHistory($request);
             // $insertedMessages = [];
             // if (!empty($chatHisotory['history'])) {
@@ -280,8 +279,8 @@ class ChatBotRepository
             DB::transaction(function () use ($chatHistory, $request, &$insertedMessages, &$response) {
                 $customerId = $request->customer_id;
 
-                $existingConnection = DB::table('chatbot_messages')
-                    ->where('customer_id', $customerId)
+                $existingConnection = ChatbotMessage::where('customer_id', $customerId)
+                    ->whereNotNull('chat_id')
                     ->whereNotNull('agent_id')
                     ->lockForUpdate()
                     ->first();
@@ -294,21 +293,20 @@ class ChatBotRepository
                 }
 
                 if (!empty($chatHistory['history'])) {
+                    $chatId = (string) Str::uuid();
                     foreach ($chatHistory['history'] as $item) {
-                        $text = $item['message'] ?? $item['content'] ?? null;
-                        if (!$text) {
-                            continue;
-                        }
-
                         $message = ChatbotMessage::create([
-                            'agent_id'              => auth()->id(),
-                            'customer_id'           => $item['customer_id'] ?? null,
-                            'session_id'            => $item['session_id'] ?? null,
-                            'sender'                => $item['role'],
-                            'text'                  => $text,
+                            'chat_id' => $chatId,
+                            'agent_id' => auth()->user()->id ?? null,
+                            'customer_id' => $item['customer_id'] ?? null,
+                            'session_id' => $item['session_id'] ?? null,
+                            'sender'     => $item['role'],
+                            'text'       => $item['message'] ?? $item['content'],
                             'external_message_time' => $item['timestamp'],
+                            'created_at' => now(),
+                            'updated_at' => now(),
                         ]);
-
+                        
                         $insertedMessages[] = $message;
                     }
                 }
@@ -318,6 +316,7 @@ class ChatBotRepository
 
                     $broadcastData = [
                         'agent_id' => $user?->id,
+                        'chat_id' => $insertedMessages[0]->chat_id ?? null,
                         'message'  => "You are now connected with agent " . ($user?->username ?? 'Agent'),
                     ];
                     broadcast(new NotifyCustomer($broadcastData, $user?->domain, $request->customer_id));
@@ -325,6 +324,7 @@ class ChatBotRepository
                     $broadcastData = [
                         'customer_id' => $request->customer_id,
                         'agent_id'    => $insertedMessages[0]->agent_id ?? null,
+                        'chat_id' => $insertedMessages[0]->chat_id ?? null,
                     ];
                     broadcast(new CustomerRequest($broadcastData, $user?->domain));
                 }
@@ -355,6 +355,7 @@ class ChatBotRepository
             $files = uploadAttachment($request, "attachment", "attachment");
 
             $message = ChatbotMessage::Create([
+                'chat_id' => $request->chat_id,
                 'agent_id' => $agentId,
                 'customer_id' => $customerId,
                 'text' => $request->text,
