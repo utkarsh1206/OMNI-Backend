@@ -25,7 +25,7 @@ class LoginRepository
 
     protected $licenseController;
 
-    private $apiResponse;
+    private $apiResponse, $details;
 
     public function __construct(CustomApiResponse $customApiResponse, LicenseController $licenseController)
     {
@@ -48,6 +48,10 @@ class LoginRepository
 
             if (!$domain) {
                 return response()->json(['error' => trans('message.domain_required')], ResponseHTTP::HTTP_BAD_REQUEST);
+            }
+
+            if ($domain) {
+                $this->details = $this->getDetailFromMasterDB($domain);
             }
         }
 
@@ -91,14 +95,8 @@ class LoginRepository
                         return response()->json(['error' => trans('message.user_or_phone_already_logged_in')], ResponseHTTP::HTTP_UNAUTHORIZED);
                     }
 
-                    if ($domain) {
-                        establishMasterConnection($domain, "omnichannel", "mysql");
-                        $detail = DB::table('details')->where('domain', $domain)->first();
-                        getdbConnection($domain, true);
-                    }
-
-                    if (!empty($detail)) {
-                        $userData->setUIN($detail->uin);
+                    if ($domain && !empty($this->details)) {    
+                        $userData->setUIN($this->details->uin);
                         $userData->setUserId($userData->id); 
                     }
                     // Set the flag to include phone in JWT
@@ -136,13 +134,13 @@ class LoginRepository
                 "permission" => $formattedPermissions
             ];
 
-            if ($domain) {
-                establishMasterConnection($domain, "omnichannel", "mysql");
-                $detail = DB::table('details')->where('domain', $domain)->first();
-                getdbConnection($domain, false);
-                if ($detail) {
-                    $dataArr['uin'] = $detail->uin;
-                }
+            if ($domain && !empty($this->details)) {
+                // establishMasterConnection($domain, "omnichannel", "mysql");
+                // $detail = DB::table('details')->where('domain', $domain)->first();
+                // getdbConnection($domain, false);
+                // if ($detail) {
+                    $dataArr['uin'] = $this->details->uin;
+                //}
             }
 
             return is_string($token) ? $this->apiResponse->getResponseStructure(trans('message.success'), $dataArr, trans('message.login')) : $token;
@@ -216,5 +214,20 @@ class LoginRepository
     private function authenticatePassword($credentials, $userData, $phonePassword, $phoneData)
     {
         return Hash::check($credentials['password'], $userData->password) && $phonePassword == $phoneData->pass;
+    }
+
+    private function getDetailFromMasterDB($domain)
+    {
+        if (!$domain) return null;
+
+        try {
+            establishMasterConnection($domain, 'omnichannel', 'mysql');
+            $detail = DB::table('details')->where('domain', $domain)->first();
+            getdbConnection($domain, true);
+            return $detail;
+        } catch (\Exception $e) {
+            generateLogs('error', 'Failed to fetch detail from master DB: ', $e->getMessage());
+            return null;
+        }
     }
 }

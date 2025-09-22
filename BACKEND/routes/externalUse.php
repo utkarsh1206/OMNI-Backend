@@ -9,22 +9,22 @@ use App\Http\Controllers\Api\UserMessageController;
 use App\Http\Controllers\Api\ChatBotController;
 use App\Http\Controllers\Api\UserController;
 
-Route::get('generate-auth-token/{uinId}', [AuthTokenController::class, 'index']);
+Route::middleware('throttle:custom-api')->group(function () {
+    Route::get('generate-auth-token/{uinId}', [AuthTokenController::class, 'index']);
 
-// Route::post('fetch-session-messages/{uinId}', [UserMessageController::class, 'fetchChatResponse'])->middleware(AuthTokenMiddleware::class);
+    Route::middleware(AuthTokenMiddleware::class)->group(function () {
+        Route::post('chatbot-room-id', [ChatBotWebhookController::class, 'fetchMessageFromRoom']);
+        Route::post('fetch-session-messages/{uinId}', [UserMessageController::class, 'fetchChatResponse']);
+        // Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  
+        // Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
+        // Route::post('call-hangup', [WebhookCallController::class, 'callHangup']); 
+        // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
+        Route::post('dc-user-logout', [UserController::class, 'dcUserLogout']);
+        Route::get('fetch-chatbot-templates', [ChatBotController::class, 'index']);
 
-Route::middleware(AuthTokenMiddleware::class)->group(function () {
-    Route::post('chatbot-room-id', [ChatBotWebhookController::class, 'fetchMessageFromRoom']);
-    Route::post('fetch-session-messages/{uinId}', [UserMessageController::class, 'fetchChatResponse']);
-    // Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  
-    // Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
-    // Route::post('call-hangup', [WebhookCallController::class, 'callHangup']); 
-    // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
-    Route::post('dc-user-logout', [UserController::class, 'dcUserLogout']);
-    Route::get('fetch-chatbot-templates', [ChatBotController::class, 'index']);
-
-    Route::prefix('customer-portal')->group(function () {
-        Route::post('/request-otp/{uinId}', [OtpController::class, 'requestOtp']);
-        Route::post('/verify-otp/{uinId}', [OtpController::class, 'verifyOtp']);
+        Route::prefix('customer-portal')->group(function () {
+            Route::post('/request-otp/{uinId}', [OtpController::class, 'requestOtp']);
+            Route::post('/verify-otp/{uinId}', [OtpController::class, 'verifyOtp']);
+        });
     });
 });
