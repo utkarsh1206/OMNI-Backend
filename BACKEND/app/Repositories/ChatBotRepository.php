@@ -19,6 +19,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ChatBotRepository
 {
@@ -276,8 +277,7 @@ class ChatBotRepository
 
             $chatHistory = $this->chatbotService->fetchHistory($request);
             $insertedMessages = [];
-
-            DB::transaction(function () use ($chatHistory, $request, &$insertedMessages) {
+            DB::transaction(function () use ($chatHistory, $request, &$insertedMessages, &$response) {
                 $customerId = $request->customer_id;
 
                 $existingConnection = DB::table('chatbot_messages')
@@ -287,9 +287,10 @@ class ChatBotRepository
                     ->first();
 
                 if ($existingConnection) {
-                    return response()->json([
-                        'message' => 'Customer already connected with another agent..',
+                    $response = response()->json([
+                        'message' => 'Customer already connected with an agent.'
                     ], ResponseHTTP::HTTP_CONFLICT);
+                    return;
                 }
 
                 if (!empty($chatHistory['history'])) {
@@ -315,14 +316,12 @@ class ChatBotRepository
                 if ($insertedMessages) {
                     $user = auth()->user();
 
-                    // Notify customer
                     $broadcastData = [
                         'agent_id' => $user?->id,
                         'message'  => "You are now connected with agent " . ($user?->username ?? 'Agent'),
                     ];
                     broadcast(new NotifyCustomer($broadcastData, $user?->domain, $request->customer_id));
 
-                    // Notify agent
                     $broadcastData = [
                         'customer_id' => $request->customer_id,
                         'agent_id'    => $insertedMessages[0]->agent_id ?? null,
@@ -330,6 +329,10 @@ class ChatBotRepository
                     broadcast(new CustomerRequest($broadcastData, $user?->domain));
                 }
             });
+
+            if ($response) {
+                return $response;
+            }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
         } catch (Exception $ex) {
