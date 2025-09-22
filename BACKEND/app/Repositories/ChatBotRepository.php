@@ -439,7 +439,7 @@ class ChatBotRepository
     {
         try {
             $messages  = ChatbotMessage::where('customer_id', $request->id)
-                // ->where('agent_id', auth()->user()->id)
+                ->where('agent_id', auth()->user()->id)
                 ->get();
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
