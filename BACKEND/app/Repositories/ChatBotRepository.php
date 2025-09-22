@@ -292,7 +292,6 @@ class ChatBotRepository
 
                     return response()->json([
                         'message' => 'Customer already connected with an agent..',
-                        'retry_after_seconds' => (int) $retryAfter,
                     ], ResponseHTTP::HTTP_CONFLICT, $headers);
                 }
 
