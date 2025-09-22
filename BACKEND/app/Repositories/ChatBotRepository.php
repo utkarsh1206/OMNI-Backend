@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class ChatBotRepository
 {
@@ -277,18 +278,22 @@ class ChatBotRepository
             $insertedMessages = [];
 
             DB::transaction(function () use ($chatHistory, $request, &$insertedMessages) {
-                // Lock the customer row to prevent race conditions
                 $customerId = $request->customer_id;
 
                 $existingConnection = DB::table('chatbot_messages')
                     ->where('customer_id', $customerId)
                     ->whereNotNull('agent_id')
-                    ->lockForUpdate() // This prevents two agents from grabbing the same customer
+                    ->lockForUpdate()
                     ->first();
 
                 if ($existingConnection) {
-                    // Another agent already connected, abort
+                    
                     throw new \Exception("Customer already connected with an agent.");
+
+                    return response()->json([
+                        'message' => 'Customer already connected with an agent..',
+                        'retry_after_seconds' => (int) $retryAfter,
+                    ], ResponseHTTP::HTTP_CONFLICT, $headers);
                 }
 
                 if (!empty($chatHistory['history'])) {
