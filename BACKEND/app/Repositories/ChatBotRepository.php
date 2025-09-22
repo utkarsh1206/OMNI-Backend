@@ -287,11 +287,8 @@ class ChatBotRepository
                     ->first();
 
                 if ($existingConnection) {
-                    
-                    throw new \Exception("Customer already connected with an agent.");
-
                     return response()->json([
-                        'message' => 'Customer already connected with an agent..',
+                        'message' => 'Customer already connected with another agent..',
                     ], ResponseHTTP::HTTP_CONFLICT, $headers);
                 }
 
