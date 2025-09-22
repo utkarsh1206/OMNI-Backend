@@ -27,11 +27,9 @@ class RateLimitServiceProvider extends ServiceProvider
                 ->by($key)
                 ->response(function (Request $request, array $headers) {
                     $retryAfter = $headers['Retry-After'] ?? 60;
-                    $remaining = $headers['X-RateLimit-Remaining'] ?? 0;
-
+                
                     return response()->json([
                         'message' => 'Too many requests. Please try again later.',
-                        'remaining_requests' => (int) $remaining,
                         'retry_after_seconds' => (int) $retryAfter,
                     ], ResponseHTTP::HTTP_TOO_MANY_REQUESTS, $headers);
                 });

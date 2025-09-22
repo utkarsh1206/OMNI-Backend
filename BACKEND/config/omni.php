@@ -26,5 +26,5 @@ return [
    'RETRY_WAIT' => env('RETRY_WAIT', 500),
    'TIMEOUT' => env('TIMEOUT', 360) ,
 
-   'API_LIMIT' => (int) env('API_LIMIT', 100),
+   'API_LIMIT' => (int) env('API_LIMIT', 120),
 ];
