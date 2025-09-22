@@ -273,54 +273,60 @@ class ChatBotRepository
             //     broadcast(new CustomerRequest($boradCastData, $payload['domain']));
             // }
 
-            DB::transaction(function () use ($request) {
-                $customer = ChatbotMessage::where('id', $request->customer_id)
-                    ->lockForUpdate()
+            $chatHistory = $this->chatbotService->fetchHistory($request);
+            $insertedMessages = [];
+
+            DB::transaction(function () use ($chatHistory, $request, &$insertedMessages) {
+                // Lock the customer row to prevent race conditions
+                $customerId = $request->customer_id;
+
+                $existingConnection = DB::table('chatbot_messages')
+                    ->where('customer_id', $customerId)
+                    ->whereNotNull('agent_id')
+                    ->lockForUpdate() // This prevents two agents from grabbing the same customer
                     ->first();
 
-                if (!$customer) {
-                    throw new \Exception("Customer not found");
+                if ($existingConnection) {
+                    // Another agent already connected, abort
+                    throw new \Exception("Customer already connected with an agent.");
                 }
 
-                if ($customer->agent_id) {
-                    throw new \Exception("This request has already been accepted by another agent.");
-                }
-
-                $customer->agent_id = auth()->id();
-                $customer->save();
-
-                $chatHistory = $this->chatbotService->fetchHistory($request);
-
-                $insertedMessages = [];
                 if (!empty($chatHistory['history'])) {
                     foreach ($chatHistory['history'] as $item) {
+                        $text = $item['message'] ?? $item['content'] ?? null;
+                        if (!$text) {
+                            continue;
+                        }
+
                         $message = ChatbotMessage::create([
-                            'agent_id'              => auth()->user()->id ?? null,
+                            'agent_id'              => auth()->id(),
                             'customer_id'           => $item['customer_id'] ?? null,
                             'session_id'            => $item['session_id'] ?? null,
                             'sender'                => $item['role'],
-                            'text'                  => $item['message'] ?? $item['content'],
+                            'text'                  => $text,
                             'external_message_time' => $item['timestamp'],
-                            'created_at'            => now(),
-                            'updated_at'            => now(),
                         ]);
 
                         $insertedMessages[] = $message;
                     }
+                }
 
-                    // Broadcast to customer
+                if ($insertedMessages) {
+                    $user = auth()->user();
+
+                    // Notify customer
                     $broadcastData = [
-                        'agent_id' => auth()->id(),
-                        'message'  => "You are now connected with agent " . auth()->user()->username,
+                        'agent_id' => $user?->id,
+                        'message'  => "You are now connected with agent " . ($user?->username ?? 'Agent'),
                     ];
-                    broadcast(new NotifyCustomer($broadcastData, auth()->user()->domain, $request->customer_id));
+                    broadcast(new NotifyCustomer($broadcastData, $user?->domain, $request->customer_id));
 
-                    // Broadcast back to agents (if needed)
+                    // Notify agent
                     $broadcastData = [
                         'customer_id' => $request->customer_id,
                         'agent_id'    => $insertedMessages[0]->agent_id ?? null,
                     ];
-                    broadcast(new CustomerRequest($broadcastData, auth()->user()->domain));
+                    broadcast(new CustomerRequest($broadcastData, $user?->domain));
                 }
             });
 
