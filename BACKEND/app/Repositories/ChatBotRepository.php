@@ -289,7 +289,7 @@ class ChatBotRepository
                 if ($existingConnection) {
                     return response()->json([
                         'message' => 'Customer already connected with another agent..',
-                    ], ResponseHTTP::HTTP_CONFLICT, $headers);
+                    ], ResponseHTTP::HTTP_CONFLICT);
                 }
 
                 if (!empty($chatHistory['history'])) {
