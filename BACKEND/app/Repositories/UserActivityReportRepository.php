@@ -628,7 +628,10 @@ class UserActivityReportRepository
                                 foreach ($details->incoming as $incoming) {
                                     $csvRows[] = [
                                         $incoming->called_phone_number,
-                                        $incoming->call_date,
+                                        // $incoming->call_date,
+                                        Carbon::parse($incoming->call_date)
+                                        ->setTimezone(env('APP_CSVTIMEZONE'))
+                                        ->format('Y-m-d H:i:s'),
                                         $incoming->call_talk_duration,
                                         $incoming->call_dispo_status
                                     ];
@@ -645,7 +648,10 @@ class UserActivityReportRepository
                                 foreach ($details->outgoing as $outgoing) {
                                     $csvRows[] = [
                                         $outgoing->called_phone_number,
-                                        $outgoing->call_date,
+                                        // $outgoing->call_date,
+                                        Carbon::parse($outgoing->call_date)
+                                        ->setTimezone(env('APP_CSVTIMEZONE'))
+                                        ->format('Y-m-d H:i:s'),
                                         $outgoing->call_talk_duration,
                                         $outgoing->call_dispo_status
                                     ];
@@ -661,7 +667,9 @@ class UserActivityReportRepository
                             if (!empty($details->daily_user_activity)) {
                                 foreach ($details->daily_user_activity as $activity) {
                                     $csvRows[] = [
-                                        $activity->created_at,
+                                        Carbon::parse($activity->created_at)
+                                            ->setTimezone(env('APP_CSVTIMEZONE'))
+                                            ->format('Y-m-d H:i:s'),
                                         $activity->activity,
                                         $activity->total_login_duration,
                                         $activity->pause_duration,
