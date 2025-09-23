@@ -228,8 +228,10 @@ class ChatBotRepository
     {
         $payload = extractPayload($request->bearerToken());
         try {
+            $chatId = (string) Str::uuid();
             $boradCastData = [
                 'customer_id' => $payload['userid'],
+                'chat_id' => $chatId,
             ];
             broadcast(new CustomerRequest($boradCastData, $payload['domain']));
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
@@ -293,10 +295,9 @@ class ChatBotRepository
                 }
 
                 if (!empty($chatHistory['history'])) {
-                    $chatId = (string) Str::uuid();
                     foreach ($chatHistory['history'] as $item) {
                         $message = ChatbotMessage::create([
-                            'chat_id' => $chatId,
+                            'chat_id' => $request->chatId,
                             'agent_id' => auth()->user()->id ?? null,
                             'customer_id' => $item['customer_id'] ?? null,
                             'session_id' => $item['session_id'] ?? null,
@@ -324,7 +325,7 @@ class ChatBotRepository
                     $broadcastData = [
                         'customer_id' => $request->customer_id,
                         'agent_id'    => $insertedMessages[0]->agent_id ?? null,
-                        'chat_id' => $insertedMessages[0]->chat_id ?? null,
+                        'chat_id' => $request->chatId ?? null,
                     ];
                     broadcast(new CustomerRequest($broadcastData, $user?->domain));
                 }
