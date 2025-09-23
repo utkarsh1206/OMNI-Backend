@@ -73,6 +73,7 @@ class OtpRepository
                     trans('message.otp_send')
                 );
             } catch (Exception $e) {
+                generateLogs("error", "An unexpected error occurred during OTP request for UIN {$uin}: " . $e->getMessage());
                 return $this->apiResponse->handleAndResponseException($e);
             }
         } catch (Exception $e) {
