@@ -12,14 +12,15 @@ use App\Http\Resources\ChatbotResource;
 use App\Models\Chatbot;
 use App\Models\ChatbotMessage;
 use App\Models\ChatbotMessageAttachment;
+use App\Models\ChatbotMessageRequest;
 use App\Models\Contact;
 use App\Services\ChatBotService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class ChatBotRepository
 {
@@ -228,8 +229,15 @@ class ChatBotRepository
     {
         $payload = extractPayload($request->bearerToken());
         try {
+            $msgRequest = ChatbotMessageRequest::create([
+                'chat_id' => (string) Str::uuid(),
+                'customer_id' => $payload['userid'] ?? null,
+            ]);
+
             $boradCastData = [
                 'customer_id' => $payload['userid'],
+                'chat_id' => $msgRequest->chat_id,
+                'chat_request_id' => encryptString($msgRequest->id),
             ];
             broadcast(new CustomerRequest($boradCastData, $payload['domain']));
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
