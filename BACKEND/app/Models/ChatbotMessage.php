@@ -13,6 +13,7 @@ class ChatbotMessage extends Model
         'session_id',
         'sender',
         'text',
+        'status',
         'external_message_time',
     ];
 

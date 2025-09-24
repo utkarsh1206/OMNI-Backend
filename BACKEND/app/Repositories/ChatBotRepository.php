@@ -228,10 +228,8 @@ class ChatBotRepository
     {
         $payload = extractPayload($request->bearerToken());
         try {
-            $chatId = (string) Str::uuid();
             $boradCastData = [
                 'customer_id' => $payload['userid'],
-                'chat_id' => $chatId,
             ];
             broadcast(new CustomerRequest($boradCastData, $payload['domain']));
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
@@ -285,6 +283,7 @@ class ChatBotRepository
                     ->whereNotNull('chat_id')
                     ->whereNotNull('agent_id')
                     ->lockForUpdate()
+                    ->where('status', '1')
                     ->first();
 
                 if ($existingConnection) {
@@ -295,14 +294,16 @@ class ChatBotRepository
                 }
 
                 if (!empty($chatHistory['history'])) {
+                    $chatId = (string) Str::uuid();
                     foreach ($chatHistory['history'] as $item) {
                         $message = ChatbotMessage::create([
-                            'chat_id' => $request->chatId,
+                            'chat_id' => $chatId,
                             'agent_id' => auth()->user()->id ?? null,
                             'customer_id' => $item['customer_id'] ?? null,
                             'session_id' => $item['session_id'] ?? null,
                             'sender'     => $item['role'],
                             'text'       => $item['message'] ?? $item['content'],
+                            'status' => 1,
                             'external_message_time' => $item['timestamp'],
                             'created_at' => now(),
                             'updated_at' => now(),
@@ -325,7 +326,7 @@ class ChatBotRepository
                     $broadcastData = [
                         'customer_id' => $request->customer_id,
                         'agent_id'    => $insertedMessages[0]->agent_id ?? null,
-                        'chat_id' => $request->chatId ?? null,
+                        'chat_id' => $insertedMessages[0]->chat_id ?? null,
                     ];
                     broadcast(new CustomerRequest($broadcastData, $user?->domain));
                 }
@@ -356,11 +357,12 @@ class ChatBotRepository
             $files = uploadAttachment($request, "attachment", "attachment");
 
             $message = ChatbotMessage::Create([
-                'chat_id' => $request->chat_id,
+                'chat_id' => $request->chat_id ?? null,
                 'agent_id' => $agentId,
                 'customer_id' => $customerId,
                 'text' => $request->text,
                 'sender' => $request->sender,
+                'status' => 1,
                 'external_message_time' => Carbon::now()
             ]);
 
@@ -402,6 +404,12 @@ class ChatBotRepository
     public function endConversationCustomer(Request $request)
     {
         try {
+            ChatbotMessage::where('agent_id', auth()->user()->id)
+                ->where('customer_id', $request->customer_id)
+                ->update([
+                    'status' => 2,
+                ]);
+
             $boradCastData = [
                 //  'agent_id' => auth()->user()->id,
                 'message' => "Thank you for connecting with us",

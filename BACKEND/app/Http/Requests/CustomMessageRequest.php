@@ -25,7 +25,7 @@ class CustomMessageRequest extends FormRequest
             'sender' => 'required|in:agent,customer',
             'text' => 'required',
             'receiver_id' => 'required|integer',
-            'chat_id' => 'required',
+        //    'chat_id' => 'required',
         ];
     }
 
