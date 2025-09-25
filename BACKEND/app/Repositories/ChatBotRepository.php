@@ -511,25 +511,6 @@ class ChatBotRepository
     public function getCustomerIds()
     {
         try {
-            // $messages = ChatbotMessage::whereNotNull("customer_id")
-            //     ->where('agent_id', auth()->user()->id)
-            //     ->orderBy("id", "desc")
-            //     ->get()
-            //     ->groupBy('customer_id')
-            //     ->map(function ($group) {
-            //         $contact = Contact::where('id', $group->first()->customer_id)
-            //             ->whereNull('deleted_at')
-            //             ->first();
-
-            //         return [
-            //             'customer_id' => (string) $group->first()->customer_id,
-            //             'name'        => $contact
-            //                 ? trim(($contact->first_name ?? '') . ' ' . ($contact->last_name ?? ''))
-            //                 : 'Unknown',
-            //         ];
-            //     })
-            //     ->values();
-
             $customers = ChatbotMessageRequest::where('agent_id', auth()->id())
                 ->whereNotNull('customer_id')
                 ->orderBy('id', 'desc')
@@ -562,16 +543,12 @@ class ChatBotRepository
     public function getCustomerMessages($request)
     {
         try {
-            // $messages  = ChatbotMessage::where('customer_id', $request->id)
-            //     ->where('agent_id', auth()->user()->id)
-            //     ->get();
-
             $messages = ChatbotMessage::with('request')
                 ->whereHas('request', function ($query) use ($request) {
                     $query->where('customer_id', $request->id)
                         ->where('agent_id', auth()->id());
                 })
-                ->get();
+                ->get()->makeHidden(['request']);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
         } catch (Exception $ex) {
