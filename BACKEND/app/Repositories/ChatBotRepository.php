@@ -248,7 +248,7 @@ class ChatBotRepository
         }
     }
 
-    public function notifyCustomer(Request $request)
+    public function notifyCustomerOld(Request $request)
     {
         try {
             $response = null;
@@ -326,6 +326,92 @@ class ChatBotRepository
                     ];
                     broadcast(new CustomerRequest($broadcastData, $user?->domain));
                 // }
+            });
+
+            if ($response) {
+                return $response;
+            }
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                '',
+                trans('message.data_fetch')
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function notifyCustomer(Request $request)
+    {
+        try {
+            $response = null;
+            $user = auth()->user();
+
+            DB::transaction(function () use ($request, &$response, $user) {
+                $requestId = decryptString($request->chat_request_id);
+
+                $existingRequest = ChatbotMessageRequest::where('id', $requestId)
+                    ->where('chat_id', $request->chat_id)
+                    ->where('customer_id', $request->customer_id)
+                    ->where('status', ChatbotMessageStatus::ACTIVE)
+                    ->whereNull('agent_id')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$existingRequest) {
+                    $response = response()->json([
+                        'message' => 'Customer already connected with an agent.'
+                    ], ResponseHTTP::HTTP_CONFLICT);
+                    return;
+                }
+
+                $existingRequest->update([
+                    'agent_id' => $user?->id,
+                    'updated_at' => now(),
+                ]);
+
+                $chatHistory = $this->chatbotService->fetchHistory($request);
+
+                if (isset($chatHistory['status_code']) && $chatHistory['status_code'] != 200) {
+                    $response = $this->apiResponse->getResponseStructure(
+                        trans('message.error'),
+                        '',
+                        $chatHistory['message'] ?? 'Something went wrong',
+                        $chatHistory['status_code']
+                    );
+                } else {
+                    if (!empty($chatHistory['history'])) {
+                        $messagesToInsert = [];
+                        foreach ($chatHistory['history'] as $item) {
+                            $messagesToInsert[] = [
+                                'chatbot_message_request_id' => $requestId,
+                                'session_id' => $item['session_id'] ?? null,
+                                'sender' => $item['role'],
+                                'text' => $item['message'] ?? $item['content'],
+                                'external_message_time' => $item['timestamp'] ?? null,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
+                        }
+                        ChatbotMessage::insert($messagesToInsert);
+                    }
+                }
+
+                $broadcastData = [
+                    'agent_id' => $user?->id,
+                    'chat_request_id' => $request->chat_request_id,
+                    'message'  => "You are now connected with agent " . ($user?->username ?? 'Agent'),
+                ];
+                broadcast(new NotifyCustomer($broadcastData, $user?->domain, $request->customer_id));
+
+                $broadcastData = [
+                    'customer_id' => $request->customer_id,
+                    'agent_id'    => $existingRequest->agent_id ?? null,
+                    'chat_request_id' => $request->chat_request_id,
+                ];
+                broadcast(new CustomerRequest($broadcastData, $user?->domain));
             });
 
             if ($response) {
