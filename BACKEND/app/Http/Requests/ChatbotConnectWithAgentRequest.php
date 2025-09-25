@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use App\Rules\ValidChatRequestId;
 class ChatbotConnectWithAgentRequest extends FormRequest
 {
     public function authorize(): bool
@@ -17,7 +18,8 @@ class ChatbotConnectWithAgentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => 'required',
+            'customer_id' => ['required'],
+            'chat_request_id' => ['required', new ValidChatRequestId],
         ];
     }
 
