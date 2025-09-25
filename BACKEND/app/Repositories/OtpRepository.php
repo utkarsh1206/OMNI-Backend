@@ -69,7 +69,7 @@ class OtpRepository
 
                 return $this->apiResponse->getResponseStructure(
                     trans('message.success'),
-                    null,
+                    '',
                     trans('message.otp_send')
                 );
             } catch (Exception $e) {

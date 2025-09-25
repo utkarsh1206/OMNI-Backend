@@ -7,19 +7,21 @@ use App\Events\NotifyCustomer;
 use App\Events\ReceiveChatMessage;
 use App\Events\CustomChatbotMessage;
 use App\Events\EndConversationCustomer;
+use App\Enums\ChatbotMessageStatus;
 use App\Http\Response\CustomApiResponse;
 use App\Http\Resources\ChatbotResource;
 use App\Models\Chatbot;
 use App\Models\ChatbotMessage;
 use App\Models\ChatbotMessageAttachment;
+use App\Models\ChatbotMessageRequest;
 use App\Models\Contact;
 use App\Services\ChatBotService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class ChatBotRepository
 {
@@ -228,8 +230,15 @@ class ChatBotRepository
     {
         $payload = extractPayload($request->bearerToken());
         try {
+            $msgRequest = ChatbotMessageRequest::create([
+                'chat_id' => (string) Str::uuid(),
+                'customer_id' => $payload['userid'] ?? null,
+            ]);
+
             $boradCastData = [
                 'customer_id' => $payload['userid'],
+                'chat_id' => $msgRequest->chat_id,
+                'chat_request_id' => encryptString($msgRequest->id),
             ];
             broadcast(new CustomerRequest($boradCastData, $payload['domain']));
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
@@ -239,104 +248,181 @@ class ChatBotRepository
         }
     }
 
-    public function notifyCustomer(Request $request)
+    public function notifyCustomerOld(Request $request)
     {
         try {
-            // $payload = extractPayload($request->bearerToken());
-            // $chatHisotory = $this->chatbotService->fetchHistory($request);
-            // $insertedMessages = [];
-            // if (!empty($chatHisotory['history'])) {
-            //     foreach ($chatHisotory['history'] as $item) {
-            //         $message = ChatbotMessage::create([
-            //             'agent_id'              => auth()->user()->id ?? null,
-            //             'customer_id'           => $item['customer_id'] ?? null,
-            //             'session_id'            => $item['session_id'] ?? null,
-            //             'sender'                => $item['role'],
-            //             'text'                  => $item['message'] ?? $item['content'],
-            //             'external_message_time' => $item['timestamp'],
-            //             'created_at'            => now(),
-            //             'updated_at'            => now(),
-            //         ]);
+            $response = null;
+            $user = auth()->user();
 
-            //         $insertedMessages[] = $message;
-            //     }
-
-            //     $boradCastData = [
-            //         'agent_id' => auth()->user()->id,
-            //         'message' => "You are now connected with agent" . auth()->user()->username,
-            //     ];
-            //     broadcast(new NotifyCustomer($boradCastData, auth()->user()->domain, $request->customer_id));
-
-            //     $boradCastData = [
-            //         'customer_id' => $request->customer_id,
-            //         'agent_id' => $insertedMessages[0]->agent_id ?? null,
-            //     ];
-            //     broadcast(new CustomerRequest($boradCastData, $payload['domain']));
-            // }
-
-            $chatHistory = $this->chatbotService->fetchHistory($request);
-            $insertedMessages = [];
-            DB::transaction(function () use ($chatHistory, $request, &$insertedMessages, &$response) {
-                $customerId = $request->customer_id;
-
-                $existingConnection = ChatbotMessage::where('customer_id', $customerId)
-                    ->whereNotNull('chat_id')
-                    ->whereNotNull('agent_id')
+            DB::transaction(function () use ($request,  &$response, $user) {
+                $requestId = decryptString($request->chat_request_id);
+               
+                $existingRequest = ChatbotMessageRequest::where('id', $requestId)
+                    ->where('chat_id', $request->chat_id)
+                    ->where('customer_id', $request->customer_id)
+                    ->where('status', ChatbotMessageStatus::ACTIVE)
+                    ->whereNull('agent_id')
                     ->lockForUpdate()
-                    ->where('status', '1')
                     ->first();
 
-                if ($existingConnection) {
+                if (!$existingRequest) {
                     $response = response()->json([
                         'message' => 'Customer already connected with an agent.'
                     ], ResponseHTTP::HTTP_CONFLICT);
                     return;
                 }
 
-                if (!empty($chatHistory['history'])) {
-                    $chatId = (string) Str::uuid();
-                    foreach ($chatHistory['history'] as $item) {
-                        $message = ChatbotMessage::create([
-                            'chat_id' => $chatId,
-                            'agent_id' => auth()->user()->id ?? null,
-                            'customer_id' => $item['customer_id'] ?? null,
-                            'session_id' => $item['session_id'] ?? null,
-                            'sender'     => $item['role'],
-                            'text'       => $item['message'] ?? $item['content'],
-                            'status' => 1,
-                            'external_message_time' => $item['timestamp'],
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                        
-                        $insertedMessages[] = $message;
-                    }
+                $existingRequest->update([
+                    'agent_id' => $user?->id,
+                    'updated_at' => now(),
+                ]);
+            
+                // Fetch chat history
+                $chatHistory = $this->chatbotService->fetchHistory($request);
+
+                // If fetchHistory returns an error code
+                if (isset($chatHistory['status_code']) && $chatHistory['status_code'] != 200) {
+                    $response = $this->apiResponse->getResponseStructure(
+                        trans('message.error'),
+                        '',
+                        $chatHistory['message'] ?? 'Something went wrong',
+                        $chatHistory['status_code']
+                    );
+                    return;
                 }
 
-                if ($insertedMessages) {
-                    $user = auth()->user();
+                if (!empty($chatHistory['history'])) {
+                    foreach ($chatHistory['history'] as $item) {
+                        $messagesToInsert[] = [
+                            'chatbot_message_request_id' => $requestId,
+                            'session_id' => $item['session_id'] ?? null,
+                            'sender' => $item['role'],
+                            'text' => $item['message'] ?? $item['content'],
+                            'external_message_time' => $item['timestamp'] ?? null,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
 
+                    ChatbotMessage::insert($messagesToInsert);
+
+                    // $insertedMessages = ChatbotMessage::where('chatbot_message_request_id', $requestId)
+                    // ->orderBy('created_at', 'asc')
+                    // ->get();
+                }
+
+                // if ($insertedMessages) {
                     $broadcastData = [
                         'agent_id' => $user?->id,
-                        'chat_id' => $insertedMessages[0]->chat_id ?? null,
+                        'chat_request_id' => $request->chat_request_id,
                         'message'  => "You are now connected with agent " . ($user?->username ?? 'Agent'),
                     ];
                     broadcast(new NotifyCustomer($broadcastData, $user?->domain, $request->customer_id));
 
                     $broadcastData = [
                         'customer_id' => $request->customer_id,
-                        'agent_id'    => $insertedMessages[0]->agent_id ?? null,
-                        'chat_id' => $insertedMessages[0]->chat_id ?? null,
+                        'agent_id'    => $existingRequest->agent_id ?? null,
+                        'chat_request_id' => $request->chat_request_id,
                     ];
                     broadcast(new CustomerRequest($broadcastData, $user?->domain));
-                }
+                // }
             });
 
             if ($response) {
                 return $response;
             }
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                '',
+                trans('message.data_fetch')
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function notifyCustomer(Request $request)
+    {
+        try {
+            $response = null;
+            $user = auth()->user();
+
+            DB::transaction(function () use ($request, &$response, $user) {
+                $requestId = decryptString($request->chat_request_id);
+
+                $existingRequest = ChatbotMessageRequest::where('id', $requestId)
+                    ->where('chat_id', $request->chat_id)
+                    ->where('customer_id', $request->customer_id)
+                    ->where('status', ChatbotMessageStatus::ACTIVE)
+                    ->whereNull('agent_id')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$existingRequest) {
+                    $response = response()->json([
+                        'message' => 'Customer already connected with an agent.'
+                    ], ResponseHTTP::HTTP_CONFLICT);
+                    return;
+                }
+
+                $existingRequest->update([
+                    'agent_id' => $user?->id,
+                    'updated_at' => now(),
+                ]);
+
+                $chatHistory = $this->chatbotService->fetchHistory($request);
+
+                if (isset($chatHistory['status_code']) && $chatHistory['status_code'] != 200) {
+                    $response = $this->apiResponse->getResponseStructure(
+                        trans('message.error'),
+                        '',
+                        $chatHistory['message'] ?? 'Something went wrong',
+                        $chatHistory['status_code']
+                    );
+                } else {
+                    if (!empty($chatHistory['history'])) {
+                        $messagesToInsert = [];
+                        foreach ($chatHistory['history'] as $item) {
+                            $messagesToInsert[] = [
+                                'chatbot_message_request_id' => $requestId,
+                                'session_id' => $item['session_id'] ?? null,
+                                'sender' => $item['role'],
+                                'text' => $item['message'] ?? $item['content'],
+                                'external_message_time' => $item['timestamp'] ?? null,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
+                        }
+                        ChatbotMessage::insert($messagesToInsert);
+                    }
+                }
+
+                $broadcastData = [
+                    'agent_id' => $user?->id,
+                    'chat_request_id' => $request->chat_request_id,
+                    'message'  => "You are now connected with agent " . ($user?->username ?? 'Agent'),
+                ];
+                broadcast(new NotifyCustomer($broadcastData, $user?->domain, $request->customer_id));
+
+                $broadcastData = [
+                    'customer_id' => $request->customer_id,
+                    'agent_id'    => $existingRequest->agent_id ?? null,
+                    'chat_request_id' => $request->chat_request_id,
+                ];
+                broadcast(new CustomerRequest($broadcastData, $user?->domain));
+            });
+
+            if ($response) {
+                return $response;
+            }
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                '',
+                trans('message.data_fetch')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -357,12 +443,12 @@ class ChatBotRepository
             $files = uploadAttachment($request, "attachment", "attachment");
 
             $message = ChatbotMessage::Create([
-                'chat_id' => $request->chat_id ?? null,
+                'chatbot_message_request_id' => decryptString($request->chat_request_id),
                 'agent_id' => $agentId,
                 'customer_id' => $customerId,
                 'text' => $request->text,
                 'sender' => $request->sender,
-                'status' => 1,
+                'status' => ChatbotMessageStatus::ACTIVE,
                 'external_message_time' => Carbon::now()
             ]);
 
@@ -404,10 +490,10 @@ class ChatBotRepository
     public function endConversationCustomer(Request $request)
     {
         try {
-            ChatbotMessage::where('agent_id', auth()->user()->id)
+            ChatbotMessageRequest::where('agent_id', auth()->user()->id)
                 ->where('customer_id', $request->customer_id)
                 ->update([
-                    'status' => 2,
+                    'status' => ChatbotMessageStatus::DISCONNECTED,
                 ]);
 
             $boradCastData = [
@@ -425,18 +511,17 @@ class ChatBotRepository
     public function getCustomerIds()
     {
         try {
-            $messages = ChatbotMessage::whereNotNull("customer_id")
-                ->where('agent_id', auth()->user()->id)
-                ->orderBy("id", "desc")
+            $customers = ChatbotMessageRequest::where('agent_id', auth()->id())
+                ->whereNotNull('customer_id')
+                ->orderBy('id', 'desc')
                 ->get()
-                ->groupBy('customer_id')
-                ->map(function ($group) {
-                    $contact = Contact::where('id', $group->first()->customer_id)
+                ->map(function ($req) {
+                    $contact = Contact::where('id', $req->customer_id)
                         ->whereNull('deleted_at')
                         ->first();
 
                     return [
-                        'customer_id' => (string) $group->first()->customer_id,
+                        'customer_id' => (string) $req->customer_id,
                         'name'        => $contact
                             ? trim(($contact->first_name ?? '') . ' ' . ($contact->last_name ?? ''))
                             : 'Unknown',
@@ -446,7 +531,7 @@ class ChatBotRepository
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
-                $messages,
+                $customers,
                 trans('message.data_fetch')
             );
         } catch (Exception $ex) {
@@ -458,9 +543,12 @@ class ChatBotRepository
     public function getCustomerMessages($request)
     {
         try {
-            $messages  = ChatbotMessage::where('customer_id', $request->id)
-                ->where('agent_id', auth()->user()->id)
-                ->get();
+            $messages = ChatbotMessage::with('request')
+                ->whereHas('request', function ($query) use ($request) {
+                    $query->where('customer_id', $request->id)
+                        ->where('agent_id', auth()->id());
+                })
+                ->get()->makeHidden(['request']);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
         } catch (Exception $ex) {
