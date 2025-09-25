@@ -420,9 +420,30 @@ class ChatBotRepository
     public function getCustomerIds()
     {
         try {
-            $customers = ChatbotMessageRequest::where('agent_id', auth()->id())
+            // $customers = ChatbotMessageRequest::where('agent_id', auth()->id())
+            //     ->whereNotNull('customer_id')
+            //     ->orderBy('id', 'desc')
+            //     ->get()
+            //     ->map(function ($req) {
+            //         $contact = Contact::where('id', $req->customer_id)
+            //             ->whereNull('deleted_at')
+            //             ->first();
+
+            //         return [
+            //             'customer_id' => (string) $req->customer_id,
+            //             'name'        => $contact
+            //                 ? trim(($contact->first_name ?? '') . ' ' . ($contact->last_name ?? ''))
+            //                 : 'Unknown',
+            //         ];
+            //     })
+            //     ->values();
+
+            $customers = ChatbotMessageRequest::select('customer_id')
+                ->selectRaw('MAX(id) as latest_id')
+                ->where('agent_id', auth()->id())
                 ->whereNotNull('customer_id')
-                ->orderBy('id', 'desc')
+                ->groupBy('customer_id')
+                ->orderByDesc('latest_id')
                 ->get()
                 ->map(function ($req) {
                     $contact = Contact::where('id', $req->customer_id)
@@ -430,13 +451,14 @@ class ChatBotRepository
                         ->first();
 
                     return [
-                        'customer_id' => (string) $req->customer_id,
+                        'chat_request_id'   => encryptString($req->latest_id), 
+                        'customer_id' => $req->customer_id,
                         'name'        => $contact
                             ? trim(($contact->first_name ?? '') . ' ' . ($contact->last_name ?? ''))
                             : 'Unknown',
                     ];
                 })
-                ->values();
+                ->values();    
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
