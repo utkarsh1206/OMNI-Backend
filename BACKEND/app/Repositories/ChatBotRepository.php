@@ -338,7 +338,6 @@ class ChatBotRepository
                 trans('message.data_fetch')
             );
         } catch (Exception $ex) {
-            dd($ex->getMessage());
             generateLogs('error', 'Error in creating webhook for Custom Chatbot: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
