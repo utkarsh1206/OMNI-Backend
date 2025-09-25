@@ -10,16 +10,17 @@ use App\Models\Permission;
 use App\Models\RolePermission;
 use App\Models\Tenant;
 use App\Models\TenantModule;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -321,7 +322,6 @@ if (!function_exists('sendHttpRequest')) {
                 ], $response->status());
             }
         } catch (\Exception $e) {
-            dd($e->getMessage());
             return [
                 'status_code' => ResponseHTTP::HTTP_INTERNAL_SERVER_ERROR,
                 'message' => $e->getMessage(),
@@ -751,5 +751,19 @@ if (!function_exists('failedValidation')) {
                 'messages' => $validator->errors(),
             ], ResponseHTTP::HTTP_BAD_REQUEST)
         );
+    }
+}
+
+if (!function_exists('encryptString')) {
+    function encryptString($string)
+    {
+        return Crypt::encryptString($string);
+    }
+}
+
+if (!function_exists('decryptString')) {
+    function decryptString($string)
+    {
+        return Crypt::decryptString($string);
     }
 }

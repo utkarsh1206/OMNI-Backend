@@ -144,24 +144,7 @@ class ChatBotService
                 'status_code' => $response['status_code'] ?? $response['code'],
                 'message'     => $response['message'] ?? 'Failed to ask question',
             ];
-
-            // if (!empty($response)) {
-            //     return $response;
-            // } else {
-            //     generateLogs(
-            //         'error',
-            //         'ChatbotService: Failed to ask API.',
-            //         json_encode([
-            //             'response' => $response,
-            //         ])
-            //     );
-
-            //     return [
-            //         'answer' => 'Sorry, I could not process your request at this time.',
-            //         'sources' => [],
-            //     ];
-            // }
-        } catch (Throwable $e) {
+         } catch (Throwable $e) {
             generateLogs(
                 'error',
                 'ChatbotService: Exception during ask API.',
@@ -201,22 +184,6 @@ class ChatBotService
                 'message'     => $response['message'] ?? 'Failed to fetch history',
             ];
 
-            // if (!empty($response)) {
-            //     return $response;
-            // } else {
-            //     generateLogs(
-            //         'error',
-            //         'ChatbotService: Failed to ask query.',
-            //         json_encode([
-            //             'response' => $response,
-            //         ])
-            //     );
-
-            //     return [
-            //         'answer' => 'Sorry, I could not process your request at this time.',
-            //         'sources' => [],
-            //     ];
-            // }
         } catch (Throwable $e) {
             generateLogs(
                 'error',

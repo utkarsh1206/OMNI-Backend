@@ -7,13 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class ChatbotMessage extends Model
 {
     protected $fillable = [
-        'chat_id',
-        'agent_id',
-        'customer_id',
+        'chatbot_message_request_id',
         'session_id',
         'sender',
         'text',
-        'status',
         'external_message_time',
     ];
 
@@ -26,4 +23,8 @@ class ChatbotMessage extends Model
         return $this->hasMany(MessageAttachment::class);
     }
 
+    public function request()
+    {
+        return $this->belongsTo(ChatbotMessageRequest::class, 'chatbot_message_request_id');
+    }
 }
