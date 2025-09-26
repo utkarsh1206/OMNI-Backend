@@ -82,68 +82,13 @@ class Users extends Authenticatable implements JWTSubject
             'role_id'  => $this->role_id,
             'domain'   => $postData['domain'] ?? null,
         ];
-       
-        // if (isset($postData['flag']) && $postData['flag'] == 2) {
-        if (isset($postData['flag']) && (in_array($postData['flag'],[1,2,3]))) {
 
-            // New permission format using IDs
-            $permissions = [];
-
-            // DO NOT DELETE THE BELOW CODE, IT IS WORKING IN LOCAL ENVIRONMENT BUT NOT ON SERVERS
-            // NEED TO TEST IN FUTURE - UTKARSH
-            // generateLogs('info', 'get roles '. json_encode($this->roles));
-            // foreach ($this->roles as $role) {
-            //     generateLogs('info', 'get tenant modules '. json_encode($role->tenantModules));
-            //     foreach ($role->tenantModules as $module) {
-            //         foreach ($module->actions as $action) {
-            //             $permissions[$module->name][] = $action->name;
-            //         }
-            //     }
-            // }
-            // DO NOT DELETE THE ABOVE CODE, IT IS WORKING IN LOCAL ENVIRONMENT BUT NOT ON SERVERS
-
-            // foreach ($this->roles as $role) {
-            //     foreach ($role->tenantModules as $module) {
-            //         // Filter actions for this module AND this role
-            //         $actions = DB::table('role_action')
-            //             ->join('actions', 'role_action.action_id', '=', 'actions.id')
-            //             ->where('role_action.role_id', $role->id)
-            //             ->where('role_action.tenant_module_id', $module->id)
-            //             ->pluck('actions.name')
-            //             ->toArray();
-
-            //         if (!empty($actions)) {
-            //             $permissions[$module->name] = array_values(
-            //                 array_unique(
-            //                     array_merge(
-            //                         $permissions[$module->name] ?? [],
-            //                         $actions
-            //                     )
-            //                 )
-            //             );
-            //         }
-            //     }
-            // }
-            if ($postData['flag'] == 1) {
-                $permissions = getPermissionFromRoleIdForTenant($postData['domain']);
-                getdbConnection($postData['domain'], true);
-            }
-            else
-            {
-                 $permissions = getPermissionFromRoleId($this->user_role_id);
-            }
-          
-            // Remove duplicates in action ID arrays
-            // foreach ($permissions as &$actions) {
-            //     $actions = array_values(array_unique($actions));
-            // }
-
-            $claims['permission'] = json_encode($permissions);
-
+        if (isset($postData['flag']) && (in_array($postData['flag'], [1, 2, 3]))) {
             // Optional campaign & phone
             if (!empty($postData['campaign'])) {
                 $claims['campaign'] = $postData['campaign'];
             }
+
             if (!empty($postData['phone'])) {
                 $claims['phone'] = $postData['phone'];
             }
@@ -156,54 +101,6 @@ class Users extends Authenticatable implements JWTSubject
                 $claims['userid'] = $this->userId;
             }
         } else {
-            // Old logic: build permission array from omnichannel.tenant_roles
-            $permission = "";
-            $permission_array = [];
-
-            $tenantRoleId = DB::table('omnichannel.tenants')
-                ->where('domain_name', $postData['domain'] ?? null)
-                ->value('tenant_role_id');
-
-            if ($tenantRoleId) {
-                $permission = DB::table('omnichannel.tenant_roles')
-                    ->where('id', $tenantRoleId)
-                    ->value('permission');
-            }
-
-            $decoded_permissions = json_decode($permission, true);
-
-            if (!empty($decoded_permissions)) {
-                foreach ($decoded_permissions as $permission_key => $permission_value) {
-                    if (isset($permission_value['allowed']) && $permission_value['allowed'] == 1) {
-                        $view_name = DB::table('omnichannel.menu_permissions')
-                            ->where('module_name', $permission_key)
-                            ->value('view_name');
-                        if ($view_name) {
-                            $permission_array[] = $view_name;
-                        }
-                    }
-                }
-            }
-
-            // $permissionData = RolePermission::where("role_id", $this->user_role_id)->pluck("permission_id");
-            // $permissionInfo = Permission::with(["module", "action"])->whereIn("id", $permissionData)->get();
-            // $permissionInfo = $permissionInfo->toArray();
-            // $formattedPermissions = [];
-            // foreach ($permissionInfo as $permission) {
-            //     $moduleName = $permission['module']['name'];
-            //     $actionName = $permission['action']['name'];
-
-            //     if (!isset($formattedPermissions[$moduleName])) {
-            //         $formattedPermissions[$moduleName] = [];
-            //     }
-
-            //     if (!in_array($actionName, $formattedPermissions[$moduleName])) {
-            //         $formattedPermissions[$moduleName][] = $actionName;
-            //     }
-            // }
-
-            $claims['permission'] = json_encode($permission_array);
-
             $dbName = DB::table('omnichannel.details')->select('db')->where('domain', $postData['domain'])->first();
             $claims['db'] = $dbName->db;
         }
