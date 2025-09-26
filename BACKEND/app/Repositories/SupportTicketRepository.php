@@ -255,13 +255,21 @@ class SupportTicketRepository
             );
             // $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
             $this->sendSms($apiUser, "Ticket Created", $request->contact_number, $supportTicket);
-            $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket, $request->assign_to_id ?? 0, $mailTemplate);
+            $emailSent = $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket, $request->assign_to_id ?? 0, $mailTemplate);
 
+            if ($emailSent != 1) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.success'),
+                    $supportTicket,
+                    // "Support Ticket Created. Email Send Failed."
+                    trans('message.support_ticket_create_msg')
+                )->original + ['mail_status' => false];
+            }
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $supportTicket,
                 trans('message.support_ticket_create_msg')
-            );
+            )->original + ['mail_status' => true];
         } catch (Exception $ex) {
             DB::rollBack();
             generateLogs('error', 'Error occurred while creating Support Ticket: ', $ex->getMessage());
@@ -357,13 +365,21 @@ class SupportTicketRepository
             $this->createTicket($supportTicket, $request->default_status ?? "", "Edit Support Ticket", $apiUser);
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
 
-            $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0);
+            $emailSent = $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0, null);
+
+            if ($emailSent != 1) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.success'),
+                    $supportTicket,
+                    trans('message.support_ticket_update_msg')
+                )->original + ['mail_status' => false];
+            }
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $supportTicket,
                 trans('message.support_ticket_update_msg')
-            );
+            )->original + ['mail_status' => true];
         } catch (Exception $ex) {
             DB::rollBack();
             generateLogs('error', 'Error occurred while updating Support Ticket: ', $ex->getMessage());
@@ -645,7 +661,7 @@ class SupportTicketRepository
             $customerMailTemplate->subject ?? $defaultSubject
         );
 
-        sendProcessedEmail(
+        $sendProcessedEmail = sendProcessedEmail(
             to: $request->to_emails,
             cc: $request->cc,
             bcc: $request->bcc,
@@ -658,5 +674,7 @@ class SupportTicketRepository
             assignToId: $assignToId,
             module: "Create Support Ticket"
         );
+
+        return $sendProcessedEmail;
     }
 }

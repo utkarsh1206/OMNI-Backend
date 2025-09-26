@@ -715,6 +715,7 @@ if (! function_exists('sendProcessedEmail')) {
                 "subject"           => $subject,
                 "body"              => $finalBody,
             ], $newConnectionName);
+            return 1;
         } catch (Exception $e) {
             $reason = !empty($e->getMessage()) ? substr($e->getMessage(), 0, 250) : 'Unknown error occurred.';
             logEmail([
@@ -730,7 +731,8 @@ if (! function_exists('sendProcessedEmail')) {
                 "fail_reason"       => $reason,
             ], $newConnectionName);
             generateLogs('error', "{$module} mail failed: " . $e->getMessage());
-            throw $e;
+            // throw $e;
+            return 0;
         }
     }
 }
