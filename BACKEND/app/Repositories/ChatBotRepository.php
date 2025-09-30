@@ -353,7 +353,6 @@ class ChatBotRepository
                 'customer_id' => $customerId,
                 'text' => $request->text,
                 'sender' => $request->sender,
-                'status' => ChatbotMessageStatus::ACTIVE,
                 'external_message_time' => Carbon::now()
             ]);
 
