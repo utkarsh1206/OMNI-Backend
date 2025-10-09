@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use App\Rules\ValidChatRequestId;
 class CustomMessageRequest extends FormRequest
 {
     /**
@@ -25,6 +26,7 @@ class CustomMessageRequest extends FormRequest
             'sender' => 'required|in:agent,customer',
             'text' => 'required',
             'receiver_id' => 'required|integer',
+            'chat_request_id' => ['required', new ValidChatRequestId],
         ];
     }
 

@@ -23,7 +23,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/users",
+     *     path="/api/users",
      *     summary="List Users",
      *     description="Fetch a list of users with optional filters and pagination.",
      *     operationId="listUsers",
@@ -196,7 +196,7 @@ class UserController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/users/store",
+     *     path="/api/users",
      *     summary="Create a new user",
      *     description="Creates a new user. The user is subject to the limit of agents based on the license.",
      *     operationId="storeUser",
@@ -209,16 +209,21 @@ class UserController extends Controller
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 type="object",
-     *                 required={"username", "first_name", "last_name", "email", "password", "mobile", "status", "role_id", "usergroup_id", "name_prefix", "level", "date_of_birth", "country_id", "state_id", "city_id", "occupation_id", "pincode", "address", "gender"},
+     *                 required={
+     *                     "username", "first_name", "last_name", "email", "password", "mobile",
+     *                     "status", "role_id", "usergroup_id", "name_prefix", "level", "date_of_birth",
+     *                     "country_id", "state_id", "city_id", "occupation_id", "pincode", "address",
+     *                     "gender", "user_role_id"
+     *                 },
      *                 @OA\Property(property="username", type="string", example="johndoe"),
      *                 @OA\Property(property="first_name", type="string", example="John"),
      *                 @OA\Property(property="last_name", type="string", example="Doe"),
      *                 @OA\Property(property="email", type="string", example="johndoe@example.com"),
      *                 @OA\Property(property="password", type="string", format="password", example="securepassword123"),
      *                 @OA\Property(property="mobile", type="string", example="1234567890"),
-     *                 @OA\Property(property="status", type="string", enum={"active", "inactive"}, example="active"),
-     *                 @OA\Property(property="role_id", type="integer", example=1),
-     *                 @OA\Property(property="usergroup_id", type="integer", example=2),
+     *                 @OA\Property(property="status", type="string", enum={"Active", "Inactive"}, example="Active"),
+     *                 @OA\Property(property="role_id", type="integer", example=3),
+     *                 @OA\Property(property="usergroup_id", type="integer", example=1),
      *                 @OA\Property(property="name_prefix", type="string", example="Mr."),
      *                 @OA\Property(property="level", type="integer", example=1),
      *                 @OA\Property(property="date_of_birth", type="string", format="date", example="1990-01-01"),
@@ -228,7 +233,8 @@ class UserController extends Controller
      *                 @OA\Property(property="occupation_id", type="integer", example=404),
      *                 @OA\Property(property="pincode", type="string", example="123456"),
      *                 @OA\Property(property="address", type="string", example="123 Main St, Some City, Some Country"),
-     *                 @OA\Property(property="gender", type="string", enum={"male", "female", "other"}, example="male")
+     *                 @OA\Property(property="gender", type="string", enum={"MALE", "FEMALE", "OTHER"}, example="MALE"),
+     *                 @OA\Property(property="user_role_id", type="integer", example=1)
      *             )
      *         )
      *     ),
@@ -246,9 +252,9 @@ class UserController extends Controller
      *                 @OA\Property(property="last_name", type="string", example="Doe"),
      *                 @OA\Property(property="email", type="string", example="johndoe@example.com"),
      *                 @OA\Property(property="mobile", type="string", example="1234567890"),
-     *                 @OA\Property(property="status", type="string", example="active"),
-     *                 @OA\Property(property="role_id", type="integer", example=1),
-     *                 @OA\Property(property="usergroup_id", type="integer", example=2),
+     *                 @OA\Property(property="status", type="string", example="Active"),
+     *                 @OA\Property(property="role_id", type="integer", example=3),
+     *                 @OA\Property(property="usergroup_id", type="integer", example=1),
      *                 @OA\Property(property="name_prefix", type="string", example="Mr."),
      *                 @OA\Property(property="level", type="integer", example=1),
      *                 @OA\Property(property="date_of_birth", type="string", format="date", example="1990-01-01"),
@@ -258,7 +264,8 @@ class UserController extends Controller
      *                 @OA\Property(property="occupation_id", type="integer", example=404),
      *                 @OA\Property(property="pincode", type="string", example="123456"),
      *                 @OA\Property(property="address", type="string", example="123 Main St, Some City, Some Country"),
-     *                 @OA\Property(property="gender", type="string", enum={"male", "female", "other"}, example="male")
+     *                 @OA\Property(property="gender", type="string", enum={"MALE", "FEMALE", "OTHER"}, example="MALE"),
+     *                 @OA\Property(property="user_role_id", type="integer", example=1)
      *             )
      *         )
      *     ),
@@ -298,7 +305,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/users/show/{user}",
+     *     path="api/users/{user}",
      *     summary="Get details of a specific user",
      *     description="Fetches the details of a user by their ID.",
      *     operationId="showUser",
@@ -340,7 +347,7 @@ class UserController extends Controller
      *                 @OA\Property(property="occupation_id", type="integer", example=404),
      *                 @OA\Property(property="pincode", type="string", example="654321"),
      *                 @OA\Property(property="address", type="string", example="456 Elm St, Another City, Another Country"),
-     *                 @OA\Property(property="gender", type="string", enum={"male", "female", "other"}, example="female")
+     *                 @OA\Property(property="gender", type="string", enum={"MALE", "FEMALE", "OTHER"}, example="FEMALE")
      *             )
      *         )
      *     ),
@@ -389,7 +396,7 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/users/update/{user}",
+     *     path="/api/users/{user}",
      *     summary="Update an existing user",
      *     description="Updates the details of an existing user based on the provided user ID.",
      *     operationId="updateUser",
@@ -431,7 +438,7 @@ class UserController extends Controller
      *                 @OA\Property(property="occupation_id", type="integer", example=404),
      *                 @OA\Property(property="pincode", type="string", example="654321"),
      *                 @OA\Property(property="address", type="string", example="456 Elm St, Another City, Another Country"),
-     *                 @OA\Property(property="gender", type="string", enum={"male", "female", "other"}, example="female")
+     *                 @OA\Property(property="gender", type="string", enum={"MALE", "FEMALE", "OTHER"}, example="FEMALE")
      *             )
      *         )
      *     ),
@@ -461,7 +468,7 @@ class UserController extends Controller
      *                 @OA\Property(property="occupation_id", type="integer", example=404),
      *                 @OA\Property(property="pincode", type="string", example="654321"),
      *                 @OA\Property(property="address", type="string", example="456 Elm St, Another City, Another Country"),
-     *                 @OA\Property(property="gender", type="string", enum={"male", "female", "other"}, example="female")
+     *                 @OA\Property(property="gender", type="string", enum={"MALE", "FEMALE", "OTHER"}, example="FEMALE")
      *             )
      *         )
      *     ),
@@ -510,7 +517,7 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/my-profile/{user}",
+     *     path="/api/my-profile/{user}",
      *     summary="Update authenticated user's profile",
      *     description="Allows an authenticated user to update their profile details.",
      *     operationId="profileUpdate",
@@ -551,7 +558,7 @@ class UserController extends Controller
      *                 @OA\Property(property="occupation_id", type="integer", example=404),
      *                 @OA\Property(property="pincode", type="string", example="654321"),
      *                 @OA\Property(property="address", type="string", example="456 Elm St, Another City, Another Country"),
-     *                 @OA\Property(property="gender", type="string", enum={"male", "female", "other"}, example="female")
+     *                 @OA\Property(property="gender", type="string", enum={"MALE", "FEMALE", "OTHER"}, example="FEMALE")
      *             )
      *         )
      *     ),
@@ -581,7 +588,7 @@ class UserController extends Controller
      *                 @OA\Property(property="occupation_id", type="integer", example=404),
      *                 @OA\Property(property="pincode", type="string", example="654321"),
      *                 @OA\Property(property="address", type="string", example="456 Elm St, Another City, Another Country"),
-     *                 @OA\Property(property="gender", type="string", enum={"male", "female", "other"}, example="female")
+     *                 @OA\Property(property="gender", type="string", enum={"MALE", "FEMALE", "OTHER"}, example="FEMALE")
      *             )
      *         )
      *     ),
@@ -610,7 +617,7 @@ class UserController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/users/delete/{user}",
+     *     path="/api/users/{user}",
      *     summary="Delete an existing user",
      *     description="Deletes an existing user based on the provided user ID.",
      *     operationId="deleteUser",
@@ -688,7 +695,7 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/users/update-tenantpassword",
+     *     path="/api/users/update-tenantpassword",
      *     summary="Update user password",
      *     description="Allows the user to update their password by providing their old password, new password, and password confirmation.",
      *     operationId="updatePassword",
@@ -760,7 +767,7 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/users/update-adminpassword",
+     *     path="/api/users/update-adminpassword",
      *     summary="Update admin password",
      *     description="Allows an administrator to update their password by providing their old password, new password, and password confirmation.",
      *     operationId="updateAdminPassword",
@@ -832,7 +839,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/users/my-profile",
+     *     path="/api/users/my-profile",
      *     summary="Get current user's profile information",
      *     description="Fetches the profile information of the authenticated user using the provided bearer token.",
      *     operationId="myProfile",
@@ -865,7 +872,7 @@ class UserController extends Controller
      *                     @OA\Property(property="occupation_id", type="integer", example=404),
      *                     @OA\Property(property="pincode", type="string", example="654321"),
      *                     @OA\Property(property="address", type="string", example="123 Main St, Some City, Some Country"),
-     *                     @OA\Property(property="gender", type="string", enum={"male", "female", "other"}, example="male")
+     *                     @OA\Property(property="gender", type="string", enum={"MALE", "FEMALE", "OTHER"}, example="MALE")
      *                 )
      *             )
      *         )
@@ -911,7 +918,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/branding",
+     *     path="/api/branding",
      *     summary="Get tenant branding information",
      *     description="Fetches branding details like title, footer content, footer URL, and tenant logo based on the domain of the authenticated tenant.",
      *     operationId="getBranding",
@@ -1041,7 +1048,7 @@ class UserController extends Controller
     {
         return $this->userRepository->changeStatus($request);
     }
-    
+
     public function dcUserLogout(DcUserLogoutRequest $request)
     {
         return $this->userRepository->dcUserLogout($request);
