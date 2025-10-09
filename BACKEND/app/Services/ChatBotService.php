@@ -48,7 +48,7 @@ class ChatBotService
                 return $response;
             } else {
                 generateLogs('error', 'ChatbotService: Failed to create session.' . json_encode($response));
-                return $response;   
+                return $response;
             }
         } catch (Throwable $e) {
             generateLogs('error', 'ChatbotService: Exception during session creation.' . $e->getMessage());
@@ -63,14 +63,14 @@ class ChatBotService
     {
         try {
             $sessionId = $this->createSession($payload['uin'], $payload['userid']);
-        
+
             if (!isset($sessionId['session_id'])) {
                 return [
                     'status_code' => $sessionId['status_code'] ?? $sessionId['code'],
                     'message'     => $sessionId['message'] ?? 'Failed to create session',
                 ];
             }
-        
+
             $url = $this->url . "/get-questions?session_id=" . $sessionId['session_id'] . "&lang=" . $payload['lang'];
             $headers = [
                 'Authorization' => 'Bearer ' . $this->apiToken,
@@ -119,6 +119,27 @@ class ChatBotService
         try {
             $chatSession = ChatbotSession::where('session_id', $apiPayload['session_id'])->first();
 
+            // // If session not found, attempt to create one
+            // if (!$chatSession) {
+            //     if (empty($apiPayload['uin']) || empty($apiPayload['userid'])) {
+            //         generateLogs('error', 'ChatbotService: Missing uin or userid in apiPayload.');
+            //         return [
+            //             'answer' => 'Missing required identifiers to create session.',
+            //         ];
+            //     }
+
+            //     $sessionResponse = $this->createSession($apiPayload['uin'], $apiPayload['userid']);
+
+            //     // If session creation failed, return error
+            //     if (empty($sessionResponse['session_id']) || empty($sessionResponse['session_api_token'])) {
+            //         return [
+            //             'answer' => 'Failed to create session. Please try again later.',
+            //         ];
+            //     }
+
+            //     $chatSession = ChatbotSession::where('session_id', $sessionResponse['session_id'])->first();
+            // }
+
             $url = $this->url . "/ask?session_id=" . $apiPayload['session_id'] . "&lang=" . $apiPayload['lang'];;
 
             $payload = [
@@ -135,7 +156,8 @@ class ChatBotService
                 $response = $response->getData(true);
             }
 
-            if (!empty($response) && isset($response['answer'], $response['sources'])) {
+            // if (!empty($response) && isset($response['answer'], $response['sources'])) {
+            if (!empty($response) && isset($response['answer'])) {
                 return $response;
             }
 
@@ -144,23 +166,6 @@ class ChatBotService
                 'status_code' => $response['status_code'] ?? $response['code'],
                 'message'     => $response['message'] ?? 'Failed to ask question',
             ];
-
-            // if (!empty($response)) {
-            //     return $response;
-            // } else {
-            //     generateLogs(
-            //         'error',
-            //         'ChatbotService: Failed to ask API.',
-            //         json_encode([
-            //             'response' => $response,
-            //         ])
-            //     );
-
-            //     return [
-            //         'answer' => 'Sorry, I could not process your request at this time.',
-            //         'sources' => [],
-            //     ];
-            // }
         } catch (Throwable $e) {
             generateLogs(
                 'error',
@@ -179,7 +184,7 @@ class ChatBotService
         try {
             $chatSession = ChatbotSession::where('customer_id', $request->customer_id)->first();
 
-            $url = $this->url . "/chat-history/?tenant_id=" . $chatSession->tenant_id . "&customer_id=" . $chatSession->customer_id;
+            $url = $this->url . "/chat-history/?tenant_id=" . $chatSession->tenant_id . "&customer_id=" . $chatSession->customer_id . "&session_id=" . $chatSession->session_id;
 
             $headers = [
                 'Authorization' => 'Bearer ' . $chatSession->customer_token,
@@ -192,6 +197,9 @@ class ChatBotService
             }
 
             if (!empty($response) && isset($response['history'])) {
+
+                // $chatSession->delete();
+
                 return $response;
             }
 
@@ -200,23 +208,6 @@ class ChatBotService
                 'status_code' => $response['status_code'] ?? $response['code'],
                 'message'     => $response['message'] ?? 'Failed to fetch history',
             ];
-
-            // if (!empty($response)) {
-            //     return $response;
-            // } else {
-            //     generateLogs(
-            //         'error',
-            //         'ChatbotService: Failed to ask query.',
-            //         json_encode([
-            //             'response' => $response,
-            //         ])
-            //     );
-
-            //     return [
-            //         'answer' => 'Sorry, I could not process your request at this time.',
-            //         'sources' => [],
-            //     ];
-            // }
         } catch (Throwable $e) {
             generateLogs(
                 'error',

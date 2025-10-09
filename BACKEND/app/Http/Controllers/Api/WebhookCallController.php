@@ -45,12 +45,12 @@ class WebhookCallController extends Controller
      *             required={"call_unique_id"},
      *              @OA\Property(property="call_unique_id", type="string", example="CI123456"),
      *             @OA\Property(property="campaign_id", type="string", example="CMP001"),
-     *             @OA\Property(property="caller_username", type="string", example="agent1"),
-     *             @OA\Property(property="caller_user_extension", type="intiger", example="1001"),
+     *             @OA\Property(property="caller_username", type="string", example="omniagent2"),
+     *             @OA\Property(property="caller_user_extension", type="intiger", example="8002"),
      *             @OA\Property(property="user_group", type="string", example="Sales"),
      *             @OA\Property(property="inbound_group_id", type="string", example="IG001"),
      *             @OA\Property(property="called_phone_number", type="string", example="567890"),
-     *             @OA\Property(property="domain_name", type="string", example="TestTenant13.com")
+     *             @OA\Property(property="domain_name", type="string", example="Tenant4000")
      *         )
      *       )
      *     ),
@@ -106,8 +106,8 @@ class WebhookCallController extends Controller
      *             required={"call_unique_id"},
      *              @OA\Property(property="call_unique_id", type="string", example="CI123456"),
      *             @OA\Property(property="campaign_id", type="string", example="CMP001"),
-     *             @OA\Property(property="caller_username", type="string", example="agent1"),
-     *             @OA\Property(property="caller_user_extension", type="intiger", example="1001"),
+     *             @OA\Property(property="caller_username", type="string", example="omniagent2"),
+     *             @OA\Property(property="caller_user_extension", type="intiger", example="8002"),
      *             @OA\Property(property="user_group", type="string", example="Sales"),
      *             @OA\Property(property="inbound_group_id", type="string", example="IG001"),
      *             @OA\Property(property="called_phone_number", type="string", example="567890")
@@ -166,8 +166,8 @@ class WebhookCallController extends Controller
      *             required={"call_unique_id"},
      *              @OA\Property(property="call_unique_id", type="string", example="CI123456"),
      *             @OA\Property(property="campaign_id", type="string", example="CMP001"),
-     *             @OA\Property(property="caller_username", type="string", example="agent1"),
-     *             @OA\Property(property="caller_user_extension", type="intiger", example="1001"),
+     *             @OA\Property(property="caller_username", type="string", example="omniagent2"),
+     *             @OA\Property(property="caller_user_extension", type="intiger", example="8002"),
      *             @OA\Property(property="user_group", type="string", example="Sales"),
      *             @OA\Property(property="inbound_group_id", type="string", example="IG001"),
      *             @OA\Property(property="called_phone_number", type="string", example="567890")
@@ -226,8 +226,8 @@ class WebhookCallController extends Controller
      *                 required={"call_unique_id"},
      *                 @OA\Property(property="call_unique_id", type="string", example="CI123456"),
      *                 @OA\Property(property="campaign_id", type="string", example="CMP001"),
-     *                 @OA\Property(property="caller_username", type="string", example="agent1"),
-     *                 @OA\Property(property="caller_user_extension", type="integer", example="1001"),
+     *                 @OA\Property(property="caller_username", type="string", example="omniagent2"),
+     *                 @OA\Property(property="caller_user_extension", type="integer", example="8002"),
      *                 @OA\Property(property="user_group", type="string", example="Sales"),
      *                 @OA\Property(property="inbound_group_id", type="string", example="IG001"),
      *                 @OA\Property(property="called_phone_number", type="string", example="567890"),
@@ -302,7 +302,7 @@ class WebhookCallController extends Controller
             if ($request->has('call_unique_id')) {
                 getDbConnection($domain_name, true);
                 // DB::setDefaultConnection($data->getName());
-                
+
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
 

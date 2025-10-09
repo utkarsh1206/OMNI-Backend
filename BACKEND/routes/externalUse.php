@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\UserMessageController;
 use App\Http\Controllers\Api\ChatBotController;
 use App\Http\Controllers\Api\UserController;
 
-Route::middleware('throttle:custom-api')->group(function () {
+// Route::middleware('throttle:custom-api')->group(function () {
     Route::get('generate-auth-token/{uinId}', [AuthTokenController::class, 'index']);
 
     Route::middleware(AuthTokenMiddleware::class)->group(function () {
@@ -27,4 +27,4 @@ Route::middleware('throttle:custom-api')->group(function () {
             Route::post('/verify-otp/{uinId}', [OtpController::class, 'verifyOtp']);
         });
     });
-});
+// });
