@@ -204,6 +204,14 @@ class ChatBotRepository
                 'lang' => $request->lang,
                 'query' => $request->question,
             ];
+
+            // $payload = extractPayload($request->bearerToken());
+            // generateLogs('info', 'askQuestion payload: ' . json_encode($payload));
+            // if ($payload['userid'] && $payload['uin']) {
+            //     $apiPayload['userid'] = $payload['userid'];
+            //     $apiPayload['uin'] = $payload['uin'];
+            // }
+            // generateLogs('info', 'askQuestion apiPayload: ' . json_encode($apiPayload));
             $askQuestion = $this->chatbotService->ask($apiPayload);
 
             if (isset($askQuestion['status_code']) && $askQuestion['status_code'] != 200) {
@@ -450,14 +458,14 @@ class ChatBotRepository
                         ->first();
 
                     return [
-                        'chat_request_id'   => encryptString($req->latest_id), 
+                        'chat_request_id'   => encryptString($req->latest_id),
                         'customer_id' => $req->customer_id,
                         'name'        => $contact
                             ? trim(($contact->first_name ?? '') . ' ' . ($contact->last_name ?? ''))
                             : 'Unknown',
                     ];
                 })
-                ->values();    
+                ->values();
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
