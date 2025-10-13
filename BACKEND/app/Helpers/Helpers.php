@@ -96,16 +96,26 @@ if (! function_exists('isLicenseExpired')) {
         $licenseResponse = $licenseController->decodeLicense(new Request(['is_tanant' => $is_tanant]));
         $licenseInfo = $licenseResponse->getData(true);
         if (isset($licenseInfo['validity_date'])) {
-            // if ($licenseInfo['validity_date'] <= time()) {
             if ($licenseInfo['validity_date'] <= date('Y-m-d')) {
                 generateLogs('info', 'License expired');
-                return true;
+                return [
+                    'status' => true,
+                    'message' => 'License expired',
+                    'data' => $licenseInfo,
+                ];
             }
-        } else {
-            return response()->json(['error' => trans('message.invalid_license')], ResponseHTTP::HTTP_BAD_REQUEST);
-        }
 
-        return false;
+            return [
+                'status' => false,
+                'message' => 'License valid',
+                'data' => $licenseInfo,
+            ];
+        } else {
+            return response()->json([
+                'status' => false,
+                'error' => trans('message.invalid_license'),
+            ], ResponseHTTP::HTTP_BAD_REQUEST);
+        }
     }
 }
 
