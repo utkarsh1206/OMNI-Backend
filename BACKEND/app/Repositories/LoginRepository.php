@@ -44,19 +44,19 @@ class LoginRepository
         $licenseData = [];
         if (in_array($validator["flag"], [1, 2, 3])) {
 
-            $licenseCheck = isLicenseExpired($request);
+            $licenseExpiryCheck = isLicenseExpired($request);
             // If it's a Response object (invalid license), just return it directly
-            if ($licenseCheck instanceof \Illuminate\Http\JsonResponse) {
-                return $licenseCheck;
+            if ($licenseExpiryCheck instanceof \Illuminate\Http\JsonResponse) {
+                return $licenseExpiryCheck;
             }
             // If license expired
-            if ($licenseCheck['status'] === true) {
+            if ($licenseExpiryCheck['status'] === true) {
                 return response()->json([
                     'error' => trans('message.license_expired')
                 ], ResponseHTTP::HTTP_FORBIDDEN);
             }
 
-            $licenseData = $licenseCheck['data'];
+            $licenseData = $licenseExpiryCheck['data'];
 
             if (!$domain) {
                 return response()->json(['error' => trans('message.domain_required')], ResponseHTTP::HTTP_BAD_REQUEST);

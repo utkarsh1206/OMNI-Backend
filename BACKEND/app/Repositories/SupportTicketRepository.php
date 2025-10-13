@@ -170,6 +170,9 @@ class SupportTicketRepository
          */
         try {
             $apiUser = auth()->user();
+
+            $uin = setTenantUin($apiUser);
+
             DB::beginTransaction();
             // Handle file attachments
             [$attachment_urls, $mail_attachment_urls] = $this->processAttachments($request);
@@ -255,7 +258,7 @@ class SupportTicketRepository
             );
             // $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
             $this->sendSms($apiUser, "Ticket Created", $request->contact_number, $supportTicket);
-            $emailSent = $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket, $request->assign_to_id ?? 0, $mailTemplate);
+            $emailSent = $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket, $request->assign_to_id ?? 0, $mailTemplate, $uin);
 
             if ($emailSent != 1) {
                 return $this->apiResponse->getResponseStructure(
@@ -365,7 +368,7 @@ class SupportTicketRepository
             $this->createTicket($supportTicket, $request->default_status ?? "", "Edit Support Ticket", $apiUser);
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
 
-            $emailSent = $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0, null);
+            $emailSent = $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0, null, null);
 
             if ($emailSent != 1) {
                 return $this->apiResponse->getResponseStructure(
@@ -623,7 +626,8 @@ class SupportTicketRepository
         array $mail_attachment_urls,
         $ticket,
         int $assignToId,
-        $agentMailTemplate
+        $agentMailTemplate,
+        $uin
     ) {
         generateLogs("info", "ticket data " . $ticket);
 
@@ -672,7 +676,8 @@ class SupportTicketRepository
             ticket: $ticket,
             senderEmail: $sender_email,
             assignToId: $assignToId,
-            module: "Create Support Ticket"
+            module: "Create Support Ticket",
+            uin: $uin,
         );
 
         return $sendProcessedEmail;
