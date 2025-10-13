@@ -329,7 +329,12 @@ class TenantLicenseController extends Controller
             return 'Expiry date must be greater than today.';
         }
 
-        if ($expireDateEpoch >= $licenseValidityEpoch) {
+        /**
+         * 43200 seconds = 12 hours Because $expireDateEpoch is set to midday 
+         * and licenseValidityEpoch is set to start of the day
+         * This allows the expire date to be on the same day as the license validity date
+         */
+        if ($expireDateEpoch > ($licenseValidityEpoch + 43200)) {
             return "Expiry date should not be greater than the license validity date.";
         }
 
