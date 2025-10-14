@@ -272,6 +272,33 @@ class CustomLeadRepository
                 );
             }
 
+            // ✅ Check if call_unique_id already exists
+            if (!empty($callUniqueId)) {
+                $existingCdrLead = CustomCdrLead::where('call_unique_id', $callUniqueId)
+                    ->where('list_id', $listId)
+                    ->first();
+
+                if ($existingCdrLead) {
+                    // Update the existing lead instead of creating new
+                    $leadId = $existingCdrLead->lead_id;
+
+                    DB::table($table)->where('id', $leadId)->update([
+                        ...$data,
+                        'updated_at' => now(),
+                    ]);
+
+                    $existingCdrLead->update([
+                        'lead_json' => json_encode($data),
+                    ]);
+
+                    return $this->apiResponse->getResponseStructure(
+                        trans('message.success'),
+                        array_merge($data, ['id' => $leadId]),
+                        trans('message.lead_update_success')
+                    );
+                }
+            }
+
             if (!empty($data['mobile'])) {
                 $existing = DB::table($table)->where('mobile', $data['mobile'])->exists();
 

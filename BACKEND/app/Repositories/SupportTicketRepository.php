@@ -368,7 +368,8 @@ class SupportTicketRepository
             $this->createTicket($supportTicket, $request->default_status ?? "", "Edit Support Ticket", $apiUser);
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
 
-            $emailSent = $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0, null, null);
+            // $emailSent = $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0, null, null);
+            $emailSent = $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket, $request->assign_to_id ?? 0, null, null);
 
             if ($emailSent != 1) {
                 return $this->apiResponse->getResponseStructure(
@@ -638,9 +639,7 @@ class SupportTicketRepository
 
         setEmailConfig();
         $sender_email = config('mail.from.address');
-
-        $defaultSubject = "A new ticket $ticket->support_ticket_id has been created";
-
+        $defaultSubject = "A new ticket " . $ticket->support_ticket_id . " has been created";
         /** ------------------------
          * Send Email to Agent
          * ---------------------- */

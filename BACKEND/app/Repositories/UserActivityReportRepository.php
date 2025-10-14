@@ -258,6 +258,7 @@ class UserActivityReportRepository
                 'caller_user_extension',
                 'called_phone_number',
                 DB::raw('SEC_TO_TIME(call_talk_duration) as call_talk_duration'),
+                DB::raw('SEC_TO_TIME(call_total_duration) as call_total_duration'),
                 'call_dispo_status',
                 'created_at',
                 'call_date'
