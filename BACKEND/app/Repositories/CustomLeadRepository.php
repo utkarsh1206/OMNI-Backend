@@ -366,17 +366,34 @@ class CustomLeadRepository
             if (empty($data)) {
                 return $this->apiResponse->getResponseStructure(trans('message.error'), $data, trans('message.invalid_data'));
             }
+            // NOC - 475, 477 Start
+            if (!empty($callUniqueId)) {
 
-            // $data['updated_at'] = now();
+                $existingCdrLead = CustomCdrLead::where('call_unique_id', $callUniqueId)
+                    ->where('list_id', $listId)
+                    ->first();
 
-            // // Update the lead
-            // $updated = DB::table($table)->where('id', $leadId)->update($data);
+                if ($existingCdrLead) {
 
-            // if ($updated) {
-            //     return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.lead_update_success'));
-            // }
+                    // Update the existing lead instead of creating new
+                    $leadId = $existingCdrLead->lead_id;
 
-            // return $this->apiResponse->getResponseStructure(trans('message.error'), [], trans('message.no_changes_made'));
+                    DB::table($table)->where('id', $leadId)->update([
+                        ...$data,
+                        'updated_at' => now(),
+                    ]);
+
+                    $existingCdrLead->update([
+                        'lead_json' => json_encode($data),
+                    ]);
+
+                    return $this->apiResponse->getResponseStructure(
+                        trans('message.success'),
+                        array_merge($data, ['id' => $leadId]),
+                        trans('message.lead_update_success')
+                    );
+                }
+            }
 
             $existingLead = DB::table($table)->where('id', $leadId)->first();
 
@@ -393,7 +410,7 @@ class CustomLeadRepository
 
             if (!empty($callUniqueId)) {
                 CustomCdrLead::create([
-                    'lead_id' => $leadId,
+                    'lead_id' => $newId,
                     'list_id' => $listId,
                     'call_unique_id' => $callUniqueId,
                     'lead_json' => json_encode($newLeadData),
