@@ -315,7 +315,7 @@ class CallLogReportRepository
      */
     public function getCallStatusDistribution(Request $request)
     {
-        return $this->getGroupedData($request, 'call_status');
+        return $this->getGroupedData($request, 'call_dispo_status');
     }
 
     /**

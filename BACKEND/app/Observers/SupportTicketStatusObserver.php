@@ -32,7 +32,7 @@ class SupportTicketStatusObserver
 
             $masterData = null;
             if ($action !== 'delete') {
-                $masterData = DB::table('support_ticket_statuses')->where('name', $ticket_status->name)->first();
+                $masterData = DB::table('omnichannel.support_ticket_statuses')->where('name', $ticket_status->name)->first();
                 if (!$masterData) {
                     generateLogs("error", "Status not found in master table");
                     return;

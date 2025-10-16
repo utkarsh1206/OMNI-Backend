@@ -30,7 +30,7 @@ class ModifyRequestMiddleware
 
         $payload = $token ? extractPayload($token) : null;
 
-        if ($payload['role_id'] == 1) {
+        if ($payload['role_id'] == 1 || $payload['role_id'] == 2) { // To-Do If Manager then the request parameter should be blank.
             $request->merge($modifiedData);
             return $next($request);
         }
