@@ -12,6 +12,7 @@ return [
     'domain_required' => 'Domain is required',
     'invalid_credentials' => 'Unauthorized: Invalid credentials',
     'invalid_phone_credentials' => 'Unauthorized: Invalid phone credentials',
+    'live_agents_exceeded' => 'Permitted Live Agent Count Exceeded',
     // User Message
     'register' => 'You have register successfully.!',
     'emailExist' => 'Email Address already Exists while register account.!',
