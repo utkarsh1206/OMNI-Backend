@@ -45,7 +45,7 @@ class UserRepository
                 'mobile' => $request->input('mobile'),
                 'usergroup_id' => $request->input('usergroup_id'),
                 'gender' => $request->input('gender'),
-                // 'user_role_id' => $request->input('user_role_id'),
+                'role_id' => $request->input('role_id'),
                 'level' => $request->input('level'),
             ];
 
@@ -100,9 +100,9 @@ class UserRepository
                 $query->where('gender', $filters['gender']);
             }
 
-            // if (!empty($filters['user_role_id'])) {
-            //     $query->where('user_role_id', $filters['user_role_id']);
-            // }
+            if (!empty($filters['role_id'])) {
+                $query->where('role_id', $filters['role_id']);
+            }
 
             if (!empty($filters['level'])) {
                 if (is_array($filters['level'])) {
@@ -137,15 +137,25 @@ class UserRepository
             $licenseInfo = $licenseResponse->getData(true);
 
             $maxAgents = $licenseInfo['number_of_agents'];
+            $maxManager = $licenseInfo['number_of_acl_users'];
 
-            $currentAgentCount = Users::where('type', '3')->count();
+            // $currentAgentCount = Users::where('type', '3')->count();
+            $currentAgentCount = Users::where('role_id', '3')->count();
+            $currentManagerCount = Users::where('role_id', '2')->count();
 
-            // Check if the limit is reached
+            // Check if the Agent limit is reached
             if ($currentAgentCount >= $maxAgents) {
                 return response()->json([
                     'error' => trans("message.user_limit_reached"),
                 ], ResponseHTTP::HTTP_BAD_REQUEST);
             }
+            // Check if the Manager limit is reached
+            if ($currentManagerCount >= $maxManager) {
+                return response()->json([
+                    'error' => trans("message.user_limit_reached"),
+                ], ResponseHTTP::HTTP_BAD_REQUEST);
+            }
+
             $users = Users::create([
                 'username' => $request->username,
                 // "tenant_id" => $request->tenant_id,

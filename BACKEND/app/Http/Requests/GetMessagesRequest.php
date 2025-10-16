@@ -25,7 +25,7 @@ class GetMessagesRequest extends FormRequest
         return [
             'phone' => [
                 'required',
-                'regex:/^[0-9]{10,15}$/', // validates 10-15 digit numbers
+                'regex:/^[0-9]{1,20}$/', // validates 1-15 digit numbers
             ],
         ];
     }
@@ -34,7 +34,7 @@ class GetMessagesRequest extends FormRequest
     {
         return [
             'phone.required' => 'Phone number is required.',
-            'phone.regex'    => 'Phone number must contain 10 to 15 digits.',
+            'phone.regex'    => 'Phone number must contain less than or equal to 20 digits.',
         ];
     }
 
