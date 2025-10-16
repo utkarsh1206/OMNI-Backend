@@ -41,10 +41,22 @@ class LoginRepository
     {
         // $permissionInfo = [];
         $domain = $request->input('domain');
+        $licenseData = [];
         if (in_array($validator["flag"], [1, 2, 3])) {
-            if (isLicenseExpired($request)) {
-                return response()->json(['error' => trans('message.license_expired')], ResponseHTTP::HTTP_FORBIDDEN);
+
+            $licenseExpiryCheck = isLicenseExpired($request);
+            // If it's a Response object (invalid license), just return it directly
+            if ($licenseExpiryCheck instanceof \Illuminate\Http\JsonResponse) {
+                return $licenseExpiryCheck;
             }
+            // If license expired
+            if ($licenseExpiryCheck['status'] === true) {
+                return response()->json([
+                    'error' => trans('message.license_expired')
+                ], ResponseHTTP::HTTP_FORBIDDEN);
+            }
+
+            $licenseData = $licenseExpiryCheck['data'];
 
             if (!$domain) {
                 return response()->json(['error' => trans('message.domain_required')], ResponseHTTP::HTTP_BAD_REQUEST);
@@ -71,6 +83,15 @@ class LoginRepository
                     return response()->json(['error' =>  trans('message.tenant_inactive')], ResponseHTTP::HTTP_UNAUTHORIZED);
                 }
             } elseif ($validator['flag'] == 2) {
+                $liveCount = LiveAgents::count();
+                if ($liveCount >= $licenseData['number_of_acl_users']) {
+                    generateLogs('error', 'Number of permissible Live Agents exceeded');
+                    return response()->json(
+                        ['error' => trans('message.live_agents_exceeded')],
+                        ResponseHTTP::HTTP_UNAUTHORIZED
+                    );
+                }
+
                 $userData = $this->getUserData($credentials, Users::class, $validator['flag']);
                 if (!$userData) {
                     generateLogs('error', 'User not found or deleted credentials : ', $credentials);
@@ -95,9 +116,9 @@ class LoginRepository
                         return response()->json(['error' => trans('message.user_or_phone_already_logged_in')], ResponseHTTP::HTTP_UNAUTHORIZED);
                     }
 
-                    if ($domain && !empty($this->details)) {    
+                    if ($domain && !empty($this->details)) {
                         $userData->setUIN($this->details->uin);
-                        $userData->setUserId($userData->id); 
+                        $userData->setUserId($userData->id);
                     }
                     // Set the flag to include phone in JWT
                     $userData->setAddPhoneToJWT($validator['flag']);
@@ -124,10 +145,10 @@ class LoginRepository
 
             if ($validator['flag'] == 1) {
                 $formattedPermissions = getPermissionFromRoleIdForTenant($domain);
-            } else{
+            } else {
                 $formattedPermissions = getPermissionFromRoleId($userData->user_role_id);
             }
-        
+
             $dataArr = [
                 "userInfo" => $userData,
                 "token" => $token,
@@ -139,7 +160,7 @@ class LoginRepository
                 // $detail = DB::table('details')->where('domain', $domain)->first();
                 // getdbConnection($domain, false);
                 // if ($detail) {
-                    $dataArr['uin'] = $this->details->uin;
+                $dataArr['uin'] = $this->details->uin;
                 //}
             }
 

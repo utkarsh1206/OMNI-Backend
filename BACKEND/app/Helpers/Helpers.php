@@ -4,6 +4,7 @@ use App\Models\EmailLog;
 use App\Models\EmailConfigure;
 use App\Http\Controllers\Api\LicenseController;
 use App\Mail\SendEmail;
+use App\Models\Detail;
 use App\Services\AESService;
 use App\Models\NeoxConfiguration;
 use App\Models\Permission;
@@ -96,16 +97,26 @@ if (! function_exists('isLicenseExpired')) {
         $licenseResponse = $licenseController->decodeLicense(new Request(['is_tanant' => $is_tanant]));
         $licenseInfo = $licenseResponse->getData(true);
         if (isset($licenseInfo['validity_date'])) {
-            // if ($licenseInfo['validity_date'] <= time()) {
             if ($licenseInfo['validity_date'] <= date('Y-m-d')) {
                 generateLogs('info', 'License expired');
-                return true;
+                return [
+                    'status' => true,
+                    'message' => 'License expired',
+                    'data' => $licenseInfo,
+                ];
             }
-        } else {
-            return response()->json(['error' => trans('message.invalid_license')], ResponseHTTP::HTTP_BAD_REQUEST);
-        }
 
-        return false;
+            return [
+                'status' => false,
+                'message' => 'License valid',
+                'data' => $licenseInfo,
+            ];
+        } else {
+            return response()->json([
+                'status' => false,
+                'error' => trans('message.invalid_license'),
+            ], ResponseHTTP::HTTP_BAD_REQUEST);
+        }
     }
 }
 
@@ -611,6 +622,19 @@ if (! function_exists('setTenantData')) {
     }
 }
 
+if (! function_exists('setTenantUin')) {
+    function setTenantUin($userInfo)
+    {
+        establishMasterConnection($userInfo->domain, "omnichannel", "mysql");
+        $tenantUin = Detail::select("uin")->where('domain', $userInfo->domain)->first();
+        $connection   = str_replace(".", "_", $userInfo->domain);
+        $databaseName = str_replace(".", "_", $userInfo->domain);
+        establishDatabaseConnect($connection, $databaseName);
+        DB::setDefaultConnection($connection);
+        return $tenantUin->uin;
+    }
+}
+
 if (!function_exists('getDomainByUin')) {
     function getDomainByUin($uin)
     {
@@ -628,9 +652,22 @@ if (! function_exists('getTemplatePlaceholders')) {
      * @param  array  $extra    Additional placeholders to merge
      * @return array
      */
-    function getTemplatePlaceholders($body, $ticket = null, $extra = [])
+    function getTemplatePlaceholders($body, $ticket = null, $extra = [], $uin = null)
     {
         if ($ticket) {
+            // $trackingUrl = $uin ? rtrim(config('app.url'), '/') . "/enduser/{$uin}" : '';
+            if ($uin) {
+                $appUrl = config('app.url');
+                $parsed = parse_url($appUrl);
+                $baseUrl = isset($parsed['scheme'], $parsed['host'])
+                    ? "{$parsed['scheme']}://{$parsed['host']}"
+                    : rtrim($appUrl, '/');
+
+                $trackingUrl = "{$baseUrl}/enduser/{$uin}";
+            } else {
+                $trackingUrl = '';
+            }
+            
             $placeholders = [
                 "customer_name"      => $ticket->contact_name ?? '',
                 "ticket_number"      => $ticket->support_ticket_id ?? '',
@@ -641,6 +678,7 @@ if (! function_exists('getTemplatePlaceholders')) {
                 "assigned_user"      => $ticket->assigned_agent_name ?? '',
                 "first_response_due" => optional($ticket->first_response_time)->format('d M Y, H:i:s A T') ?? '',
                 "resolve_time_due"   => optional($ticket->resolved_time)->format('d M Y, H:i:s A T') ?? '',
+                "tracking_url"       => $trackingUrl,
             ];
 
             $placeholders = array_merge($placeholders, $extra);
@@ -684,10 +722,11 @@ if (! function_exists('sendProcessedEmail')) {
         $module,
         ?array $cc = [],
         ?array $bcc = [],
-        $newConnectionName = null
+        $newConnectionName = null,
+        $uin = null
     ) {
         $body = !empty($bodyTemplate)
-            ? getTemplatePlaceholders($bodyTemplate, $ticket)
+            ? getTemplatePlaceholders($bodyTemplate, $ticket, [], $uin)
             : '';
         $emailJson = [
             'to'  => $to,
