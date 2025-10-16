@@ -58,7 +58,7 @@ class ImportExportLeadRepository
             //     $errors[] = 'Invalid Mobile';
             // }
 
-            if (isset($rowAssoc['Mobile']) && !preg_match('/^\+?\d{5,15}$/', $rowAssoc['Mobile'])) {
+            if (isset($rowAssoc['Mobile']) && !preg_match('/^\+?\d{1,20}$/', $rowAssoc['Mobile'])) {
                 $errors[] = 'Invalid Mobile';
             }
 
