@@ -84,7 +84,7 @@ class LoginRepository
                 }
             } elseif ($validator['flag'] == 2) {
                 $liveCount = LiveAgents::count();
-                if ($liveCount >= $licenseData['number_of_acl_users']) {
+                if ($liveCount >= $licenseData['number_of_live_agents']) {
                     generateLogs('error', 'Number of permissible Live Agents exceeded');
                     return response()->json(
                         ['error' => trans('message.live_agents_exceeded')],
