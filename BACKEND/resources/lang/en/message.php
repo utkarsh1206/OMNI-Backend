@@ -214,5 +214,7 @@ return [
     'field_deletion_not_allowed' => 'Field deletion is not allowed for this field.',
 
     'mapping_modified' => 'List Mail Template Mapping Modified successfully.',
+
+    'assignment_rule_created' => 'Assignment Rule Created successfully.'
 ]
 ?>
