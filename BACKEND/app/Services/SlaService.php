@@ -24,7 +24,7 @@ class SlaService
         if ($ticket) {
             $incident = IncidentType::find($ticket->incident_id);
             $user = User::find($ticket->assign_to_id);
-            $userLevel = $user->level;
+            $userLevel = $user->level ?? 1;
 
             // Fetch SLA target
             $slaTarget = SlaTarget::where('sla_id', $incident->sla_id)
