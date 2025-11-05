@@ -232,7 +232,7 @@ class SupportTicketRepository
                     '{ticket_number}' => $supportTicketId,
                     '{ticket_subject}' => $supportTicket->subject,
                     '{ticket_status}' => $supportTicket->status_name,
-                    '{ticket_created_date}' => $supportTicket->created_at->timezone(config('app.timezone'))->format('d M Y, H:i:s A T'),
+                    '{ticket_created}' => $supportTicket->created_at->timezone(config('app.timezone'))->format('d M Y, H:i:s A T'),
                     '{ticket_description}' => $supportTicket->description
                 ];
 
