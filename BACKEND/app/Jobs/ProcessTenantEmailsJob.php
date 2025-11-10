@@ -250,7 +250,7 @@ class ProcessTenantEmailsJob implements ShouldQueue
         // Mark email as read
         $message->setFlag('Seen');
 
-        $uin = Detail::where('domain', $connection)->value('uin');
+        $uin = Detail::where('domain', $domain)->value('uin');
 
         establishDatabaseConnect($connection, $databaseName);
         DB::reconnect($connection);
