@@ -12,6 +12,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Response\CustomApiResponse;
 use App\Models\LiveAgents;
 use App\Models\Phone;
+use App\Models\SipServerConfiguration;
 use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -115,11 +116,11 @@ class LoginRepository
                     if ($existingAgent) {
                         return response()->json(['error' => trans('message.user_or_phone_already_logged_in')], ResponseHTTP::HTTP_UNAUTHORIZED);
                     }
-
                     if ($domain && !empty($this->details)) {
                         $userData->setUIN($this->details->uin);
                         $userData->setUserId($userData->id);
                     }
+
                     // Set the flag to include phone in JWT
                     $userData->setAddPhoneToJWT($validator['flag']);
                     $token = JWTAuth::fromUser($userData);
@@ -148,11 +149,17 @@ class LoginRepository
             } else {
                 $formattedPermissions = getPermissionFromRoleId($userData->user_role_id);
             }
-
+            $sipServerConfig = SipServerConfiguration::first();
+            if ($sipServerConfig) {
+                $sip_server_url = $sipServerConfig->sip_server_url;
+                $sip_ua_uri_domain = $sipServerConfig->sip_ua_uri_domain;
+            }
             $dataArr = [
                 "userInfo" => $userData,
                 "token" => $token,
-                "permission" => $formattedPermissions
+                "permission" => $formattedPermissions,
+                "sip_server_url" => $sip_server_url ?? '',
+                "sip_ua_uri_domain" => $sip_ua_uri_domain ?? '',
             ];
 
             if ($domain && !empty($this->details)) {
