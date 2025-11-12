@@ -61,6 +61,18 @@ class PhoneRepository
             // Retrieve configuration
             $config = getNeoxConfig();
 
+            $sipServerUrl = $config['sip_server_url'] ?? null;
+            $sipUaUriDomain = $config['sip_ua_uri_domain'] ?? null;
+
+            if (empty($sipServerUrl) || empty($sipUaUriDomain)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    'Please Set the SIP Configuration first',
+                    ResponseHTTP::HTTP_BAD_REQUEST
+                );
+            }
+
             $ip = $config['neox_local_ip'];
 
             $url = "https://{$ip}/api/admin/actions/v2/phone_create.php";
@@ -69,6 +81,18 @@ class PhoneRepository
             sendHttpRequest($url, 'POST', $validatedData);
 
             $phone = Phone::create($validatedData);
+
+            $host = parse_url($sipServerUrl, PHP_URL_HOST);
+
+            $newRequestUrl = "http://{$host}:6000";
+
+            $newPayload = [
+                'username' => $validatedData['extension'],
+                'password' => $validatedData['pass'],
+                'domain'   => $sipUaUriDomain,
+            ];
+
+            sendHttpRequest($newRequestUrl, 'POST', $newPayload);
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
