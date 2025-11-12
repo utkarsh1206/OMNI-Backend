@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\LicenseController;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Response\CustomApiResponse;
 use App\Models\LiveAgents;
+use App\Models\NeoxConfiguration;
 use App\Models\Phone;
 use App\Models\SipServerConfiguration;
 use App\Models\Tenant;
@@ -138,6 +139,7 @@ class LoginRepository
                             'dial_method' => $request->dial_method,
                         ]);
                     }
+                    $sipConfigForFlag2 = NeoxConfiguration::select('sip_server_url', 'sip_ua_uri_domain')->first();
                 } else {
                     generateLogs('error', 'Unauthorized: Invalid credentials userData: ', $userData);
                     return response()->json(['error' => trans('message.invalid_credentials')], ResponseHTTP::HTTP_UNAUTHORIZED);
@@ -149,19 +151,17 @@ class LoginRepository
             } else {
                 $formattedPermissions = getPermissionFromRoleId($userData->user_role_id);
             }
-            $sipServerConfig = SipServerConfiguration::first();
-            if ($sipServerConfig) {
-                $sip_server_url = $sipServerConfig->sip_server_url;
-                $sip_ua_uri_domain = $sipServerConfig->sip_ua_uri_domain;
-            }
             $dataArr = [
                 "userInfo" => $userData,
                 "token" => $token,
                 "permission" => $formattedPermissions,
-                "sip_server_url" => $sip_server_url ?? '',
-                "sip_ua_uri_domain" => $sip_ua_uri_domain ?? '',
             ];
 
+            if ($validator['flag'] == 2 && isset($sipConfigForFlag2) && $sipConfigForFlag2) {
+                $dataArr['sip_server_url'] = $sipConfigForFlag2->sip_server_url;
+                $dataArr['sip_ua_uri_domain'] = $sipConfigForFlag2->sip_ua_uri_domain;
+            }
+            
             if ($domain && !empty($this->details)) {
                 // establishMasterConnection($domain, "omnichannel", "mysql");
                 // $detail = DB::table('details')->where('domain', $domain)->first();
