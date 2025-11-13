@@ -84,7 +84,7 @@ class PhoneRepository
 
             $host = parse_url($sipServerUrl, PHP_URL_HOST);
 
-            $newRequestUrl = "http://{$host}:6000";
+            $newRequestUrl = "http://{$host}:6000/api/users";
 
             $newPayload = [
                 'username' => $validatedData['extension'],
