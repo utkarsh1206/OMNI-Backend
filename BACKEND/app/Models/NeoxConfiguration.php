@@ -14,5 +14,7 @@ class NeoxConfiguration extends Model
     protected $fillable = [
         'neox_token',
         'neox_local_ip',
+        'sip_server_url',
+        'sip_ua_uri_domain',
     ];
 }

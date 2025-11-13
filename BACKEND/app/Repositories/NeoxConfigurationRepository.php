@@ -52,9 +52,19 @@ class NeoxConfigurationRepository
                 return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.neox_local_ip_exists'));
             }
 
+            if (NeoxConfiguration::where('sip_server_url', $request->sip_server_url)->exists()) {
+                return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.sip_server_url_exists'));
+            }
+
+            if (NeoxConfiguration::where('sip_ua_uri_domain', $request->sip_ua_uri_domain)->exists()) {
+                return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.sip_ua_uri_domain_exists'));
+            }
+
             $configuration = NeoxConfiguration::create([
                 'neox_token' => $request->neox_token,
                 'neox_local_ip' => $request->neox_local_ip,
+                'sip_server_url' => $request->sip_server_url,
+                'sip_ua_uri_domain' => $request->sip_ua_uri_domain,
             ]);
 
             $data = new NeoxConfigurationResource($configuration);
@@ -78,9 +88,19 @@ class NeoxConfigurationRepository
                 return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.neox_local_ip_exists'));
             }
 
+            if (NeoxConfiguration::where('sip_server_url', $request->sip_server_url)->where('id', '!=', $id)->exists()) {
+                return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.sip_server_url_exists'));
+            }
+
+            if (NeoxConfiguration::where('sip_ua_uri_domain', $request->sip_ua_uri_domain)->where('id', '!=', $id)->exists()) {
+                return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.sip_ua_uri_domain_exists'));
+            }
+
             $configuration->update([
                 'neox_token' => $request->neox_token ?? $configuration->neox_token,
                 'neox_local_ip' => $request->neox_local_ip ?? $configuration->neox_local_ip,
+                'sip_server_url' => $request->sip_server_url ?? $configuration->sip_server_url,
+                'sip_ua_uri_domain' => $request->sip_ua_uri_domain ?? $configuration->sip_ua_uri_domain,
             ]);
 
             $data = new NeoxConfigurationResource($configuration);
