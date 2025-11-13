@@ -49,6 +49,7 @@ class SupportTicketRepository
                 'department_id' => $request->input('department_id'),
                 'account_id' => $request->input('account_id'),
                 'incident_id' => $request->input('incident_id'),
+                // 'to_emails' => $request->input('email'),
             ];
 
             $token = $request->bearerToken();
@@ -154,6 +155,63 @@ class SupportTicketRepository
             );
         } catch (Exception $ex) {
             generateLogs('error', 'Error fetching Support Tickets List : ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
+    public function listCustomer(Request $request)
+    {
+        try {
+            $contactNumber = $request->input('contact_number');
+            $toEmails = $request->input('email');
+
+            $token = $request->bearerToken();
+            if ($token != "") {
+                $payload = extractPayload($token);
+                $roleId = $payload['role_id'];
+                $userId = $payload['id'];
+            }
+
+            $query = SupportTicket::query()->with([
+                'department',
+                'priority:id,name',
+                'ticketType:id,type',
+                'ticketStatus:id,name'
+            ]);
+
+            // // Role-based filtering
+            // if (isset($roleId) && $roleId == 3) {
+            //     $query->where('assign_to_id', $userId);
+            // }
+
+            // ✅ Filter by contact_number and/or to_emails
+            if (!empty($contactNumber) && !empty($toEmails)) {
+                $query->where(function ($q) use ($contactNumber, $toEmails) {
+                    $q->where('contact_number', 'like', "%{$contactNumber}%")
+                        ->orWhere('to_emails', 'like', "%{$toEmails}%");
+                });
+            } elseif (!empty($contactNumber)) {
+                $query->where('contact_number', 'like', "%{$contactNumber}%");
+            } elseif (!empty($toEmails)) {
+                $query->where('to_emails', 'like', "%{$toEmails}%");
+            }
+
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
+            $query->orderBy('id', 'desc');
+
+            $supportTickets = $page == config('omni.ALL_PAGE')
+                ? $query->get()
+                : $query->paginate($perPage);
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $supportTickets,
+                trans('message.data_fetch')
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error fetching Support Tickets by Customer Info : ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
