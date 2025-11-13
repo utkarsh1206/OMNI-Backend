@@ -110,7 +110,6 @@ use App\Http\Controllers\Api\NetworkCheckController;
 use App\Http\Controllers\Api\CustomChatBotController;
 use App\Http\Controllers\Api\LeadMailController;
 use App\Http\Controllers\Api\ListTemplateMapController;
-use App\Http\Controllers\Api\SipServerConfigurationController;
 use App\Http\Middleware\CheckPermissionMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -358,7 +357,6 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('sla-incident', [SlaReportController::class, 'incidentSLA'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::VIEW->value);
 
     Route::apiResource('neox-configurations', NeoxConfigurationController::class);
-    Route::apiResource('sip-server-configurations', SipServerConfigurationController::class);
 
     Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
         Route::post('dispo-list', [DispositionApiController::class, 'dispositionListApi']);
