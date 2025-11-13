@@ -8,11 +8,8 @@ use Carbon\Carbon;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use App\Models\EmailConfigure;
 use App\Models\MailTemplate;
-use Illuminate\Support\Facades\Mail;
 use Exception;
-use App\Mail\SlaSendEmail;
 use App\Models\EmailNotification;
 use App\Models\SupportTicketNotification;
 use Illuminate\Support\Facades\Schema;
@@ -77,12 +74,21 @@ class SlaEmailNotification extends Command
                                         $currentTime > $ticket->alert_before_resolve_notification_time
                                         && $ticket->is_notified != 3
                                     ) {
-                                        $this->notifyViaEmail(
-                                            $newConnectionName,
-                                            $ticket,
-                                            "alert_before_resolve_email",
-                                            "SLA Alert Before Resolve"
-                                        );
+                                        try {
+                                            $this->notifyViaEmail(
+                                                $newConnectionName,
+                                                $ticket,
+                                                "alert_before_resolve_email",
+                                                "SLA Alert Before Resolve"
+                                            );
+                                        } catch (\Throwable $th) {
+                                            generateScheduleLogs(
+                                                "error",
+                                                "Tenant: {$tenant->domain_name} - Failed SLA Alert Before Resolve Email for Ticket {$ticket->id}",
+                                                $th->getMessage()
+                                            );
+                                        }
+
                                         $ticket->is_notified = 3;
                                     }
 
@@ -91,12 +97,21 @@ class SlaEmailNotification extends Command
                                         && $currentTime > $ticket->resolved_time
                                         && $ticket->is_notified != 4
                                     ) {
-                                        $this->notifyViaEmail(
-                                            $newConnectionName,
-                                            $ticket,
-                                            "resolve_time_email",
-                                            "SLA Alert Resolve"
-                                        );
+                                        try {
+                                            $this->notifyViaEmail(
+                                                $newConnectionName,
+                                                $ticket,
+                                                "resolve_time_email",
+                                                "SLA Alert Resolve"
+                                            );
+                                        } catch (\Throwable $th) {
+                                            generateScheduleLogs(
+                                                "error",
+                                                "Tenant: {$tenant->domain_name} - Failed SLA Alert Resolve Email for Ticket {$ticket->id}",
+                                                $th->getMessage()
+                                            );
+                                        }
+
                                         $ticket->is_notified = 4;
                                         $adminUsers = User::on($newConnectionName)
                                             ->where("type", "=", 0)->first();
@@ -116,12 +131,20 @@ class SlaEmailNotification extends Command
                                         && $ticket->response_time == null && $ticket->is_notified == null
                                         &&  $ticket->is_notified != 1
                                     ) {
-                                        $this->notifyViaEmail(
-                                            $newConnectionName,
-                                            $ticket,
-                                            "alert_before_response_email",
-                                            "SLA Alert Before Response"
-                                        );
+                                        try {
+                                            $this->notifyViaEmail(
+                                                $newConnectionName,
+                                                $ticket,
+                                                "alert_before_response_email",
+                                                "SLA Alert Before Response"
+                                            );
+                                        } catch (\Throwable $th) {
+                                            generateScheduleLogs(
+                                                "info",
+                                                "Tenant: {$tenant->domain_name} - Failed SLA Alert Before Response Email for Ticket {$ticket->id}",
+                                                $th->getMessage()
+                                            );
+                                        }
                                         $ticket->is_notified = 1;
                                     }
 
@@ -131,12 +154,20 @@ class SlaEmailNotification extends Command
                                         ($ticket->is_notified == 1 || $ticket->is_notified == null)
                                         &&  $ticket->is_notified != 2
                                     ) {
-                                        $this->notifyViaEmail(
-                                            $newConnectionName,
-                                            $ticket,
-                                            "first_response_email",
-                                            "SLA Alert Response"
-                                        );
+                                        try {
+                                            $this->notifyViaEmail(
+                                                $newConnectionName,
+                                                $ticket,
+                                                "first_response_email",
+                                                "SLA Alert Response"
+                                            );
+                                        } catch (\Throwable $th) {
+                                            generateScheduleLogs(
+                                                "info",
+                                                "Tenant: {$tenant->domain_name} - Failed SLA Alert Response Email for Ticket {$ticket->id}",
+                                                $th->getMessage()
+                                            );
+                                        }
                                         $ticket->is_notified = 2;
                                     }
 
@@ -145,12 +176,20 @@ class SlaEmailNotification extends Command
                                         $currentTime > $ticket->alert_before_resolve_notification_time
                                         && $ticket->is_notified != 3
                                     ) {
-                                        $this->notifyViaEmail(
-                                            $newConnectionName,
-                                            $ticket,
-                                            "alert_before_resolve_email",
-                                            "SLA Alert Before Resolve"
-                                        );
+                                        try {
+                                            $this->notifyViaEmail(
+                                                $newConnectionName,
+                                                $ticket,
+                                                "alert_before_resolve_email",
+                                                "SLA Alert Before Resolve"
+                                            );
+                                        } catch (\Throwable $th) {
+                                            generateScheduleLogs(
+                                                "info",
+                                                "Tenant: {$tenant->domain_name} - Failed SLA Alert Before Resolve Email for Ticket {$ticket->id}",
+                                                $th->getMessage()
+                                            );
+                                        }
                                         $ticket->is_notified = 3;
                                     }
 
@@ -159,23 +198,39 @@ class SlaEmailNotification extends Command
                                         && $currentTime > $ticket->resolved_time
                                         && $ticket->is_notified != 4
                                     ) {
-                                        $this->notifyViaEmail(
-                                            $newConnectionName,
-                                            $ticket,
-                                            "resolve_time_email",
-                                            "SLA Alert Resolve"
-                                        );
+                                        try {
+                                            $this->notifyViaEmail(
+                                                $newConnectionName,
+                                                $ticket,
+                                                "resolve_time_email",
+                                                "SLA Alert Resolve"
+                                            );
+                                        } catch (\Throwable $th) {
+                                            generateScheduleLogs(
+                                                "info",
+                                                "Tenant: {$tenant->domain_name} - Failed SLA Alert Resolve Email for Ticket {$ticket->id}",
+                                                $th->getMessage()
+                                            );
+                                        }
                                         $ticket->is_notified = 4;
                                         $adminUsers = User::on($newConnectionName)
                                             ->where("type", "=", 0)->first();
                                         $ticket->is_escalated = "Yes";
-                                        $this->notifyAdminViaEmail(
-                                            $newConnectionName,
-                                            $ticket,
-                                            $adminUsers,
-                                            "resolve_time_email",
-                                            "SLA Alert Resolve"
-                                        );
+                                        try {
+                                            $this->notifyAdminViaEmail(
+                                                $newConnectionName,
+                                                $ticket,
+                                                $adminUsers,
+                                                "resolve_time_email",
+                                                "SLA Alert Resolve"
+                                            );
+                                        } catch (\Throwable $th) {
+                                            generateScheduleLogs(
+                                                "info",
+                                                "Tenant: {$tenant->domain_name} - Failed Admin SLA Alert Resolve Email for Ticket {$ticket->id}",
+                                                $th->getMessage()
+                                            );
+                                        }
                                     }
                                 }
 
@@ -244,7 +299,6 @@ class SlaEmailNotification extends Command
     public function notifyAdminViaEmail($newConnectionName, $tickets, $adminUser, $type, $module)
     {
         setEmailConfig($newConnectionName);
-
         $senderEmail = config('mail.from.address');
 
         try {

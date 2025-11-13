@@ -96,6 +96,10 @@ class SupportTicketController extends Controller
         return $this->supportTicketRepository->list($request);
     }
 
+    public function indexCustomer(Request $request)
+    {
+        return $this->supportTicketRepository->listCustomer($request);
+    }
     /**
      * @OA\Post(
      *     path="/api/support-ticket",

@@ -123,6 +123,8 @@ return [
     'configuration_delete_success' => 'Configuration deleted successfully.',
     'neox_token_exists' => 'Neox token already exists.',
     'neox_local_ip_exists' => 'Neox local IP already exists.',
+    'sip_server_url_exists' => 'SIP Server URL already exists.',
+    'sip_ua_uri_domain_exists' => 'SIP Server URI Domain already exists.',
     'local_ip_not_found' => 'Local IP not configured.',
     'incident_type_delete' => 'Incident Type deleted successfully',
     'incident_type_not_found' => 'Incident Type not found.',
