@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+
 class NeoxConfigurationRequest extends FormRequest
 {
     /**
@@ -24,6 +25,8 @@ class NeoxConfigurationRequest extends FormRequest
         return [
             'neox_token' => 'required|string',
             'neox_local_ip' => 'required|ip',
+            'sip_server_url' => 'nullable|string|max:255',
+            'sip_ua_uri_domain' => 'nullable|string|max:255',
         ];
     }
 

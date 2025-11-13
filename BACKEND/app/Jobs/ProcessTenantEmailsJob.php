@@ -35,15 +35,24 @@ class ProcessTenantEmailsJob implements ShouldQueue
         $this->tenant       = $tenant;
         $this->commandRunId = $commandRunId;
         $this->jobRunId     = uniqid('job_', true);
+        generateScheduleLogs(
+            "info",
+            "running the job with data " . json_encode([
+                "tenant" => $this->tenant,
+                "command run id" => $this->commandRunId,
+                "job run id" => $this->jobRunId
+            ])
+        );
     }
 
     public function handle()
     {
         $tenant       = $this->tenant;
-        $connection   = str_replace(".", "_", $tenant->domain_name);
-        $databaseName = str_replace(".", "_", $tenant->domain_name);
+        $domain       = $tenant->domain_name;
+        $connection   = str_replace(".", "_", $domain);
+        $databaseName = str_replace(".", "_", $domain);
 
-        generateLogs(
+        generateScheduleLogs(
             "info",
             "Starting ProcessTenantEmailsJob" . json_encode([
                 'tenant_id'      => $tenant->id,
@@ -56,7 +65,7 @@ class ProcessTenantEmailsJob implements ShouldQueue
             DB::reconnect($connection);
 
             if (!Schema::connection($connection)->hasTable('email_configures')) {
-                generateLogs(
+                generateScheduleLogs(
                     "warning",
                     "email_configures table missing" . json_encode([
                         'command_run_id' => $this->commandRunId,
@@ -72,9 +81,25 @@ class ProcessTenantEmailsJob implements ShouldQueue
                 ->first();
 
             if (!$emailConfig) {
-                generateLogs(
+                generateScheduleLogs(
                     "warning",
                     "No email configuration found" . json_encode([
+                        'command_run_id' => $this->commandRunId,
+                        'job_run_id'     => $this->jobRunId,
+                        'tenant_id'      => $tenant->id,
+                    ])
+                );
+                return;
+            }
+
+            if (
+                !$emailConfig->imap_host ||
+                !$emailConfig->imap_password ||
+                !$emailConfig->imap_user
+            ) {
+                generateScheduleLogs(
+                    "warning",
+                    "No IMAP Configuration Found " . json_encode([
                         'command_run_id' => $this->commandRunId,
                         'job_run_id'     => $this->jobRunId,
                         'tenant_id'      => $tenant->id,
@@ -97,7 +122,7 @@ class ProcessTenantEmailsJob implements ShouldQueue
 
             $messages = $folder->messages()->unseen()->get();   // ->limit(20)->
 
-            generateLogs(
+            generateScheduleLogs(
                 "info",
                 "Fetched unseen emails" . json_encode([
                     'tenant_id'      => $tenant->id,
@@ -118,10 +143,10 @@ class ProcessTenantEmailsJob implements ShouldQueue
             ]);
 
             foreach ($messages as $message) {
-                $this->storeEmailAsTicket($message, $emailConfig, $connection, $databaseName);
+                $this->storeEmailAsTicket($message, $emailConfig, $connection, $databaseName, $domain);
             }
 
-            generateLogs(
+            generateScheduleLogs(
                 "info",
                 "Finished processing tenant emails" . json_encode([
                     'command_run_id' => $this->commandRunId,
@@ -130,7 +155,7 @@ class ProcessTenantEmailsJob implements ShouldQueue
                 ])
             );
         } catch (Exception $e) {
-            generateLogs(
+            generateScheduleLogs(
                 "error",
                 "Error processing tenant emails" . json_encode([
                     'command_run_id' => $this->commandRunId,
@@ -142,7 +167,7 @@ class ProcessTenantEmailsJob implements ShouldQueue
         }
     }
 
-    private function storeEmailAsTicket($message, $emailConfig, $connection, $databaseName)
+    private function storeEmailAsTicket($message, $emailConfig, $connection, $databaseName, $domain)
     {
         $from          = $message->getFrom();
         $emailAddress  = $from[0]->mail ?? '';
@@ -204,10 +229,12 @@ class ProcessTenantEmailsJob implements ShouldQueue
             $ticket,
             "Ticket Created",
             $name . " has created the ticket",
-            $connection
+            $connection,
+            $domain,
+            null,
         );
 
-        generateLogs(
+        generateScheduleLogs(
             "info",
             "Created support ticket" . json_encode([
                 'command_run_id' => $this->commandRunId,
@@ -216,14 +243,14 @@ class ProcessTenantEmailsJob implements ShouldQueue
                 'ticket_id'      => $ticket->id,
                 'ticket_no'      => $ticket->support_ticket_id,
                 'subject'        => $subjectFinal,
-                'attachments'    => count($attachment_urls),
+                'attachment_count'    => count($attachment_urls),
             ])
         );
 
         // Mark email as read
         $message->setFlag('Seen');
 
-        $uin = Detail::where('domain', $connection)->value('uin');
+        $uin = Detail::where('domain', $domain)->value('uin');
 
         establishDatabaseConnect($connection, $databaseName);
         DB::reconnect($connection);
@@ -237,7 +264,9 @@ class ProcessTenantEmailsJob implements ShouldQueue
 
             $agentMailTemplate = MailTemplate::on($connection)
                 ->where('type', 'created_ticket')
-                ->where('status', 'Active')->where('mail_for', 'agent')->first();
+                ->where('status', 'Active')
+                ->where('mail_for', 'agent')
+                ->first();
 
             if ($agentMailTemplate) {
                 $agentMailTemplate['subject'] = str_replace(
@@ -247,7 +276,7 @@ class ProcessTenantEmailsJob implements ShouldQueue
                 );
             }
         } catch (\Throwable $th) {
-            generateLogs("error", "Error fetching mail template: " . $th->getMessage());
+            generateScheduleLogs("error", "Error fetching mail template: " . $th->getMessage());
         }
 
         $adminMail = $emailConfig?->mailTo ?? Users::on($connection)->where('role_id', 1)->value('email');
@@ -257,8 +286,6 @@ class ProcessTenantEmailsJob implements ShouldQueue
             $ticket->support_ticket_id,
             $mailTemplate->subject
         );
-
-        generateLogs("info", "Sending mail to customer");
 
         MailDetail::on($connection)->create($this->buildMailData(
             $ticket,
@@ -298,7 +325,7 @@ class ProcessTenantEmailsJob implements ShouldQueue
 
         establishMasterConnection($connection, "omnichannel", "mysql");
 
-        generateLogs(
+        generateScheduleLogs(
             "info",
             "Sent confirmation mail" . json_encode([
                 'command_run_id' => $this->commandRunId,
@@ -310,11 +337,17 @@ class ProcessTenantEmailsJob implements ShouldQueue
         );
     }
 
-    private function createTicketNotification($supportticket, $type, $comment, $connection, $statusChange = null)
-    {
-        getDbConnection($connection, true);
-        // Create notification instance
-        $notification = new SupportTicketNotification();
+    private function createTicketNotification(
+        $supportticket,
+        $type,
+        $comment,
+        $connection,
+        $domain,
+        $statusChange = null,
+    ) {
+        getDbConnection($domain, true);
+
+        $notification = new SupportTicketNotification();    // Create notification instance
 
         $notification->fill([
             'type' => $statusChange ?? $type,
@@ -336,7 +369,6 @@ class ProcessTenantEmailsJob implements ShouldQueue
 
         establishMasterConnection($connection, "omnichannel", "mysql");
 
-        // Return the formatted response
         return [
             'type' => $statusChange,
             'status' => $notification->status,
@@ -368,9 +400,3 @@ class ProcessTenantEmailsJob implements ShouldQueue
         ];
     }
 }
-
-//DONE(MOSTLY) - check the values of data that is being stored in the support ticket
-
-// check how will the queue be restarted...
-
-// Incident ID configuration in the email_configures page

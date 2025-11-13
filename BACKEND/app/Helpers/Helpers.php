@@ -234,11 +234,11 @@ if (!function_exists('getNeoxConfig')) {
 
         // Get the 'neox_local_ip' and 'neox_token' from the database
         if (!$connection) {
-            $config = NeoxConfiguration::first(['neox_local_ip', 'neox_token']);
+            $config = NeoxConfiguration::first(['neox_local_ip', 'neox_token', 'sip_server_url', 'sip_ua_uri_domain']);
         } else {
             // If a custom connection is set up, retrieve the values
             $config = $connection->table('neox_configuration')
-                ->select('neox_local_ip', 'neox_token')
+                ->select('neox_local_ip', 'neox_token', 'sip_server_url', 'sip_ua_uri_domain')
                 ->first();
         }
 
@@ -253,6 +253,8 @@ if (!function_exists('getNeoxConfig')) {
         return [
             'neox_local_ip' => $config->neox_local_ip,
             'neox_token' => $config->neox_token,
+            'sip_server_url' => $config->sip_server_url ?? '', 
+            'sip_ua_uri_domain' => $config->sip_ua_uri_domain ?? '',
         ];
     }
 }
