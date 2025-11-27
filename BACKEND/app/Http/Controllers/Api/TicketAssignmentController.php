@@ -29,4 +29,9 @@ class TicketAssignmentController extends Controller
     {
         return $this->ticketAssignmentRepository->unassign($ticketId);
     }
+
+        public function autoAssignApi($ticketId)
+    {
+        return $this->ticketAssignmentRepository->autoAssignApi($ticketId);
+    }
 }

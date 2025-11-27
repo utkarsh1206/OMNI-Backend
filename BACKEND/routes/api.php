@@ -323,6 +323,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     //Route::apiResource('support-ticket', SupportTicketController::class);
     Route::get('support-ticket', [SupportTicketController::class, 'index'])
         ->middleware(CheckPermissionMiddleware::class . ":support_tickets," . PermissionAction::VIEW->value);
+    Route::get('support-ticket-customer', [SupportTicketController::class, 'index'])
+        ->middleware(CheckPermissionMiddleware::class . ":support_tickets," . PermissionAction::VIEW->value);
     Route::post('support-ticket', [SupportTicketController::class, 'store'])
         ->middleware(CheckPermissionMiddleware::class . ":support_tickets," . PermissionAction::CREATE->value);
     Route::get('support-ticket/{support_ticket}', [SupportTicketController::class, 'show'])
@@ -541,4 +543,69 @@ Route::prefix('assignment-histories')->group(function () {
     Route::apiResource('/', AssignmentHistoryController::class)->only(['index', 'show']);
 });
 
-Route::put('/auto-assign/{ticketId}', [TicketAssignmentController::class, 'autoAssign']);
+Route::put('/auto-assign/{ticketId}', [TicketAssignmentController::class, 'autoAssignApi']);
+
+
+// -------------
+
+
+// use Illuminate\Support\Facades\Route;
+
+Route::get('/test-endpoint-1', function () {
+    return response()->json([
+        [
+            'firstName'   => 'John',
+            'lastName'    => 'Doe',
+            'email'       => 'john.doe@example.com',
+            'mobile'      => '1234567890',
+            'subject'     => 'Doe John',
+            'description' => 'Test lead record',
+        ],
+        [
+            'firstName'   => 'Jane',
+            'lastName'    => 'Smith',
+            'email'       => 'jane.smith@example.com',
+            'mobile'      => '9876543210',
+            'subject'     => 'Smith Jane',
+            'description' => 'Second test record',
+        ]
+    ]);
+});
+
+Route::post('/test-endpoint-2', function (\Illuminate\Http\Request $request) {
+    return response()->json([
+        'firstName'   => $request->input('firstName', 'Default'),
+        'lastName'    => $request->input('lastName', 'Default'),
+        'email'       => $request->input('email', 'test@example.com'),
+        'mobile'      => $request->input('mobile', '0000000000'),
+        'subject'     => 'endpoint 2',
+        'laptopModel' => $request->input('laptopModel', 'NULL'),
+        'description' => 'Returned from POST endpoint',
+    ]);
+});
+
+use Illuminate\Http\Request;
+
+Route::get('/test-auth-endpoint-3', function (Request $request) {
+    $expectedKey = '123456qwerty';
+
+    $authHeader = $request->header('Authorization');
+
+    if ($authHeader !== 'Apikey ' . $expectedKey) {
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Unauthorized'
+        ], 401);
+    }
+
+    return response()->json([
+        [
+            'firstName'   => 'Secure',
+            'lastName'    => 'User',
+            'email'       => 'secure.user@example.com',
+            'mobile'      => '1231231234',
+            'description' => 'Data from secured endpoint',
+            'subject'     => 'Secured Endpoint',
+        ]
+    ]);
+});
