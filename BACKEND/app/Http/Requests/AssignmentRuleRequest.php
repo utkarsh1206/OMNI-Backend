@@ -27,7 +27,7 @@ class AssignmentRuleRequest extends FormRequest
             'incident_type_id' => 'nullable|exists:incident_types,id',
             'priority_id'      => 'nullable|exists:priorities,id',
             'sla_id'           => 'nullable|exists:sla_settings,id',
-            'method'           => 'required|in:round_robin,load_balance,random,priority',
+            'method'           => 'required|in:round_robin,least_loaded,department_first,priority_based,hybrid,random,live_agent_based',
             'parameters'       => 'nullable|array',
             'enabled'          => 'boolean',
             'priority_order'   => 'integer|min:1',

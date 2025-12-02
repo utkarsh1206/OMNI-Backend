@@ -23,6 +23,7 @@ class AssignmentRuleController extends Controller
 
     public function store(AssignmentRuleRequest $request)
     {
+        generateLogs("info", "request " . json_encode($request->all()));
         return $this->assignmentRuleRepository->create($request->validated());
     }
 

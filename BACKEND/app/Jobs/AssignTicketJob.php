@@ -5,7 +5,8 @@ namespace App\Jobs;
 use App\Models\SupportTicket;
 use App\Models\AssignmentRule;
 use App\Models\AssignmentHistory;
-use App\Models\User;
+// use App\Models\User; // Assuming User model is aliased as User
+use App\Models\Users; // Assuming Users is the model for agents (based on your repository file)
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Queue\SerializesModels;
@@ -21,34 +22,45 @@ class AssignTicketJob implements ShouldQueue
 
     public function __construct(SupportTicket $ticket)
     {
-        generateLogs("info", "Inside the constructor");
+        generateLogs("info", "AssignTicketJob: Initializing for Ticket ID: " . $ticket->id);
         $this->ticket = $ticket;
     }
 
-    public function handle(): void
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle()
     {
-        generateLogs("info", "inside the assign ticket job");
-        // Skip if already assigned
-        if ($this->ticket->assign_to_id && $this->ticket->assign_to_id > 0) {
+        generateLogs("info", "AssignTicketJob: Starting assignment process for Ticket ID: " . $this->ticket->id);
+
+        // Case 0: Skip if already assigned to a non-Admin ID (Admin ID is assumed to be 1)
+        if ($this->ticket->assign_to_id && $this->ticket->assign_to_id > 1) {
+            generateLogs("info", "AssignTicketJob: Skipping. Ticket already assigned to agent ID: " . $this->ticket->assign_to_id);
             return;
         }
 
-        // Case 1: If created by agent → assign to same agent
-        if ($this->ticket->created_by && $this->ticket->creator->role_id === 3) {
-            $this->assign($this->ticket->creator->id, 'self_assign');
-            return;
-        }
+        // // Case 1: If created by agent → assign to same agent
+        // // Assuming 'creator' relationship exists and role_id 3 is an agent
+        // if (isset($this->ticket->creator) && $this->ticket->creator->role_id === 3) {
+        //     $this->assign($this->ticket->creator->id, 'self_assign', $this->ticket, null, 'Created by agent');
+        //     generateLogs("info", "AssignTicketJob: Self-assigned to creator agent ID: " . $this->ticket->creator->id);
+        //     return;
+        // }
 
         // Case 2: Auto assignment via rules
-        $rule = $this->findApplicableRule();
+        $rule = $this->findApplicableRule($this->ticket);
 
         if (!$rule) {
             // Fallback: unassigned
-            $this->assign(0, 'unassigned', null, 'No matching rule found');
+            $this->assign(0, 'unassigned', $this->ticket, null, 'No matching rule found');
+            generateLogs("warning", "AssignTicketJob: No rule found. Ticket ID: " . $this->ticket->id);
             return;
         }
 
         $agentId = null;
+        generateLogs("info", "AssignTicketJob: Rule matched (ID: {$rule->id}, Method: {$rule->method})");
 
         switch ($rule->method) {
             case 'round_robin':
@@ -59,58 +71,71 @@ class AssignTicketJob implements ShouldQueue
                 $agentId = $this->leastLoadedAssign($rule);
                 break;
 
+            case 'random':
+                $agentId = $this->randomAssign($rule);
+                break;
+
+            case 'live_agent':
+                $agentId = $this->liveAgentAssign($rule);
+                break;
+
             default:
-                $agentId = $this->roundRobinAssign($rule); // fallback to round_robin
+                // Fallback to round_robin
+                $agentId = $this->roundRobinAssign($rule);
                 break;
         }
 
         if ($agentId) {
-            $this->assign($agentId, $rule->method, $rule->id);
+            $this->assign($agentId, $rule->method, $this->ticket, $rule->id, "Auto-assigned by rule {$rule->id}");
+            generateLogs("info", "AssignTicketJob: Successfully assigned Ticket ID: {$this->ticket->id} to Agent ID: {$agentId}");
         } else {
-            $this->assign(0, 'unassigned', $rule->id, 'No eligible agent found');
+            $this->assign(0, 'unassigned', $this->ticket, $rule->id, 'No eligible agent found under rule');
+            generateLogs("warning", "AssignTicketJob: No eligible agent found for Ticket ID: " . $this->ticket->id);
         }
     }
 
-    protected function findApplicableRule(): ?AssignmentRule
+    /**
+     * Finds the most applicable assignment rule.
+     */
+    protected function findApplicableRule(SupportTicket $ticket): ?AssignmentRule
     {
+        // Using the logic from the repository: prioritize rules that match
+        // EITHER incident OR department, ordered by priority_order.
         return AssignmentRule::query()
-            ->where(function ($q) {
-                if ($this->ticket->incident_id) {
-                    $q->where('incident_type_id', $this->ticket->incident_id);
-                }
-            })
-            ->orWhere(function ($q) {
-                if ($this->ticket->department_id) {
-                    $q->where('department_id', $this->ticket->department_id);
-                }
-            })
             ->where('enabled', true)
+            ->where(function ($q) use ($ticket) {
+                // Match by incident_id
+                if ($ticket->incident_id) {
+                    $q->where('incident_type_id', $ticket->incident_id);
+                }
+                // OR match by department_id
+                if ($ticket->department_id) {
+                    $q->orWhere('department_id', $ticket->department_id);
+                }
+            })
             ->orderByDesc('priority_order')
             ->first();
     }
 
     /**
-     * // Better rule than above as it checks for only department too,
-     * // Also when there is incident_id, there will be department ID by default.
-     * protected function findApplicableRule(): ?AssignmentRule
-     * {
-     * return AssignmentRule::query()
-     *     ->where('enabled', true)
-     *     ->where(function ($q) {
-     *         if ($this->ticket->incident_id && $this->ticket->department_id) {
-     *             // Match both department and incident
-     *             $q->where('department_id', $this->ticket->department_id)
-     *               ->where('incident_type_id', $this->ticket->incident_id);
-     *         } elseif ($this->ticket->department_id) {
-     *             // Fallback: match department only
-     *             $q->where('department_id', $this->ticket->department_id);
-     *         }
-     *     })
-     *     ->orderByDesc('priority_order')
-     *     ->first();
-     * }
+     * Retrieves all eligible agents for a rule (based on department and role).
      */
+    protected function eligibleAgents(AssignmentRule $rule): array
+    {
+        // Using Users model based on your repository file
+        $query = Users::query()->where('role_id', 3)->where('is_delete', 'No');
 
+        if ($rule->department_id) {
+            // Assuming the 'usergroup' relationship links Users to departments
+            $query->whereHas('usergroup', fn($q) => $q->where('department_id', $rule->department_id));
+        }
+
+        return $query->pluck('id')->all();
+    }
+
+    /**
+     * Assigns using a Round Robin algorithm.
+     */
     protected function roundRobinAssign(AssignmentRule $rule): ?int
     {
         return DB::transaction(function () use ($rule) {
@@ -129,7 +154,7 @@ class AssignTicketJob implements ShouldQueue
                 $nextIdx = ($idx + 1) % $sorted->count();
             }
 
-            $nextAgent = $sorted[$nextIdx];
+            $nextAgent = $sorted->get($nextIdx);
 
             // update cursor in JSON
             $params['round_robin']['last_agent_id'] = $nextAgent;
@@ -140,6 +165,9 @@ class AssignTicketJob implements ShouldQueue
         });
     }
 
+    /**
+     * Assigns to the agent with the fewest currently active tickets.
+     */
     protected function leastLoadedAssign(AssignmentRule $rule): ?int
     {
         $eligible = $this->eligibleAgents($rule);
@@ -147,6 +175,7 @@ class AssignTicketJob implements ShouldQueue
             return null;
         }
 
+        // Count active tickets (where status is NOT 2 or 3) for the eligible agents
         $counts = DB::table('support_tickets')
             ->select('assign_to_id', DB::raw('COUNT(*) as active_count'))
             ->whereIn('assign_to_id', $eligible)
@@ -155,11 +184,13 @@ class AssignTicketJob implements ShouldQueue
             ->pluck('active_count', 'assign_to_id')
             ->all();
 
+        // Map eligible agents to their count, defaulting to 0 for agents with no tickets
         $sorted = collect($eligible)
             ->map(fn($id) => [
                 'id' => $id,
                 'count' => $counts[$id] ?? 0,
             ])
+            // Sort by count (least loaded first) then by ID (for stable tie-breaking)
             ->sortBy(['count', 'id'])
             ->first();
 
@@ -167,281 +198,140 @@ class AssignTicketJob implements ShouldQueue
     }
 
     /**
-     * protected function priorityBasedAssign(AssignmentRule $rule, SupportTicket $ticket): ?int
-     * {
-     *     $priority = $ticket->default_priority ?? 1;
-     *     $minLevel = $this->getMinRequiredLevel($priority);
-     * 
-     *     $eligible = $this->eligibleAgentsByLevel($minLevel, $rule);
-     * 
-     *     return $this->leastLoadedAmong($eligible);
-     * }
-     * 
-     * protected function getMinRequiredLevel(int $priority): int
-     * {
-     *     $allPriorities = DB::table('support_tickets')
-     *         ->distinct()
-     *         ->pluck('default_priority')
-     *         ->sort()
-     *         ->values();
-     * 
-     *     $count = $allPriorities->count();
-     *     if ($count === 0) {
-     *         return 1; // fallback
-     *     }
-     * 
-     *     $bandSize = ceil($count / 3);
-     * 
-     *     $lowBand = $allPriorities->slice(0, $bandSize);
-     *     $midBand = $allPriorities->slice($bandSize, $bandSize);
-     *     $highBand = $allPriorities->slice($bandSize * 2);
-     * 
-     *     if ($highBand->contains($priority)) {
-     *         return 3;
-     *     } elseif ($midBand->contains($priority)) {
-     *         return 2;
-     *     } else {
-     *         return 1;
-     *     }
-     * }
-     * 
-     * protected function eligibleAgentsByLevel(int $minLevel, AssignmentRule $rule): array
-     * {
-     *     return User::query()
-     *         ->where('role_id', 3)
-     *         ->where('is_delete', 'No')
-     *         ->where('level', '>=', $minLevel)
-     *         ->when($rule->department_id, fn($q) =>
-     *             $q->whereHas('usergroup', fn($q2) =>
-     *                 $q2->where('department_id', $rule->department_id)
-     *             )
-     *         )
-     *         ->pluck('id')
-     *         ->all();
-     * }
-     * 
-     * protected function leastLoadedAmong(array $agentIds): ?int
-     * {
-     *     if (empty($agentIds)) {
-     *         return null;
-     *     }
-     * 
-     *     $counts = DB::table('support_tickets')
-     *         ->select('assign_to_id', DB::raw('COUNT(*) as active_count'))
-     *         ->whereIn('assign_to_id', $agentIds)
-     *         ->whereNotIn('default_status', [2, 3]) // adjust if needed
-     *         ->groupBy('assign_to_id')
-     *         ->pluck('active_count', 'assign_to_id')
-     *         ->all();
-     * 
-     *     $sorted = collect($agentIds)
-     *         ->map(fn($id) => ['id' => $id, 'count' => $counts[$id] ?? 0])
-     *         ->sortBy(['count', 'id'])
-     *         ->first();
-     * 
-     *     return $sorted['id'] ?? null;
-     * }
+     * Assigns randomly to an eligible agent.
      */
-
-    // Better approact to priority based assign
-    // protected function priorityBasedAssign(AssignmentRule $rule, SupportTicket $ticket): ?int
-    // {
-    //     $priority = $ticket->default_priority ?? 1;
-
-    //     // Step 1: Check if level mapping exists in parameters
-    //     $params = $rule->parameters ?? [];
-    //     $levelMap = $params['priority_level_map'] ?? [];
-
-    //     // Step 2: If not mapped, compute and store it
-    //     if (!array_key_exists($priority, $levelMap)) {
-    //         $allPriorities = DB::table('support_tickets')
-    //             ->distinct()
-    //             ->pluck('default_priority')
-    //             ->sort()
-    //             ->values();
-
-    //         $count = $allPriorities->count();
-    //         $minLevel = 1;
-
-    //         if ($count > 0) {
-    //             $bandSize = ceil($count / 3);
-    //             $lowBand = $allPriorities->slice(0, $bandSize);
-    //             $midBand = $allPriorities->slice($bandSize, $bandSize);
-    //             $highBand = $allPriorities->slice($bandSize * 2);
-
-    //             if ($highBand->contains($priority)) {
-    //                 $minLevel = 3;
-    //             } elseif ($midBand->contains($priority)) {
-    //                 $minLevel = 2;
-    //             }
-    //         }
-
-    //         // Store the computed level in rule parameters
-    //         $params['priority_level_map'][$priority] = $minLevel;
-    //         $rule->parameters = $params;
-    //         $rule->save();
-    //     } else {
-    //         $minLevel = $levelMap[$priority];
-    //     }
-
-    //     // Step 3: Get eligible agents based on level and department
-    //     $eligible = User::query()
-    //         ->where('role_id', 3)
-    //         ->where('is_delete', 'No')
-    //         ->where('level', '>=', $minLevel)
-    //         ->when(
-    //             $rule->department_id,
-    //             fn($q) =>
-    //             $q->whereHas(
-    //                 'usergroup',
-    //                 fn($q2) =>
-    //                 $q2->where('department_id', $rule->department_id)
-    //             )
-    //         )
-    //         ->pluck('id')
-    //         ->all();
-
-    //     if (empty($eligible)) {
-    //         return null;
-    //     }
-
-    //     // Step 4: Load balancing — pick least-loaded agent
-    //     $counts = DB::table('support_tickets')
-    //         ->select('assign_to_id', DB::raw('COUNT(*) as active_count'))
-    //         ->whereIn('assign_to_id', $eligible)
-    //         ->whereNotIn('default_status', [2, 3]) // adjust if needed
-    //         ->groupBy('assign_to_id')
-    //         ->pluck('active_count', 'assign_to_id')
-    //         ->all();
-
-    //     $sorted = collect($eligible)
-    //         ->map(fn($id) => ['id' => $id, 'count' => $counts[$id] ?? 0])
-    //         ->sortBy(['count', 'id'])
-    //         ->first();
-
-    //     return $sorted['id'] ?? null;
-    // }
-
-    // protected function hybridAssign(AssignmentRule $rule, SupportTicket $ticket): ?int
-    // {
-    //     $priority = $ticket->default_priority ?? 1;
-    //     $params = $rule->parameters ?? [];
-    //     $levelMap = $params['priority_level_map'] ?? [];
-
-    //     // Step 1: Compute and store level if missing
-    //     if (!array_key_exists($priority, $levelMap)) {
-    //         $allPriorities = DB::table('support_tickets')
-    //             ->distinct()
-    //             ->pluck('default_priority')
-    //             ->sort()
-    //             ->values();
-
-    //         $count = $allPriorities->count();
-    //         $minLevel = 1;
-
-    //         if ($count > 0) {
-    //             $bandSize = ceil($count / 3);
-    //             $lowBand = $allPriorities->slice(0, $bandSize);
-    //             $midBand = $allPriorities->slice($bandSize, $bandSize);
-    //             $highBand = $allPriorities->slice($bandSize * 2);
-
-    //             if ($highBand->contains($priority)) {
-    //                 $minLevel = 3;
-    //             } elseif ($midBand->contains($priority)) {
-    //                 $minLevel = 2;
-    //             }
-    //         }
-
-    //         $params['priority_level_map'][$priority] = $minLevel;
-    //         $rule->parameters = $params;
-    //         $rule->save();
-    //     } else {
-    //         $minLevel = $levelMap[$priority];
-    //     }
-
-    //     // Step 2: Get eligible agents
-    //     $eligible = User::query()
-    //         ->where('role_id', 3)
-    //         ->where('is_delete', 'No')
-    //         ->where('level', '>=', $minLevel)
-    //         ->when(
-    //             $rule->department_id,
-    //             fn($q) =>
-    //             $q->whereHas(
-    //                 'usergroup',
-    //                 fn($q2) =>
-    //                 $q2->where('department_id', $rule->department_id)
-    //             )
-    //         )
-    //         ->pluck('id')
-    //         ->all();
-
-    //     if (empty($eligible)) {
-    //         return null;
-    //     }
-
-    //     // Step 3: Get load counts
-    //     $counts = DB::table('support_tickets')
-    //         ->select('assign_to_id', DB::raw('COUNT(*) as active_count'))
-    //         ->whereIn('assign_to_id', $eligible)
-    //         ->whereNotIn('default_status', [2, 3])
-    //         ->groupBy('assign_to_id')
-    //         ->pluck('active_count', 'assign_to_id')
-    //         ->all();
-
-    //     // Step 4: Find agents with minimum load
-    //     $minLoad = collect($eligible)->map(fn($id) => $counts[$id] ?? 0)->min();
-
-    //     $leastLoaded = collect($eligible)
-    //         ->filter(fn($id) => ($counts[$id] ?? 0) === $minLoad)
-    //         ->sort()
-    //         ->values();
-
-    //     if ($leastLoaded->isEmpty()) {
-    //         return null;
-    //     }
-
-    //     // Step 5: Apply round-robin among least-loaded agents
-    //     $lastId = $params['hybrid']['last_agent_id'] ?? null;
-    //     $nextIdx = 0;
-
-    //     if ($lastId && ($idx = $leastLoaded->search($lastId)) !== false) {
-    //         $nextIdx = ($idx + 1) % $leastLoaded->count();
-    //     }
-
-    //     $nextAgent = $leastLoaded->get($nextIdx);
-
-    //     // Step 6: Update round-robin cursor
-    //     $params['hybrid']['last_agent_id'] = $nextAgent;
-    //     $rule->parameters = $params;
-    //     $rule->save();
-
-    //     return $nextAgent;
-    // }
-
-
-
-    protected function eligibleAgents(AssignmentRule $rule): array
+    protected function randomAssign(AssignmentRule $rule): ?int
     {
-        // For now: pick agents in same department → via user_groups
-        $query = User::query()->where('role_id', 3)->where('is_delete', 'No');
+        $eligible = $this->eligibleAgents($rule);
 
-        if ($rule->department_id) {
-            $query->whereHas('usergroup', fn($q) => $q->where('department_id', $rule->department_id));
+        if (empty($eligible)) {
+            return null;
         }
 
-        return $query->pluck('id')->all();
+        // Randomly select one agent ID from the array
+        return $eligible[array_rand($eligible)];
     }
 
-    protected function assign(int $agentId, string $method, ?int $ruleId = null, ?string $reason = null): void
+    /**
+     * Assigns to a currently "live" agent, falling back to standard RR/LL if none are live.
+     */
+    protected function liveAgentAssign(AssignmentRule $rule): ?int
     {
-        $this->ticket->assign_to_id = $agentId;
-        $this->ticket->save();
+        $allEligibleAgentIds = $this->eligibleAgents($rule);
+
+        if (empty($allEligibleAgentIds)) {
+            return null;
+        }
+
+        $params = $rule->parameters['live_agent'] ?? [];
+
+        // 1. Find agents in 'live_agents' table who are also eligible by rule
+        $liveAgentsQuery = DB::table('live_agents')
+            ->whereIn('user_id', $allEligibleAgentIds);
+
+        // 2. Apply activity threshold filter if configured
+        if (isset($params['activity_threshold_minutes']) && $params['activity_threshold_minutes'] > 0) {
+            $minutes = $params['activity_threshold_minutes'];
+            $threshold = now()->subMinutes($minutes);
+            $liveAgentsQuery->where('agent_last_activity', '>', $threshold);
+        }
+
+        $liveAgentIds = $liveAgentsQuery->pluck('user_id')->all();
+
+        // 3. Fallback: If no live agents found, default to standard round_robin on ALL eligible agents
+        if (empty($liveAgentIds)) {
+            generateLogs("warning", "AssignTicketJob: No live agents found for Ticket ID: {$this->ticket->id}. Falling back to standard round_robin.");
+            return $this->roundRobinAssign($rule);
+        }
+
+        // 4. Determine assignment method for live agents
+        $liveMethod = $params['assignment_method'] ?? 'round_robin';
+
+        if ($liveMethod === 'least_loaded') {
+            // Apply least loaded algorithm only on the subset of live agents
+            return $this->leastLoadedOnSet($liveAgentIds);
+        }
+
+        // Default: Apply round robin on the subset of live agents
+        return $this->roundRobinOnSet($liveAgentIds, $rule);
+    }
+
+    /**
+     * Finds the least loaded agent from a specific array of IDs.
+     */
+    protected function leastLoadedOnSet(array $agentIds): ?int
+    {
+        if (empty($agentIds)) {
+            return null;
+        }
+
+        $counts = DB::table('support_tickets')
+            ->select('assign_to_id', DB::raw('COUNT(*) as active_count'))
+            ->whereIn('assign_to_id', $agentIds)
+            ->whereNotIn('default_status', [2, 3])
+            ->groupBy('assign_to_id')
+            ->pluck('active_count', 'assign_to_id')
+            ->all();
+
+        $sorted = collect($agentIds)
+            ->map(fn($id) => ['id' => $id, 'count' => $counts[$id] ?? 0])
+            ->sortBy(['count', 'id'])
+            ->first();
+
+        return $sorted['id'] ?? null;
+    }
+
+    /**
+     * Assigns using Round Robin on a specific array of IDs, updating the 'live_agent' rule parameters.
+     */
+    protected function roundRobinOnSet(array $agentIds, AssignmentRule $rule): ?int
+    {
+        return DB::transaction(function () use ($agentIds, $rule) {
+
+            if (empty($agentIds)) {
+                return null;
+            }
+
+            // Use 'live_agent' key for parameter storage
+            $params = $rule->parameters ?? [];
+            $liveAgentParams = $params['live_agent'] ?? [];
+
+            $lastId = $liveAgentParams['last_agent_id'] ?? null;
+            $sorted = collect($agentIds)->sort()->values();
+
+            $nextIdx = 0;
+            if ($lastId && ($idx = $sorted->search($lastId)) !== false) {
+                $nextIdx = ($idx + 1) % $sorted->count();
+            }
+
+            $nextAgent = $sorted->get($nextIdx);
+
+            // Update cursor in JSON, under the 'live_agent' key
+            $params['live_agent']['last_agent_id'] = $nextAgent;
+            $rule->parameters = $params;
+            $rule->save();
+
+            return $nextAgent;
+        });
+    }
+
+    /**
+     * Saves the assignment to the ticket and creates an AssignmentHistory record.
+     */
+    protected function assign(
+        int $agentId,
+        string $method,
+        SupportTicket $ticket,
+        ?int $ruleId = null,
+        ?string $reason = null
+    ): void {
+        $ticket->assign_to_id = $agentId;
+        $ticket->save();
 
         AssignmentHistory::create([
-            'ticket_id' => $this->ticket->id,
+            'ticket_id' => $ticket->id,
             'assigned_to_id' => $agentId,
-            'assigned_by_id' => auth()->id() ?? null,
+            'assigned_by_id' => auth()->user()->id ?? null,
             'assignment_method' => $method,
             'rule_id' => $ruleId,
             'reason' => $reason,
