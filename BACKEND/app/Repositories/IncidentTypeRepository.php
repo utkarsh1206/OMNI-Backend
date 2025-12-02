@@ -82,7 +82,10 @@ class IncidentTypeRepository
                         $q->where('id', $departmentId);
                     });
                 } else {
-                    $query->where('department_id', $department_id);
+                    // $query->where('department_id', $department_id);
+                    $query->whereHas('category.department', function ($q) use ($department_id) {
+                        $q->where('id', $department_id);
+                    });
                 }
             }
 

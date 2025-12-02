@@ -19,7 +19,9 @@ return new class extends Migration {
                 'least_loaded',
                 'department_first',
                 'priority_based',
-                'hybrid'
+                'hybrid',
+                'live_agent_based',
+                'random'
             ]);
             $table->json('parameters')->nullable();
             $table->boolean('enabled')->default(true);

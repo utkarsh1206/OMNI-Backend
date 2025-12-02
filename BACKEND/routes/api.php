@@ -487,6 +487,25 @@ Route::middleware(['jwt.auth'])->group(function () {
     });
 
     Route::post('send-lead-mail/{template_id}', [LeadMailController::class, 'send']);
+
+    Route::prefix('auto-assignment-rules')->group(function () {
+        Route::get('/', [AssignmentRuleController::class, 'index']);         // list rules
+        Route::post('/', [AssignmentRuleController::class, 'store']);        // create new rule
+        Route::get('/{id}', [AssignmentRuleController::class, 'show']);      // view single rule
+        Route::put('/{id}', [AssignmentRuleController::class, 'update']);    // update rule
+        Route::delete('/{id}', [AssignmentRuleController::class, 'destroy']); // delete rule
+
+        // Maybe extra endpoints if needed
+        Route::post('/{id}/toggle', [AssignmentRuleController::class, 'toggleStatus']);
+        // Route::post('/{id}/deactivate', [AssignmentRuleController::class, 'toggleStatus']);
+    });
+
+    Route::prefix('assignment-histories')->group(function () {
+        Route::get('/ticket/{ticketId}', [AssignmentHistoryController::class, 'byTicket']);
+        Route::apiResource('/', AssignmentHistoryController::class)->only(['index', 'show']);
+    });
+
+    Route::put('/auto-assign/{ticketId}', [TicketAssignmentController::class, 'autoAssignApi']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
@@ -526,24 +545,6 @@ Route::prefix('user-roles')->group(function () {
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
 
-Route::prefix('auto-assignment-rules')->group(function () {
-    Route::get('/', [AssignmentRuleController::class, 'index']);         // list rules
-    Route::post('/', [AssignmentRuleController::class, 'store']);        // create new rule
-    Route::get('/{id}', [AssignmentRuleController::class, 'show']);      // view single rule
-    Route::put('/{id}', [AssignmentRuleController::class, 'update']);    // update rule
-    Route::delete('/{id}', [AssignmentRuleController::class, 'destroy']); // delete rule
-
-    // Maybe extra endpoints if needed
-    Route::post('/{id}/toggle', [AssignmentRuleController::class, 'toggleStatus']);
-    // Route::post('/{id}/deactivate', [AssignmentRuleController::class, 'toggleStatus']);
-});
-
-Route::prefix('assignment-histories')->group(function () {
-    Route::get('/ticket/{ticketId}', [AssignmentHistoryController::class, 'byTicket']);
-    Route::apiResource('/', AssignmentHistoryController::class)->only(['index', 'show']);
-});
-
-Route::put('/auto-assign/{ticketId}', [TicketAssignmentController::class, 'autoAssignApi']);
 
 
 // -------------

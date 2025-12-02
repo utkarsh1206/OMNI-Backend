@@ -9,6 +9,7 @@ use App\Http\Response\CustomApiResponse;
 use App\Models\AssignmentRule;
 use App\Models\Users;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -85,9 +86,12 @@ class TicketAssignmentRepository
         }
     }
 
-    public function autoAssignApi($ticketId)
+    public function autoAssignApi(Request $request, $ticketId)
     {
         try {
+
+            $payload = extractPayload($request->bearerToken());
+
             $ticket = SupportTicket::findOrFail($ticketId);
 
             generateLogs("info", "inside the assign ticket job");
@@ -97,10 +101,10 @@ class TicketAssignmentRepository
             }
 
             // If created by agent → assign to same agent
-            // if ($ticket->created_by && $ticket->creator->role_id === 3) {
-            //     $this->assign($ticket->creator->id, 'self_assign');
-            //     return;
-            // }
+            if ($payload['role_id'] && $payload['role_id'] === 3) {
+                $this->assign(auth()->user()->id, 'self-asign', $ticket, null, "Ticket created by agent");
+                return;
+            }
 
             // Auto assignment via rules
             $rule = $this->findApplicableRule($ticket);
@@ -135,8 +139,8 @@ class TicketAssignmentRepository
                     break;
 
                 default:
-                    generateLogs("info", "CASE Default (round robin)");
-                    $agentId = $this->roundRobinAssign($rule); // fallback to round_robin
+                    generateLogs("info", "CASE Default (Random)");
+                    $agentId = $this->randomAssign($rule); // fallback to random
                     break;
             }
 
@@ -335,10 +339,8 @@ class TicketAssignmentRepository
         $query = Users::query()->where('role_id', 3)->where('is_delete', 'No');
         generateLogs("info", "Running query");
         if ($rule->department_id) {
-            generateLogs("info", "in if statement");
             $query->whereHas('usergroup', fn($q) => $q->where('department_id', $rule->department_id));
         }
-        generateLogs("info", "after if statement");
         return $query->pluck('id')->all();
     }
 

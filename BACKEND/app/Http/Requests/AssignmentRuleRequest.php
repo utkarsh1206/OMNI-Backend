@@ -30,7 +30,7 @@ class AssignmentRuleRequest extends FormRequest
             'method'           => 'required|in:round_robin,least_loaded,department_first,priority_based,hybrid,random,live_agent_based',
             'parameters'       => 'nullable|array',
             'enabled'          => 'boolean',
-            'priority_order'   => 'integer|min:1',
+            'priority_order'   => 'nullable|integer|min:1',
         ];
     }
 
