@@ -110,6 +110,7 @@ use App\Http\Controllers\Api\ThirdPartyCrmController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\NetworkCheckController;
 use App\Http\Controllers\Api\CustomChatBotController;
+use App\Http\Controllers\Api\HashController;
 use App\Http\Controllers\Api\LeadMailController;
 use App\Http\Controllers\Api\ListTemplateMapController;
 use App\Http\Controllers\Api\TicketAssignmentController;
@@ -610,3 +611,5 @@ Route::get('/test-auth-endpoint-3', function (Request $request) {
         ]
     ]);
 });
+
+Route::get('/hash/{input}', [HashController::class, 'hashString']);
