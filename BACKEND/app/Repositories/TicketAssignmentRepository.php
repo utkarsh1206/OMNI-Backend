@@ -7,6 +7,7 @@ use App\Models\AssignmentHistory;
 use App\Jobs\AssignTicketJob;
 use App\Http\Response\CustomApiResponse;
 use App\Models\AssignmentRule;
+use App\Models\MailTemplate;
 use App\Models\Users;
 use Exception;
 use Illuminate\Http\Request;
@@ -22,29 +23,10 @@ class TicketAssignmentRepository
         $this->apiResponse = $customApiResponse;
     }
 
-    public function manualAssign($ticketId, $request)
-    {
-        try {
-            $ticket = SupportTicket::findOrFail($ticketId);
-            $agentId = $request->input('agent_id');
-
-            $ticket->assign_to_id = $agentId;
-            $ticket->save();
-
-            AssignmentHistory::create([
-                'ticket_id' => $ticket->id,
-                'assigned_to_id' => $agentId,
-                'assigned_by_id' => Auth::id(),
-                'assignment_method' => 'manual',
-                'reason' => $request->input('reason', 'Manual assignment'),
-            ]);
-
-            return $this->apiResponse->success($ticket, 'Ticket manually assigned.');
-        } catch (Exception $ex) {
-            return $this->apiResponse->handleAndResponseException($ex);
-        }
-    }
-
+    /**
+     * This function will be very much required
+     * when we will be creating JOB for auto assign.
+     */
     public function autoAssign($ticketId)
     {
         try {
@@ -64,6 +46,10 @@ class TicketAssignmentRepository
         }
     }
 
+    /**
+     * This function can come in handy in the case
+     * when we require to unassign a ticket
+     */
     public function unassign($ticketId)
     {
         try {
@@ -89,12 +75,14 @@ class TicketAssignmentRepository
     public function autoAssignApi(Request $request, $ticketId)
     {
         try {
-
             $payload = extractPayload($request->bearerToken());
 
             $ticket = SupportTicket::findOrFail($ticketId);
 
+            $usergroupId = $request->input('usergroup_id');
+
             generateLogs("info", "inside the assign ticket job");
+
             // Skip if already assigned
             if ($ticket->assign_to_id && $ticket->assign_to_id > 1) {   // user_id = 1 is defined for Admin
                 return;
@@ -110,7 +98,6 @@ class TicketAssignmentRepository
             $rule = $this->findApplicableRule($ticket);
             generateLogs("info", "rule found " . json_encode($rule));
             if (!$rule) {
-                // Fallback: unassigned
                 $this->assign(0, 'unassigned', $ticket, null, 'No matching rule found');
                 return;
             }
@@ -120,27 +107,27 @@ class TicketAssignmentRepository
             switch ($rule->method) {
                 case 'round_robin':
                     generateLogs("info", "CASE Round Robin");
-                    $agentId = $this->roundRobinAssign($rule);
+                    $agentId = $this->roundRobinAssign($rule, $usergroupId);
                     break;
 
                 case 'least_loaded':
                     generateLogs("info", "CASE Least Loaded");
-                    $agentId = $this->leastLoadedAssign($rule);
+                    $agentId = $this->leastLoadedAssign($rule, $usergroupId);
                     break;
 
                 case 'random':
                     generateLogs("info", "CASE Random");
-                    $agentId = $this->randomAssign($rule);
+                    $agentId = $this->randomAssign($rule, $usergroupId);
                     break;
 
                 case 'live_agent':
                     generateLogs("info", "CASE Live Agent Assignment");
-                    $agentId = $this->liveAgentAssign($rule);
+                    $agentId = $this->liveAgentAssign($rule, $usergroupId);
                     break;
 
                 default:
                     generateLogs("info", "CASE Default (Random)");
-                    $agentId = $this->randomAssign($rule); // fallback to random
+                    $agentId = $this->randomAssign($rule, $usergroupId); // fallback to random
                     break;
             }
 
@@ -149,6 +136,7 @@ class TicketAssignmentRepository
             } else {
                 $this->assign(0, 'unassigned', $ticket, $rule->id, 'No eligible agent found');
             }
+
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $ticket,
@@ -178,13 +166,15 @@ class TicketAssignmentRepository
             ->first();
     }
 
-    protected function roundRobinAssign(AssignmentRule $rule): ?int
+    protected function roundRobinAssign(AssignmentRule $rule, ?int $usergroupId = null): ?int
     {
-        return DB::transaction(function () use ($rule) {
+        return DB::transaction(function () use ($rule, $usergroupId) {
             generateLogs("info", "inside round robin funciton");
+
             $params = $rule->parameters ?? [];
             generateLogs("info", "found params" . json_encode($params));
-            $eligible = $this->eligibleAgents($rule);
+
+            $eligible = $this->eligibleAgents($rule, $usergroupId);
             generateLogs("info", "found agent " . json_encode($eligible));
 
             if (empty($eligible)) {
@@ -211,9 +201,10 @@ class TicketAssignmentRepository
         });
     }
 
-    protected function leastLoadedAssign(AssignmentRule $rule): ?int
+    protected function leastLoadedAssign(AssignmentRule $rule, ?int $usergroupId = null): ?int
     {
-        $eligible = $this->eligibleAgents($rule);
+        $eligible = $this->eligibleAgents($rule, $usergroupId);
+        generateLogs("info", "Eligible agents " . json_encode($eligible));
         if (empty($eligible)) {
             return null;
         }
@@ -241,9 +232,9 @@ class TicketAssignmentRepository
      * Assigns a ticket to a currently live agent using Round Robin or Least Loaded.
      * Fallbacks to standard Round Robin if no agents are live.
      */
-    protected function liveAgentAssign(AssignmentRule $rule): ?int
+    protected function liveAgentAssign(AssignmentRule $rule, ?int $usergroupId = null): ?int
     {
-        $allEligibleAgentIds = $this->eligibleAgents($rule);
+        $allEligibleAgentIds = $this->eligibleAgents($rule, $usergroupId);
         generateLogs("info", "All eligible agents: " . json_encode($allEligibleAgentIds));
 
         if (empty($allEligibleAgentIds)) {
@@ -251,39 +242,15 @@ class TicketAssignmentRepository
             return null;
         }
 
-        // // 1. Find agents that are currently logged in (Live)
-        // $liveAgentIds = DB::table('live_agents')
-        //     ->whereIn('user_id', $allEligibleAgentIds)
-        //     ->pluck('user_id')
-        //     ->all();
-
-        // // Optional: Apply 'agent_last_activity' threshold (if defined in rule parameters)
-        // $params = $rule->parameters['live_agent'] ?? [];
-        // if (isset($params['activity_threshold_minutes'])) {
-        //     $threshold = now()->subMinutes($params['activity_threshold_minutes']);
-
-        //     $liveAgentIds = DB::table('live_agents')
-        //         ->whereIn('user_id', $liveAgentIds)
-        //         ->where('agent_last_activity', '>', $threshold)
-        //         ->pluck('user_id')
-        //         ->all();
-
-        //     generateLogs("info", "Live agents after activity filter: " . json_encode($liveAgentIds));
-        // }
-
-        // --- Step 1: Find agents that are currently logged in (Live) ---
         $params = $rule->parameters['live_agent'] ?? [];
 
-        // Start with all agents in the 'live_agents' table
         $liveAgentsQuery = DB::table('live_agents')
             ->whereIn('user_id', $allEligibleAgentIds);
 
-        // --- Step 2: Conditionally apply 'agent_last_activity' threshold ---
         if (isset($params['activity_threshold_minutes']) && $params['activity_threshold_minutes'] > 0) {
             $minutes = $params['activity_threshold_minutes'];
             $threshold = now()->subMinutes($minutes);
 
-            // Only include live agents whose last activity is within the specified time
             $liveAgentsQuery->where('agent_last_activity', '>', $threshold);
 
             generateLogs("info", "Filtering live agents by activity threshold: last " . $minutes . " minutes.");
@@ -292,24 +259,19 @@ class TicketAssignmentRepository
         $liveAgentIds = $liveAgentsQuery->pluck('user_id')->all();
         generateLogs("info", "Final filtered live agents: " . json_encode($liveAgentIds));
 
-        // 2. Check for fallback condition
         if (empty($liveAgentIds)) {
             generateLogs("warning", "No live agents found. Falling back to standard round_robin.");
-            // Fallback to standard round_robin on ALL eligible agents
             return $this->roundRobinAssign($rule);
         }
 
-        // 3. Determine the assignment method to use on Live Agents
         $liveMethod = $params['assignment_method'] ?? 'round_robin';
 
         $agentId = null;
 
         if ($liveMethod === 'least_loaded') {
             generateLogs("info", "Applying Least Loaded to Live Agents.");
-            // We use a custom function for least loaded on a predefined set of IDs
             $agentId = $this->leastLoadedOnSet($liveAgentIds);
         } else {
-            // Default to round_robin on live agents (requires transaction and parameter update)
             generateLogs("info", "Applying Round Robin to Live Agents.");
             $agentId = $this->roundRobinOnSet($liveAgentIds, $rule);
         }
@@ -317,30 +279,32 @@ class TicketAssignmentRepository
         return $agentId;
     }
 
-    protected function randomAssign(AssignmentRule $rule): ?int
+    protected function randomAssign(AssignmentRule $rule, ?int $usergroupId = null): ?int
     {
-        $eligible = $this->eligibleAgents($rule);
-
+        $eligible = $this->eligibleAgents($rule, $usergroupId);
+        generateLogs("info", "Eligible agents " . json_encode($eligible));
         if (empty($eligible)) {
             return null;
         }
 
-        // Randomly select one agent ID from the array
         $agentId = $eligible[array_rand($eligible)];
 
         generateLogs("info", "Returning random agent " . json_encode($agentId));
         return $agentId;
     }
 
-    protected function eligibleAgents(AssignmentRule $rule): array
+    protected function eligibleAgents(AssignmentRule $rule, ?int $usergroupId = null): array
     {
         generateLogs("info", "Inside eligble Agent function " . json_encode($rule));
-        // For now: pick agents in same department → via user_groups
+
         $query = Users::query()->where('role_id', 3)->where('is_delete', 'No');
-        generateLogs("info", "Running query");
-        if ($rule->department_id) {
+
+        if ($usergroupId) {
+            $query->whereHas('usergroup', fn($q) => $q->where('id', $usergroupId));
+        } elseif ($rule->department_id) {
             $query->whereHas('usergroup', fn($q) => $q->where('department_id', $rule->department_id));
         }
+
         return $query->pluck('id')->all();
     }
 
@@ -356,7 +320,6 @@ class TicketAssignmentRepository
         $counts = DB::table('support_tickets')
             ->select('assign_to_id', DB::raw('COUNT(*) as active_count'))
             ->whereIn('assign_to_id', $agentIds)
-            // Use your existing logic for active tickets (default_status NOT IN [2, 3])
             ->whereNotIn('default_status', [2, 3])
             ->groupBy('assign_to_id')
             ->pluck('active_count', 'assign_to_id')
@@ -367,7 +330,6 @@ class TicketAssignmentRepository
                 'id' => $id,
                 'count' => $counts[$id] ?? 0,
             ])
-            // Sort by count (ascending) then by ID (ascending for tie-breaking)
             ->sortBy(['count', 'id'])
             ->first();
 
@@ -382,24 +344,20 @@ class TicketAssignmentRepository
                 return null;
             }
 
-            // Note: We use 'live_agent' key for parameter storage instead of 'round_robin'
             $params = $rule->parameters ?? [];
             $liveAgentParams = $params['live_agent'] ?? [];
 
             $lastId = $liveAgentParams['last_agent_id'] ?? null;
 
-            // Sort the live agents by ID to ensure a stable rotation order
             $sorted = collect($agentIds)->sort()->values();
 
             $nextIdx = 0;
             if ($lastId && ($idx = $sorted->search($lastId)) !== false) {
-                // Find the index of the last agent, and move to the next one
                 $nextIdx = ($idx + 1) % $sorted->count();
             }
 
             $nextAgent = $sorted[$nextIdx];
 
-            // update cursor in JSON, under the 'live_agent' key
             $params['live_agent']['last_agent_id'] = $nextAgent;
             $rule->parameters = $params;
             $rule->save();
@@ -418,6 +376,39 @@ class TicketAssignmentRepository
     ): void {
         $ticket->assign_to_id = $agentId;
         $ticket->save();
+
+        $mailTemplate = MailTemplate::where('type', 'created_ticket')->where('status', 'Active')->where('mail_for', 'agent')->first();
+
+        if ($mailTemplate) {
+            $templateData = [
+                '{assigned_user}' => $ticket->assigned_agent_name,
+                '{ticket_number}' => $ticket->support_ticket_id,
+                '{ticket_subject}' => $ticket->subject,
+                '{ticket_status}' => $ticket->status_name,
+                '{ticket_created}' => $ticket->created_at->timezone(config('app.timezone'))->format('d M Y, H:i:s A T'),
+                '{ticket_description}' => $ticket->description
+            ];
+
+            $mailTemplate->subject = strtr($mailTemplate->subject, $templateData);
+            $mailTemplate->body = strtr($mailTemplate->body, $templateData);
+        }
+
+        setEmailConfig();
+
+        $sender_email = config('mail.from.address');
+        $defaultSubject = "A new ticket " . $ticket->support_ticket_id . " has been created";
+
+        sendProcessedEmail(
+            to: $ticket->user_email,
+            subject: $mailTemplate['subject'] ?? $defaultSubject,
+            bodyTemplate: $mailTemplate['body'] ?? '',
+            mailTemplateId: $mailTemplate->id ?? 0,
+            mailAttachments: [],
+            ticket: $ticket,
+            senderEmail: $sender_email,
+            assignToId: $agentId,
+            module: "Create Support Ticket"
+        );
 
         AssignmentHistory::create([
             'ticket_id' => $ticket->id,

@@ -632,8 +632,6 @@ class SupportTicketRepository
     ) {
         generateLogs("info", "ticket data " . $ticket);
 
-        $customerMailTemplate = MailTemplate::where('type', 'create_ticket_customer')->where('status', 'Active')->where('mail_for', 'request')->first();
-
         // $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         // if (isset($emailConfig) && !empty($emailConfig)) {
 
@@ -658,6 +656,9 @@ class SupportTicketRepository
         /** ------------------------
          * Send Email to Customer
          * ---------------------- */
+
+        $customerMailTemplate = MailTemplate::where('type', 'create_ticket_customer')->where('status', 'Active')->where('mail_for', 'request')->first();
+
         $customerSubject = str_replace(
             "{ticket_number}",
             $ticket->support_ticket_id,
