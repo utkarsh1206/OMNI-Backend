@@ -47,7 +47,7 @@ class HopperProcess extends Command
         Tenant::orderBy('id')
             ->chunkById(100, function ($tenants) {
                 foreach ($tenants as $tenant) {
-                    generateScheduleLogs('info', 'Hopper Process started for all tenants.' .$tenant);
+                    generateScheduleLogs('info', 'Hopper Process started for all tenants.' .$tenant->domain_name);
                     $newConnectionName = str_replace(".", "_", $tenant->domain_name);
                     $databaseName = str_replace(".", "_", $tenant->domain_name);
                     establishDatabaseConnect($newConnectionName, $databaseName);
@@ -120,7 +120,7 @@ class HopperProcess extends Command
             $config = NeoxConfiguration::on($newConnectionName)->first(['neox_local_ip', 'neox_token']);
 
             if (isset($config['status']) && $config['status'] === 'error') {
-                generateLogs("error", "Config error");
+                generateScheduleLogs("error", "Config error");
                 return [];
             }
 
@@ -141,7 +141,7 @@ class HopperProcess extends Command
             }
 
             if (($apiData['code'] ?? -1) !== 0) {
-                generateLogs("error", "API returned error: " . ($apiData['message'] ?? 'Unknown'));
+                generateScheduleLogs("error", "API returned error: " . ($apiData['message'] ?? 'Unknown'));
                 return [];
             }
 
@@ -156,7 +156,7 @@ class HopperProcess extends Command
 
             return array_map(fn($c) => (object) $c, $apiCampaigns);
         } catch (\Exception $e) {
-            generateLogs("error", "Exception: " . $e->getMessage());
+            generateScheduleLogs("error", "Exception: " . $e->getMessage());
             return [];
         }
     }
@@ -207,8 +207,8 @@ class CampaignProcessor
             ->where('status', 'DNC')
             ->count();
 
-        $eventString = "Hopper - Information, DNC count: $hopperDncCount";
-        generateLogs('info', $eventString);
+        // $eventString = "Hopper - Information, DNC count: $hopperDncCount";
+        // generateScheduleLogs('info', $eventString);
 
         if ($hopperDncCount > 0) {
             // Get all DNC statused hopper entries
@@ -217,8 +217,8 @@ class CampaignProcessor
                 ->select(['hopper_id', 'lead_id', 'alt_dial', 'campaign_id'])
                 ->get();
 
-            $eventString = "Hopper - Information, Found " . $dncEntries->count() . " DNC entries";
-            generateLogs('info', $eventString);
+            // $eventString = "Hopper - Information, Found " . $dncEntries->count() . " DNC entries";
+            // generateScheduleLogs('info', $eventString);
 
             foreach ($dncEntries as $entry) {
                 $this->processDncEntry($newConnectionName, $entry, $campaign);
@@ -233,8 +233,8 @@ class CampaignProcessor
         $useCampaignDnc = $campaign->use_campaign_dnc ?? '';
         $currentAltDial = $dncEntry->alt_dial;
 
-        $eventString = "Hopper - Information, Auto Dial Level: $autoAltDial, use internal DNC: $useInternalDnc";
-        generateLogs('debug', $eventString);
+        // $eventString = "Hopper - Information, Auto Dial Level: $autoAltDial, use internal DNC: $useInternalDnc";
+        // generateScheduleLogs('debug', $eventString);
 
         // Process ALT phone number
         if (
@@ -256,8 +256,8 @@ class CampaignProcessor
 
     private function processAltPhone($newConnectionName, $dncEntry, object $campaign, string $autoAltDial, string $useInternalDnc): void
     {
-        $eventString = "Hopper - Information, Processing ALT phone for lead: {$dncEntry->lead_id}";
-        generateLogs('trace', $eventString);
+        // $eventString = "Hopper - Information, Processing ALT phone for lead: {$dncEntry->lead_id}";
+        // generateScheduleLogs('trace', $eventString);
 
         $leadDetails = EcdialList::on($newConnectionName)->where('lead_id', $dncEntry->lead_id)
             ->select(['alt_phone', 'gmt_offset_now', 'list_id'])
@@ -273,13 +273,13 @@ class CampaignProcessor
             $altDncCount = 0;
 
             if ($useInternalDnc === 'Y') {
-                $eventString = "Hopper - Information, Checking DNC for ALT phone: $altPhone";
-                generateLogs('debug', $eventString);
+                // $eventString = "Hopper - Information, Checking DNC for ALT phone: $altPhone";
+                // generateScheduleLogs('debug', $eventString);
 
                 $altDncCount = 0;
 
-                $eventString = "Hopper - Information, DNC count for ALT phone: $altDncCount";
-                generateLogs('trace', $eventString);
+                // $eventString = "Hopper - Information, DNC count for ALT phone: $altDncCount";
+                // generateScheduleLogs('trace', $eventString);
             }
 
             if ($useInternalDnc !== 'Y' || $altDncCount < 1) {
@@ -294,8 +294,8 @@ class CampaignProcessor
                         'priority' => 25
                     ]);
 
-                $eventString = "Hopper - Information, Updated hopper entry to READY for ALT phone";
-                generateLogs('debug', $eventString);
+                // $eventString = "Hopper - Information, Updated hopper entry to READY for ALT phone";
+                // generateScheduleLogs('debug', $eventString);
             } else {
                 // Skip this alt dial
                 $dncEntry->alt_dial = 'ALT';
@@ -308,8 +308,8 @@ class CampaignProcessor
 
     private function processAddr3Phone($newConnectionName, $dncEntry, object $campaign, string $autoAltDial, string $useInternalDnc): void
     {
-        $eventString = "Hopper - Information, Processing ADDR3 phone for lead: {$dncEntry->lead_id}";
-        generateLogs('trace', $eventString);
+        // $eventString = "Hopper - Information, Processing ADDR3 phone for lead: {$dncEntry->lead_id}";
+        // generateScheduleLogs('trace', $eventString);
 
         $leadDetails = EcdialList::on($newConnectionName)->where('lead_id', $dncEntry->lead_id)
             ->select(['address3', 'gmt_offset_now', 'state', 'list_id'])
@@ -321,20 +321,20 @@ class CampaignProcessor
 
         $address3 = preg_replace('/\D/', '', $leadDetails->address3 ?? '');
 
-        $eventString = "Hopper - Information, ADDR3 phone: $address3";
-        generateLogs('debug', $eventString);
+        // $eventString = "Hopper - Information, ADDR3 phone: $address3";
+        // generateScheduleLogs('debug', $eventString);
 
         if (strlen($address3) > 5) {
             $altDncCount = 0;
 
             if ($useInternalDnc === 'Y') {
-                $eventString = "Hopper - Information, Checking DNC for ADDR3 phone: $address3";
-                generateLogs('trace', $eventString);
+                // $eventString = "Hopper - Information, Checking DNC for ADDR3 phone: $address3";
+                // generateScheduleLogs('trace', $eventString);
 
                 $altDncCount = 0;
 
-                $eventString = "Hopper - Information, DNC count for ADDR3 phone: $altDncCount";
-                generateLogs('trace', $eventString);
+                // $eventString = "Hopper - Information, DNC count for ADDR3 phone: $altDncCount";
+                // generateScheduleLogs('trace', $eventString);
             }
 
             if ($useInternalDnc !== 'Y' || $altDncCount < 1) {
@@ -349,8 +349,8 @@ class CampaignProcessor
                         'priority' => 25
                     ]);
 
-                $eventString = "Hopper - Information, Updated hopper entry to READY for ADDR3 phone";
-                generateLogs('debug', $eventString);
+                // $eventString = "Hopper - Information, Updated hopper entry to READY for ADDR3 phone";
+                // generateScheduleLogs('debug', $eventString);
             } else {
                 // Skip this addr3 dial
                 $dncEntry->alt_dial = 'ADDR3';
@@ -533,8 +533,6 @@ class CallTimeProcessor
 
     public function processStateCallTimes($newConnectionName, $stateCallTimes, array $gmtData): array
     {
-
-        generateLogs("info", "stateCallTimes $stateCallTimes");
         if (empty($stateCallTimes)) {
             return ['', ''];
         }
@@ -546,8 +544,6 @@ class CallTimeProcessor
 
         foreach ($stateRules as $stateRuleId) {
             $stateCallTime = EcdialStateCallTime::on($newConnectionName)->where('state_call_time_id', $stateRuleId)->first();
-
-            generateLogs("info", "stateCallTime " . json_encode($stateCallTime));
 
             if ($stateCallTime) {
                 $processed = $this->processSingleStateCallTime($stateCallTime, $gmtData);
@@ -715,27 +711,28 @@ class LeadProcessor
 
     private function insertLeadsIntoHopper($newConnectionName, $leads, string $campaignId): void
     {
-        generateLogs("info", "leads " . json_encode($leads));
-
         $hopperData = [];
 
+        $chunkSize = 1000;
         foreach ($leads as $lead) {
             $hopperData[] = [
-                'lead_id' => $lead->lead_id,
+                'lead_id' => $lead['lead_id'],
                 'campaign_id' => $campaignId,
-                'list_id' => $lead->list_id,
-                'gmt_offset_now' => $lead->gmt_offset_now,
+                'list_id' => $lead['list_id'],
+                'gmt_offset_now' => $lead['gmt_offset_now'],
                 // 'phone_number' => $lead->phone_number,
                 // 'state' => $lead->state,
                 'status' => 'READY',
-                'user' => $lead->user,
+                'user' => $lead['user'],
                 'source' => 'S',
                 'priority' => 20,
             ];
         }
 
         if (!empty($hopperData)) {
-            EcdialHopper::on($newConnectionName)->insert($hopperData);
+            foreach (array_chunk($hopperData, $chunkSize) as $chunk) {
+                EcdialHopper::on($newConnectionName)->insert($chunk);
+            }
         }
     }
 }

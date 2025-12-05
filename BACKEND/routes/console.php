@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 Schedule::command('app:sla-email-notification')->everyMinute();
+Schedule::command('app:hopper-process')->everyMinute();
 
 $allTenants = Tenant::orderBy('id')
     ->chunkById(100, function ($tenants) {
