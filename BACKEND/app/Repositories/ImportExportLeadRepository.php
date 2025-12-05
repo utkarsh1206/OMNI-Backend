@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Response\CustomApiResponse;
+use App\Models\EcdialLists;
+use Carbon\Carbon;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ImportExportLeadRepository
@@ -103,12 +105,15 @@ class ImportExportLeadRepository
                 $insertData[strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_name))] = $row[$field->field_name] ?? null;
             }
 
+            // $this->insertDataINtoList($list_id);
+
             $insertData['created_at'] = now();
             $insertData['updated_at'] = now();
             $insertData['omni_lead_source'] = 'csv';
 
             try {
                 DB::table($tableName)->insert($insertData);
+
                 $insertedCount++; // Increment count on successful insertion
                 $status = 'success';
             } catch (\Exception $e) {
@@ -231,4 +236,30 @@ class ImportExportLeadRepository
         // Insert into the lead_import_histories table
         LeadImportHistory::create($historyData);
     }
+
+    // private function insertDataINtoList($list_id)
+    // {
+    //     $timezone = config('app.timezone');  // Get timezone from config
+
+    //     // Create a DateTimeZone instance from the configured timezone
+    //     $dateTimeZone = new \DateTimeZone($timezone);
+
+    //     // Get the current date and time in the given timezone
+    //     $now = new \DateTime('now', $dateTimeZone);
+
+    //     // Get the offset in seconds
+    //     $offsetInSeconds = $now->getOffset();
+
+    //     // Convert the offset to hours and minutes
+    //     $offsetInHours = $offsetInSeconds / 3600;  // 3600 seconds in an hour
+    //     $offsetFormatted = number_format($offsetInHours, 2, '.', '');
+
+    //     $data = [
+    //         'status' => 'NEW',
+    //         'list_id' => $list_id,
+    //         'gmt_offset_now' => $offsetFormatted
+    //     ];
+
+    //     DB::table('ecdial_list')->insert($data);
+    // }
 }

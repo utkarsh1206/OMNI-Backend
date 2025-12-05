@@ -23,7 +23,9 @@ class CronCommandsSeeder extends Seeder
             ['command_signature' => 'app:process-callbacks', 'type' => 'cron'],
             ['command_signature' => 'app:clean-end-of-day-data', 'type' => 'cron'],
             ['command_signature' => 'app:update-live-agent-on-network-lost', 'type' => 'cron'],
-        ];
+        
+		    ['command_signature' => 'app:hopper-process', 'type' => 'other'],
+	];
 
         foreach ($cronCommands as $cronCommand) {
             CronCommand::updateOrCreate(
