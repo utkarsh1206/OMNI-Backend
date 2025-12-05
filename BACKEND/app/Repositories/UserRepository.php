@@ -214,20 +214,43 @@ class UserRepository
         }
     }
 
-
     public function update(Request $request, $user)
     {
         try {
+            generateLogs("info", "Inside the Update try block ");
+            $passwordUpdated = false;
+            $newPassword = null;
+
+            if ($request->filled('password')) {
+
+                $authUserRoleId = auth()->user()->role_id ?? null;
+
+                if (!in_array($authUserRoleId, [1, 2])) {
+                    generateLogs("warning", "User unauthorized to update password");
+                    return response()->json([
+                        'error' => trans("message.unauthorized_password_change"),
+                    ], ResponseHTTP::HTTP_FORBIDDEN);
+                }
+
+                $request->validate([
+                    'password' => 'required|string|min:8',
+                ]);
+
+                $newPassword = $request->password;
+                $passwordUpdated = true;
+
+                $user->update([
+                    'password' => bcrypt($newPassword),
+                ]);
+                generateLogs("info", "Password updated successfully.");
+            }
+
             $user->update([
                 'username' => $request->username,
-                // "tenant_id" => $request->tenant_id,
                 "type" => 3,
                 "first_name" => $request->first_name,
                 "last_name" => $request->last_name,
                 "email" => $request->email,
-                "username" => $request->username,
-                // "password" => bcrypt($request->password),
-                //"domain" => $request->domain,
                 "mobile" => $request->mobile,
                 "status" => $request->status,
                 "role_id" => $request->role_id,
@@ -243,18 +266,57 @@ class UserRepository
                 "address" => $request->address,
                 "gender" => $request->gender
             ]);
+            generateLogs("info", "User profile fields updated successfully.");
 
             if ($request->filled('user_role_id')) {
                 $roles = Role::find([$request->user_role_id]);
+
                 $user->roles()->sync($roles);
             }
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $user, trans('message.users_updated'));
+            $user->refresh();
+            $roles = $user->roles()->first();
+
+            if ($roles && $roles->type == 1) {
+
+                $config = getNeoxConfig();
+                $ip = $config['neox_local_ip'];
+
+                $userGroup = UserGroup::find($user->usergroup_id);
+
+                if ($userGroup) {
+
+                    $neoxBody = [
+                        'userId' => $user->username,
+                        'fullName' => $user->first_name . ' ' . $user->last_name,
+                        'userGroup' => $userGroup->name,
+                    ];
+
+                    if ($passwordUpdated) {
+                        $neoxBody['password'] = $newPassword;
+                    }
+
+                    $url = "https://{$ip}/Neox_ContactCenter_API/crud/user_omni/update.php";
+
+                    sendHttpRequest($url, 'POST', $neoxBody);
+
+                    generateLogs("info", "Neox update request completed.");
+                } else {
+                    generateLogs("warning", "User group not found. Neox update skipped.");
+                }
+            } else {
+                generateLogs("info", "Skipping Neox update. Role type is not 1.");
+            }
+
+            $messageKey = $passwordUpdated ? 'message.user_and_password_updated' : 'message.users_updated';
+
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $user, trans($messageKey));
         } catch (Exception $e) {
-            generateLogs('error', 'Error during Update User : ', $e->getMessage());
+            generateLogs('error', 'Error during Update User: ' . $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
+
 
     public function profileUpdate(Request $request, $user)
     {
