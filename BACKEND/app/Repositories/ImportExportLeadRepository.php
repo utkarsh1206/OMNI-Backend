@@ -105,7 +105,7 @@ class ImportExportLeadRepository
                 $insertData[strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_name))] = $row[$field->field_name] ?? null;
             }
 
-            $this->insertDataINtoList($list_id);
+            // $this->insertDataINtoList($list_id);
 
             $insertData['created_at'] = now();
             $insertData['updated_at'] = now();
@@ -237,29 +237,29 @@ class ImportExportLeadRepository
         LeadImportHistory::create($historyData);
     }
 
-    private function insertDataINtoList($list_id)
-    {
-        $timezone = config('app.timezone');  // Get timezone from config
+    // private function insertDataINtoList($list_id)
+    // {
+    //     $timezone = config('app.timezone');  // Get timezone from config
 
-// Create a DateTimeZone instance from the configured timezone
-$dateTimeZone = new \DateTimeZone($timezone);
+    //     // Create a DateTimeZone instance from the configured timezone
+    //     $dateTimeZone = new \DateTimeZone($timezone);
 
-// Get the current date and time in the given timezone
-$now = new \DateTime('now', $dateTimeZone);
+    //     // Get the current date and time in the given timezone
+    //     $now = new \DateTime('now', $dateTimeZone);
 
-// Get the offset in seconds
-$offsetInSeconds = $now->getOffset();
+    //     // Get the offset in seconds
+    //     $offsetInSeconds = $now->getOffset();
 
-// Convert the offset to hours and minutes
-$offsetInHours = $offsetInSeconds / 3600;  // 3600 seconds in an hour
-$offsetFormatted = number_format($offsetInHours, 2, '.', '');
+    //     // Convert the offset to hours and minutes
+    //     $offsetInHours = $offsetInSeconds / 3600;  // 3600 seconds in an hour
+    //     $offsetFormatted = number_format($offsetInHours, 2, '.', '');
 
-        $data = [
-            'status' => 'NEW',
-            'list_id' => $list_id,
-            'gmt_offset_now' => $offsetFormatted
-        ];
+    //     $data = [
+    //         'status' => 'NEW',
+    //         'list_id' => $list_id,
+    //         'gmt_offset_now' => $offsetFormatted
+    //     ];
 
-        DB::table('ecdial_list')->insert($data);
-    }
+    //     DB::table('ecdial_list')->insert($data);
+    // }
 }
