@@ -386,7 +386,8 @@ class TicketAssignmentRepository
                 '{ticket_subject}' => $ticket->subject,
                 '{ticket_status}' => $ticket->status_name,
                 '{ticket_created}' => $ticket->created_at->timezone(config('app.timezone'))->format('d M Y, H:i:s A T'),
-                '{ticket_description}' => $ticket->description
+                '{ticket_description}' => $ticket->description,
+                '{ticket_created_date}' => $ticket->created_at,
             ];
 
             $mailTemplate->subject = strtr($mailTemplate->subject, $templateData);
