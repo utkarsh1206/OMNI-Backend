@@ -27,10 +27,15 @@ class IncidentTypeRepository
         try {
             $searchTerm = $request->input('search', '');
             $name = $request->input('name', '');
-            $priority = $request->input('priority', '');
-            $department_id = $request->input('department_id');
-            $category_id = $request->input('category_id');
-            $sla_id = $request->input('sla_id');
+            $priority_name = $request->input('priority', '');
+            $department_name = $request->input('department_id');
+            $category_name = $request->input('category_id');
+            $sla_name = $request->input('sla_id');
+
+            $priority_id_int = $request->input('priority_id_int');
+            $department_id_int = $request->input('department_id_int');
+            $category_id_int = $request->input('category_id_int');
+            $sla_id_int = $request->input('sla_id_int');
 
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
@@ -56,42 +61,41 @@ class IncidentTypeRepository
                 $query->where('name', 'like', "%$name%");
             }
 
-            if ($category_id) {
-                $categoryId = Category::where('name', 'like', "%$category_id%")->value('id');
-                if ($categoryId) {
-                    $query->where('category_id', $categoryId);
-                } else {
-                    $query->where('category_id', $category_id);
+            if ($category_id_int) {
+                $query->where('category_id', $category_id_int);
+            } elseif ($category_name) {
+                $categoryIds = Category::where('name', 'like', "%$category_name%")->pluck('id')->toArray();
+                if (!empty($categoryIds)) {
+                    $query->whereIn('category_id', $categoryIds);
                 }
             }
 
-            $priorityId = null;
-            if (!empty($priority)) {
-                $priorityId = Priority::where('name', 'like', "%$priority%")->first()->id ?? null;
-                if ($priorityId !== null) {
-                    $query->where('priority_id', $priorityId);
-                } else {
-                    $query->where('priority_id', $priority);
+            if ($priority_id_int) {
+                $query->where('priority_id', $priority_id_int);
+            } elseif ($priority_name) {
+                $priorityIds = Priority::where('name', 'like', "%$priority_name%")->pluck('id')->toArray();
+                if (!empty($priorityIds)) {
+                    $query->whereIn('priority_id', $priorityIds);
                 }
             }
 
-            if ($department_id) {
-                $departmentId = Department::where('name', 'like', "%$department_id%")->value('id');
-                if ($departmentId) {
-                    $query->whereHas('category.department', function ($q) use ($departmentId) {
-                        $q->where('id', $departmentId);
+            if ($department_id_int) {
+                $query->whereHas('category.department', fn($q) => $q->where('id', $department_id_int));
+            } elseif ($department_name) {
+                $departmentIds = Department::where('name', 'like', "%$department_name%")->pluck('id')->toArray();
+                if (!empty($departmentIds)) {
+                    $query->whereHas('category.department', function ($q) use ($departmentIds) {
+                        $q->whereIn('id', $departmentIds);
                     });
-                } else {
-                    $query->where('department_id', $department_id);
                 }
             }
 
-            if (!empty($sla_id)) {
-                $slaId = SlaSetting::where('name', 'like', "%$sla_id%")->value('id');
-                if ($slaId) {
-                    $query->where('id', $slaId);
-                } else {
-                    $query->where('sla_id', $sla_id);
+            if ($sla_id_int) {
+                $query->where('sla_id', $sla_id_int);
+            } elseif ($sla_name) {
+                $slaIds = SlaSetting::where('name', 'like', "%$sla_name%")->pluck('id')->toArray();
+                if (!empty($slaIds)) {
+                    $query->whereIn('sla_id', $slaIds);
                 }
             }
 
