@@ -179,4 +179,14 @@ class SupportTicket extends Model
     {
         return $this->assignedUser ? $this->assignedUser->email : null;
     }
+
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'assign_to_id');
+    }
+
+    public function assignmentHistory()
+    {
+        return $this->hasMany(AssignmentHistory::class, 'ticket_id');
+    }
 }
