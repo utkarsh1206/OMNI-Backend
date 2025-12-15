@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Http\Response\CustomApiResponse;
+use App\Models\EcdialList;
 use App\Models\LiveAgents;
 use App\Models\LiveCall;
 use App\Models\LiveCallLog;
@@ -33,6 +34,7 @@ class DisposCallApiRepository
                 $disposData = $this->saveDisposition($request, $user, $liveCallData);
                 $liveCall = $this->logLiveCall($user, $liveCallData);
                 $this->updateOrCreateLiveCall($liveCallData, $user);
+                $this->updateLeadStatus($liveCallData, $disposData);
 
                 if ($liveCallData->call_direction === 'in_call') {
                     $this->pauseAgent($user->id, $liveCallData->campaign_id);
@@ -212,11 +214,22 @@ class DisposCallApiRepository
             }
             if ($liveAgent) {
                 $liveAgent->status = $status;
+                $liveAgent->lead_id = 0;
                 $liveAgent->save();
             }
         } catch (Exception $e) {
             generateLogs('error', "Error in updateAgentStatus: ", $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
+    }
+
+    private function updateLeadStatus($liveCallData, $disposData)
+    {
+        generateLogs("info", "test ". json_encode($liveCallData));
+        generateLogs("info", "disp  ". json_encode($disposData));
+        EcdialList::where('lead_id', $liveCallData->lead_id)
+            ->update([
+                'status' => $disposData->disposition_status,
+            ]);
     }
 }
