@@ -61,6 +61,16 @@ class EcdialListRepository
         }
     }
 
+    public function getListByCampaignId(string $campaignId)
+    {
+        try {
+            return EcdialLists::where('campaign_id', $campaignId)->first();
+        } catch (Exception $e) {
+            generateLogs('error', 'Error in getting the list with respect to campaign: ', $e->getMessage());
+            return $this->apiResponse->handleAndResponseException($e);
+        }
+    }
+
     public function create(Request $request)
     {
         try {
@@ -165,6 +175,30 @@ class EcdialListRepository
                     'default_value' => null,
                     'value_masked' => 'N',
                     'duplicate_check' => 'Y',
+                    'status' => 1,
+                    'field_column' => 'D',
+                    'allow_field_deletion' => 'N',
+                    'allow_data_delete' => 'N',
+                ],
+                [
+                    'field_name' => 'Alternate Mobile',
+                    'field_label' => 'Mobile Number',
+                    'field_type' => 'text',
+                    'description' => 'User\'s alternate mobile number',
+                    'options' => null,
+                    'mandatory' => 'N',
+                    'calling_authority' => 'N',
+                    'show_authority' => 'Y',
+                    'agent_view' => 'Y',
+                    'field_order' => 2,
+                    'field_help' => 'Enter the mobile number',
+                    'field_size' => 20,
+                    'field_max_length' => 20,
+                    'search_filter' => 'Y',
+                    'editable' => 'N',
+                    'default_value' => null,
+                    'value_masked' => 'N',
+                    'duplicate_check' => 'N',
                     'status' => 1,
                     'field_column' => 'D',
                     'allow_field_deletion' => 'N',
