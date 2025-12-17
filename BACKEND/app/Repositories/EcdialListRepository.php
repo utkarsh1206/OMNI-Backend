@@ -10,6 +10,7 @@ use App\Http\Response\CustomApiResponse;
 use App\Models\EcdialListField;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Str;
 
 class EcdialListRepository
 {
@@ -54,7 +55,11 @@ class EcdialListRepository
                 $query->where('description', 'like', "%$description%");
             }
             $listData = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $listData, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $listData,
+                trans('message.data_fetch')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating EcDial Listing: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
@@ -182,7 +187,7 @@ class EcdialListRepository
                 ],
                 [
                     'field_name' => 'Alternate Mobile',
-                    'field_label' => 'Mobile Number',
+                    'field_label' => 'Alternate Mobile Number',
                     'field_type' => 'text',
                     'description' => 'User\'s alternate mobile number',
                     'options' => null,
@@ -191,7 +196,7 @@ class EcdialListRepository
                     'show_authority' => 'Y',
                     'agent_view' => 'Y',
                     'field_order' => 2,
-                    'field_help' => 'Enter the mobile number',
+                    'field_help' => 'Enter the alternate mobile number',
                     'field_size' => 20,
                     'field_max_length' => 20,
                     'search_filter' => 'Y',
@@ -264,34 +269,40 @@ class EcdialListRepository
             $tableName = 'custom_lead_' . $ecdialLists->list_id;
 
             foreach ($baseFields as $field) {
-                $columnName = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field['field_name'])); // Convert field label to snake case for column name
+                $columnName = Str::slug($field['field_name'], '_');
 
                 if (!Schema::hasColumn($tableName, $columnName)) {
                     Schema::table($tableName, function (Blueprint $table) use ($columnName, $field) {
-                        switch ($field['field_type']) {
-                            case 'textarea':
-                                $table->text($columnName)->nullable()->after('updated_at');
-                                break;
-                            default:
-                                $table->string($columnName, $field['field_max_length'] ?? 255)->nullable()->after('updated_at');
-                                break;
+
+                        // Using If instead of the original SWITCH here
+                        if ($field['field_type'] === 'textarea') {
+                            $table->text($columnName)
+                                ->nullable()
+                                ->after('updated_at');
+                        } else {
+                            $table->string($columnName, $field['field_max_length'] ?? 255)
+                                ->nullable()
+                                ->after('updated_at');
                         }
                     });
                 }
             }
-
             $data = new EcdialListResource($ecdialLists);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_create_success'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $data,
+                trans('message.list_create_success')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating EcDial Create: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
-    public function update(Request $request, $list_id)
+    public function update(Request $request, $listId)
     {
         try {
-            $ecdialLists = EcdialLists::findOrFail($list_id);
+            $ecdialLists = EcdialLists::findOrFail($listId);
 
             $ecdialLists->update([
                 'name' => $request->name,
@@ -301,48 +312,62 @@ class EcdialListRepository
             ]);
 
             $data = new EcdialListResource($ecdialLists);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.list_update_success'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $data,
+                trans('message.list_update_success')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating EcDial Update: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
-    public function delete($list_id)
+    public function delete($listId)
     {
         try {
-            $ecdialList = EcdialLists::where('list_id', $list_id)->firstOrFail(); // Find by list_id
+            $ecdialList = EcdialLists::where('list_id', $listId)->firstOrFail(); // Find by list_id
 
             // Drop the associated custom table
-            $this->dropCustomTable($list_id);
+            $this->dropCustomTable($listId);
 
             // Delete the list
             $ecdialList->delete();
 
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $list_id, trans('message.list_delete_success'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $listId,
+                trans('message.list_delete_success')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating EcDial Delete: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
 
-    private function createCustomTable($list_id)
+    private function createCustomTable($listId)
     {
-        $tableName = "custom_lead_" . $list_id;
+        $tableName = "custom_lead_" . $listId;
 
-        Schema::create($tableName, function (Blueprint $table) {
-            $table->id(); // Primary Key (Auto Increment)
-            $table->timestamps(); // Created & Updated timestamps
+        Schema::create($tableName, function (Blueprint $table) use ($tableName) {
+            $table->id();
+            $table->unsignedBigInteger('original_lead_id')->nullable();
+            $table->timestamps();
             $table->string('omni_lead_source')->nullable();
+
+            $table->foreign('original_lead_id')
+                ->references('id')
+                ->on($tableName)
+                ->onDelete('cascade');
         });
     }
 
     /**
      * Drop the custom lead table when deleting a list
      */
-    private function dropCustomTable($list_id)
+    private function dropCustomTable($listId)
     {
-        $tableName = "custom_lead_" . $list_id;
+        $tableName = "custom_lead_" . $listId;
 
         if (Schema::hasTable($tableName)) {
             Schema::dropIfExists($tableName);
