@@ -324,7 +324,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     //Route::apiResource('support-ticket', SupportTicketController::class);
     Route::get('support-ticket', [SupportTicketController::class, 'index'])
         ->middleware(CheckPermissionMiddleware::class . ":support_tickets," . PermissionAction::VIEW->value);
-    Route::get('support-ticket-customer', [SupportTicketController::class, 'index'])
+    Route::get('support-ticket-customer', [SupportTicketController::class, 'indexCustomer'])
         ->middleware(CheckPermissionMiddleware::class . ":support_tickets," . PermissionAction::VIEW->value);
     Route::post('support-ticket', [SupportTicketController::class, 'store'])
         ->middleware(CheckPermissionMiddleware::class . ":support_tickets," . PermissionAction::CREATE->value);

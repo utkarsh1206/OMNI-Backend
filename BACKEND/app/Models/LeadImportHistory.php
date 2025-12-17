@@ -11,6 +11,7 @@ class LeadImportHistory extends Model
 
     protected $fillable = [
         'user_id',
+        'external_token',
         'file_name',
         'file_type',
         'import_success_count',
