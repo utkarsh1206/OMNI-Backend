@@ -357,21 +357,29 @@ class ImportExportLeadRepository
 
     private function logImportHistory($list_id, $successCount, $failCount, $fileName, $fileType)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        $user = JWTAuth::user();
+        $externalToken = null;
 
-        // If the user is authenticated, retrieve the user ID
         if ($user) {
             $userId = $user->id;
         } else {
-            // Handle case when user is not found (invalid token or unauthenticated)
+            $authJsonString = $request->get('auth_token');
+            $authDataArray = json_decode($authJsonString, true);
+            $filteredDataCollection = collect($authDataArray)->only([
+                'id',
+                'token',
+                'ipaddress',
+            ]);
+            $externalToken = $filteredDataCollection->toJson();
             $userId = null;
         }
 
         // Prepare the data to store in the history table
         $historyData = [
             'user_id' => $userId,
-            'file_name' => $fileName, // Or any logic to store file name
-            'file_type' => $fileType, // Adjust this as necessary
+            'external_token' => $externalToken,
+            'file_name' => $fileName,
+            'file_type' => $fileType,
             'import_success_count' => $successCount,
             'import_fail_count' => $failCount,
             'created_at' => now(),
