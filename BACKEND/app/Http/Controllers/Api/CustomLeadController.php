@@ -6,14 +6,19 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\CustomLeadRepository;
+use App\Services\ListResolverService;
 
 class CustomLeadController extends Controller
 {
     protected $leadRepository;
+    protected $listResolverService;
 
-    public function __construct(CustomLeadRepository $leadRepository)
-    {
+    public function __construct(
+        CustomLeadRepository $leadRepository,
+        ListResolverService $listResolverService
+    ) {
         $this->leadRepository = $leadRepository;
+        $this->listResolverService = $listResolverService;
     }
 
     /**
@@ -202,9 +207,17 @@ class CustomLeadController extends Controller
      *      )
      * )
      */
-    public function create(Request $request, $list_id)
+    public function create(Request $request)
     {
-        $table = "custom_lead_" . $list_id;
+        $resolved = $this->listResolverService->resolveListId($request);
+
+        if ($resolved instanceof \Illuminate\Http\JsonResponse) {
+            return $resolved;
+        }
+
+        $listId = $resolved['list_id'];
+
+        $table = "custom_lead_" . $listId;
 
         if (!DB::getSchemaBuilder()->hasTable($table)) {
             return response()->json(['error' => 'Table not found'], 404);
@@ -226,7 +239,16 @@ class CustomLeadController extends Controller
             return response()->json(['error' => 'No valid fields provided for insertion'], 400);
         }
 
-        return $this->leadRepository->createLead($list_id, $insertData, $callUniqueId);
+        $omniLeadSource = $request->route('campaign_id')
+            ? 'single_lead_third_party'
+            : 'manual';
+
+        return $this->leadRepository->createLead(
+            $listId,
+            $insertData,
+            $callUniqueId,
+            $omniLeadSource,
+        );
     }
 
     /**
