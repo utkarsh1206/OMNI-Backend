@@ -1,5 +1,18 @@
 2025-12-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
+	* Jira ID : NOC-325
+	* Previous Commit ID : f5b48631 
+	* Version : Dev
+	* Laravel: Refactor DialNextCall API and Add Lead Status Update Logic
+
+	DialNextCallApiController: Moved the logic to DialNextCallApiRepository for better separation of concerns.
+	DialNextCallApiRequest: Added validation rule for the new dialed_phone_number field.
+	EcdialList Model: Disabled timestamps for the ecdial_list table as it is not used.
+	LiveAgents Model: Added lead_id to the fillable properties to allow mass assignment.
+	DisposCallApiRepository: Added logic to update the lead status based on the disposition status after a call is disposed.
+
+2025-12-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
 	* Jira ID : NOC-326, 534, 560, 561, 564, 567
 	* Previous Commit ID : aed8148a 
 	* Version : Dev
