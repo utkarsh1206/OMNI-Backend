@@ -144,16 +144,18 @@ class DialNextCallApiRepository
     {
         $calledSinceLastReset = $this->updateCalledSinceLastReset('N');
 
-        EcdialList::where('lead_id', $lead->lead_id)->update([
-            'status' => 'INCALL',
-            'user'   => $userId,
-            'called_since_last_reset' => $calledSinceLastReset,
-            'called_count' => DB::raw('called_count + 1'),
-            'modify_date' => now(),
-            'last_local_call_time' => now(),
-        ]);
+        EcdialList::where('lead_id', $lead->lead_id)
+            ->where('list_id', $lead->list_id)
+            ->update([
+                'status' => 'INCALL',
+                'user'   => $userId,
+                'called_since_last_reset' => $calledSinceLastReset,
+                'called_count' => DB::raw('called_count + 1'),
+                'modify_date' => now(),
+                'last_local_call_time' => now(),
+            ]);
 
-        EcdialHopper::where('lead_id', $lead->lead_id)->delete();
+        EcdialHopper::where('lead_id', $lead->lead_id)->where('list_id', $lead->list_id)->delete();
 
         LiveAgents::where('user_id', $userId)->update([
             'status' => 'INCALL',
@@ -165,6 +167,7 @@ class DialNextCallApiRepository
 
         return [
             'lead_id' => $lead->lead_id,
+            'list_id' => $lead->list_id,
             'user_id' => $userId,
             'status' => 'INCALL',
             'customer' => $mobile,

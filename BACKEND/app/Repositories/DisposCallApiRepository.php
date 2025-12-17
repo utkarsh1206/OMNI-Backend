@@ -225,9 +225,9 @@ class DisposCallApiRepository
 
     private function updateLeadStatus($liveCallData, $disposData)
     {
-        generateLogs("info", "test ". json_encode($liveCallData));
-        generateLogs("info", "disp  ". json_encode($disposData));
         EcdialList::where('lead_id', $liveCallData->lead_id)
+            ->where('user', $liveCallData->user_id)
+            ->where('status', 'INCALL')
             ->update([
                 'status' => $disposData->disposition_status,
             ]);
