@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Response\CustomApiResponse;
-use App\Models\EcdialLists;
-use Carbon\Carbon;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+
 
 class ImportExportLeadRepository
 {
@@ -56,10 +56,6 @@ class ImportExportLeadRepository
                 $errors[] = 'Invalid Last Name';
             }
 
-            // if (isset($rowAssoc['Mobile']) && !preg_match('/^\d{10}$/', $rowAssoc['Mobile'])) {
-            //     $errors[] = 'Invalid Mobile';
-            // }
-
             if (isset($rowAssoc['Mobile']) && !preg_match('/^\+?\d{1,20}$/', $rowAssoc['Mobile'])) {
                 $errors[] = 'Invalid Mobile';
             }
@@ -84,68 +80,7 @@ class ImportExportLeadRepository
         ];
     }
 
-
-    // public function insertDataIntoTable($list_id, array $validData, array $invalidData, $fileName, $fileType)
-    // {
-    //     $tableName = "custom_lead_" . $list_id;
-
-    //     if (!Schema::hasTable($tableName)) {
-    //         return $this->apiResponse->getResponseStructure(trans('message.error'), $tableName, trans('message.table_not_exist'));
-    //     }
-
-    //     $fields = $this->getFieldsByListId($list_id);
-    //     $insertedCount = 0; // Track the number of successfully inserted rows
-    //     $failedCount = 0; // Track failed insertions
-    //     $importedData = [];
-
-    //     foreach ($validData as $row) {
-    //         $insertData = [];
-
-    //         foreach ($fields as $field) {
-    //             $insertData[strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_name))] = $row[$field->field_name] ?? null;
-    //         }
-
-    //         // $this->insertDataINtoList($list_id);
-
-    //         $insertData['created_at'] = now();
-    //         $insertData['updated_at'] = now();
-    //         $insertData['omni_lead_source'] = 'csv';
-
-    //         try {
-    //             // DB::table($tableName)->insert($insertData);
-
-    //             $lastInsertedId = DB::table($tableName)->insertGetId($insertData);
-
-    //             $this->insertDataINtoList($list_id, $lastInsertedId);
-    //             $insertedCount++; // Increment count on successful insertion
-    //             $status = 'success';
-    //         } catch (\Exception $e) {
-    //             $failedCount++; // Increment failed count on error
-    //             $status = 'failed';
-    //             generateLogs('error', 'Error in generating failed : ', $e->getMessage());
-    //             return $this->apiResponse->handleAndResponseException($e);
-    //         }
-
-    //         $importedData[] = [
-    //             'row' => $row,
-    //             'status' => $status
-    //         ];
-    //     }
-
-    //     $data = [
-    //         'imported_data' => $importedData,
-    //         'invalid_data' => $invalidData, // Add failed rows with reasons
-    //         'inserted_count' => $insertedCount,
-    //         'failed_count' => $failedCount + count($invalidData) // include validation failures
-    //     ];
-
-    //     // Log the import history
-    //     $this->logImportHistory($list_id, $insertedCount, $failedCount, $fileName, $fileType);
-    //     return ($insertedCount > 0) ? $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_inserted_successfully')) : $this->apiResponse->getResponseStructure(trans('message.error'), $data, trans('message.no_data_inserted'));
-    // }
-
-
-    public function insertDataIntoTable($list_id, array $validData, array $invalidData, $fileName, $fileType)
+    public function insertDataIntoTable($list_id, array $validData, array $invalidData, $fileName, $fileType, $request, $omniLeadSource)
     {
         // Set execution time for bulk operations
         set_time_limit(0); // Unlimited execution time
@@ -154,7 +89,11 @@ class ImportExportLeadRepository
         $tableName = "custom_lead_" . $list_id;
 
         if (!Schema::hasTable($tableName)) {
-            return $this->apiResponse->getResponseStructure(trans('message.error'), $tableName, trans('message.table_not_exist'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.error'),
+                $tableName,
+                trans('message.table_not_exist')
+            );
         }
 
         $fields = $this->getFieldsByListId($list_id);
@@ -172,12 +111,14 @@ class ImportExportLeadRepository
             foreach ($chunk as $rowIndex => $row) {
                 $insertRow = [];
                 foreach ($fields as $field) {
-                    $insertRow[strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_name))] = $row[$field->field_name] ?? null;
+                    $insertRow[strtolower(
+                        preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_name)
+                    )] = $row[$field->field_name] ?? null;
                 }
 
                 $insertRow['created_at'] = now();
                 $insertRow['updated_at'] = now();
-                $insertRow['omni_lead_source'] = 'csv';
+                $insertRow['omni_lead_source'] = $omniLeadSource;
                 $batchData[] = $insertRow;
 
                 // Track row for response
@@ -189,7 +130,14 @@ class ImportExportLeadRepository
 
             // Insert batch
             if (!empty($batchData)) {
-                $insertResult = $this->insertBatchOptimized($tableName, $batchData, $list_id, $importedData, $insertedCount, $chunkIndex);
+                $insertResult = $this->insertBatchOptimized(
+                    $tableName,
+                    $batchData,
+                    $list_id,
+                    $importedData,
+                    $insertedCount,
+                    $chunkIndex
+                );
                 if (!$insertResult) {
                     $failedCount += count($batchData);
                 }
@@ -209,11 +157,19 @@ class ImportExportLeadRepository
             'chunks_processed' => count($chunkedData)
         ];
 
-        $this->logImportHistory($list_id, $insertedCount, $failedCount, $fileName, $fileType);
+        $this->logImportHistory($list_id, $insertedCount, $failedCount, $fileName, $fileType, $request);
 
         return ($insertedCount > 0)
-            ? $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_inserted_successfully'))
-            : $this->apiResponse->getResponseStructure(trans('message.error'), $data, trans('message.no_data_inserted'));
+            ? response()->json([
+                'message' => trans('message.data_inserted_successfully'),
+                'code'    => ResponseHTTP::HTTP_OK,
+                'data'    => $data,
+            ], ResponseHTTP::HTTP_OK)
+            : response()->json([
+                'message' => trans('message.no_data_inserted'),
+                'code'    => ResponseHTTP::HTTP_BAD_REQUEST,
+                'data'    => $data,
+            ], ResponseHTTP::HTTP_BAD_REQUEST);
     }
 
     private function insertBatchOptimized($tableName, $batchData, $list_id, &$importedData, &$insertedCount, $chunkIndex)
@@ -227,6 +183,12 @@ class ImportExportLeadRepository
             // 2. Get last inserted IDs
             $firstId = DB::getPdo()->lastInsertId();
             $batchSize = count($batchData);
+
+            $lastId = $firstId + $batchSize - 1;
+
+            DB::table($tableName)
+                ->whereBetween('id', [$firstId, $lastId])
+                ->update(['original_lead_id' => DB::raw('id')]);
 
             // 3. Prepare ecdial_list data
             $gmtOffset = $this->getGmtOffset();
@@ -274,8 +236,6 @@ class ImportExportLeadRepository
         }
     }
 
-
-
     private function getGmtOffset()
     {
         $timezone = config('app.timezone');
@@ -299,12 +259,12 @@ class ImportExportLeadRepository
 
             return $this->createCsvResponse($headers, $list_id);
         } catch (\Exception $e) {
-            generateLogs('error', 'Error in downloadSampleCsv failed : ', $e->getMessage());
+            generateLogs('error', 'Error in downloadSampleCsv. Failed : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
-    public function processCsvFile($file, $list_id)
+    public function processCsvFile($file, $list_id, $request, $omniLeadSource)
     {
         try {
             $fileName = $file->getClientOriginalName();
@@ -334,7 +294,7 @@ class ImportExportLeadRepository
             $validData = $processedData['valid'];
             $invalidData = $processedData['invalid'];
 
-            return $this->insertDataIntoTable($list_id, $validData, $invalidData, $fileName, $fileType);
+            return $this->insertDataIntoTable($list_id, $validData, $invalidData, $fileName, $fileType, $request, $omniLeadSource);
         } catch (\Exception $e) {
             generateLogs('error', 'Error in processCsvFile failed : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -355,7 +315,7 @@ class ImportExportLeadRepository
         return $response;
     }
 
-    private function logImportHistory($list_id, $successCount, $failCount, $fileName, $fileType)
+    private function logImportHistory($list_id, $successCount, $failCount, $fileName, $fileType, $request)
     {
         $user = JWTAuth::user();
         $externalToken = null;

@@ -7,24 +7,28 @@ use App\Http\Controllers\Api\OtpController;
 use  App\Http\Middleware\AuthTokenMiddleware;
 use App\Http\Controllers\Api\UserMessageController;
 use App\Http\Controllers\Api\ChatBotController;
+use App\Http\Controllers\Api\CustomLeadController;
+use App\Http\Controllers\Api\ImportLeadController;
 use App\Http\Controllers\Api\UserController;
 
 // Route::middleware('throttle:custom-api')->group(function () {
-    Route::get('generate-auth-token/{uinId}', [AuthTokenController::class, 'index']);
+Route::get('generate-auth-token/{uinId}', [AuthTokenController::class, 'index']);
 
-    Route::middleware(AuthTokenMiddleware::class)->group(function () {
-        Route::post('chatbot-room-id', [ChatBotWebhookController::class, 'fetchMessageFromRoom']);
-        Route::post('fetch-session-messages/{uinId}', [UserMessageController::class, 'fetchChatResponse']);
-        // Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  
-        // Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
-        // Route::post('call-hangup', [WebhookCallController::class, 'callHangup']); 
-        // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
-        Route::post('dc-user-logout', [UserController::class, 'dcUserLogout']);
-        Route::get('fetch-chatbot-templates', [ChatBotController::class, 'index']);
+Route::middleware(AuthTokenMiddleware::class)->group(function () {
+    Route::post('chatbot-room-id', [ChatBotWebhookController::class, 'fetchMessageFromRoom']);
+    Route::post('fetch-session-messages/{uinId}', [UserMessageController::class, 'fetchChatResponse']);
+    // Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  
+    // Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
+    // Route::post('call-hangup', [WebhookCallController::class, 'callHangup']); 
+    // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
+    Route::post('dc-user-logout', [UserController::class, 'dcUserLogout']);
+    Route::get('fetch-chatbot-templates', [ChatBotController::class, 'index']);
+    Route::post('single-lead-upload/{campaign_id}', [CustomLeadController::class, 'create']);
+    Route::get('download-sample-csv/{campaign_id}', [ImportLeadController::class, 'downloadSampleCsv']);
+    Route::post('bulk-lead-upload/{campaign_id}', [ImportLeadController::class, 'uploadLeadCsv']);
 
-        Route::prefix('customer-portal')->group(function () {
-            Route::post('/request-otp/{uinId}', [OtpController::class, 'requestOtp']);
-            Route::post('/verify-otp/{uinId}', [OtpController::class, 'verifyOtp']);
-        });
+    Route::prefix('customer-portal')->group(function () {
+        Route::post('/request-otp/{uinId}', [OtpController::class, 'requestOtp']);
+        Route::post('/verify-otp/{uinId}', [OtpController::class, 'verifyOtp']);
     });
-// });
+});
