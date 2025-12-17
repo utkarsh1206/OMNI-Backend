@@ -24,6 +24,7 @@ class DialNextCallApiRequest extends FormRequest
     {
         return [
             'user_id' => 'required|string',
+            'dialed_phone_number' => 'required|string',
         ];
     }
 
