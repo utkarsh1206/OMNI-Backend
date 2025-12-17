@@ -126,13 +126,21 @@ class TranscriptApiController extends Controller
             }
 
             $responseData = $response->json();
-
+            
             if (!empty($responseData['details'])) {
                 $html = '';
 
                 foreach ($responseData['details'] as $detail) {
-                    $speaker = ($detail['speaker'] === 'Speaker 1') ? 'AGENT' : 'CUSTOMER';
-                    $html .= '<p><strong>' . $speaker . ':</strong> ' . $detail['text'] . '</p>';
+                    if (!empty($detail['speaker']))
+                    {
+                        $speaker = ($detail['speaker'] === 'Speaker 1') ? 'AGENT' : 'CUSTOMER';
+                        $html .= '<p><strong>' . $speaker . ':</strong> ' . $detail['text'] . '</p>';
+                    }
+                    else
+                    {
+                        $html .= "<p>" . e($detail) . "</p>";
+                    }
+
                 }
 
                 // Generate the PDF
