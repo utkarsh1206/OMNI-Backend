@@ -27,6 +27,9 @@ class AuthTokenMiddleware
                 'api/single-lead-upload',
                 'api/download-sample-csv',
                 'api/bulk-lead-upload',
+                'api/get-call-history',
+                'api/get-call-history-csv',
+                'api/generate-transcript',
             ];
 
             if (Str::startsWith(request()->path(), $protectedPrefixes)) {

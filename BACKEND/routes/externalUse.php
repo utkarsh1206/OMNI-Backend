@@ -3,12 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ChatBotWebhookController;
 use App\Http\Controllers\Api\AuthTokenController;
+use App\Http\Controllers\Api\CallLogReportController;
 use App\Http\Controllers\Api\OtpController;
 use  App\Http\Middleware\AuthTokenMiddleware;
 use App\Http\Controllers\Api\UserMessageController;
 use App\Http\Controllers\Api\ChatBotController;
 use App\Http\Controllers\Api\CustomLeadController;
 use App\Http\Controllers\Api\ImportLeadController;
+use App\Http\Controllers\Api\TranscriptApiController;
 use App\Http\Controllers\Api\UserController;
 
 // Route::middleware('throttle:custom-api')->group(function () {
@@ -23,9 +25,13 @@ Route::middleware(AuthTokenMiddleware::class)->group(function () {
     // Route::post('call-history', [WebhookCallController::class, 'callHistory']);
     Route::post('dc-user-logout', [UserController::class, 'dcUserLogout']);
     Route::get('fetch-chatbot-templates', [ChatBotController::class, 'index']);
+    
     Route::post('single-lead-upload/{campaign_id}', [CustomLeadController::class, 'create']);
     Route::get('download-sample-csv/{campaign_id}', [ImportLeadController::class, 'downloadSampleCsv']);
     Route::post('bulk-lead-upload/{campaign_id}', [ImportLeadController::class, 'uploadLeadCsv']);
+    Route::get('get-call-history', [CallLogReportController::class, 'list']);
+    Route::get('get-call-history-csv', [CallLogReportController::class, 'exportCsv']);
+    Route::post('generate-transcript', [TranscriptApiController::class, 'transcriptApi']);
 
     Route::prefix('customer-portal')->group(function () {
         Route::post('/request-otp/{uinId}', [OtpController::class, 'requestOtp']);
