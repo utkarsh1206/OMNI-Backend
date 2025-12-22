@@ -126,21 +126,17 @@ class TranscriptApiController extends Controller
             }
 
             $responseData = $response->json();
-            
+
             if (!empty($responseData['details'])) {
                 $html = '';
 
                 foreach ($responseData['details'] as $detail) {
-                    if (!empty($detail['speaker']))
-                    {
+                    if (!empty($detail['speaker'])) {
                         $speaker = ($detail['speaker'] === 'Speaker 1') ? 'AGENT' : 'CUSTOMER';
                         $html .= '<p><strong>' . $speaker . ':</strong> ' . $detail['text'] . '</p>';
-                    }
-                    else
-                    {
+                    } else {
                         $html .= "<p>" . e($detail) . "</p>";
                     }
-
                 }
 
                 // Generate the PDF
@@ -155,7 +151,7 @@ class TranscriptApiController extends Controller
                 // Add the public URL to the response
                 $responseData['generated_pdf_url'] = $publicUrl;
             }
-
+            $responseData['code'] = 200;
             return response()->json($responseData);
         } catch (Exception $e) {
             generateLogs("error", "An unexpected error occurred TranscriptApiController@transcriptApi ", $e->getMessage());
