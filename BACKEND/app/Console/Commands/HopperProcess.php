@@ -47,7 +47,7 @@ class HopperProcess extends Command
         Tenant::orderBy('id')
             ->chunkById(100, function ($tenants) {
                 foreach ($tenants as $tenant) {
-                    generateScheduleLogs('info', 'Hopper Process started for all tenants.' .$tenant->domain_name);
+                    generateScheduleLogs('info', 'Hopper Process started for all tenants.' . $tenant->domain_name);
                     $newConnectionName = str_replace(".", "_", $tenant->domain_name);
                     $databaseName = str_replace(".", "_", $tenant->domain_name);
                     establishDatabaseConnect($newConnectionName, $databaseName);
@@ -408,8 +408,15 @@ class CallbackProcessor
             return;
         }
 
-        $this->activateExpiredCallbacks($newConnectionName, $now);
-        $this->processAnyoneCallbacks($newConnectionName, $now);
+        DB::beginTransaction();
+        try {
+            $this->processAnyoneCallbacks($newConnectionName, $now);
+            $this->activateExpiredCallbacks($newConnectionName, $now);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            generateScheduleLogs("error", "Exception: " . $e->getMessage());
+        }
     }
 
     private function activateExpiredCallbacks($newConnectionName, Carbon $now): void
@@ -426,15 +433,14 @@ class CallbackProcessor
         $callbacks = CallBack::on($newConnectionName)
             ->join('ecdial_list', 'ecdial_list.lead_id', '=', 'call_backs.lead_id')
             ->where('call_backs.call_back_time', '<=', $now)
-            ->where('call_backs.lead_status', 'active')
-            ->whereRaw("call_backs.recipient LIKE '%ANYONE%'")
+            ->where('call_backs.lead_status', 'live')
+            ->whereRaw("call_backs.recipient LIKE '%Anyone%'")
             ->select(
                 'call_backs.lead_id',
                 'call_backs.recipient',
                 'call_backs.campaign_id',
                 'call_backs.list_id',
                 'ecdial_list.gmt_offset_now',
-                // 'ecdial_list.state',
                 'call_backs.lead_status'
             )
             ->get();
@@ -459,8 +465,6 @@ class CallbackProcessor
             'lead_id'         => $callback->lead_id,
             'campaign_id'     => $callback->campaign_id,
             'list_id'         => $callback->list_id,
-            'gmt_offset_now'  => $callback->gmt_offset_now,
-            'state'           => $callback->state,
             'priority'        => 50,
             'source'          => 'C',
         ]);

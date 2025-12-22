@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Http\Requests\DialNextCallApiRequest;
 use App\Http\Response\CustomApiResponse;
+use App\Models\CallBack;
 use App\Models\EcdialHopper;
 use App\Models\EcdialList;
 use App\Models\LiveAgents;
@@ -132,7 +133,10 @@ class DialNextCallApiRepository
     {
         $lead = DB::table('ecdial_list as l')
             ->join('custom_lead_' . $listId . ' as c', 'c.id', '=', 'l.lead_id')
-            ->where('l.status', 'NEW')
+            ->where(function($query) {
+                $query->where('l.status', 'NEW')
+                      ->orWhere('l.status', 'CALLBK');
+            })
             ->where('l.lead_id', $leadId)
             ->select('c.mobile')
             ->first();
@@ -164,6 +168,23 @@ class DialNextCallApiRepository
             'customer' => $mobile,
             'updated_at' => Carbon::now(),
         ]);
+
+        //Look for existing callback entry and update status if found
+        $callback = CallBack::where('lead_id', $lead->lead_id)
+        ->where('list_id', $lead->list_id)
+        ->first();
+
+        if ($callback) {
+            // If a callback entry is found, update its status to 'inactive'
+            CallBack::where('lead_id', $lead->lead_id)
+                ->where('list_id', $lead->list_id)
+                ->update([
+                    'lead_status' => 'inactive',
+                    'updated_at' => now(),
+                ]);
+
+            generateLogs('info', 'Callback entry found for lead_id ' . $lead->lead_id . ' and list_id ' . $lead->list_id . '. Lead status updated to inactive.');
+        }
 
         return [
             'lead_id' => $lead->lead_id,
