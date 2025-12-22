@@ -725,8 +725,8 @@ class SupportTicketRepository
 
         $sendProcessedEmail = sendProcessedEmail(
             to: $request->to_emails,
-            cc: $request->cc,
-            bcc: $request->bcc,
+            cc: $request->cc ? [$request->cc] : [],
+            bcc: $request->bcc ? [$request->bcc] : [],
             subject: $customerSubject,
             bodyTemplate: $customerMailTemplate['body'] ?? '',
             mailTemplateId: $customerMailTemplate->id ?? 0,
