@@ -30,7 +30,7 @@ class CallBackRepository
                 'recipient' => $request->recipient,
                 'comments' => $request->comments,
                 'user_group' => $request->user_group,
-                'lead_status' => $request->lead_status,
+                'lead_status' => 'active',
                 'last_modified_user' => $request->last_modified_user,
             ];
             $callBack = CallBack::create($input);

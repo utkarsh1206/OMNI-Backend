@@ -42,8 +42,7 @@ class ProcessCallBacks extends Command
             $now = Carbon::now()->format('Y-m-d H:i:00');
 
             $callbacks = CallBack::select('call_back_time', 'lead_id', 'list_id')
-                ->where('call_back_time', '<=', now())
-                ->where('lead_status', 'CALLBK')
+                ->where('call_back_time', $now)
                 ->get();
 
             foreach ($callbacks as $callback) {
@@ -60,10 +59,6 @@ class ProcessCallBacks extends Command
                     $updated = DB::table($tableName)
                         ->where('id', $leadId)
                         ->update(['updated_at' => $callbackTime]);
-
-                    CallBack::where('lead_id',  $leadId)
-                        ->where('lead_status', 'CALLBK')
-                        ->update(['lead_status' => 'active']);
 
                     if ($updated) {
                         $this->info("Updated lead_id $leadId in $tableName with updated_at = $callbackTime");
