@@ -47,27 +47,54 @@ class HopperProcess extends Command
         Tenant::orderBy('id')
             ->chunkById(100, function ($tenants) {
                 foreach ($tenants as $tenant) {
-                    generateScheduleLogs('info', 'Hopper Process started for all tenants.' . $tenant->domain_name);
-                    $newConnectionName = str_replace(".", "_", $tenant->domain_name);
-                    $databaseName = str_replace(".", "_", $tenant->domain_name);
-                    establishDatabaseConnect($newConnectionName, $databaseName);
-                    DB::reconnect($newConnectionName);
+                    try {
+                        generateScheduleLogs('info', 'Hopper Process started for all tenants.' . $tenant->domain_name);
+                        $newConnectionName = str_replace(".", "_", $tenant->domain_name);
+                        $databaseName = str_replace(".", "_", $tenant->domain_name);
+                        establishDatabaseConnect($newConnectionName, $databaseName);
+                        DB::reconnect($newConnectionName);
 
-                    $domain_name = $tenant->domain_name;
+                        $domain_name = $tenant->domain_name;
 
-                    $options = $this->getOptionsData();
+                        $options = $this->getOptionsData();
 
-                    if ($options['wipe_hopper']) {
-                        return $this->wipeHopper($options['campaign']);
-                    }
+                        if ($options['wipe_hopper']) {
+                            return $this->wipeHopper($options['campaign']);
+                        }
 
-                    $this->cleanupInactiveLists($newConnectionName, $options['allow_inactive']);
-                    $this->callbackProcessor->processExpiredCallbacks($newConnectionName, $this->timeCalculator->getCurrentTime());
+                        $this->cleanupInactiveLists($newConnectionName, $options['allow_inactive']);
+                        $this->callbackProcessor->processExpiredCallbacks($newConnectionName, $this->timeCalculator->getCurrentTime());
 
-                    $campaigns = $this->getCampaigns($newConnectionName, $options['campaign'], $domain_name);
+                        $campaigns = $this->getCampaigns($newConnectionName, $options['campaign'], $domain_name);
 
-                    foreach ($campaigns as $campaign) {
-                        $this->campaignProcessor->processCampaign($newConnectionName, $campaign, $options);
+                        foreach ($campaigns as $campaign) {
+                            $this->campaignProcessor->processCampaign($newConnectionName, $campaign, $options);
+                        }
+                    } catch (\Illuminate\Database\QueryException $e) {
+
+                        generateScheduleLogs(
+                            'error',
+                            "Skipping tenant {$tenant->domain_name} - DB/Table issue: " . $e->getMessage()
+                        );
+
+                        continue; // 🔥 SKIP TENANT
+
+                    } catch (\PDOException $e) {
+
+                        generateScheduleLogs(
+                            'error',
+                            "Skipping tenant {$tenant->domain_name} - PDO issue: " . $e->getMessage()
+                        );
+
+                        continue;
+                    } catch (\Throwable $e) {
+
+                        generateScheduleLogs(
+                            'error',
+                            "Skipping tenant {$tenant->domain_name} - Unexpected error: " . $e->getMessage()
+                        );
+
+                        continue;
                     }
                 }
                 // return Command::SUCCESS;
@@ -410,8 +437,8 @@ class CallbackProcessor
 
         DB::beginTransaction();
         try {
-            $this->processAnyoneCallbacks($newConnectionName, $now);
             $this->activateExpiredCallbacks($newConnectionName, $now);
+            $this->processAnyoneCallbacks($newConnectionName, $now);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -456,7 +483,7 @@ class CallbackProcessor
             ->where('lead_id', $callback->lead_id)
             ->where('called_since_last_reset', '!=', 'N')
             ->update([
-                'status' => $callback->lead_status,
+                // 'status' => $callback->lead_status,
                 'called_since_last_reset' => 'N',
                 'last_dialable_time' => $now
             ]);
