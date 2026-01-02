@@ -18,11 +18,11 @@ class ChatbotWebhookRepository
 
     public function fetchMessageFromRoom(Request $request)
     {
-        try {                
+        try {
             $boradCastData = [
                 'room_id' => $request->room_id,
             ];
-            broadcast(new CustomerChatRequest($boradCastData, $request->attributes->get('tenant_domain')));    
+            broadcast(new CustomerChatRequest($boradCastData, $request->attributes->get('tenant_domain')));
             return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in Storing Messages of Room: ', $ex->getMessage());
@@ -30,4 +30,14 @@ class ChatbotWebhookRepository
         }
     }
 
+    public function fetchRoomId(Request $request)
+    {
+        try {
+            $roomId = $request->room_id;
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $roomId, trans('message.data_fetch'));
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in fetching Room ID: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
 }
