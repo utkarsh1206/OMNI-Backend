@@ -18,6 +18,7 @@ class AuthTokenMiddleware
         try {
             $protectedPrefixes = [
                 'api/chatbot-room-id',
+                'api/chatbot-room-id-support-ticket',
                 // 'api/call-initiate',
                 // 'api/call-connected',
                 // 'api/call-hangup',
@@ -30,6 +31,8 @@ class AuthTokenMiddleware
                 'api/get-call-history',
                 'api/get-call-history-csv',
                 'api/generate-transcript',
+                'api/whatsapp/support-ticket',
+                'api/product-list',
             ];
 
             if (Str::startsWith(request()->path(), $protectedPrefixes)) {

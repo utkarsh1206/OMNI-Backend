@@ -21,4 +21,9 @@ class ChatBotWebhookController extends Controller
     {
         return $this->chatBotWebhookRepository->fetchMessageFromRoom($request);
     }
+
+    public function fetchRoomId(ChatBotRoomId $request)
+    {
+        return $this->chatBotWebhookRepository->fetchRoomId($request);
+    }
 }

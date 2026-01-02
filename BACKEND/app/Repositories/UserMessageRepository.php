@@ -35,7 +35,7 @@ class UserMessageRepository
                 $boradCastData = [
                     'room_id' => $request->room_id,
                     'user_id' => auth()->user()->id,
-                    'external_user_phone'=> $agentAssigned->external_user_phone,
+                    'external_user_phone' => $agentAssigned->external_user_phone,
                 ];
                 broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));
             } else {
@@ -84,7 +84,7 @@ class UserMessageRepository
                             'session_id' => $msg['session_id'] ?? null,
                             'external_user_id' => $chatHistory['admin_id'] ?? null,
                             'node_type' => $msg['nodeType'] ?? $msg['data']['nodeType'] ?? 'MESSAGE',
-                            'text' => strip_tags($messageText),    
+                            'text' => strip_tags($messageText),
                             'first_name' => $msg['first_name'] ?? null,
                             'last_name' => $msg['last_name'] ?? nulL,
                             'external_user_phone' => $phoneNumber,
@@ -99,7 +99,7 @@ class UserMessageRepository
                         $boradCastData = [
                             'room_id' => $request->room_id,
                             'user_id' => auth()->user()->id,
-                            'external_user_phone'=> $phoneNumber,
+                            'external_user_phone' => $phoneNumber,
                         ];
                         broadcast(new CustomerChatRequest($boradCastData, auth()->user()->domain));
                         // broadcast(new ReceivedCustomerMessages($chatMessage));
@@ -213,7 +213,7 @@ class UserMessageRepository
 
             if (!$existingMessage) {
                 generateLogs('info', "First time message received from external user id");
-                return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.message_created'));    
+                return $this->apiResponse->getResponseStructure(trans('message.success'), '', trans('message.message_created'));
             }
 
             $message = Message::Create([
@@ -231,7 +231,7 @@ class UserMessageRepository
                 'updated_at' => Carbon::now(),
             ]);
 
-            if($message) {
+            if ($message) {
                 broadcast(new ChatMessagesStored($message, $details->domain, $existingMessage->user_id));
             }
             return $this->apiResponse->getResponseStructure(trans('message.success'), $message, trans('message.message_created'));
