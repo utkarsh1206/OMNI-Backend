@@ -295,4 +295,9 @@ class AgentMessageController extends Controller
     {
         return $this->messageRepository->lastReadMessage($request);
     }
+
+    public function storeBulkMessage(Request $request)
+    {
+        return $this->messageRepository->storeBulkMessage($request);
+    }
 }

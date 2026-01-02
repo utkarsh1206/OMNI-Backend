@@ -659,7 +659,8 @@ class SupportTicketRepository
             'attachment' => json_encode($attachment_urls),
             'incident_id' => $request->incident_id ?? 0,
             'account_id' => $request->account_id ?? 0,
-            'category_id' => $request->category_id ?? 0
+            'category_id' => $request->category_id ?? 0,
+            'source' => 'manual'
         ];
     }
 
@@ -690,8 +691,6 @@ class SupportTicketRepository
     ) {
         generateLogs("info", "ticket data " . $ticket);
 
-        $customerMailTemplate = MailTemplate::where('type', 'create_ticket_customer')->where('status', 'Active')->where('mail_for', 'request')->first();
-
         // $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         // if (isset($emailConfig) && !empty($emailConfig)) {
 
@@ -716,6 +715,9 @@ class SupportTicketRepository
         /** ------------------------
          * Send Email to Customer
          * ---------------------- */
+
+        $customerMailTemplate = MailTemplate::where('type', 'create_ticket_customer')->where('status', 'Active')->where('mail_for', 'request')->first();
+
         $customerSubject = str_replace(
             "{ticket_number}",
             $ticket->support_ticket_id,
@@ -724,8 +726,8 @@ class SupportTicketRepository
 
         $sendProcessedEmail = sendProcessedEmail(
             to: $request->to_emails,
-            cc: $request->cc,
-            bcc: $request->bcc,
+            cc: $request->cc ? [$request->cc] : [],
+            bcc: $request->bcc ? [$request->bcc] : [],
             subject: $customerSubject,
             bodyTemplate: $customerMailTemplate['body'] ?? '',
             mailTemplateId: $customerMailTemplate->id ?? 0,

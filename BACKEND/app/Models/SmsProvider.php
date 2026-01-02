@@ -6,11 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class SmsProvider extends Model
 {
+    protected $table = "providers";
+
     protected $fillable = [
         'name',
         'status',
         'type'
     ];
 
-    protected $table = "providers";
+    public function configurations()
+    {
+        return $this->hasMany(ApiConfiguration::class, 'provider_id', 'id');
+    }
 }

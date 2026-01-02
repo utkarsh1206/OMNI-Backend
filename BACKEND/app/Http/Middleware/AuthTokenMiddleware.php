@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 use Exception;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+
 class AuthTokenMiddleware
 {
     public function handle(Request $request, Closure $next)
@@ -17,25 +18,36 @@ class AuthTokenMiddleware
         try {
             $protectedPrefixes = [
                 'api/chatbot-room-id',
+                'api/chatbot-room-id-support-ticket',
                 // 'api/call-initiate',
                 // 'api/call-connected',
                 // 'api/call-hangup',
                 // 'api/call-history',
                 'api/dc-user-logout',
                 'api/fetch-chatbot-templates',
+                'api/single-lead-upload',
+                'api/download-sample-csv',
+                'api/bulk-lead-upload',
+                'api/get-call-history',
+                'api/get-call-history-csv',
+                'api/generate-transcript',
+                'api/whatsapp/support-ticket',
+                'api/product-list',
             ];
 
             if (Str::startsWith(request()->path(), $protectedPrefixes)) {
                 if (!$request->header('Token')) {
-                    return response()->json(['error' =>  trans('message.token_missing')], ResponseHTTP::HTTP_UNAUTHORIZED);
+                    return response()->json([
+                        'error' =>  trans('message.token_missing')
+                    ], ResponseHTTP::HTTP_UNAUTHORIZED);
                 }
                 $decrypted = Crypt::decryptString($request->header('Token'));
                 $parts = explode('+', $decrypted);
-            
+
                 [$accessTokenValue, $domain] = $parts;
 
                 getDbConnection($domain, true);
-                
+
                 $authToken = AuthToken::where('token', $accessTokenValue)
                     ->where('expire_at', '>', Carbon::now())
                     ->first();

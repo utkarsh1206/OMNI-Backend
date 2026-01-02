@@ -25,7 +25,11 @@ class AuthTokenRepository
         try {
             getDbConnection($detail->domain, true);
 
-            $checkToken = AuthToken::select('token', 'expire_at')->where('expire_at', '>', Carbon::now())
+            $currentIp = $request->ip();
+
+            $checkToken = AuthToken::select('token', 'expire_at')
+                ->where('expire_at', '>', Carbon::now())
+                ->where('ipaddress', $currentIp)
                 ->first();
 
             if ($checkToken) {
@@ -42,16 +46,16 @@ class AuthTokenRepository
                 ]);
             }
 
-            $authToken = Crypt::encryptString($authToken.'+'.$detail->domain);
-            return $this->apiResponse->getResponseStructure(
-                trans('message.success'),
-                [
-                    'token' => $authToken,
-                    'code' => ResponseHTTP::HTTP_OK,
+            $authToken = Crypt::encryptString($authToken . '+' . $detail->domain);
+
+            return response()->json([
+                'message' => trans('message.data_fetch'),
+                'code'    => ResponseHTTP::HTTP_OK,
+                'data'    => [
+                    'token'     => $authToken,
                     'expire_at' => $expireAt,
                 ],
-                trans('message.data_fetch')
-            );
+            ], ResponseHTTP::HTTP_OK);
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Auth Token Listing: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);

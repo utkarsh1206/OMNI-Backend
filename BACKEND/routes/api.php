@@ -92,6 +92,8 @@ use App\Http\Controllers\Api\AgentMessageController;
 use App\Http\Controllers\Api\ApiEndpointController;
 use App\Http\Controllers\Api\ApiImportController;
 use App\Http\Controllers\Api\ApiMappingController;
+use App\Http\Controllers\Api\AssignmentHistoryController;
+use App\Http\Controllers\Api\AssignmentRuleController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
 use App\Http\Controllers\Api\EvaluationQuestionUsageTypeController;
 use App\Http\Controllers\Api\EvaluationReviewController;
@@ -108,8 +110,10 @@ use App\Http\Controllers\Api\ThirdPartyCrmController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\NetworkCheckController;
 use App\Http\Controllers\Api\CustomChatBotController;
+use App\Http\Controllers\Api\HashController;
 use App\Http\Controllers\Api\LeadMailController;
 use App\Http\Controllers\Api\ListTemplateMapController;
+use App\Http\Controllers\Api\TicketAssignmentController;
 use App\Http\Middleware\CheckPermissionMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -320,7 +324,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     //Route::apiResource('support-ticket', SupportTicketController::class);
     Route::get('support-ticket', [SupportTicketController::class, 'index'])
         ->middleware(CheckPermissionMiddleware::class . ":support_tickets," . PermissionAction::VIEW->value);
-    Route::get('support-ticket-customer', [SupportTicketController::class, 'index'])
+    Route::get('support-ticket-customer', [SupportTicketController::class, 'indexCustomer'])
         ->middleware(CheckPermissionMiddleware::class . ":support_tickets," . PermissionAction::VIEW->value);
     Route::post('support-ticket', [SupportTicketController::class, 'store'])
         ->middleware(CheckPermissionMiddleware::class . ":support_tickets," . PermissionAction::CREATE->value);
@@ -389,6 +393,9 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('get-agent-status', [AgentMessageController::class, 'getStatus'])->middleware(CheckPermissionMiddleware::class . ":agent_chat," . PermissionAction::ENABLE->value);
     Route::get('get-agent-messages/{agent_id}', [AgentMessageController::class, 'getMessages'])->middleware(CheckPermissionMiddleware::class . ":agent_chat," . PermissionAction::ENABLE->value);
     Route::post('send-agent-messages', [AgentMessageController::class, 'storeMessage'])->middleware(CheckPermissionMiddleware::class . ":agent_chat," . PermissionAction::ENABLE->value);
+
+    Route::post('send-bulk-messages', [AgentMessageController::class, 'storeBulkMessage'])->middleware(CheckPermissionMiddleware::class . ":agent_chat," . PermissionAction::ENABLE->value);
+
     Route::post('last-read-message', [AgentMessageController::class, 'lastReadMessage'])->middleware(CheckPermissionMiddleware::class . ":agent_chat," . PermissionAction::ENABLE->value);
 
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {
@@ -484,6 +491,25 @@ Route::middleware(['jwt.auth'])->group(function () {
     });
 
     Route::post('send-lead-mail/{template_id}', [LeadMailController::class, 'send']);
+
+    Route::prefix('auto-assignment-rules')->group(function () {
+        Route::get('/', [AssignmentRuleController::class, 'index']);         // list rules
+        Route::post('/', [AssignmentRuleController::class, 'store']);        // create new rule
+        Route::get('/{id}', [AssignmentRuleController::class, 'show']);      // view single rule
+        Route::put('/{id}', [AssignmentRuleController::class, 'update']);    // update rule
+        Route::delete('/{id}', [AssignmentRuleController::class, 'destroy']); // delete rule
+
+        // Maybe extra endpoints if needed
+        Route::post('/{id}/toggle', [AssignmentRuleController::class, 'toggleStatus']);
+        // Route::post('/{id}/deactivate', [AssignmentRuleController::class, 'toggleStatus']);
+    });
+
+    Route::prefix('assignment-histories')->group(function () {
+        Route::get('/ticket/{ticketId}', [AssignmentHistoryController::class, 'byTicket']);
+        Route::apiResource('/', AssignmentHistoryController::class)->only(['index', 'show']);
+    });
+
+    Route::put('/auto-assign/{ticketId}', [TicketAssignmentController::class, 'autoAssignApi']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
@@ -523,24 +549,6 @@ Route::prefix('user-roles')->group(function () {
 Route::get('/tenant-modules', [TenantModuleController::class, 'index']);
 Route::get('/actions', [ActionController::class, 'index']);
 
-// Route::prefix('auto-assignment-rules')->group(function () {
-//     Route::get('/', [AssignmentRuleController::class, 'index']);         // list rules
-//     Route::post('/', [AssignmentRuleController::class, 'store']);        // create new rule
-//     Route::get('/{id}', [AssignmentRuleController::class, 'show']);      // view single rule
-//     Route::put('/{id}', [AssignmentRuleController::class, 'update']);    // update rule
-//     Route::delete('/{id}', [AssignmentRuleController::class, 'destroy']); // delete rule
-
-//     // Maybe extra endpoints if needed
-//     Route::post('/{id}/toggle', [AssignmentRuleController::class, 'toggleStatus']);
-//     // Route::post('/{id}/deactivate', [AssignmentRuleController::class, 'toggleStatus']);
-// });
-
-// Route::prefix('assignment-histories')->group(function () {
-//     Route::get('/ticket/{ticketId}', [AssignmentHistoryController::class, 'byTicket']);
-//     Route::apiResource('/', AssignmentHistoryController::class)->only(['index', 'show']);
-// });
-
-// Route::put('/auto-assign/{ticketId}', [TicketAssignmentController::class, 'autoAssignApi']);
 
 
 // -------------
@@ -606,3 +614,5 @@ Route::get('/test-auth-endpoint-3', function (Request $request) {
         ]
     ]);
 });
+
+Route::get('/hash/{input}', [HashController::class, 'hashString']);

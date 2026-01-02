@@ -8,6 +8,8 @@ class EcdialList extends Model
 {
     protected $table = 'ecdial_list';
     protected $primaryKey = 'lead_id';
+
+    public $timestamps = false;
     
     protected $fillable = [
         'entry_date',
