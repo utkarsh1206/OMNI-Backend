@@ -394,6 +394,9 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('get-agent-status', [AgentMessageController::class, 'getStatus'])->middleware(CheckPermissionMiddleware::class . ":agent_chat," . PermissionAction::ENABLE->value);
     Route::get('get-agent-messages/{agent_id}', [AgentMessageController::class, 'getMessages'])->middleware(CheckPermissionMiddleware::class . ":agent_chat," . PermissionAction::ENABLE->value);
     Route::post('send-agent-messages', [AgentMessageController::class, 'storeMessage'])->middleware(CheckPermissionMiddleware::class . ":agent_chat," . PermissionAction::ENABLE->value);
+
+    Route::post('send-bulk-messages', [AgentMessageController::class, 'storeBulkMessage'])->middleware(CheckPermissionMiddleware::class . ":agent_chat," . PermissionAction::ENABLE->value);
+
     Route::post('last-read-message', [AgentMessageController::class, 'lastReadMessage'])->middleware(CheckPermissionMiddleware::class . ":agent_chat," . PermissionAction::ENABLE->value);
 
     Route::middleware([ModifyRequestMiddleware::class])->group(function () {
