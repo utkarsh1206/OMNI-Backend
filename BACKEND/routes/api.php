@@ -114,6 +114,7 @@ use App\Http\Controllers\Api\HashController;
 use App\Http\Controllers\Api\LeadMailController;
 use App\Http\Controllers\Api\ListTemplateMapController;
 use App\Http\Controllers\Api\TicketAssignmentController;
+use App\Http\Controllers\Api\WhatsappBroadcastController;
 use App\Http\Middleware\CheckPermissionMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -507,6 +508,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     });
 
     Route::put('/auto-assign/{ticketId}', [TicketAssignmentController::class, 'autoAssignApi']);
+
+    Route::post('/send-WA-broadcast', [WhatsappBroadcastController::class, 'sendBulk']);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
