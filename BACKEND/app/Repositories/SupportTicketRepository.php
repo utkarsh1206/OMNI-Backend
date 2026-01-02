@@ -237,6 +237,7 @@ class SupportTicketRepository
 
             // Create support ticket
             $builtTicketData = $this->buildTicketData($request, $attachment_urls);
+            $builtTicketData['source'] = 'manual';
             $supportTicket = SupportTicket::create($builtTicketData);
             $supportTicketId = $builtTicketData['support_ticket_id'];
             $customFieldsData = [];
@@ -659,8 +660,7 @@ class SupportTicketRepository
             'attachment' => json_encode($attachment_urls),
             'incident_id' => $request->incident_id ?? 0,
             'account_id' => $request->account_id ?? 0,
-            'category_id' => $request->category_id ?? 0,
-            'source' => 'manual'
+            'category_id' => $request->category_id ?? 0
         ];
     }
 
