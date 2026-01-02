@@ -164,4 +164,78 @@ class AgentMessageRepository
             return $this->apiResponse->handleAndResponseException($ex);
         }
     }
+
+    public function storeBulkMessage($request)
+    {
+        try {
+            $files = uploadAttachment($request, "attachment", "attachment");
+
+            // $receiverIds = Users::where('id', '<>', auth()->user()->id)
+            //     ->pluck('id')
+            //     ->toArray();
+
+            $receiverIds = $request->input('agent_id', []);
+
+            if (empty($receiverIds)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    [],
+                    'No receivers found'
+                );
+            }
+
+            $messages = [];
+            $fileData = [];
+
+            // Loop users
+            foreach ($receiverIds as $receiverId) {
+
+                $message = Message::create([
+                    "user_id" => auth()->user()->id,
+                    "receiver_id" => $receiverId,
+                    "type" => 'agent_chat',
+                    "text" => $request->text,
+                    "is_read" => 'unread',
+                    "sender" => 'agent',
+                    'external_message_time' => Carbon::now(),
+                ]);
+
+                if ($message) {
+
+                    // Attachments
+                    if ($files) {
+                        foreach ($files as $file) {
+                            $fileData[] = [
+                                'message_id' => $message->id,
+                                'attachments' => $file['fileName'],
+                                'created_at' => Carbon::now(),
+                                'updated_at' => Carbon::now(),
+                            ];
+                        }
+                    }
+
+                    $message->load('attachments');
+
+                    //Broadcast per receiver
+                    broadcast(new ReceivedMessages($message));
+
+                    $messages[] = $message;
+                }
+            }
+
+            // Insert attachments in one query
+            if (!empty($fileData)) {
+                MessageAttachment::insert($fileData);
+            }
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $messages,
+                'Bulk message sent successfully'
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error in bulk message: ', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
 }
