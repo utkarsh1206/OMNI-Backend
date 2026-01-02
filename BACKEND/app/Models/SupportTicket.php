@@ -46,7 +46,8 @@ class SupportTicket extends Model
         "category_id",
         "usergroup_id",
         "response_time",
-        "is_notified"
+        "is_notified",
+        "source"
     ];
 
     protected static function boot()
