@@ -10,14 +10,17 @@ use App\Http\Controllers\Api\UserMessageController;
 use App\Http\Controllers\Api\ChatBotController;
 use App\Http\Controllers\Api\CustomLeadController;
 use App\Http\Controllers\Api\ImportLeadController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\TranscriptApiController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\WhatsappTicketController;
 
 // Route::middleware('throttle:custom-api')->group(function () {
 Route::get('generate-auth-token/{uinId}', [AuthTokenController::class, 'index']);
 
 Route::middleware(AuthTokenMiddleware::class)->group(function () {
     Route::post('chatbot-room-id', [ChatBotWebhookController::class, 'fetchMessageFromRoom']);
+    Route::post('chatbot-room-id-support-ticket', [ChatBotWebhookController::class, 'fetchRoomId']);
     Route::post('fetch-session-messages/{uinId}', [UserMessageController::class, 'fetchChatResponse']);
     // Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  
     // Route::post('call-connected', [WebhookCallController::class, 'callConnected']);
@@ -32,6 +35,9 @@ Route::middleware(AuthTokenMiddleware::class)->group(function () {
     Route::get('get-call-history', [CallLogReportController::class, 'list']);
     Route::get('get-call-history-csv', [CallLogReportController::class, 'exportCsv']);
     Route::post('generate-transcript', [TranscriptApiController::class, 'transcriptApi']);
+
+    Route::post('/whatsapp/support-ticket', [WhatsappTicketController::class, 'store']);
+    Route::get('product-list', [ProductController::class, 'index']);
 
     Route::prefix('customer-portal')->group(function () {
         Route::post('/request-otp/{uinId}', [OtpController::class, 'requestOtp']);
