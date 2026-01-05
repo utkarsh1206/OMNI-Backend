@@ -40,19 +40,32 @@ class CallLogReportRepository
 
             $callLogs->load('dispositionDetail');
 
-            $callLogs->getCollection()->transform(function ($log) {
+            /**
+             * Shared transformation logic
+             */
+            $transformLog = function ($log) {
+                // Flatten disposition detail
                 $log->disposition_detail = $log->dispositionDetail->disposition_detail ?? null;
-
                 unset($log->dispositionDetail);
 
+                // Recording URL
                 $recording = getRecordingFile($log->call_unique_id);
+                $recordingResult = ($recording instanceof \Illuminate\Http\JsonResponse)
+                    ? $recording->getData(true)
+                    : [];
 
-                if ($recording instanceof \Illuminate\Http\JsonResponse) {
-                    $recordingResult = $recording->getData(true);
-                }
                 $log->call_recording_url = $recordingResult['url'] ?? null;
+
                 return $log;
-            });
+            };
+
+            if ($callLogs instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+                $callLogs->setCollection(
+                    $callLogs->getCollection()->transform($transformLog)
+                );
+            } else {
+                $callLogs = $callLogs->transform($transformLog);
+            }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $callLogs, trans('message.data_fetch'));
         } catch (Exception $e) {
@@ -104,7 +117,6 @@ class CallLogReportRepository
 
         $startDate = Carbon::parse($filters['startDate'])->toDateTimeString();
         $endDate = Carbon::parse($filters['endDate'])->toDateTimeString();
-
         $query = NeoxCallLog::query()
             ->select([
                 'neox_call_logs.call_unique_id',
@@ -143,7 +155,7 @@ class CallLogReportRepository
             $query->where('campaign_id', $filters['campaign_id']);
         }
 
-        if (!empty($filters['agent']) && $user->role_id != 3) {
+        if (!empty($filters['agent']) && $user?->role_id != 3) {
             $query->where('caller_username', $filters['agent']);
         }
 

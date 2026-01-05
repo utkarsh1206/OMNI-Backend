@@ -41,7 +41,7 @@ class DispositionListService
 
         $responseData = $response->getData(true);
 
-        generateLogs("info", "resposne ", json_encode($responseData));
+        generateLogs("info", "Response " . json_encode($responseData));
         return $responseData['data'] ?? [];
     }
 }

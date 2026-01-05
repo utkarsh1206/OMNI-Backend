@@ -142,7 +142,11 @@ class UtilityRepository
     public function export(Request $request)
     {
         $payload = extractPayload($request->bearerToken());
-        $database = $payload['db'] ?? 'omnichannel';
+        // $database = $payload['db'] ?? 'omnichannel';
+         # $domain = $payload['domain'];
+        $database = convertToLower(Str::replace(".", "_", auth()->user()->domain)) ?? 'omnichannel';
+        # $database = $payload['db'] ?? 'omnichannel';
+
         $backupFolder = storage_path('app/public/exports');
         $filename = 'db_backup_' . now()->format('Ymd_His') . '.sql';
         $filePath = $backupFolder . '/' . $filename;

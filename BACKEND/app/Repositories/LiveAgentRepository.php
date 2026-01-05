@@ -22,6 +22,7 @@ class LiveAgentRepository
         $ingroup = $request->input('ingroup', '');
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
+        $status = $request->input('status', '');
 
         if (!empty($searchTerm)) {
             $query->where(function ($q) use ($searchTerm) {
@@ -36,6 +37,10 @@ class LiveAgentRepository
 
         if (!empty($ingroup)) {
             $query->where('ingroup_id', $ingroup);
+        }
+
+        if (!empty($status)) {
+            $query->where('status', $status);
         }
 
         return $page === 'all'

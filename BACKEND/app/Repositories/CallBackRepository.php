@@ -20,16 +20,17 @@ class CallBackRepository
     public function store($request)
     {
         try {
+            $payload = extractPayload($request->bearerToken());
             $input = [
                 'lead_id' => $request->lead_id,
                 'list_id' => $request->list_id,
-                'campaign_id' => auth()->user()->campaign, // $request->campaign_id,
+                'campaign_id' => $payload['campaign'],
                 'user_id' => auth()->user()->id,
                 'call_back_time' => $request->call_back_time,
                 'recipient' => $request->recipient,
                 'comments' => $request->comments,
                 'user_group' => $request->user_group,
-                'lead_status' => $request->lead_status,
+                'lead_status' => 'active',
                 'last_modified_user' => $request->last_modified_user,
             ];
             $callBack = CallBack::create($input);

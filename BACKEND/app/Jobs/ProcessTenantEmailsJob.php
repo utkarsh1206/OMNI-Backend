@@ -217,6 +217,7 @@ class ProcessTenantEmailsJob implements ShouldQueue
             'attachment'       => json_encode($attachment_urls),
             'incident_id'      => 1,
             'campaign_id'      => 0,
+            'source'           => 'email',
         ]);
         $ticket->save();
 
