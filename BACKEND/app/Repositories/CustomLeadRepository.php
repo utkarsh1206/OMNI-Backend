@@ -8,6 +8,7 @@ use App\Http\Response\CustomApiResponse;
 use App\Models\CustomCdrLead;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class CustomLeadRepository
 {
@@ -251,8 +252,12 @@ class CustomLeadRepository
         })->toArray();
     }
 
-    public function createLead(int $listId, array $data, ?string $callUniqueId)
-    {
+    public function createLead(
+        int $listId,
+        array $data,
+        ?string $callUniqueId,
+        string $omniLeadSource = 'manual'
+    ) {
         try {
             $table = "custom_lead_" . $listId;
 
@@ -314,27 +319,32 @@ class CustomLeadRepository
             $timestamp = now();
             $data['created_at'] = $timestamp;
             $data['updated_at'] = $timestamp;
-            $data['omni_lead_source'] = 'manual';
+            $data['omni_lead_source'] = $omniLeadSource;
 
             // Insert and get ID
             $leadId = DB::table($table)->insertGetId($data);
 
-            if (!empty($callUniqueId)) {
-                CustomCdrLead::create([
-                    'lead_id' => $leadId,
-                    'list_id' => $listId,
-                    'call_unique_id' => $callUniqueId,
-                    'lead_json' => json_encode($data),
-                ]);
-            }
-
             if ($leadId) {
+                DB::table($table)
+                    ->where('id', $leadId)
+                    ->update(['original_lead_id' => $leadId]);
+
+                if (!empty($callUniqueId)) {
+                    CustomCdrLead::create([
+                        'lead_id' => $leadId,
+                        'list_id' => $listId,
+                        'call_unique_id' => $callUniqueId,
+                        'lead_json' => json_encode($data),
+                    ]);
+                }
+
                 $data['id'] = $leadId;
-                return $this->apiResponse->getResponseStructure(
-                    trans('message.success'),
-                    $data,
-                    trans('message.lead_create_success')
-                );
+
+                return response()->json([
+                    'message' => trans('message.lead_create_success'),
+                    'code'    => ResponseHTTP::HTTP_OK,
+                    'data'    => $data,
+                ], ResponseHTTP::HTTP_OK);
             }
 
             return $this->apiResponse->getResponseStructure(

@@ -1,3 +1,29 @@
+2025-12-22 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID : NOC-641, 637
+	* Previous Commit ID :  
+	* Version : Dev
+	* Laravel:Refactor Callback Logic & Improve Error Handling
+	Added transaction handling in callback processing (processAnyoneCallbacks, activateExpiredCallbacks) with error logging.
+	Updated callback status to active on processing and set it to inactive when found in DialNextCallApiRepository.
+	Adjusted query conditions to use live instead of active and fixed recipient comparison ('%Anyone%').
+	Made campaign_id required in StoreCallBackRequest.
+	Optimized database processing with chunking in HopperProcess.
+	Improved logging for callback updates and error handling.
+
+2025-12-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID : NOC-325
+	* Previous Commit ID : f5b48631 
+	* Version : Dev
+	* Laravel: Refactor DialNextCall API and Add Lead Status Update Logic
+
+	DialNextCallApiController: Moved the logic to DialNextCallApiRepository for better separation of concerns.
+	DialNextCallApiRequest: Added validation rule for the new dialed_phone_number field.
+	EcdialList Model: Disabled timestamps for the ecdial_list table as it is not used.
+	LiveAgents Model: Added lead_id to the fillable properties to allow mass assignment.
+	DisposCallApiRepository: Added logic to update the lead status based on the disposition status after a call is disposed.
+
 2025-12-04 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID : NOC-326, 534, 560, 561, 564, 567

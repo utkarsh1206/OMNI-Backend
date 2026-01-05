@@ -46,7 +46,8 @@ class SupportTicket extends Model
         "category_id",
         "usergroup_id",
         "response_time",
-        "is_notified"
+        "is_notified",
+        "source"
     ];
 
     protected static function boot()
@@ -178,5 +179,15 @@ class SupportTicket extends Model
     public function getUserEmailAttribute()
     {
         return $this->assignedUser ? $this->assignedUser->email : null;
+    }
+
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'assign_to_id');
+    }
+
+    public function assignmentHistory()
+    {
+        return $this->hasMany(AssignmentHistory::class, 'ticket_id');
     }
 }

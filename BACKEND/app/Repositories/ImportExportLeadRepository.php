@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Response\CustomApiResponse;
-use App\Models\EcdialLists;
-use Carbon\Carbon;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
+
 
 class ImportExportLeadRepository
 {
@@ -56,10 +56,6 @@ class ImportExportLeadRepository
                 $errors[] = 'Invalid Last Name';
             }
 
-            // if (isset($rowAssoc['Mobile']) && !preg_match('/^\d{10}$/', $rowAssoc['Mobile'])) {
-            //     $errors[] = 'Invalid Mobile';
-            // }
-
             if (isset($rowAssoc['Mobile']) && !preg_match('/^\+?\d{1,20}$/', $rowAssoc['Mobile'])) {
                 $errors[] = 'Invalid Mobile';
             }
@@ -84,61 +80,170 @@ class ImportExportLeadRepository
         ];
     }
 
-
-    public function insertDataIntoTable($list_id, array $validData, array $invalidData, $fileName, $fileType)
+    public function insertDataIntoTable($list_id, array $validData, array $invalidData, $fileName, $fileType, $request, $omniLeadSource)
     {
+        // Set execution time for bulk operations
+        set_time_limit(0); // Unlimited execution time
+        ini_set('memory_limit', '5G'); // Adjust based on your needs
+
         $tableName = "custom_lead_" . $list_id;
 
         if (!Schema::hasTable($tableName)) {
-            return $this->apiResponse->getResponseStructure(trans('message.error'), $tableName, trans('message.table_not_exist'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.error'),
+                $tableName,
+                trans('message.table_not_exist')
+            );
         }
 
         $fields = $this->getFieldsByListId($list_id);
-        $insertedCount = 0; // Track the number of successfully inserted rows
-        $failedCount = 0; // Track failed insertions
+        $insertedCount = 0;
+        $failedCount = 0;
+
+        // Use chunked processing for very large datasets
+        $chunkedData = array_chunk($validData, 1000); // Process 1000 rows at a time
+
         $importedData = [];
 
-        foreach ($validData as $row) {
-            $insertData = [];
+        foreach ($chunkedData as $chunkIndex => $chunk) {
+            $batchData = [];
 
-            foreach ($fields as $field) {
-                $insertData[strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_name))] = $row[$field->field_name] ?? null;
+            foreach ($chunk as $rowIndex => $row) {
+                $insertRow = [];
+                foreach ($fields as $field) {
+                    $insertRow[strtolower(
+                        preg_replace('/[^a-zA-Z0-9_]/', '_', $field->field_name)
+                    )] = $row[$field->field_name] ?? null;
+                }
+
+                $insertRow['created_at'] = now();
+                $insertRow['updated_at'] = now();
+                $insertRow['omni_lead_source'] = $omniLeadSource;
+                $batchData[] = $insertRow;
+
+                // Track row for response
+                $importedData[] = [
+                    'row' => $row,
+                    'status' => 'pending'
+                ];
             }
 
-            // $this->insertDataINtoList($list_id);
-
-            $insertData['created_at'] = now();
-            $insertData['updated_at'] = now();
-            $insertData['omni_lead_source'] = 'csv';
-
-            try {
-                DB::table($tableName)->insert($insertData);
-
-                $insertedCount++; // Increment count on successful insertion
-                $status = 'success';
-            } catch (\Exception $e) {
-                $failedCount++; // Increment failed count on error
-                $status = 'failed';
-                generateLogs('error', 'Error in generating failed : ', $e->getMessage());
-                return $this->apiResponse->handleAndResponseException($e);
+            // Insert batch
+            if (!empty($batchData)) {
+                $insertResult = $this->insertBatchOptimized(
+                    $tableName,
+                    $batchData,
+                    $list_id,
+                    $importedData,
+                    $insertedCount,
+                    $chunkIndex
+                );
+                if (!$insertResult) {
+                    $failedCount += count($batchData);
+                }
             }
 
-            $importedData[] = [
-                'row' => $row,
-                'status' => $status
-            ];
+            // Free memory after each chunk
+            unset($batchData);
+            gc_collect_cycles();
         }
 
         $data = [
-            'imported_data' => $importedData,
-            'invalid_data' => $invalidData, // Add failed rows with reasons
+            'imported_data' => array_slice($importedData, 0, 1000), // Return only first 1000 rows for response
+            'invalid_data' => array_slice($invalidData, 0, 1000),
             'inserted_count' => $insertedCount,
-            'failed_count' => $failedCount + count($invalidData) // include validation failures
+            'failed_count' => $failedCount + count($invalidData),
+            'total_processed' => count($validData),
+            'chunks_processed' => count($chunkedData)
         ];
 
-        // Log the import history
-        $this->logImportHistory($list_id, $insertedCount, $failedCount, $fileName, $fileType);
-        return ($insertedCount > 0) ? $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_inserted_successfully')) : $this->apiResponse->getResponseStructure(trans('message.error'), $data, trans('message.no_data_inserted'));
+        $this->logImportHistory($list_id, $insertedCount, $failedCount, $fileName, $fileType, $request);
+
+        return ($insertedCount > 0)
+            ? response()->json([
+                'message' => trans('message.data_inserted_successfully'),
+                'code'    => ResponseHTTP::HTTP_OK,
+                'data'    => $data,
+            ], ResponseHTTP::HTTP_OK)
+            : response()->json([
+                'message' => trans('message.no_data_inserted'),
+                'code'    => ResponseHTTP::HTTP_BAD_REQUEST,
+                'data'    => $data,
+            ], ResponseHTTP::HTTP_BAD_REQUEST);
+    }
+
+    private function insertBatchOptimized($tableName, $batchData, $list_id, &$importedData, &$insertedCount, $chunkIndex)
+    {
+        try {
+            DB::beginTransaction();
+
+            // 1. Insert main data
+            DB::table($tableName)->insert($batchData);
+
+            // 2. Get last inserted IDs
+            $firstId = DB::getPdo()->lastInsertId();
+            $batchSize = count($batchData);
+
+            $lastId = $firstId + $batchSize - 1;
+
+            DB::table($tableName)
+                ->whereBetween('id', [$firstId, $lastId])
+                ->update(['original_lead_id' => DB::raw('id')]);
+
+            // 3. Prepare ecdial_list data
+            $gmtOffset = $this->getGmtOffset();
+            $ecdialListData = [];
+
+            for ($i = 0; $i < $batchSize; $i++) {
+                $ecdialListData[] = [
+                    'lead_id' => $firstId + $i,
+                    'status' => 'NEW',
+                    'list_id' => $list_id,
+                    'gmt_offset_now' => $gmtOffset
+                ];
+            }
+
+            // 4. Insert ecdial_list data
+            DB::table('ecdial_list')->insert($ecdialListData);
+
+            DB::commit();
+
+            // Update counters
+            $insertedCount += $batchSize;
+
+            // Update status in importedData
+            $startIndex = $chunkIndex * 1000;
+            for ($i = 0; $i < $batchSize; $i++) {
+                if (isset($importedData[$startIndex + $i])) {
+                    $importedData[$startIndex + $i]['status'] = 'success';
+                }
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            generateLogs('error', 'Batch insert failed at chunk ' . $chunkIndex . ': ', $e->getMessage());
+
+            // Mark as failed
+            $startIndex = $chunkIndex * 1000;
+            for ($i = 0; $i < count($batchData); $i++) {
+                if (isset($importedData[$startIndex + $i])) {
+                    $importedData[$startIndex + $i]['status'] = 'failed';
+                }
+            }
+
+            return false;
+        }
+    }
+
+    private function getGmtOffset()
+    {
+        $timezone = config('app.timezone');
+        $dateTimeZone = new \DateTimeZone($timezone);
+        $now = new \DateTime('now', $dateTimeZone);
+        $offsetInSeconds = $now->getOffset();
+        $offsetInHours = $offsetInSeconds / 3600;
+        return number_format($offsetInHours, 2, '.', '');
     }
 
     public function downloadSampleCsv($list_id)
@@ -154,12 +259,12 @@ class ImportExportLeadRepository
 
             return $this->createCsvResponse($headers, $list_id);
         } catch (\Exception $e) {
-            generateLogs('error', 'Error in downloadSampleCsv failed : ', $e->getMessage());
+            generateLogs('error', 'Error in downloadSampleCsv. Failed : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
     }
 
-    public function processCsvFile($file, $list_id)
+    public function processCsvFile($file, $list_id, $request, $omniLeadSource)
     {
         try {
             $fileName = $file->getClientOriginalName();
@@ -189,7 +294,7 @@ class ImportExportLeadRepository
             $validData = $processedData['valid'];
             $invalidData = $processedData['invalid'];
 
-            return $this->insertDataIntoTable($list_id, $validData, $invalidData, $fileName, $fileType);
+            return $this->insertDataIntoTable($list_id, $validData, $invalidData, $fileName, $fileType, $request, $omniLeadSource);
         } catch (\Exception $e) {
             generateLogs('error', 'Error in processCsvFile failed : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -210,23 +315,31 @@ class ImportExportLeadRepository
         return $response;
     }
 
-    private function logImportHistory($list_id, $successCount, $failCount, $fileName, $fileType)
+    private function logImportHistory($list_id, $successCount, $failCount, $fileName, $fileType, $request)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        $user = JWTAuth::user();
+        $externalToken = null;
 
-        // If the user is authenticated, retrieve the user ID
         if ($user) {
             $userId = $user->id;
         } else {
-            // Handle case when user is not found (invalid token or unauthenticated)
+            $authJsonString = $request->get('auth_token');
+            $authDataArray = json_decode($authJsonString, true);
+            $filteredDataCollection = collect($authDataArray)->only([
+                'id',
+                'token',
+                'ipaddress',
+            ]);
+            $externalToken = $filteredDataCollection->toJson();
             $userId = null;
         }
 
         // Prepare the data to store in the history table
         $historyData = [
             'user_id' => $userId,
-            'file_name' => $fileName, // Or any logic to store file name
-            'file_type' => $fileType, // Adjust this as necessary
+            'external_token' => $externalToken,
+            'file_name' => $fileName,
+            'file_type' => $fileType,
             'import_success_count' => $successCount,
             'import_fail_count' => $failCount,
             'created_at' => now(),
@@ -236,30 +349,4 @@ class ImportExportLeadRepository
         // Insert into the lead_import_histories table
         LeadImportHistory::create($historyData);
     }
-
-    // private function insertDataINtoList($list_id)
-    // {
-    //     $timezone = config('app.timezone');  // Get timezone from config
-
-    //     // Create a DateTimeZone instance from the configured timezone
-    //     $dateTimeZone = new \DateTimeZone($timezone);
-
-    //     // Get the current date and time in the given timezone
-    //     $now = new \DateTime('now', $dateTimeZone);
-
-    //     // Get the offset in seconds
-    //     $offsetInSeconds = $now->getOffset();
-
-    //     // Convert the offset to hours and minutes
-    //     $offsetInHours = $offsetInSeconds / 3600;  // 3600 seconds in an hour
-    //     $offsetFormatted = number_format($offsetInHours, 2, '.', '');
-
-    //     $data = [
-    //         'status' => 'NEW',
-    //         'list_id' => $list_id,
-    //         'gmt_offset_now' => $offsetFormatted
-    //     ];
-
-    //     DB::table('ecdial_list')->insert($data);
-    // }
 }

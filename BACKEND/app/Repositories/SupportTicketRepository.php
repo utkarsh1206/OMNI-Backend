@@ -237,6 +237,7 @@ class SupportTicketRepository
 
             // Create support ticket
             $builtTicketData = $this->buildTicketData($request, $attachment_urls);
+            $builtTicketData['source'] = 'manual';
             $supportTicket = SupportTicket::create($builtTicketData);
             $supportTicketId = $builtTicketData['support_ticket_id'];
             $customFieldsData = [];
@@ -424,6 +425,9 @@ class SupportTicketRepository
             DB::commit();
 
             $this->createTicket($supportTicket, $request->default_status ?? "", "Edit Support Ticket", $apiUser);
+            generateLogs("info", "ticket updated\n\nSending whatsapp notification\n\n");
+            $this->sendWhatsAppNotification($supportTicket);
+            generateLogs("info", "Whatapp notification sent");
             $this->sendSms($apiUser, "Ticket Created", $apiUser->mobile, $supportTicket);
 
             // $emailSent = $this->sendSupportEmail($request, $mail_attachment_urls, $supportTicket->id, $request->assign_to_id ?? 0, null, null);
@@ -690,8 +694,6 @@ class SupportTicketRepository
     ) {
         generateLogs("info", "ticket data " . $ticket);
 
-        $customerMailTemplate = MailTemplate::where('type', 'create_ticket_customer')->where('status', 'Active')->where('mail_for', 'request')->first();
-
         // $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         // if (isset($emailConfig) && !empty($emailConfig)) {
 
@@ -716,6 +718,9 @@ class SupportTicketRepository
         /** ------------------------
          * Send Email to Customer
          * ---------------------- */
+
+        $customerMailTemplate = MailTemplate::where('type', 'create_ticket_customer')->where('status', 'Active')->where('mail_for', 'request')->first();
+
         $customerSubject = str_replace(
             "{ticket_number}",
             $ticket->support_ticket_id,
@@ -724,8 +729,8 @@ class SupportTicketRepository
 
         $sendProcessedEmail = sendProcessedEmail(
             to: $request->to_emails,
-            cc: $request->cc,
-            bcc: $request->bcc,
+            cc: $request->cc ? [$request->cc] : [],
+            bcc: $request->bcc ? [$request->bcc] : [],
             subject: $customerSubject,
             bodyTemplate: $customerMailTemplate['body'] ?? '',
             mailTemplateId: $customerMailTemplate->id ?? 0,
@@ -738,5 +743,43 @@ class SupportTicketRepository
         );
 
         return $sendProcessedEmail;
+    }
+
+    protected function sendWhatsAppNotification(SupportTicket $supportTicket)
+    {
+        generateLogs("info", "Called wahstapp notify");
+        if (strtolower($supportTicket->source) !== 'whatsapp') {
+            generateLogs("info", "source not whatsapp");
+            return;
+        }
+
+        try {
+            generateLogs("info", "trying whatsapp");
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Api-Key eGsKut2S.nZMML3Ipj7kgZltmEV22BcGR9t15M4sU',
+                'Content-Type' => 'application/json',
+            ])->post('https://app.chat360.io/service/v2/task', [
+                "task_name" => "whatsapp_push_notification",
+                "extra" => "",
+                "task_body" => [
+                    [
+                        "client_number" => "919712900567",
+                        "receiver_number" => $supportTicket->contact_number,
+                        "country_code" => "+91",
+                        "template_data" => [
+                            "template_id" => "897e4449-d8f4-41a5-b7c4-a8265ae527c9",
+                            "param_data" => (object)[],
+                            "button_param_data" => (object)[]
+                        ]
+                    ]
+                ]
+            ]);
+            generateLogs("info", "request sent");
+            if (!$response->successful()) {
+                generateLogs('error', 'WhatsApp Notification Failed: ', $response->body());
+            }
+        } catch (\Exception $e) {
+            generateLogs('error', 'WhatsApp Notification Exception: ', $e->getMessage());
+        }
     }
 }
