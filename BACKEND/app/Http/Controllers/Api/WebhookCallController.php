@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Models\LiveAgents;
 use App\Events\AgentLiveStatus;
+use App\Models\Contact;
 use App\Models\Detail;
 
 class WebhookCallController extends Controller
@@ -305,6 +306,22 @@ class WebhookCallController extends Controller
 
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
+
+                // -------------
+                // -------------
+                $contactName = null;
+                $mobile = $request->called_phone_number;
+
+                if ($mobile) {
+                    $contact = Contact::where('mobile', $mobile)->first(['first_name', 'last_name']);
+
+                    if ($contact) {
+                        $contactName = trim($contact->first_name . ' ' . $contact->last_name);
+                    }
+                }
+                $data['called_contact_name'] = $contactName;
+                // -------------
+                // -------------
 
                 $agentName = $request->caller_username;
                 $agentId = Users::select('id')->where('username', $agentName)->first();
