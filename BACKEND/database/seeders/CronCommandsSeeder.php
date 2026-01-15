@@ -25,6 +25,8 @@ class CronCommandsSeeder extends Seeder
             ['command_signature' => 'app:update-live-agent-on-network-lost', 'type' => 'cron'],
             ['command_signature' => 'emails:fetch', 'type' => 'cron'],
 		    ['command_signature' => 'app:hopper-process', 'type' => 'other'],
+	
+		['command_signature' => 'app:send-scheduled-email', 'type' => 'other'],
 	];
 
         foreach ($cronCommands as $cronCommand) {

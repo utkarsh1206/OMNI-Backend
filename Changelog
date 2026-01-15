@@ -1,3 +1,26 @@
+2026-01-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID : NOC-748, 749,750,751, 752
+	* Previous Commit ID :  
+	* Version : Dev
+	* Laravel: Add email scheduling features and update related files
+		- Added new cron command for 'app:send-scheduled-email' in CronCommandsSeeder.php
+		- Introduced language lines for email scheduling in message.php
+		- Added API routes for managing email schedules in api.php
+
+		Implement CRUD API for Email Schedule
+
+	- Added CRUD functionality for Email Schedule:
+	- **Create**: Added store method to create email schedules.
+	- **Read**: Added list and show methods for fetching email schedules.
+	- **Update**: Added update method to modify existing email schedules.
+	- **Delete**: Added delete method to remove email schedules.
+	- Created EmailScheduleRepository for handling email schedules.
+	- Created migration for the email schedules table.
+	- Added EmailSchedule model to interact with the database.
+	- Added relevant language lines for email scheduling operations.
+	- Updated API routes to include endpoints for managing email schedules.
+
 2025-12-22 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID : NOC-641, 637

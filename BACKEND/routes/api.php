@@ -110,6 +110,7 @@ use App\Http\Controllers\Api\ThirdPartyCrmController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\NetworkCheckController;
 use App\Http\Controllers\Api\CustomChatBotController;
+use App\Http\Controllers\Api\EmailScheduleController;
 use App\Http\Controllers\Api\HashController;
 use App\Http\Controllers\Api\LeadMailController;
 use App\Http\Controllers\Api\ListTemplateMapController;
@@ -513,6 +514,8 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('/auto-assign/{ticketId}', [TicketAssignmentController::class, 'autoAssignApi']);
 
     Route::post('/send-WA-broadcast', [WhatsappBroadcastController::class, 'sendBulk']);
+
+    Route::apiResource('email-schedule', EmailScheduleController::class);
 });
 
 Route::get('countries', [CountryController::class, 'index']);
