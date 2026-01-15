@@ -24,7 +24,7 @@ class ReceivedMessages implements ShouldBroadcastNow
         $this->message = $data;
         $this->domain = convertToLower(Str::replace('.', '_', auth()->user()->domain));
         $this->receiverId = $data->receiver_id;
-        generateLogs('info', 'broadcast Data: ' . json_encode(['AgentChatMessages' => $this->message]));
+        generateLogs('info', 'Received Messages Broadcast Data: ' . json_encode(['AgentChatMessages' => $this->message]));
     }
 
     /**
@@ -42,7 +42,7 @@ class ReceivedMessages implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: ' . json_encode(['AgentChatMessages' => $this->message]));
+        generateLogs('info', 'Received Messages BroadcastWith Data: ' . json_encode(['AgentChatMessages' => $this->message]));
         return [
             'AgentChatMessages' => $this->message,
         ];

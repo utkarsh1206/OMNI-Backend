@@ -379,6 +379,8 @@ class WebhookCallController extends Controller
                 return 'outgoing';
             case 'VB':
                 return 'vb';
+            case 'SO':
+                return 'conference_call';
             default:
                 return 'unknown';
         }

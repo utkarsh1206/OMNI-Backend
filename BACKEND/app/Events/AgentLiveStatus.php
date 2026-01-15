@@ -25,7 +25,7 @@ class AgentLiveStatus implements ShouldBroadcastNow
         $this->authId = $id;
         // $this->domain = $domain ?? convertToLower(auth()->user()->domain);
         $this->domain = $domain ?? convertToLower(Str::replace(".", "_", auth()->user()->domain));
-        generateLogs('info', 'broadcast Data: ' . json_encode(['AgentLiveStatus' => $this->agentLiveData]));
+        generateLogs('info', 'Agent Live Status Constructor Broadcast Data: ' . json_encode(['AgentLiveStatus' => $this->agentLiveData]));
     }
 
     /**
@@ -43,7 +43,7 @@ class AgentLiveStatus implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: ' . json_encode(['AgentLiveStatus' => $this->agentLiveData]));
+        generateLogs('info', 'Agent Live Status BroadcastWith Data: ' . json_encode(['AgentLiveStatus' => $this->agentLiveData]));
         return [
             'AgentLiveStatus' => $this->agentLiveData,
         ];

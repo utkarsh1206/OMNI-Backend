@@ -24,7 +24,7 @@ class CustomChatbotMessage implements ShouldBroadcastNow
         $this->agentId = $data['agent_id'];
         $this->message = $data;
         $this->domain  = convertToLower(Str::replace('.', '_', $domain));
-        generateLogs('info', 'broadcast Data: '.json_encode(['ReceiveChatMessage' => $this->message]));
+        generateLogs('info', 'Custom Chatbot Message Broadcast Data: '.json_encode(['ReceiveChatMessage' => $this->message]));
     }
 
     /**
@@ -47,7 +47,7 @@ class CustomChatbotMessage implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: '.json_encode(['ReceiveChatMessage' => $this->message]));
+        generateLogs('info', 'Custom ChatBot Message BroadcastWith Data: '.json_encode(['ReceiveChatMessage' => $this->message]));
         return [
             'ReceiveChatMessage' => $this->message, 
         ];
