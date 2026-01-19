@@ -3,11 +3,11 @@
 namespace App\Jobs;
 
 use App\Models\EmailSchedule;
+use App\Services\ReportDataService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\SerializesModels;
-use ReportDataService;
 
 class SendScheduledEmailJob implements ShouldQueue
 {
@@ -47,6 +47,7 @@ class SendScheduledEmailJob implements ShouldQueue
             );
 
         $data = app(ReportDataService::class)->generate(
+            $this->connectionName,
             $schedule->report_name,
             $schedule->selected_columns,
             $schedule->data_start_time,
@@ -55,9 +56,8 @@ class SendScheduledEmailJob implements ShouldQueue
 
         generateScheduleLogs(
             'info',
-            'Report data generated',
+            'Report data generated'. 
             json_encode([
-                'schedule_id' => $schedule->id,
                 'data' => $data
             ])
         );

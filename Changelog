@@ -1,5 +1,31 @@
 2026-01-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
+	* Jira ID : NOC-780
+	* Previous Commit ID :  
+	* Version : Dev
+	* Laravel :	Modified exportToCsv() method signature to accept an optional database connection parameter.
+	Added support for selected_columns in request payload to allow dynamic column-based CSV export.
+	Implemented validation to prevent export when no columns are selected.
+	Refactored query building to dynamically construct SELECT clauses based on user-selected columns.
+	Introduced configurable $exportableColumns mapping to control:
+	Database column selection
+	Alias handling
+	Custom data extraction via callbacks
+	Added callback-based processing for “To Email” field to safely extract recipient addresses from email_json.
+	Ensured required JSON fields are included only when needed for export.
+	Updated CSV headers and row generation logic to align with selected columns.
+	Improved export extensibility and maintainability by centralizing export column configuration.
+
+	Impact
+	Enables flexible, user-driven email log exports.
+	Improves compatibility with multiple database connections.
+	Prevents invalid export requests and enhances data accuracy.
+
+	Backward Compatibility
+	Existing export functionality remains unaffected when valid selected_columns are provided.
+
+2026-01-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
 	* Jira ID : NOC-748, 749,750,751, 752
 	* Previous Commit ID :  
 	* Version : Dev

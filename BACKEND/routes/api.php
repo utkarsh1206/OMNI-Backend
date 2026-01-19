@@ -226,7 +226,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('email-logs/{email_log}', [EmailLogController::class, 'update'])->middleware(CheckPermissionMiddleware::class . ":email_logs," . PermissionAction::EDIT->value);
     Route::patch('email-logs/{email_log}', [EmailLogController::class, 'update'])->middleware(CheckPermissionMiddleware::class . ":email_logs," . PermissionAction::EDIT->value);
     Route::delete('email-logs/{email_log}', [EmailLogController::class, 'destroy'])->middleware(CheckPermissionMiddleware::class . ":email_logs," . PermissionAction::DELETE->value);
-    Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":email_logs," . PermissionAction::DOWNLOAD->value);
+    Route::post('email_logs/csv', [EmailLogController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":email_logs," . PermissionAction::DOWNLOAD->value);
 
     Route::get('usersList', [UserListController::class, 'index']);
 

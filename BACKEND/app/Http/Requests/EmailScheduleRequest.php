@@ -32,6 +32,8 @@ class EmailScheduleRequest extends FormRequest
             'to_emails.*'          => 'email',
             'cc_emails'            => 'nullable|array',
             'cc_emails.*'          => 'email',
+            'bcc_emails'            => 'nullable|array',
+            'bcc_emails.*'          => 'email',
             'subject'              => 'required|string|max:255',
             'body'                 => 'required|string',
             'frequency'            => 'required|in:daily,weekly,quarterly,half_yearly,yearly,custom',

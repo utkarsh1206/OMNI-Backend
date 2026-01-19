@@ -31,6 +31,7 @@ class EmailSchedule extends Model
         'selected_columns' => 'array',
         'to_emails' => 'array',
         'cc_emails' => 'array',
+        'bcc_emails' => 'array',
         'scheduled_time' => 'datetime:H:i',
         'data_start_time' => 'datetime:H:i',
         'data_end_time' => 'datetime:H:i',
