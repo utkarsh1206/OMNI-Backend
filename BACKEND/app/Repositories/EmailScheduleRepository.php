@@ -28,6 +28,9 @@ class EmailScheduleRepository
             $toEmails = $request->input('to_emails', '');
             $scheduledTime = $request->input('scheduled_time', '');
 
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
             $query = EmailSchedule::select('*');
 
             // If there's a search term, apply it to the query
@@ -53,8 +56,12 @@ class EmailScheduleRepository
                 $query->where('frequency', 'like', "%$frequency%");
             }
 
-            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
-            $email_schedule = $query->paginate($perPage);
+            // $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            // $email_schedule = $query->paginate($perPage);
+
+            $email_schedule = $page == config('omni.ALL_PAGE')
+                ? $query->get()
+                : $query->paginate($perPage);
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $email_schedule, trans('message.data_fetch'));
         } catch (Exception $e) {
