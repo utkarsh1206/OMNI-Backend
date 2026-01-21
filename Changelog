@@ -1,5 +1,24 @@
 2026-01-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
+	* Jira ID : NOC-781, 782, 783, 784
+	* Previous Commit ID :  
+	* Version : Dev
+	* Laravel : add selectable columns and POST-based CSV export for reports
+	- Added support for dynamic column selection in CSV exports across:
+		- Call Log Report
+		- SLA Report
+		- Ticket Report
+		- User Activity Report
+	- Validated selected_columns input and return error when empty
+	- Refactored CSV formatting to map only requested columns
+	- Added optional database connection support for multi-tenant exports
+	- Included SLA resolution target and actual resolution time in SLA exports
+	- Improved ordering consistency (latest first) in exported data
+	- Switched CSV export endpoints from GET to POST to support request payloads
+	- Hardened payload and role handling to avoid null-related errors
+
+2026-01-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
 	* Jira ID : NOC-780
 	* Previous Commit ID :  
 	* Version : Dev

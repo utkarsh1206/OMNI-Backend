@@ -343,7 +343,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     // Ticket Report
     Route::get('ticketReport', [TicketReportController::class, 'ticketReport'])->middleware(CheckPermissionMiddleware::class . ":ticket_reports," . PermissionAction::VIEW->value);
-    Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":ticket_reports," . PermissionAction::DOWNLOAD->value);
+    Route::post('ticketReport/csv', [TicketReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":ticket_reports," . PermissionAction::DOWNLOAD->value);
 
     Route::prefix('/ticket/summary')->group(function () {
         Route::get('ticket-type', [TicketReportController::class, 'ticketTypeSummary']);
@@ -357,7 +357,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     // SLA Report
     Route::get('slareport', [SlaReportController::class, 'generateReport'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::VIEW->value);
-    Route::get('slareport/csv', [SlaReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::DOWNLOAD->value);
+    Route::post('slareport/csv', [SlaReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::DOWNLOAD->value);
     Route::get('sla-priority', [SlaReportController::class, 'prioritySLA'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::VIEW->value);
     Route::get('sla-ticket-type', [SlaReportController::class, 'ticketTypeSLA'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::VIEW->value);
     Route::get('sla-incident', [SlaReportController::class, 'incidentSLA'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::VIEW->value);
@@ -406,7 +406,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::prefix('call-log-report')->group(function () {
         Route::get('list', [CallLogReportController::class, 'list'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::VIEW->value);
-        Route::get('csv', [CallLogReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::DOWNLOAD->value);
+        Route::post('csv', [CallLogReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::DOWNLOAD->value);
         Route::get('chart-summary', [CallLogReportController::class, 'getChartSummary'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::VIEW->value);
         Route::get('status-summary', [CallLogReportController::class, 'getStatusSummary'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::VIEW->value);
         Route::get('usergroup-summary', [CallLogReportController::class, 'getByUserGroup'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::VIEW->value);
@@ -416,7 +416,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::prefix('user-activity-report')->group(function () {
         Route::get('list', [UserActivityReportController::class, 'list'])->middleware(CheckPermissionMiddleware::class . ":user_activity_reports," . PermissionAction::VIEW->value);
         Route::get('user-activity', [UserActivityReportController::class, 'userActivity'])->middleware(CheckPermissionMiddleware::class . ":user_activity_reports," . PermissionAction::VIEW->value);
-        Route::get('csv', [UserActivityReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":user_activity_reports," . PermissionAction::DOWNLOAD->value);
+        Route::post('csv', [UserActivityReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":user_activity_reports," . PermissionAction::DOWNLOAD->value);
         Route::get('graph', [UserActivityReportController::class, 'graphData'])->middleware(CheckPermissionMiddleware::class . ":user_activity_reports," . PermissionAction::VIEW->value);
     });
 

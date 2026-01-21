@@ -205,20 +205,45 @@ class TicketReportRepository
         }
     }
 
-    public function exportCsv(Request $request)
+    public function exportCsv(Request $request, $connectionName = null)
     {
         try {
+            $selectedColumns = $request->input('selected_columns', []);
+
+            if (empty($selectedColumns)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    'No columns selected for export'
+                );
+            }
+
             $payload = $this->extractPayload($request);
-            $query = $this->applyFilters(SupportTicket::query(), $request, $payload);
 
-            $tickets = $query->get();
+            $query = SupportTicket::on($connectionName)
+                ->with([
+                    'notifications.user',
+                    'assignedAgent',
+                    'priority',
+                    'ticketType',
+                    'ticketStatus'
+                ]);
 
-            $headers = ['Ticket ID', 'Customer Name', 'Ticket Type', 'Priority', 'Status', 'Created Date', 'Last Updated', 'Assigned Agent', 'Resolution Time', 'Comments', 'Escalation'];
+            $query = $this->applyFilters($query, $request, $payload);
 
-            $csvData = $this->formatTickets($tickets, true);
-            $csvDataArray = $csvData->toArray();
+            $tickets = $query->orderByDesc('id')->get();
 
-            $url = exportCsv($headers, $csvDataArray, 'ticket_report');
+            $headers = $selectedColumns;
+
+            $formatted = $this->formatTickets($tickets, true);
+
+            $rows = $formatted->map(function ($row) use ($selectedColumns) {
+                return collect($selectedColumns)
+                    ->map(fn ($column) => $row[$column] ?? '-')
+                    ->toArray();
+            })->toArray();
+
+            $url = exportCsv($headers, $rows, 'ticket_report');
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 ['file_url' => $url],
@@ -283,17 +308,17 @@ class TicketReportRepository
             if ($forCsv) {
                 // Return ordered array matching CSV headers
                 return [
-                    $ticket->support_ticket_id,
-                    $customerName,
-                    $ticket->ticketType->type ?? 'Unknown',
-                    $ticket->priority->name ?? 'Unknown',
-                    $ticket->ticketStatus->name ?? 'Unknown',
-                    $ticket->created_at->format('Y-m-d H:i:s'),
-                    $ticket->updated_at->format('Y-m-d H:i:s'),
-                    $ticket->assignedAgent->username ?? 'Unknown',
-                    $resolveDateTime,
-                    $ticket->description,
-                    $ticket->is_escalated,
+                    'Ticket ID'        => $ticket->support_ticket_id,
+                    'Customer Name'    => $customerName,
+                    'Ticket Type'      => $ticket->ticketType?->type ?? 'Unknown',
+                    'Priority'         => $ticket->priority?->name ?? 'Unknown',
+                    'Status'           => $ticket->ticketStatus?->name ?? 'Unknown',
+                    'Created Date'     => $ticket->created_at?->format('Y-m-d H:i:s'),
+                    'Last Updated'     => $ticket->updated_at?->format('Y-m-d H:i:s'),
+                    'Assigned Agent'   => $ticket->assignedAgent?->username ?? 'Unknown',
+                    'Resolution Time'  => $resolveDateTime,
+                    'Comments'         => $ticket->description,
+                    'Escalation'       => $ticket->is_escalated,
                 ];
             } else {
                 return [

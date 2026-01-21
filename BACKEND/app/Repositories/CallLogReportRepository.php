@@ -77,12 +77,23 @@ class CallLogReportRepository
     /**
      * Exports the call log data as CSV.
      */
-    public function exportCsvData(Request $request)
+    public function exportCsvData(Request $request, $connectionName = null)
     {
         try {
-            $callLogs = $this->buildCallLogQuery($request)->get();
+            $selectedColumns = $request->input('selected_columns', []);
+
+            if (empty($selectedColumns)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    'No columns selected for export'
+                );
+            }
+
+
+            $callLogs = $this->buildCallLogQuery($request, true, $connectionName)->get();
             $headers = [];
-            $formattedRows = $this->formatCallLogsForCsv($callLogs, $headers);
+            $formattedRows = $this->formatCallLogsForCsv($callLogs, $headers, $selectedColumns);
             $url = exportCsv($headers, $formattedRows, 'call_logs');
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
@@ -98,7 +109,7 @@ class CallLogReportRepository
     /**
      * Builds the query for fetching call logs based on request filters.
      */
-    private function buildCallLogQuery(Request $request, $applyOrderById = true)
+    private function buildCallLogQuery(Request $request, $applyOrderById = true, $connectionName = null)
     {
         $filters = [
             'startDate' => $request->input('startDate', null),
@@ -117,7 +128,7 @@ class CallLogReportRepository
 
         $startDate = Carbon::parse($filters['startDate'])->toDateTimeString();
         $endDate = Carbon::parse($filters['endDate'])->toDateTimeString();
-        $query = NeoxCallLog::query()
+        $query = NeoxCallLog::on($connectionName)
             ->select([
                 'neox_call_logs.call_unique_id',
                 'campaign_id',
@@ -179,7 +190,7 @@ class CallLogReportRepository
      * Formats the call logs for CSV export.
      */
 
-    protected function formatCallLogsForCsv($logs, &$headers = [])
+    protected function formatCallLogsForCsv($logs, &$headers = [], $selectedColumns = [])
     {
         $dispoCache = [];
         $dynamicKeys = [];
@@ -194,27 +205,28 @@ class CallLogReportRepository
             }
         }
 
-        // Define static headers (used for export)
-        $staticHeaders = [
-            'Campaign',
-            'Inbound Group',
-            'Call Date',
-            'Caller Name',
-            'Caller Extension',
-            'Phone Number',
-            'Call Total Duration',
-            'Call Talk Duration',
-            'Dispo Status',
-            'Uniqueid',
-            'DID',
-            'Type of Call',
-            'Term Reason',
+        $staticColumns = [
+            'Campaign' => fn($l) => $l->campaign_id,
+            'Inbound Group' => fn($l) => $l->inbound_group_id,
+            'Call Date' => fn($l) => Carbon::parse($l->call_date)->setTimezone(env('APP_CSVTIMEZONE'))->format('Y-m-d H:i:s'),
+            'Caller Name' => fn($l) => $l->caller_username,
+            'Caller Extension' => fn($l) => $l->caller_user_extension,
+            'Phone Number' => fn($l) => $l->called_phone_number,
+            'Call Total Duration' => fn($l) => $l->call_total_duration,
+            'Call Talk Duration' => fn($l) => $l->call_talk_duration,
+            'Dispo Status' => fn($l, $d) => $d,
+            'Uniqueid' => fn($l) => $l->call_unique_id,
+            'DID' => fn($l) => $l->call_did_pattern,
+            'Type of Call' => fn($l) => $l->call_type,
+            'Term Reason' => fn($l) => $l->call_term_reason,
         ];
 
+        $headers = $selectedColumns;
+
         // Final headers (passed by reference for use in exportCsv)
-        $headers = array_merge($staticHeaders, $dynamicKeys);
+        // $headers = array_merge($staticHeaders, $dynamicKeys);
         // Map formatted rows
-        $rows = $logs->map(function ($log) use (&$dispoCache, $dynamicKeys) {
+        $rows = $logs->map(function ($log) use (&$dispoCache, $dynamicKeys, $staticColumns, $selectedColumns) {
             $campaignId = $log->campaign_id;
             $dispoLabel = $log->call_dispo_status;
 
@@ -271,12 +283,26 @@ class CallLogReportRepository
                 $leadJson = [];
             }
 
-            foreach ($dynamicKeys as $key) {
-                if (in_array($key, ['created_at', 'updated_at', 'omni_lead_source'])) {
-                    continue; // skip these keys
+            // foreach ($dynamicKeys as $key) {
+            //     if (in_array($key, ['created_at', 'updated_at', 'omni_lead_source'])) {
+            //         continue; // skip these keys
+            //     }
+            //     $row[] = $leadJson[$key] ?? '';
+            // }
+            // return $row;
+
+            $row = [];
+
+            foreach ($selectedColumns as $column) {
+                if (isset($staticColumns[$column])) {
+                    $row[] = $staticColumns[$column]($log, $dispoLabel);
+                } elseif (in_array($column, $dynamicKeys)) {
+                    $row[] = $leadJson[$column] ?? '';
+                } else {
+                    $row[] = '';
                 }
-                $row[] = $leadJson[$key] ?? '';
             }
+
             return $row;
         });
 

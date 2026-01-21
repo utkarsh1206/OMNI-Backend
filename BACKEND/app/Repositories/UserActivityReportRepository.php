@@ -525,10 +525,20 @@ class UserActivityReportRepository
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\StreamedResponse
      */
-    public function exportReportToCsv(Request $request)
+    public function exportReportToCsv(Request $request, $connectionName = null)
     {
 
         try {
+            $selectedColumns = $request->input('selected_columns', []);
+
+            if (empty($selectedColumns)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    'No columns selected for export'
+                );
+            }
+
             if (!$request->has(['startDate', 'endDate'])) {
                 return $this->apiResponse->getResponseStructure(
                     trans('message.error'),
@@ -544,17 +554,45 @@ class UserActivityReportRepository
             // Get authenticated user
             $user = auth()->user();
 
-            $query = UserLoginLog::with('user')
+            $exportableColumns = [
+
+                'Date' => fn($date, $entries) => $date,
+
+                'Username' => fn($date, $entries) =>
+                optional($entries->first()->user)->username,
+
+                'Total Duration' => fn($date, $entries) => gmdate(
+                    'H:i:s',
+                    $entries->sum(function ($log) {
+                        if ($log->login_time && $log->logout_time) {
+                            return Carbon::parse("{$log->login_date} {$log->login_time}")
+                                ->diffInSeconds(
+                                    Carbon::parse("{$log->logout_date} {$log->logout_time}")
+                                );
+                        }
+                        return 0;
+                    })
+                ),
+
+                'Login Count' => fn($date, $entries) => $entries->count(),
+            ];
+
+            $selectedColumns = array_values(
+                array_intersect($selectedColumns, array_keys($exportableColumns))
+            );
+
+            $query = UserLoginLog::on($connectionName)->with('user')
                 ->whereBetween('created_at', [$startDatetime, $endDatetime]);
 
             if ($request->filled('user_id')) {
                 $query->where('user_id', $request->user_id);
             }
 
-            if ($user->role_id == 3) {
+            if ($user && isset($user->role_id) && (int)$user->role_id === 3) {
                 $query->where('user_id', $user->id);
             }
 
+            $query->orderByDesc('login_date');
             $logs = $query->get();
 
             if ($logs->isEmpty()) {
@@ -568,27 +606,20 @@ class UserActivityReportRepository
             $groupedData = $logs->groupBy(['login_date', 'user_id']);
 
             // CSV headers
-            $csvHeader = ['Date', 'Username', 'Total Duration', 'Login Count'];
+            // $csvHeader = ['Date', 'Username', 'Total Duration', 'Login Count'];
+            $csvHeader = $selectedColumns;
+
             $csvRows = [];
 
             foreach ($groupedData as $date => $users) {
                 foreach ($users as $userId => $entries) {
                     $totalDuration = 0;
 
-                    foreach ($entries as $log) {
-                        if ($log->login_time && $log->logout_time) {
-                            $loginTime = Carbon::parse("{$log->login_date} {$log->login_time}");
-                            $logoutTime = Carbon::parse("{$log->logout_date} {$log->logout_time}");
-                            $totalDuration += $loginTime->diffInSeconds($logoutTime);
-                        }
+                    $row = [];
+                    foreach ($selectedColumns as $column) {
+                        $row[] = $exportableColumns[$column]($date, $entries);
                     }
-
-                    $csvRows[] = [
-                        $date,
-                        optional($entries->first()->user)->username,
-                        gmdate('H:i:s', $totalDuration),
-                        $entries->count()
-                    ];
+                    $csvRows[] = $row;
 
                     // Get detailed report data
                     try {
@@ -631,8 +662,8 @@ class UserActivityReportRepository
                                         $incoming->called_phone_number,
                                         // $incoming->call_date,
                                         Carbon::parse($incoming->call_date)
-                                        ->setTimezone(env('APP_CSVTIMEZONE'))
-                                        ->format('Y-m-d H:i:s'),
+                                            ->setTimezone(env('APP_CSVTIMEZONE'))
+                                            ->format('Y-m-d H:i:s'),
                                         $incoming->call_talk_duration,
                                         $incoming->call_dispo_status
                                     ];
@@ -651,8 +682,8 @@ class UserActivityReportRepository
                                         $outgoing->called_phone_number,
                                         // $outgoing->call_date,
                                         Carbon::parse($outgoing->call_date)
-                                        ->setTimezone(env('APP_CSVTIMEZONE'))
-                                        ->format('Y-m-d H:i:s'),
+                                            ->setTimezone(env('APP_CSVTIMEZONE'))
+                                            ->format('Y-m-d H:i:s'),
                                         $outgoing->call_talk_duration,
                                         $outgoing->call_dispo_status
                                     ];
