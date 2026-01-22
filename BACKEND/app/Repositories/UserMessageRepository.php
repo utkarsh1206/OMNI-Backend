@@ -10,6 +10,7 @@ use App\Events\CustomerChatRequest;
 use App\Events\ChatMessagesStored;
 use Carbon\Carbon;
 use App\Models\MessageAttachment;
+use Illuminate\Support\Facades\DB;
 
 class UserMessageRepository
 {
@@ -121,24 +122,67 @@ class UserMessageRepository
     public function getUserPhones()
     {
         try {
-            $messages = Message::where("type", "user_chat")
+            $request = request();
+            $searchTerm = $request->input('search', '');
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
+
+            $query = Message::where("type", "user_chat")
                 ->where("user_id", auth()->id())
                 ->whereNotNull("external_user_phone")
-                ->where("external_user_phone", '!=', '')
-                ->orderBy("id", "desc")
-                ->get()
-                ->groupBy('external_user_phone')
-                ->map(function ($group) {
-                    $name = $group->map(fn($msg) => trim(($msg->first_name ?? '') . ' ' . ($msg->last_name ?? '')))
-                        ->first(fn($n) => !empty($n) && strtolower($n) !== 'system message');
+                ->where("external_user_phone", '!=', '');
 
-                    return [
-                        'name'  => $name ?: 'System Message',
-                        'phone' => $group->first()->external_user_phone,
-                    ];
-                })
-                ->values();
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $messages, trans('message.data_fetch'));
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('external_user_phone', 'like', "%{$searchTerm}%")
+                        ->orWhere('first_name', 'like', "%{$searchTerm}%")
+                        ->orWhere('last_name', 'like', "%{$searchTerm}%")
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$searchTerm}%"]);
+                });
+            }
+
+            $query->select(
+                'external_user_phone',
+                DB::raw("MAX(CASE 
+                    WHEN LOWER(TRIM(CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,'')))) = 'system message' 
+                    THEN NULL 
+                    ELSE first_name 
+                END) as first_name"),
+                DB::raw("MAX(CASE 
+                    WHEN LOWER(TRIM(CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,'')))) = 'system message' 
+                    THEN NULL 
+                    ELSE last_name 
+                END) as last_name")
+            )
+                ->groupBy('external_user_phone')
+                ->orderByRaw('MAX(id) DESC');
+
+            $results = ($page == config('omni.ALL_PAGE'))
+                ? $query->get()
+                : $query->paginate($perPage);
+
+            $collection = ($page == config('omni.ALL_PAGE')) ? $results : $results->getCollection();
+
+            $transformed = $collection->map(function ($msg) {
+                $fullName = trim(($msg->first_name ?? '') . ' ' . ($msg->last_name ?? ''));
+                return [
+                    'name'  => !empty($fullName) ? $fullName : 'System Message',
+                    'phone' => $msg->external_user_phone,
+                ];
+            });
+
+            if ($page == config('omni.ALL_PAGE')) {
+                $finalResponse = $transformed;
+            } else {
+                $results->setCollection($transformed);
+                $finalResponse = $results;
+            }
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $finalResponse,
+                trans('message.data_fetch')
+            );
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating Message Listing: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);

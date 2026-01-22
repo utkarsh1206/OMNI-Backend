@@ -25,6 +25,7 @@ class AgentMessageRepository
         try {
             $search = $request->input('search', '');
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
             $agentsQuery = Users::with('liveAgent')
                 ->select('users.*')
@@ -41,24 +42,44 @@ class AgentMessageRepository
                         ->limit(1)
                 ])
                 ->when($search, function ($query) use ($search) {
-                    $query->where(function ($q) use ($search) {
-                        $q->where('first_name', 'like', "%$search%")
-                            ->orWhere('last_name', 'like', "%$search%")
-                            ->orWhere('email', 'like', "%$search%")
+                    $keywords = explode(' ', $search);
+
+                    $query->where(function ($q) use ($search, $keywords) {
+                        $q->where('email', 'like', "%$search%")
                             ->orWhereExists(function ($subquery) use ($search) {
                                 $subquery->select('id')
                                     ->from('messages')
                                     ->where('type', 'agent_chat')
-                                    ->whereRaw('messages.user_id = users.id OR messages.receiver_id = users.id')
+                                    ->where(function ($q) {
+                                        $q->whereRaw('messages.user_id = users.id')
+                                            ->orWhereRaw('messages.receiver_id = users.id');
+                                    })
                                     ->where('messages.text', 'like', "%$search%");
                             });
+                        $q->orWhere(function ($nameQuery) use ($keywords) {
+                            foreach ($keywords as $word) {
+                                $nameQuery->where(function ($sub) use ($word) {
+                                    $sub->where('first_name', 'like', "%$word%")
+                                        ->orWhere('last_name', 'like', "%$word%");
+                                });
+                            }
+                        });
                     });
                 })
                 ->where('id', '<>', auth()->user()->id)
                 ->orderByDesc('latest_message_time');
 
-            $paginatedAgents = $agentsQuery->paginate($perPage);
-            $transformedCollection = $paginatedAgents->getCollection()->transform(function ($user) {
+            $results = ($page == config('omni.ALL_PAGE'))
+                ? $agentsQuery->get()
+                : $agentsQuery->paginate($perPage);
+
+            $collection = ($page == config('omni.ALL_PAGE'))
+                ? $results
+                : $results->getCollection();
+
+            // $paginatedAgents = $agentsQuery->paginate($perPage);
+            // $transformedCollection = $paginatedAgents->getCollection()->transform(function ($user) {
+            $transformedCollection = $collection->transform(function ($user) {
                 $lastMessage = $user->latest_message;
                 return [
                     'id' => $user->id,
@@ -76,8 +97,18 @@ class AgentMessageRepository
             $sortedCollection = $transformedCollection->sortByDesc(function ($item) {
                 return $item['last_message_time'] ?? '';
             })->values();
-            $paginatedAgents->setCollection($sortedCollection);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $paginatedAgents, trans('message.data_fetch'));
+
+            // $paginatedAgents->setCollection($sortedCollection);
+
+            if ($page == config('omni.ALL_PAGE')) {
+                $finalResponse = $sortedCollection;
+            } else {
+                $results->setCollection($sortedCollection);
+                $finalResponse = $results;
+            }
+
+            // return $this->apiResponse->getResponseStructure(trans('message.success'), $paginatedAgents, trans('message.data_fetch'));
+            return $this->apiResponse->getResponseStructure(trans('message.success'), $finalResponse, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in generating User Status: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
