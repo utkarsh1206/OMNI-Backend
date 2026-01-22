@@ -558,7 +558,7 @@ class UserActivityReportRepository
 
                 'Date' => fn($date, $entries) => $date,
 
-                'Username' => fn($date, $entries) =>
+                'User Name' => fn($date, $entries) =>
                 optional($entries->first()->user)->username,
 
                 'Total Duration' => fn($date, $entries) => gmdate(
