@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Events\CallConnected;
 use App\Events\CallHangup;
 use App\Events\CallInitiated;
+use App\Events\ConferenceCallEvent;
 use App\Models\NeoxCallLog;
 use App\Models\NeoxTempCallLog;
 use App\Events\DialCenterData;
@@ -24,16 +25,22 @@ class WebhookCallRepository
     {
         generateLogs('info', 'tempdata: ' . json_encode($tempData));
 
-        $broadcastEvents = [
-            'call_initiated' => CallInitiated::class,
-            'call_connected' => CallConnected::class,
-            'call_hangup'    => CallHangup::class,
-        ];
+        if (isset($tempData['call_unique_id']) && strpos($tempData['call_unique_id'], 'SOT') === 0) {
 
-        if (isset($broadcastEvents[$tempData['type']])) {
-            broadcast(new $broadcastEvents[$tempData['type']]($tempData, $id, $domain));
+            // Broadcast to the NEW conference channel
+            broadcast(new ConferenceCallEvent($tempData, $id, $domain));
+        } else {
+
+            $broadcastEvents = [
+                'call_initiated' => CallInitiated::class,
+                'call_connected' => CallConnected::class,
+                'call_hangup'    => CallHangup::class,
+            ];
+
+            if (isset($broadcastEvents[$tempData['type']])) {
+                broadcast(new $broadcastEvents[$tempData['type']]($tempData, $id, $domain));
+            }
         }
-
         // broadcast(new DialCenterData($tempData));
         return NeoxTempCallLog::create($tempData);
     }
@@ -42,7 +49,7 @@ class WebhookCallRepository
     public function updateOrCreateCallHistory($data, $connection)
     {
         $now = Carbon::now();
-        
+
         $existing = $connection->table('neox_call_logs')
             ->where('call_unique_id', $data['call_unique_id'])
             ->where('call_date', $data['call_date'])

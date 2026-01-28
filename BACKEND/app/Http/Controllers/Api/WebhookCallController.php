@@ -304,9 +304,17 @@ class WebhookCallController extends Controller
                 getDbConnection($domain_name, true);
                 // DB::setDefaultConnection($data->getName());
 
+                $callUniqueId = $request->input('call_unique_id');
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
 
+                $agentName = (strpos($callUniqueId, 'SOT') === 0)
+                    ? $request->input('parent_user_id')
+                    : $request->input('caller_username');
+
+                if (strpos($callUniqueId, 'SOT') === 0) {
+                    $data['caller_username'] = $agentName;
+                }
                 // -------------
                 // -------------
                 $contactName = null;
@@ -323,7 +331,7 @@ class WebhookCallController extends Controller
                 // -------------
                 // -------------
 
-                $agentName = $request->caller_username;
+                // $agentName = $request->caller_username;
                 $agentId = Users::select('id')->where('username', $agentName)->first();
 
                 if ($type !== 'call_initiated') {

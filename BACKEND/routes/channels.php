@@ -52,3 +52,7 @@ Broadcast::channel('{domain}-agent_{id}-custom-chatbot-message', function ($user
     generateLogs('info', 'User trying to access the channel: ' . json_encode(['user' => $user]));
     return true;
 });
+
+Broadcast::channel('{domain}-{id}-conference-events', function ($user, $domain, $id) {
+    return (int) $user->id === (int) $id;
+});
