@@ -5,6 +5,13 @@ namespace App\Repositories;
 use App\Events\CallConnected;
 use App\Events\CallHangup;
 use App\Events\CallInitiated;
+use App\Events\Conference\ConferenceAddPartyFailed;
+use App\Events\Conference\ConferenceAddPartyInit;
+use App\Events\Conference\ConferenceAddPartySuccessful;
+use App\Events\Conference\ConferenceRemovePartySuccessful;
+use App\Events\Conference\ConferenceStartFail;
+use App\Events\Conference\ConferenceStartInit;
+use App\Events\Conference\ConferenceStartSuccess;
 use App\Events\ConferenceCallEvent;
 use App\Models\NeoxCallLog;
 use App\Models\NeoxTempCallLog;
@@ -23,12 +30,26 @@ class WebhookCallRepository
     // Save to neox_temp_call_logs table
     public function saveTempCallLog($tempData, $id, $domain)
     {
-        generateLogs('info', 'tempdata: ' . json_encode($tempData));
+        generateLogs('info', 'Temp-Data: ' . json_encode($tempData));
 
         if (isset($tempData['call_unique_id']) && strpos($tempData['call_unique_id'], 'SOT') === 0) {
 
+            $stateMapping = [
+                'ADDPARTY_SUCCESS'    => ConferenceAddPartySuccessful::class,
+                'ADDPARTY_FAIL'       => ConferenceAddPartyFailed::class,
+                'REMOVEPARTY_SUCCESS' => ConferenceRemovePartySuccessful::class,
+                'STARTCONF_SUCCESS'   => ConferenceStartSuccess::class,
+                'ADDPARTY_INIT'       => ConferenceAddPartyInit::class,
+                'STARTCONF_INIT'      => ConferenceStartInit::class,
+                'STARTCONF_FAIL'      => ConferenceStartFail::class,
+            ];
+
+            $confState = $tempData['conf_state'] ?? 'NONE';
+
+            $eventClass = $stateMapping[$confState] ?? ConferenceCallEvent::class;
+            // broadcast(new ConferenceCallEvent($tempData, $id, $domain));
             // Broadcast to the NEW conference channel
-            broadcast(new ConferenceCallEvent($tempData, $id, $domain));
+            broadcast(new $eventClass($tempData, $id, $domain));
         } else {
 
             $broadcastEvents = [

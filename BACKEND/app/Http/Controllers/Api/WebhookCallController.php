@@ -305,6 +305,7 @@ class WebhookCallController extends Controller
                 // DB::setDefaultConnection($data->getName());
 
                 $callUniqueId = $request->input('call_unique_id');
+                $confState = $request->input('conf_state') ?: null;
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
 
@@ -314,6 +315,7 @@ class WebhookCallController extends Controller
 
                 if (strpos($callUniqueId, 'SOT') === 0) {
                     $data['caller_username'] = $agentName;
+                    $data['conf_state'] = $confState;
                 }
                 // -------------
                 // -------------
