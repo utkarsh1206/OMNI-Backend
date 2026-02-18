@@ -234,6 +234,10 @@ class CustomLeadController extends Controller
         $insertData = $request->only($validColumns);
         $callUniqueId = $request->input('call_unique_id', null);
 
+        $payload = extractPayload($request->bearerToken());
+        $userid = $payload['userid'] ?? null;
+        $phone = $payload['phone'] ?? null;
+
         // Ensure there's data to insert
         if (empty($insertData)) {
             return response()->json(['error' => 'No valid fields provided for insertion'], 400);
@@ -247,6 +251,8 @@ class CustomLeadController extends Controller
             $listId,
             $insertData,
             $callUniqueId,
+            $userid,
+            $phone,
             $omniLeadSource,
         );
     }
