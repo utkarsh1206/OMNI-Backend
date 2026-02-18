@@ -256,7 +256,9 @@ class CustomLeadRepository
         int $listId,
         array $data,
         ?string $callUniqueId,
-        string $omniLeadSource = 'manual'
+        int $userid,
+        string $phone,
+        string $omniLeadSource = 'manual',
     ) {
         try {
             $table = "custom_lead_" . $listId;
@@ -328,6 +330,20 @@ class CustomLeadRepository
                 DB::table($table)
                     ->where('id', $leadId)
                     ->update(['original_lead_id' => $leadId]);
+
+                DB::table('ecdial_list')->insert([
+                    'lead_id'        => $leadId,
+                    'status'         => 'INCALL',
+                    'list_id'        => $listId,
+                    'gmt_offset_now' => $this->getGmtOffset(),
+                    'user'           => $userid,
+                ]);
+
+                DB::table('live_agents')
+                    ->where('user_id', $userid)
+                    ->where('extension', $phone)
+                    ->where('lead_id', 0)
+                    ->update(['lead_id' => $leadId]);
 
                 if (!empty($callUniqueId)) {
                     CustomCdrLead::create([
@@ -478,5 +494,15 @@ class CustomLeadRepository
     private function isTableExists(string $table): bool
     {
         return DB::getSchemaBuilder()->hasTable($table);
+    }
+
+    private function getGmtOffset()
+    {
+        $timezone = config('app.timezone');
+        $dateTimeZone = new \DateTimeZone($timezone);
+        $now = new \DateTime('now', $dateTimeZone);
+        $offsetInSeconds = $now->getOffset();
+        $offsetInHours = $offsetInSeconds / 3600;
+        return number_format($offsetInHours, 2, '.', '');
     }
 }
