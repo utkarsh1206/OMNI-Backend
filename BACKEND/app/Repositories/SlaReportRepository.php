@@ -225,14 +225,6 @@ class SlaReportRepository
         try {
             $selectedColumns = $request->input('selected_columns', []);
 
-            if (empty($selectedColumns)) {
-                return $this->apiResponse->getResponseStructure(
-                    trans('message.error'),
-                    null,
-                    'No columns selected for export'
-                );
-            }
-
             $ticketsquery = SupportTicket::on($connectionName)->with([
                 'notifications' => function ($query) {
                     $query->select(
@@ -313,19 +305,36 @@ class SlaReportRepository
                 'SLA Compliance' => fn($t) => $t->sla_compliance,
             ];
 
+            $selectedColumns = array_values(array_filter(
+                $selectedColumns,
+                fn($column) => isset($exportableColumns[$column])
+            ));
+
+            if (empty($selectedColumns)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    'No columns selected for export'
+                );
+            }
+
             $headers = $selectedColumns;
 
             $rows = $tickets->map(function ($ticket) use ($selectedColumns, $exportableColumns) {
-                $row = [];
+                // $row = [];
 
-                foreach ($selectedColumns as $column) {
-                    if (!isset($exportableColumns[$column])) {
-                        continue;
-                    }
-                    $row[] = $exportableColumns[$column]($ticket);
-                }
+                // foreach ($selectedColumns as $column) {
+                //     if (!isset($exportableColumns[$column])) {
+                //         continue;
+                //     }
+                //     $row[] = $exportableColumns[$column]($ticket);
+                // }
 
-                return $row;
+                // return $row;
+                return array_map(
+                    fn($column) => $exportableColumns[$column]($ticket),
+                    $selectedColumns
+                );
             })->toArray();
 
             $fileUrl = exportCsv($headers, $rows, 'sla_reports');

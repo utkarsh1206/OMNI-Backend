@@ -2,67 +2,66 @@
 
 namespace App\Jobs;
 
+use App\Mail\ScheduledReportMail;
 use App\Models\EmailSchedule;
 use App\Services\ReportDataService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Mail;
 
 class SendScheduledEmailJob implements ShouldQueue
 {
     use Dispatchable, Queueable, SerializesModels;
 
     public function __construct(
-        public int $scheduleId,
-        public string $connectionName
+        public EmailSchedule $schedule,
+        public string $connectionName,
+        public array $payload
     ) {
-        $this->scheduleId = $scheduleId;
+        $this->schedule = $schedule;
         $this->connectionName = $connectionName;
-
-        generateScheduleLogs(
-            'info',
-            'Email Scheduled Job Created test'.
-            json_encode([
-                'schedule_id' => $this->scheduleId,
-                'connection'  => $this->connectionName
-            ])
-        );
+        $this->payload = $payload;
     }
 
     public function handle(): void
     {
-        $scheduleId = $this->scheduleId;
-        generateScheduleLogs(
-            'info',
-            'Inside JObs Handle start' . $scheduleId
-        );
+        setEmailConfig($this->connectionName);
 
-        $schedule = EmailSchedule::on($this->connectionName)
-            ->findOrFail($this->scheduleId);
+        // Important for multi-database setups
+        $schedule = $this->schedule->setConnection($this->connectionName);
 
-            generateScheduleLogs(
-                'info',
-                'Get Scheduled data' . json_encode(['schedule' => $schedule])
-            );
-
-        $data = app(ReportDataService::class)->generate(
+        $dataResponse = app(ReportDataService::class)->generate(
             $this->connectionName,
             $schedule->report_name,
-            $schedule->selected_columns,
-            $schedule->data_start_time,
-            $schedule->data_end_time
+            $this->payload
         );
 
+        $data = $dataResponse->getData(true);
         generateScheduleLogs(
             'info',
-            'Report data generated'. 
-            json_encode([
-                'data' => $data
-            ])
+            'Report data generated' .
+                json_encode([
+                    'data' => $data
+                ])
         );
 
-        // 🔔 Enable when ready
-        // Mail::to($schedule->to_emails)->send(new ScheduledReportMail($schedule, $data));
+        try {
+            Mail::to($schedule->to_emails ?? [])
+                ->cc($schedule->cc_emails ?? [])
+                ->bcc($schedule->bcc_emails ?? [])
+                ->queue(new ScheduledReportMail($schedule, $data));
+            generateScheduleLogs(
+                'info',
+                'Scheduled email sent successfully', json_encode($schedule)
+            );
+        } catch (\Throwable $e) {
+            generateScheduleLogs(
+                'error',
+                'Scheduled email failed: ' . $e->getMessage(),
+            );
+            throw $e;
+        }
     }
 }

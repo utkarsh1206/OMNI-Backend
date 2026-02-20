@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SendScheduledEmail extends Command
 {
@@ -27,11 +28,10 @@ class SendScheduledEmail extends Command
      */
     public function handle()
     {
-        $now = now(); // ONE immutable reference
+        $now = now(env('APP_CSVTIMEZONE'));
 
         Tenant::orderBy('id')
             ->chunkById(100, function ($tenants) use ($now) {
-
                 foreach ($tenants as $tenant) {
                     try {
                         generateScheduleLogs(
@@ -46,37 +46,125 @@ class SendScheduledEmail extends Command
                         establishDatabaseConnect($connectionName, $databaseName);
                         DB::reconnect($connectionName);
 
-                        EmailSchedule::on($connectionName)
-                            ->where('is_active', 1)
-                            ->get()
-                            ->each(function ($schedule) use ($now, $connectionName) {
+                        if (!Schema::connection($connectionName)->hasTable('email_schedules')) {
+                            generateScheduleLogs(
+                                'info',
+                                'email_schedules table not found',
+                                json_encode(['tenant' => $connectionName])
+                            );
 
-                                if (!$this->shouldRun($schedule, $now)) {
+                            continue;
+                        }
+
+                        $schedules = EmailSchedule::on($connectionName)
+                            ->where('is_active', 1)
+                            ->get();
+
+                        $schedules->each(function ($schedule) use ($now, $connectionName) {
+                            $nowTz = now(env('APP_CSVTIMEZONE'));
+
+                            $scheduledDateTime = $nowTz->copy()
+                                ->setTimeFromTimeString($schedule->scheduled_time);
+
+                            // Not yet reached scheduled time
+                            if ($nowTz->lt($scheduledDateTime)) {
+                                return;
+                            }
+
+                            // Prevent duplicate execution
+                            if ($schedule->last_executed_at) {
+                                $lastRun = Carbon::parse($schedule->last_executed_at, env('APP_CSVTIMEZONE'));
+
+                                if ($lastRun->gte($scheduledDateTime)) {
+                                    return;
+                                }
+                            }
+
+                            /*Date range calculation*/
+                            $startDate = null;
+                            $endDate   = null;
+                            if ($schedule->frequency === 'daily') {
+                                $startDate = $nowTz->copy()
+                                    ->setTimeFromTimeString($schedule->data_start_time);
+
+                                $endDate = $nowTz->copy()
+                                    ->setTimeFromTimeString($schedule->data_end_time);
+                            }
+
+                            if ($schedule->frequency === 'weekly') {
+                                if (strtolower($nowTz->format('D')) !== strtolower($schedule->day_of_week)) {
                                     return;
                                 }
 
-                                generateScheduleLogs(
-                                    'info',
-                                    'Dispatching SendScheduledEmailJob' .
-                                        json_encode([
-                                            'schedule_id' => $schedule->id,
-                                            'connection'  => $connectionName
-                                        ])
+                                $endTime = Carbon::parse($schedule->data_end_time)
+                                    ->format('H:i:s');
+
+                                $startDate = $nowTz->copy()
+                                    ->subDays(7)
+                                    ->setTimeFromTimeString($endTime);
+
+                                $endDate = $nowTz->copy()
+                                    ->setTimeFromTimeString($endTime);
+                            }
+
+                            if ($schedule->frequency === 'monthly') {
+                                if (!$schedule->monthly_date) {
+                                    return;
+                                }
+
+                                // Adjust for months with fewer days
+                                $targetDay = min(
+                                    $schedule->monthly_date,
+                                    $nowTz->daysInMonth
                                 );
 
-                                // Dispatch job with ID + connection (SAFE)
-                                dispatch(new SendScheduledEmailJob(
-                                    $schedule->id,
-                                    $connectionName
-                                ));
+                                if ($nowTz->day != $targetDay) {
+                                    return;
+                                }
 
-                                // Update using explicit connection
-                                EmailSchedule::on($connectionName)
-                                    ->where('id', $schedule->id)
-                                    ->update([
-                                        'last_executed_at' => $now
-                                    ]);
-                            });
+                                $endTime = Carbon::parse($schedule->data_end_time)
+                                    ->format('H:i:s');
+
+                                $startDate = $nowTz->copy()
+                                    ->subMonth()
+                                    ->setTimeFromTimeString($endTime);
+
+                                $endDate = $nowTz->copy()
+                                    ->setTimeFromTimeString($endTime);
+                            }
+
+                            if (!$startDate || !$endDate) {
+                                generateScheduleLogs('error', "StartDate or Enddate not found");
+                                return;
+                            }
+
+                            $payload = [
+                                'startDate' => $startDate->format('Y-m-d H:i:s'),
+                                'endDate'   => $endDate->format('Y-m-d H:i:s'),
+                                'page'      => 'all',
+                                'selected_columns' => array_values($schedule->selected_columns ?? [])
+                            ];
+
+                            generateScheduleLogs(
+                                'info',
+                                'payload ',
+                                json_encode($payload)
+                            );
+
+                            // Dispatch job with ID + connection (SAFE)
+                            dispatch(new SendScheduledEmailJob(
+                                $schedule,
+                                $connectionName,
+                                $payload
+                            ));
+
+                            /* Update last executed */
+                            EmailSchedule::on($connectionName)
+                                ->where('id', $schedule->id)
+                                ->update([
+                                    'last_executed_at' => $now
+                                ]);
+                        });
                     } catch (Exception $e) {
                         generateScheduleLogs(
                             'error',
@@ -89,38 +177,5 @@ class SendScheduledEmail extends Command
                     }
                 }
             });
-    }
-
-    /**
-     * Determine whether the schedule should run now
-     */
-    private function shouldRun($schedule, $now)
-    {
-        if (app()->environment(['local', 'testing'])) {
-            return true;
-        }
-        
-        $nowTz = $now->copy()->setTimezone($schedule->timezone);
-
-        // Compare only H:i (ignore seconds)
-        if ($nowTz->format('H:i') !== substr($schedule->scheduled_time, 0, 5)) {
-            return false;
-        }
-
-        // Prevent multiple runs in same minute
-        if ($schedule->last_executed_at) {
-            $lastRun = \Carbon\Carbon::parse($schedule->last_executed_at)
-                ->setTimezone($schedule->timezone);
-
-            if ($lastRun->format('Y-m-d H:i') === $nowTz->format('Y-m-d H:i')) {
-                return false;
-            }
-        }
-
-        if ($schedule->frequency === 'weekly') {
-            return strtolower($nowTz->format('D')) === strtolower($schedule->day_of_week);
-        }
-
-        return true;
     }
 }
