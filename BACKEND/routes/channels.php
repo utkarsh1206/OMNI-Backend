@@ -52,3 +52,10 @@ Broadcast::channel('{domain}-agent_{id}-custom-chatbot-message', function ($user
     generateLogs('info', 'User trying to access the channel: ' . json_encode(['user' => $user]));
     return true;
 });
+
+Broadcast::channel('{domain}-group_{groupId}-chat', function ($user, $domain, $groupId) {
+    return \App\Models\GroupParticipant::where('group_id', $groupId)
+        ->where('user_id', $user->id)
+        ->whereNull('left_at')
+        ->exists();
+});
