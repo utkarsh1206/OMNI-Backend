@@ -24,7 +24,8 @@ class EmailSchedule extends Model
         'data_start_time',
         'data_end_time',
         'timezone',
-        'is_active'
+        'is_active',
+        'monthly_date'
     ];
 
     protected $casts = [
@@ -35,5 +36,6 @@ class EmailSchedule extends Model
         'scheduled_time' => 'datetime:H:i',
         'data_start_time' => 'datetime:H:i',
         'data_end_time' => 'datetime:H:i',
+        'monthly_date' => 'integer',
     ];
 }

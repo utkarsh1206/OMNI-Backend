@@ -104,6 +104,12 @@ class EmailLogRepository
             );
         }
 
+        // Keep only valid exportable columns
+        $selectedColumns = array_values(array_filter(
+            $selectedColumns,
+            fn($column) => isset($this->exportableColumns[$column])
+        ));
+
         $query = DB::connection($connectionName)
             ->table('email_logs')
             ->leftJoin('users', 'email_logs.user_id', '=', 'users.id');
@@ -163,7 +169,7 @@ class EmailLogRepository
 
         // Define headers
         $headers = $headers = array_map(
-            fn ($column) => $column,
+            fn($column) => $column,
             $selectedColumns
         );
 
@@ -202,10 +208,10 @@ class EmailLogRepository
         'Contact User' => [
             'db'     => 'users.username',
         ],
-        'From Email' => [
+        'From Mail' => [
             'db'     => 'email_logs.from_email',
         ],
-        'To Email' => [
+        'To Mail' => [
             'callback' => 'extractToEmail',
         ],
         'Module' => [

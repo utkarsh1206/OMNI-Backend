@@ -27,6 +27,7 @@ class EmailScheduleRepository
             $fromEmail = $request->input('from_email', '');
             $toEmails = $request->input('to_emails', '');
             $scheduledTime = $request->input('scheduled_time', '');
+            $monthlyDate = $request->input('monthly_date', '');
 
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
@@ -44,7 +45,8 @@ class EmailScheduleRepository
                         ->orWhere('day_of_week', 'like', '%' . $searchTerm . '%')
                         ->orWhere('data_start_time', 'like', '%' . $searchTerm . '%')
                         ->orWhere('data_end_time', 'like', '%' . $searchTerm . '%')
-                        ->orWhere('timezone', 'like', '%' . $searchTerm . '%');
+                        ->orWhere('timezone', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('monthly_date', 'like', '%' . $searchTerm . '%');
                 });
             }
 
@@ -74,6 +76,14 @@ class EmailScheduleRepository
     {
         try {
             $input = $request->all();
+            if ($input['frequency'] !== 'weekly') {
+                $input['day_of_week'] = null;
+            }
+    
+            if ($input['frequency'] !== 'monthly') {
+                $input['monthly_date'] = null;
+            }
+            
             $emailConfig = EmailSchedule::create($input);
             return $this->apiResponse->getResponseStructure(trans('message.success'), $emailConfig, trans('message.email_schedule_created'), ResponseHTTP::HTTP_CREATED);
         } catch (Exception $e) {

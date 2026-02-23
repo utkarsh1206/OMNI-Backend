@@ -82,15 +82,6 @@ class CallLogReportRepository
         try {
             $selectedColumns = $request->input('selected_columns', []);
 
-            if (empty($selectedColumns)) {
-                return $this->apiResponse->getResponseStructure(
-                    trans('message.error'),
-                    null,
-                    'No columns selected for export'
-                );
-            }
-
-
             $callLogs = $this->buildCallLogQuery($request, true, $connectionName)->get();
             $headers = [];
             $formattedRows = $this->formatCallLogsForCsv($callLogs, $headers, $selectedColumns);
@@ -205,6 +196,9 @@ class CallLogReportRepository
             }
         }
 
+        // Faster lookup
+        $dynamicKeysMap = array_flip($dynamicKeys);
+
         $staticColumns = [
             'Campaign' => fn($l) => $l->campaign_id,
             'Inbound Group' => fn($l) => $l->inbound_group_id,
@@ -221,12 +215,27 @@ class CallLogReportRepository
             'Term Reason' => fn($l) => $l->call_term_reason,
         ];
 
+        $selectedColumns = array_values(array_filter(
+            $selectedColumns,
+            function ($column) use ($staticColumns, $dynamicKeysMap) {
+                return isset($staticColumns[$column]) || isset($dynamicKeysMap[$column]);
+            }
+        ));
+
+        if (empty($selectedColumns)) {
+            return $this->apiResponse->getResponseStructure(
+                trans('message.error'),
+                null,
+                'No columns selected for export'
+            );
+        }
+
         $headers = $selectedColumns;
 
         // Final headers (passed by reference for use in exportCsv)
         // $headers = array_merge($staticHeaders, $dynamicKeys);
         // Map formatted rows
-        $rows = $logs->map(function ($log) use (&$dispoCache, $dynamicKeys, $staticColumns, $selectedColumns) {
+        $rows = $logs->map(function ($log) use (&$dispoCache, $dynamicKeysMap, $staticColumns, $selectedColumns) {
             $campaignId = $log->campaign_id;
             $dispoLabel = $log->call_dispo_status;
 
@@ -296,10 +305,8 @@ class CallLogReportRepository
             foreach ($selectedColumns as $column) {
                 if (isset($staticColumns[$column])) {
                     $row[] = $staticColumns[$column]($log, $dispoLabel);
-                } elseif (in_array($column, $dynamicKeys)) {
+                } elseif (isset($dynamicKeysMap[$column])) {
                     $row[] = $leadJson[$column] ?? '';
-                } else {
-                    $row[] = '';
                 }
             }
 

@@ -233,13 +233,47 @@ class TicketReportRepository
 
             $tickets = $query->orderByDesc('id')->get();
 
-            $headers = $selectedColumns;
-
             $formatted = $this->formatTickets($tickets, true);
 
-            $rows = $formatted->map(function ($row) use ($selectedColumns) {
-                return collect($selectedColumns)
-                    ->map(fn ($column) => $row[$column] ?? '-')
+            $availableColumns =  [
+                'Ticket ID',
+                'Customer Name',
+                'Ticket Type',
+                'Priority',
+                'Status',
+                'Created Date',
+                'Last Updated',
+                'Assigned Agent',
+                'Resolution Time',
+                'Comments',
+                'Escalation',
+            ];
+
+            // Match selected columns with available columns
+            $validColumns = array_values(array_intersect(
+                $selectedColumns,
+                $availableColumns
+            ));
+
+            // $skippedColumns = array_diff($selectedColumns, $availableColumns);
+            // if (!empty($skippedColumns)) {
+            //     generateLogs('info', 'Skipped invalid columns', $skippedColumns);
+            // }
+
+            // If nothing valid left
+            if (empty($validColumns)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    'No valid columns available for export'
+                );
+            }
+
+            $headers = $validColumns;
+
+            $rows = $formatted->map(function ($row) use ($validColumns) {
+                return collect($validColumns)
+                    ->map(fn($column) => $row[$column] ?? '-')
                     ->toArray();
             })->toArray();
 

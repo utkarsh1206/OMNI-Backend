@@ -36,12 +36,13 @@ class EmailScheduleRequest extends FormRequest
             'bcc_emails.*'          => 'email',
             'subject'              => 'required|string|max:255',
             'body'                 => 'required|string',
-            'frequency'            => 'required|in:daily,weekly,quarterly,half_yearly,yearly,custom',
+            'frequency'            => 'required|in:daily,weekly,monthly,quarterly,half_yearly,yearly,custom',
             'scheduled_time'       => 'required|date_format:H:i',
             'day_of_week'          => 'nullable|required_if:frequency,weekly|in:mon,tue,wed,thu,fri,sat,sun',
             'data_start_time'      => 'nullable|date_format:H:i',
             'data_end_time'        => 'nullable|date_format:H:i',
-            'timezone'             => 'nullable|string'
+            'timezone'             => 'nullable|string',
+            'monthly_date'         => 'nullable|required_if:frequency,monthly|integer|between:1,31',
         ];
     }
 

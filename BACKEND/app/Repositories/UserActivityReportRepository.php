@@ -122,27 +122,27 @@ class UserActivityReportRepository
      * @param Request $request
      * @return array
      */
-    public function getData(Request $request)
+    public function getData(Request $request, $connectionName = null)
     {
         try {
             $user_id = $request->input('user_id');
             $date = $request->input('date');
 
             // Fetch necessary data
-            $log_data = $this->getLoginLogs($user_id, $date);
-            $pause_resume_data = $this->getPauseResumeLogs($user_id, $date);
-            $pause_resume_total = $this->getTotalPauseResumeTime($user_id, $date);
-            $user_name = $this->getUserNameById($user_id);
-            $i_call_data = $this->getCallData($user_name, $date, 'incoming');
-            $o_call_data = $this->getCallData($user_name, $date, 'outgoing');
-            $incoming = $this->getCallHistoryData('incoming', $user_name, $date);
-            $outgoing = $this->getCallHistoryData('outgoing', $user_name, $date);
-            $ready_data = $this->getReadyData($user_id, $date);
-            $dash_data = $this->getReportData($user_id, '', $date);
-            $todaysLoginData = $this->getTodaysLoginTime($request);
-            $pause_resume_activity = $this->getActivityPauseData($user_id, $date);
-            $daily_user_activity = $this->getDailyUserActivity($user_id, $date);
-            $total_duration = $this->getTotalDuration($user_id, $date);
+            $log_data = $this->getLoginLogs($user_id, $date, $connectionName);
+            $pause_resume_data = $this->getPauseResumeLogs($user_id, $date, $connectionName);
+            $pause_resume_total = $this->getTotalPauseResumeTime($user_id, $date, $connectionName);
+            $user_name = $this->getUserNameById($user_id, $connectionName);
+            $i_call_data = $this->getCallData($user_name, $date, 'incoming', $connectionName);
+            $o_call_data = $this->getCallData($user_name, $date, 'outgoing', $connectionName);
+            $incoming = $this->getCallHistoryData('incoming', $user_name, $date, $connectionName);
+            $outgoing = $this->getCallHistoryData('outgoing', $user_name, $date, $connectionName);
+            $ready_data = $this->getReadyData($user_id, $date, $connectionName);
+            $dash_data = $this->getReportData($user_id, '', $date, $connectionName);
+            $todaysLoginData = $this->getTodaysLoginTime($request, $connectionName);
+            $pause_resume_activity = $this->getActivityPauseData($user_id, $date, $connectionName);
+            $daily_user_activity = $this->getDailyUserActivity($user_id, $date, $connectionName);
+            $total_duration = $this->getTotalDuration($user_id, $date, $connectionName);
 
             $data = [
                 'log_data' => $log_data,
@@ -172,10 +172,10 @@ class UserActivityReportRepository
     /**
      * Get login logs for the user
      */
-    private function getLoginLogs($user_id, $date)
+    private function getLoginLogs($user_id, $date, $connectionName = null)
     {
         try {
-            return UserLoginLog::select('id', 'login_date', 'logout_date', 'login_time', 'logout_time')
+            return UserLoginLog::on($connectionName)->select('id', 'login_date', 'logout_date', 'login_time', 'logout_time')
                 ->where('user_id', $user_id)
                 ->where('login_date', $date)
                 ->get();
@@ -188,10 +188,10 @@ class UserActivityReportRepository
     /**
      * Get pause/resume logs for the user
      */
-    private function getPauseResumeLogs($user_id, $date)
+    private function getPauseResumeLogs($user_id, $date, $connectionName = null)
     {
         try {
-            return PauseResumeUserLog::select('id', 'pause_time', 'resume_time', 'user_status', 'pause_code_id')
+            return PauseResumeUserLog::on($connectionName)->select('id', 'pause_time', 'resume_time', 'user_status', 'pause_code_id')
                 ->where('user_id', $user_id)
                 ->whereDate('created_at', $date)
                 ->get();
@@ -204,10 +204,10 @@ class UserActivityReportRepository
     /**
      * Get the total pause and resume times
      */
-    private function getTotalPauseResumeTime($user_id, $date)
+    private function getTotalPauseResumeTime($user_id, $date, $connectionName = null)
     {
         try {
-            return PauseResumeUserLog::selectRaw("SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))) AS total_resume, SEC_TO_TIME(SUM(TIME_TO_SEC(total_pause_time))) AS total_pause")
+            return PauseResumeUserLog::on($connectionName)->selectRaw("SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))) AS total_resume, SEC_TO_TIME(SUM(TIME_TO_SEC(total_pause_time))) AS total_pause")
                 ->where('user_id', $user_id)
                 ->whereDate('created_at', $date)
                 ->first();
@@ -220,10 +220,10 @@ class UserActivityReportRepository
     /**
      * Get the username of the user
      */
-    private function getUserNameById($user_id)
+    private function getUserNameById($user_id, $connectionName = null)
     {
         try {
-            return Users::where('id', $user_id)->pluck('username')->first();
+            return Users::on($connectionName)->where('id', $user_id)->pluck('username')->first();
         } catch (Exception $e) {
             generateLogs('error', 'Error in UserActivityReportRepository@getUserNameById: ' . $e->getMessage());
             throw $e;
@@ -233,10 +233,10 @@ class UserActivityReportRepository
     /**
      * Get incoming or outgoing call data for the user
      */
-    private function getCallData($user_name, $date, $call_type)
+    private function getCallData($user_name, $date, $call_type, $connectionName = null)
     {
         try {
-            return DB::table('neox_call_logs as nl')
+            return DB::connection($connectionName)->table('neox_call_logs as nl')
                 ->select(DB::raw('count(id) as total'))
                 ->where('caller_username', $user_name)
                 ->whereDate('created_at', $date)
@@ -251,10 +251,10 @@ class UserActivityReportRepository
     /**
      * Get call history data for incoming or outgoing calls
      */
-    private function getCallHistoryData($call_type, $user_name, $date)
+    private function getCallHistoryData($call_type, $user_name, $date, $connectionName = null)
     {
         try {
-            return NeoxCallLog::select(
+            return NeoxCallLog::on($connectionName)->select(
                 'caller_user_extension',
                 'called_phone_number',
                 DB::raw('SEC_TO_TIME(call_talk_duration) as call_talk_duration'),
@@ -277,10 +277,10 @@ class UserActivityReportRepository
     /**
      * Get ready data (pause/resume data)
      */
-    private function getReadyData($user_id, $date)
+    private function getReadyData($user_id, $date, $connectionName = null)
     {
         try {
-            return PauseResumeUserLog::selectRaw(
+            return PauseResumeUserLog::on($connectionName)->selectRaw(
                 "TIME_FORMAT(SEC_TO_TIME(AVG(TIME_TO_SEC(total_resume_time))), '%H:%i:%s') AS ready_avg, 
                  TIME_FORMAT(SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))), '%H:%i:%s') AS ready"
             )
@@ -296,7 +296,7 @@ class UserActivityReportRepository
     /**
      * Get today's login time
      */
-    public function getTodaysLoginTime(Request $request)
+    public function getTodaysLoginTime(Request $request, $connectionName = null)
     {
         try {
             $userId = $request->input('user_id');
@@ -305,7 +305,7 @@ class UserActivityReportRepository
             $todaysLoginTime = false;
 
             // Get the latest login record for today
-            $loginDetail = UserLoginLog::where('user_id', $userId)
+            $loginDetail = UserLoginLog::on($connectionName)->where('user_id', $userId)
                 ->whereDate('login_date', $todayDate)
                 ->orderBy('id', 'desc')
                 ->first();
@@ -313,7 +313,7 @@ class UserActivityReportRepository
             if ($request->input('date') == $todayDate && $loginDetail) {
                 if ($loginDetail->logout_time == '00:00:00' && $loginDetail->logout_date == '0000-00-00') {
                     // Get the first login time for today
-                    $firstLoginTime = UserLoginLog::where('user_id', $userId)
+                    $firstLoginTime = UserLoginLog::on($connectionName)->where('user_id', $userId)
                         ->whereDate('login_date', $todayDate)
                         ->orderBy('id', 'asc')
                         ->value('login_time');
@@ -350,10 +350,10 @@ class UserActivityReportRepository
     /**
      * Get daily user activity
      */
-    private function getDailyUserActivity($user_id, $date)
+    private function getDailyUserActivity($user_id, $date, $connectionName = null)
     {
         try {
-            return UserDailyActivity::with('pauseCode')
+            return UserDailyActivity::on($connectionName)->with('pauseCode')
                 ->where('user_id', $user_id)
                 ->when($date, function ($query) use ($date) {
                     $query->whereDate('created_at', date('Y-m-d', strtotime($date)));
@@ -373,10 +373,10 @@ class UserActivityReportRepository
     /**
      * Get total duration of various activities for the user
      */
-    private function getTotalDuration($user_id, $date)
+    private function getTotalDuration($user_id, $date, $connectionName = null)
     {
         try {
-            return UserDailyActivity::selectRaw("
+            return UserDailyActivity::on($connectionName)->selectRaw("
             SEC_TO_TIME(SUM(TIME_TO_SEC(total_login_duration))) AS total_login_d,
             SEC_TO_TIME(SUM(TIME_TO_SEC(pause_duration))) AS total_pause_d,
             SEC_TO_TIME(SUM(TIME_TO_SEC(resume_duration))) AS total_resume_d,
@@ -397,7 +397,7 @@ class UserActivityReportRepository
     /**
      * Get the report data
      */
-    public function getReportData($userId, $campaignId = '', $date)
+    public function getReportData($userId, $campaignId = '', $date, $connectionName = null)
     {
         try {
             $subConditions = [];
@@ -419,7 +419,7 @@ class UserActivityReportRepository
             $subCondStr = ' AND ' . implode(' AND ', $subConditions);
             $loginCondStr = !empty($loginConditions) ? ' AND ' . implode(' AND ', $loginConditions) : '';
 
-            $result = DB::table('users as u')
+            $result = DB::connection($connectionName)->table('users as u')
                 ->leftJoin('user_login_logs as ul', function ($join) use ($loginCondStr) {
                     $join->on('ul.user_id', '=', 'u.id');
                     if (!empty($loginCondStr)) {
@@ -497,10 +497,10 @@ class UserActivityReportRepository
     /**
      * Get pause and resume activity data
      */
-    public function getActivityPauseData($user_id, $date)
+    public function getActivityPauseData($user_id, $date, $connectionName = null)
     {
         try {
-            return PauseResumeUserLog::select(
+            return PauseResumeUserLog::on($connectionName)->select(
                 'id',
                 'pause_time',
                 'resume_time',
@@ -525,34 +525,20 @@ class UserActivityReportRepository
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\StreamedResponse
      */
-    public function exportReportToCsv(Request $request, $connectionName = null)
+    public function exportReportToCsv(Request $request, $connectionName = null, $isService = false)
     {
-
         try {
             $selectedColumns = $request->input('selected_columns', []);
 
-            if (empty($selectedColumns)) {
-                return $this->apiResponse->getResponseStructure(
-                    trans('message.error'),
-                    null,
-                    'No columns selected for export'
-                );
+            if ($request->has('startDate') && $request->has('endDate')) {
+                $startDatetime = Carbon::parse($request->input('startDate'));
+                $endDatetime = Carbon::parse($request->input('endDate'));
             }
-
-            if (!$request->has(['startDate', 'endDate'])) {
-                return $this->apiResponse->getResponseStructure(
-                    trans('message.error'),
-                    null,
-                    trans('message.record_not_found')
-                );
-            }
-
-            // Parse dates
-            $startDatetime = Carbon::parse($request->startDate);
-            $endDatetime = Carbon::parse($request->endDate);
 
             // Get authenticated user
-            $user = auth()->user();
+            if ($isService == false) {
+                $user = auth()->user();
+            }
 
             $exportableColumns = [
 
@@ -577,9 +563,20 @@ class UserActivityReportRepository
                 'Login Count' => fn($date, $entries) => $entries->count(),
             ];
 
-            $selectedColumns = array_values(
-                array_intersect($selectedColumns, array_keys($exportableColumns))
-            );
+            $validColumnsMap = array_flip(array_keys($exportableColumns));
+
+            $selectedColumns = array_values(array_filter(
+                $selectedColumns,
+                fn($column) => isset($validColumnsMap[$column])
+            ));
+
+            if (empty($selectedColumns)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    'No valid columns selected for export'
+                );
+            }
 
             $query = UserLoginLog::on($connectionName)->with('user')
                 ->whereBetween('created_at', [$startDatetime, $endDatetime]);
@@ -588,20 +585,21 @@ class UserActivityReportRepository
                 $query->where('user_id', $request->user_id);
             }
 
-            if ($user && isset($user->role_id) && (int)$user->role_id === 3) {
+            if ($isService == false && $user && isset($user->role_id) && (int)$user->role_id === 3) {
                 $query->where('user_id', $user->id);
             }
+
 
             $query->orderByDesc('login_date');
             $logs = $query->get();
 
-            if ($logs->isEmpty()) {
-                return $this->apiResponse->getResponseStructure(
-                    trans('message.error'),
-                    null,
-                    trans('message.record_not_found')
-                );
-            }
+            // if ($logs->isEmpty()) {
+            //     return $this->apiResponse->getResponseStructure(
+            //         trans('message.error'),
+            //         null,
+            //         trans('message.record_not_found')
+            //     );
+            // }
 
             $groupedData = $logs->groupBy(['login_date', 'user_id']);
 
@@ -624,7 +622,7 @@ class UserActivityReportRepository
                     // Get detailed report data
                     try {
                         $detailedRequest = new Request(['user_id' => $userId, 'date' => $date]);
-                        $activityData = $this->getData($detailedRequest);
+                        $activityData = $this->getData($detailedRequest, $connectionName);
                         $responseContent = json_decode($activityData->getContent(), true);
                         $details = $responseContent['data'] ?? null;
 
