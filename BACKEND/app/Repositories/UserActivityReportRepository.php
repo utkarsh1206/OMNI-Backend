@@ -540,27 +540,36 @@ class UserActivityReportRepository
                 $user = auth()->user();
             }
 
+            $logs = UserLoginLog::on($connectionName)->select([
+                'user_id',
+                'login_date',
+                DB::raw("SUM(TIMESTAMPDIFF(SECOND, CONCAT(login_date, ' ', login_time), CONCAT(logout_date, ' ', logout_time))) as total_seconds"),
+                DB::raw("COUNT(*) as login_count")
+            ])
+                // ->whereNotNull('logout_time')
+                ->whereBetween('login_date', [$startDatetime, $endDatetime])
+                ->when($request->filled('user_id'), fn($q) => $q->where('user_id', $request->user_id))
+                ->when(!$isService && $user && $user->role_id == 3, fn($q) => $q->where('user_id', $user->id))
+                ->groupBy('login_date', 'user_id')
+                ->with('user')
+                ->orderByDesc('login_date')->limit(300)->get();
+
+            if ($logs->isEmpty()) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    trans('message.record_not_found')
+                );
+            }
+
             $exportableColumns = [
-
-                'Date' => fn($date, $entries) => $date,
-
-                'User Name' => fn($date, $entries) =>
-                optional($entries->first()->user)->username,
-
-                'Total Duration' => fn($date, $entries) => gmdate(
-                    'H:i:s',
-                    $entries->sum(function ($log) {
-                        if ($log->login_time && $log->logout_time) {
-                            return Carbon::parse("{$log->login_date} {$log->login_time}")
-                                ->diffInSeconds(
-                                    Carbon::parse("{$log->logout_date} {$log->logout_time}")
-                                );
-                        }
-                        return 0;
-                    })
-                ),
-
-                'Login Count' => fn($date, $entries) => $entries->count(),
+                'Date' => fn($log) => $log->login_date,
+                'User Name' => fn($log) =>
+                optional($log->user)->username,
+                'Total Duration' => fn($log) =>
+                gmdate('H:i:s', $log->total_seconds ?? 0),
+                'Login Count' => fn($log) =>
+                $log->login_count ?? 0,
             ];
 
             $validColumnsMap = array_flip(array_keys($exportableColumns));
@@ -578,206 +587,350 @@ class UserActivityReportRepository
                 );
             }
 
-            $query = UserLoginLog::on($connectionName)->with('user')
-                ->whereBetween('created_at', [$startDatetime, $endDatetime]);
-
-            if ($request->filled('user_id')) {
-                $query->where('user_id', $request->user_id);
-            }
-
-            if ($isService == false && $user && isset($user->role_id) && (int)$user->role_id === 3) {
-                $query->where('user_id', $user->id);
-            }
-
-
-            $query->orderByDesc('login_date');
-            $logs = $query->get();
-
-            // if ($logs->isEmpty()) {
-            //     return $this->apiResponse->getResponseStructure(
-            //         trans('message.error'),
-            //         null,
-            //         trans('message.record_not_found')
-            //     );
-            // }
-
             $groupedData = $logs->groupBy(['login_date', 'user_id']);
+
+            $userIds   = $logs->pluck('user_id')->unique();
+            $dates     = $logs->pluck('login_date')->unique();
+            $usernames = $logs->pluck('user.username', 'user_id');
 
             // CSV headers
             // $csvHeader = ['Date', 'Username', 'Total Duration', 'Login Count'];
             $csvHeader = $selectedColumns;
 
+            $startDate = Carbon::parse($request->startDate)->toDateString();
+            $endDate   = Carbon::parse($request->endDate)->toDateString();
+
+            $loginData = DB::connection($connectionName)
+                ->table('user_login_logs')
+                ->selectRaw("
+                    user_id,
+                    login_date,
+                    COUNT(*) as login_count,
+                    MIN(CONCAT(login_date,' ',login_time)) as first_login,
+                    MAX(CONCAT(login_date,' ',login_time)) as last_log,
+                    MAX(CONCAT(logout_date,' ',logout_time)) as last_logout,
+                    SUM(
+                        TIMESTAMPDIFF(
+                            SECOND,
+                            CONCAT(login_date,' ',login_time),
+                            CONCAT(logout_date,' ',logout_time)
+                        )
+                    ) as total_log_sec
+                ")
+                ->whereBetween('login_date', [$startDate, $endDate])
+                ->groupBy('user_id', 'login_date')
+                ->get();
+
+                $loginLogs = $loginData->keyBy(function ($i) {
+                    return Carbon::parse($i->login_date)->toDateString() . '_' . $i->user_id;
+                });
+
+            $callData = DB::connection($connectionName)
+                ->table('neox_call_logs')
+                ->selectRaw("
+                    caller_username,
+                    DATE(created_at) as activity_date,
+                    COUNT(*) as calls,
+                    SUM(call_type = 'outgoing') as outgoing_call,
+                    SUM(call_type = 'incoming') as incoming_call,
+                    SUM(type = 'CALL_CONNECTED') as answered,
+                    SUM(call_talk_duration) as total_talk_sec,
+                    AVG(call_talk_duration) as talk_avg_sec
+                ")
+                ->whereBetween('created_at', [$startDatetime, $endDatetime])
+                ->where('type', 'call_history')
+                ->groupBy('caller_username', 'activity_date')
+                ->get();
+
+                $usernameToUserId = $usernames->flip();
+
+                $callLogs = $callData->keyBy(function ($i) use ($usernameToUserId) {
+                    $userId = $usernameToUserId[$i->caller_username] ?? null;
+                
+                    return Carbon::parse($i->activity_date)->toDateString() . '_' . $userId;
+                });
+
+            // Pause Resume
+            $pauseResume = PauseResumeUserLog::on($connectionName)
+                ->whereIn('user_id', $userIds)
+                ->whereIn(DB::raw('DATE(created_at)'), $dates)
+                ->get()
+                ->groupBy(
+                    fn($i) =>
+                    Carbon::parse($i->created_at)->toDateString() . '_' . $i->user_id
+                );
+
+            // Pause Resume Totals
+            $pauseTotals = PauseResumeUserLog::on($connectionName)
+                ->selectRaw("
+                user_id,
+                DATE(created_at) as d,
+                SEC_TO_TIME(SUM(TIME_TO_SEC(total_pause_time))) as total_pause,
+                SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))) as total_resume
+            ")
+                ->whereIn('user_id', $userIds)
+                ->whereIn(DB::raw('DATE(created_at)'), $dates)
+                ->groupBy('user_id', 'd')
+                ->get()
+                ->keyBy(fn($i) => $i->d . '_' . $i->user_id);
+
+            // Ready Data
+            $readyData = PauseResumeUserLog::on($connectionName)
+                ->selectRaw("
+                user_id,
+                DATE(created_at) as d,
+                TIME_FORMAT(SEC_TO_TIME(AVG(TIME_TO_SEC(total_resume_time))), '%H:%i:%s') as ready_avg,
+                TIME_FORMAT(SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))), '%H:%i:%s') as ready
+            ")
+                ->whereIn('user_id', $userIds)
+                ->whereIn(DB::raw('DATE(created_at)'), $dates)
+                ->groupBy('user_id', 'd')
+                ->get()
+                ->keyBy(fn($i) => $i->d . '_' . $i->user_id);
+
+            // Call History
+            $callHistory = NeoxCallLog::on($connectionName)
+                ->whereIn('caller_username', $usernames->values())
+                ->whereIn(DB::raw('DATE(call_date)'), $dates)
+                ->where('type', 'call_history')
+                ->get()
+                ->groupBy(
+                    fn($i) =>
+                    Carbon::parse($i->call_date)->toDateString()
+                        . '_' . $usernames->search($i->caller_username)
+                        . '_' . $i->call_type
+                );
+
+            // Daily Activity
+            $dailyActivity = UserDailyActivity::on($connectionName)
+                ->with('pauseCode')
+                ->whereIn('user_id', $userIds)
+                ->whereIn(DB::raw('DATE(created_at)'), $dates)
+                ->get()
+                ->groupBy(
+                    fn($i) =>
+                    Carbon::parse($i->created_at)->toDateString() . '_' . $i->user_id
+                );
+
+            // Total Duration
+            $totalDuration = UserDailyActivity::on($connectionName)
+                ->selectRaw("
+                user_id,
+                DATE(created_at) as d,
+                SEC_TO_TIME(SUM(TIME_TO_SEC(total_login_duration))) AS total_login_d,
+                SEC_TO_TIME(SUM(TIME_TO_SEC(pause_duration))) AS total_pause_d,
+                SEC_TO_TIME(SUM(TIME_TO_SEC(resume_duration))) AS total_resume_d,
+                SEC_TO_TIME(SUM(TIME_TO_SEC(call_duration))) AS total_call_d,
+                SEC_TO_TIME(SUM(TIME_TO_SEC(dispo_duration))) AS total_dispose_d
+            ")
+                ->whereIn('user_id', $userIds)
+                ->whereIn(DB::raw('DATE(created_at)'), $dates)
+                ->groupBy('user_id', 'd')
+                ->get()
+                ->keyBy(fn($i) => $i->d . '_' . $i->user_id);
+
+            $loginLogoutLogs = UserLoginLog::on($connectionName)
+                ->whereIn('user_id', $userIds)
+                ->whereIn('login_date', $dates)
+                ->get();
+
             $csvRows = [];
 
             foreach ($groupedData as $date => $users) {
                 foreach ($users as $userId => $entries) {
+                    $key = $date . '_' . $userId;
+
+                    $logData = $loginLogs[$key] ?? null;
+                    $pauseData     = $pauseResume[$key] ?? collect();
+                    $pauseTotal    = $pauseTotals[$key] ?? null;
+                    $ready         = $readyData[$key] ?? null;
+                    $daily         = $dailyActivity[$key] ?? collect();
+                    $total         = $totalDuration[$key] ?? null;
+                    $incoming      = $callHistory[$key . '_incoming'] ?? collect();
+                    $outgoing      = $callHistory[$key . '_outgoing'] ?? collect();
+                    $call = $callLogs[$key] ?? null;
+
                     $totalDuration = 0;
 
                     $row = [];
+
+                    $log = $entries->first();
+
                     foreach ($selectedColumns as $column) {
-                        $row[] = $exportableColumns[$column]($date, $entries);
+                        $row[] = $exportableColumns[$column]($log);
                     }
+
                     $csvRows[] = $row;
 
-                    // Get detailed report data
-                    try {
-                        $detailedRequest = new Request(['user_id' => $userId, 'date' => $date]);
-                        $activityData = $this->getData($detailedRequest, $connectionName);
-                        $responseContent = json_decode($activityData->getContent(), true);
-                        $details = $responseContent['data'] ?? null;
+                    $csvRows[] = ['--- DETAILED ACTIVITY DATA ---'];
+                    $csvRows[] = ['First Login', 'Last Logout', 'Total Log Time'];
+                    $csvRows[] = [
+                        $logData->first_login ?? 'Not Logged',
+                        $logData->last_logout ?? 'Not Logged',
+                        isset($logData->total_log_sec)
+                            ? gmdate('H:i:s', $logData->total_log_sec)
+                            : '00:00:00'
+                    ];
 
-                        if ($details) {
-                            $details = json_decode(json_encode($details)); // convert to object
+                    $csvRows[] = [''];
+                    $csvRows[] = ['Total Talk', 'Talk Average', 'Total Pause Time', 'Pause Average', 'Total Ready Time', 'Ready Average'];
+                    $csvRows[] = [
+                        isset($call->total_talk_sec)
+                            ? gmdate('H:i:s', $call->total_talk_sec)
+                            : '00:00:00',
 
-                            // Add detailed data
-                            $csvRows[] = ['--- DETAILED ACTIVITY DATA ---'];
+                        isset($call->talk_avg_sec)
+                            ? gmdate('H:i:s', $call->talk_avg_sec)
+                            : '00:00:00',
 
-                            $csvRows[] = ['First Login', 'Last Logout', 'Total Log Time'];
+                        $pauseTotal->total_pause ?? '00:00:00',
+
+                        // If you don’t have pause average separately:
+                        isset($pauseTotal->total_pause)
+                            ? $pauseTotal->total_pause
+                            : '00:00:00',
+
+                        $ready->ready ?? '00:00:00',
+
+                        $ready->ready_avg ?? '00:00:00'
+                    ];
+
+                    $csvRows[] = [''];
+                    $csvRows[] = ['--- INCOMING DATA ---'];
+                    $csvRows[] = ['Caller Number', 'Call Time', 'Call Duration', 'Dispo Stat'];
+                    if ($incoming->isNotEmpty()) {
+                        foreach ($incoming as $i) {
                             $csvRows[] = [
-                                $details->dash_data->first_login ?? '00:00:00',
-                                $details->dash_data->last_logout ?? '00:00:00',
-                                $details->dash_data->total_log_time ?? '00:00:00'
+                                $i->called_phone_number ?? '',
+                                isset($i->call_date)
+                                    ? Carbon::parse($i->call_date)
+                                    ->setTimezone(env('APP_CSVTIMEZONE'))
+                                    ->format('Y-m-d H:i:s')
+                                    : '',
+                                isset($i->call_talk_duration)
+                                    ? gmdate('H:i:s', $i->call_talk_duration)
+                                    : '00:00:00',
+                                $i->call_dispo_status ?? ''
                             ];
-
-                            $csvRows[] = [''];
-                            $csvRows[] = ['Total Talk', 'Talk Average', 'Total Pause Time', 'Pause Average', 'Total Ready Time', 'Ready Average'];
-                            $csvRows[] = [
-                                $details->dash_data->total_talk ?? '00:00:00',
-                                $details->dash_data->talk_avg ?? '00:00:00',
-                                $details->dash_data->pause_time ?? '00:00:00',
-                                $details->dash_data->pause_time_avg ?? '00:00:00',
-                                $details->ready_data->ready ?? '00:00:00',
-                                $details->ready_data->ready_avg ?? '00:00:00'
-                            ];
-
-                            // Incoming
-                            $csvRows[] = [''];
-                            $csvRows[] = ['--- INCOMING DATA ---'];
-                            $csvRows[] = ['Caller Number', 'Call Time', 'Call Duration', 'Dispo Stat'];
-                            if (!empty($details->incoming)) {
-                                foreach ($details->incoming as $incoming) {
-                                    $csvRows[] = [
-                                        $incoming->called_phone_number,
-                                        // $incoming->call_date,
-                                        Carbon::parse($incoming->call_date)
-                                            ->setTimezone(env('APP_CSVTIMEZONE'))
-                                            ->format('Y-m-d H:i:s'),
-                                        $incoming->call_talk_duration,
-                                        $incoming->call_dispo_status
-                                    ];
-                                }
-                            } else {
-                                $csvRows[] = ['No Data'];
-                            }
-
-                            // Outgoing
-                            $csvRows[] = [''];
-                            $csvRows[] = ['--- OUTGOING DATA ---'];
-                            $csvRows[] = ['Caller Number', 'Call Time', 'Call Duration', 'Dispo Stat'];
-                            if (!empty($details->outgoing)) {
-                                foreach ($details->outgoing as $outgoing) {
-                                    $csvRows[] = [
-                                        $outgoing->called_phone_number,
-                                        // $outgoing->call_date,
-                                        Carbon::parse($outgoing->call_date)
-                                            ->setTimezone(env('APP_CSVTIMEZONE'))
-                                            ->format('Y-m-d H:i:s'),
-                                        $outgoing->call_talk_duration,
-                                        $outgoing->call_dispo_status
-                                    ];
-                                }
-                            } else {
-                                $csvRows[] = ['No Data'];
-                            }
-
-                            // Daily Activity
-                            $csvRows[] = [''];
-                            $csvRows[] = ['--- DAILY USER ACTIVITY ---'];
-                            $csvRows[] = ['Date/Time', 'Activity', 'Total Login Duration', 'Pause Duration', 'Pause Code', 'Resume Duration', 'Call Duration', 'Dispose Duration', 'Dispose Code'];
-                            if (!empty($details->daily_user_activity)) {
-                                foreach ($details->daily_user_activity as $activity) {
-                                    $csvRows[] = [
-                                        Carbon::parse($activity->created_at)
-                                            ->setTimezone(env('APP_CSVTIMEZONE'))
-                                            ->format('Y-m-d H:i:s'),
-                                        $activity->activity,
-                                        $activity->total_login_duration,
-                                        $activity->pause_duration,
-                                        $activity->pause_code,
-                                        $activity->resume_duration,
-                                        $activity->call_duration,
-                                        $activity->dispo_duration,
-                                        $activity->dispo_code
-                                    ];
-                                }
-                            } else {
-                                $csvRows[] = ['No Data'];
-                            }
-
-                            // Total Durations
-                            $csvRows[] = [''];
-                            $csvRows[] = ['--- TOTAL DURATIONS ---'];
-                            $csvRows[] = [
-                                'Total Login Duration',
-                                'Total Pause Duration',
-                                'Total Resume Duration',
-                                'Total Call Duration',
-                                'Total Disposition Duration'
-                            ];
-                            $csvRows[] = [
-                                $details->total_duration->total_login_d ?? '00:00:00',
-                                $details->total_duration->total_pause_d ?? '00:00:00',
-                                $details->total_duration->total_resume_d ?? '00:00:00',
-                                $details->total_duration->total_call_d ?? '00:00:00',
-                                $details->total_duration->total_dispose_d ?? '00:00:00'
-                            ];
-
-                            // Login/logout
-                            $csvRows[] = [''];
-                            $csvRows[] = ['--- LOGIN/LOGOUT TIME ---'];
-                            $csvRows[] = ['Login Time', 'Logout Time'];
-                            if (!empty($details->log_data)) {
-                                foreach ($details->log_data as $logData) {
-                                    $csvRows[] = [
-                                        $logData->login_time ?? 'Closed Browser',
-                                        $logData->logout_time ?? 'Closed Browser'
-                                    ];
-                                }
-                            }
-
-                            // Pause/resume
-                            $csvRows[] = [''];
-                            $csvRows[] = ['--- PAUSE/RESUME ACTIVITY ---'];
-                            $csvRows[] = ['Activity', 'Time', 'Reason'];
-                            if (!empty($details->pause_resume_activity)) {
-                                foreach ($details->pause_resume_activity as $activity) {
-                                    $csvRows[] = [
-                                        $activity->user_status,
-                                        $activity->time,
-                                        $activity->pause_code_id ?? ''
-                                    ];
-                                }
-                            } else {
-                                $csvRows[] = ['No Data'];
-                            }
-
-                            // Total calls
-                            $csvRows[] = [''];
-                            $csvRows[] = ['--- TOTAL INCOMING/OUTGOING ---'];
-                            $csvRows[] = ['Total Incoming', 'Total Outgoing'];
-                            $csvRows[] = [
-                                $details->i_call_data->total ?? 0,
-                                $details->o_call_data->total ?? 0
-                            ];
-
-                            $csvRows[] = [''];
-                            $csvRows[] = ['--- END OF DETAILED DATA ---'];
-                            $csvRows[] = [''];
                         }
-                    } catch (Exception $e) {
-                        generateLogs('error', "Error fetching detailed data for user $userId on $date: " . $e->getMessage());
-                        $csvRows[] = ['Error loading detailed activity data'];
+                    } else {
+                        $csvRows[] = ['No Incoming Data'];
                     }
+
+                    $csvRows[] = [''];
+                    $csvRows[] = ['--- OUTGOING DATA ---'];
+                    $csvRows[] = ['Caller Number', 'Call Time', 'Call Duration', 'Dispo Stat'];
+                    if ($outgoing->isNotEmpty()) {
+                        foreach ($outgoing as $o) {
+                            $csvRows[] = [
+                                $o->called_phone_number ?? '',
+                                isset($o->call_date)
+                                    ? Carbon::parse($o->call_date)
+                                    ->setTimezone(env('APP_CSVTIMEZONE'))
+                                    ->format('Y-m-d H:i:s')
+                                    : '',
+                                isset($o->call_talk_duration)
+                                    ? gmdate('H:i:s', $o->call_talk_duration)
+                                    : '00:00:00',
+                                $o->call_dispo_status ?? ''
+                            ];
+                        }
+                    } else {
+                        $csvRows[] = ['No Outgoing Data'];
+                    }
+
+                    $csvRows[] = [''];
+                    $csvRows[] = ['--- DAILY USER ACTIVITY ---'];
+                    $csvRows[] = ['Date/Time', 'Activity', 'Total Login Duration', 'Pause Duration', 'Pause Code', 'Resume Duration', 'Call Duration', 'Dispose Duration', 'Dispose Code'];
+            
+                    if ($daily->isNotEmpty()) {
+
+                        foreach ($daily as $activity) {
+
+                            $csvRows[] = [
+                                isset($activity->created_at)
+                                    ? Carbon::parse($activity->created_at)
+                                    ->setTimezone(env('APP_CSVTIMEZONE'))
+                                    ->format('Y-m-d H:i:s')
+                                    : '',
+
+                                $activity->activity ?? '',
+
+                                $activity->total_login_duration ?? '00:00:00',
+
+                                $activity->pause_duration ?? '00:00:00',
+
+                                optional($activity->pauseCode)->pause_code ?? '',
+
+                                $activity->resume_duration ?? '00:00:00',
+
+                                $activity->call_duration ?? '00:00:00',
+
+                                $activity->dispo_duration ?? '00:00:00',
+
+                                $activity->dispo_code ?? ''
+                            ];
+                        }
+                    } 
+
+                    $csvRows[] = ['--- TOTAL DURATIONS ---'];
+                    $csvRows[] = [
+                        'Total Login Duration',
+                        'Total Pause Duration',
+                        'Total Resume Duration',
+                        'Total Call Duration',
+                        'Total Disposition Duration'
+                    ]; 
+                    $csvRows[] = [
+                        $total->total_login_d ?? '00:00:00',
+                        $total->total_pause_d ?? '00:00:00',
+                        $total->total_resume_d ?? '00:00:00',
+                        $total->total_call_d ?? '00:00:00',
+                        $total->total_dispose_d ?? '00:00:00'
+                    ];
+
+                    $csvRows[] = [''];
+                    $csvRows[] = ['--- LOGIN/LOGOUT TIME ---'];
+                    $csvRows[] = ['Login Time', 'Logout Time'];
+                    if ($loginLogoutLogs->isNotEmpty()) {
+                        foreach ($loginLogoutLogs as $log) {
+                            $csvRows[] = [
+                                $log->login_time ?? 'Closed Browser',
+                                $log->logout_time ?? 'Closed Browser'
+                            ];
+                        }
+                    }
+
+                    $csvRows[] = [''];
+                    $csvRows[] = ['--- PAUSE/RESUME ACTIVITY ---'];
+                    $csvRows[] = ['Activity', 'Time', 'Reason'];
+                    if ($pauseData->isNotEmpty()) {
+
+                        foreach ($pauseData as $p) {
+                    
+                            $csvRows[] = [
+                                $p->user_status ?? '',
+                                Carbon::parse($p->created_at)
+                                    ->setTimezone(env('APP_CSVTIMEZONE'))
+                                    ->format('Y-m-d H:i:s'),
+                                $p->pause_code_id ?? ''
+                            ];
+                        }
+                    
+                    }
+
+                    $csvRows[] = [''];
+                    $csvRows[] = ['--- TOTAL INCOMING/OUTGOING ---'];
+                    $csvRows[] = ['Total Incoming', 'Total Outgoing'];
+                    $csvRows[] = [
+                        $incoming->count(),
+                        $outgoing->count()
+                    ];
+
+                    $csvRows[] = [''];
+                    $csvRows[] = ['--- END OF DETAILED DATA ---'];
+                    $csvRows[] = [''];
+
                 }
             }
 

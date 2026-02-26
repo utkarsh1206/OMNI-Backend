@@ -84,8 +84,15 @@ class CallLogReportRepository
 
             $callLogs = $this->buildCallLogQuery($request, true, $connectionName)->get();
             $headers = [];
-            $formattedRows = $this->formatCallLogsForCsv($callLogs, $headers, $selectedColumns);
+            $formattedRows = $this->formatCallLogsForCsv($callLogs, $headers, $selectedColumns, $connectionName);
             $url = exportCsv($headers, $formattedRows, 'call_logs');
+
+            // $csvUrl = exportCsvChunked($callLogs, $headers, function ($log) use ($selectedColumns, $connectionName) {
+            //     // Reuse your formatter logic for a single record 
+            //     $rows = $this->formatCallLogsForCsv(collect([$log]), $headers, $selectedColumns, $connectionName);
+            //     return $rows[0];
+            // }, 'call_logs');
+
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 ['file_url' => $url],
@@ -119,6 +126,7 @@ class CallLogReportRepository
 
         $startDate = Carbon::parse($filters['startDate'])->toDateTimeString();
         $endDate = Carbon::parse($filters['endDate'])->toDateTimeString();
+
         $query = NeoxCallLog::on($connectionName)
             ->select([
                 'neox_call_logs.call_unique_id',
@@ -181,7 +189,7 @@ class CallLogReportRepository
      * Formats the call logs for CSV export.
      */
 
-    protected function formatCallLogsForCsv($logs, &$headers = [], $selectedColumns = [])
+    protected function formatCallLogsForCsv($logs, &$headers = [], $selectedColumns = [], $connectionName = null)
     {
         $dispoCache = [];
         $dynamicKeys = [];
@@ -231,22 +239,20 @@ class CallLogReportRepository
         }
 
         $headers = $selectedColumns;
-
-        // Final headers (passed by reference for use in exportCsv)
-        // $headers = array_merge($staticHeaders, $dynamicKeys);
+        
         // Map formatted rows
-        $rows = $logs->map(function ($log) use (&$dispoCache, $dynamicKeysMap, $staticColumns, $selectedColumns) {
+        $rows = $logs->map(function ($log) use (&$dispoCache, $dynamicKeysMap, $staticColumns, $selectedColumns, $connectionName) {
             $campaignId = $log->campaign_id;
             $dispoLabel = $log->call_dispo_status;
 
             //  Disposition description resolution
             if ($campaignId && !isset($dispoCache[$campaignId])) {
-                $request = new \Illuminate\Http\Request([
+                $request = new Request([
                     'campaign_id' => $campaignId,
                     'user' => $log->caller_username
                 ]);
 
-                $response = $this->dispositionService->getDispositions($request);
+                $response = $this->dispositionService->getDispositions($request, $connectionName);
                 if ($response instanceof \Illuminate\Http\JsonResponse) {
                     $response = $response->getData(true);
                 }
@@ -265,43 +271,8 @@ class CallLogReportRepository
                 }
             }
 
-            // Base row
-            $row = [
-                $log->campaign_id,
-                $log->inbound_group_id,
-                Carbon::parse($log->call_date)->format('Y-m-d H:i:s'),
-                $log->caller_username,
-                $log->caller_user_extension,
-                $log->called_phone_number,
-                $log->call_total_duration,
-                $log->call_talk_duration,
-                $dispoLabel,
-                $log->call_unique_id,
-                $log->call_did_pattern,
-                $log->call_type,
-                $log->call_term_reason,
-            ];
-
-            // Append dynamic fields in same order
-            $leadJsonRaw = json_decode($log->lead_json, true) ?? [];
-            if (is_string($leadJsonRaw)) {
-                $leadJson = json_decode($leadJsonRaw, true);
-            } elseif (is_array($leadJsonRaw)) {
-                $leadJson = $leadJsonRaw;
-            } else {
-                $leadJson = [];
-            }
-
-            // foreach ($dynamicKeys as $key) {
-            //     if (in_array($key, ['created_at', 'updated_at', 'omni_lead_source'])) {
-            //         continue; // skip these keys
-            //     }
-            //     $row[] = $leadJson[$key] ?? '';
-            // }
-            // return $row;
-
+            $leadJson = json_decode($log->lead_json, true) ?? [];
             $row = [];
-
             foreach ($selectedColumns as $column) {
                 if (isset($staticColumns[$column])) {
                     $row[] = $staticColumns[$column]($log, $dispoLabel);

@@ -51,7 +51,7 @@ class SendScheduledEmailJob implements ShouldQueue
             Mail::to($schedule->to_emails ?? [])
                 ->cc($schedule->cc_emails ?? [])
                 ->bcc($schedule->bcc_emails ?? [])
-                ->queue(new ScheduledReportMail($schedule, $data));
+                ->send(new ScheduledReportMail($schedule, $data));
             generateScheduleLogs(
                 'info',
                 'Scheduled email sent successfully', json_encode($schedule)

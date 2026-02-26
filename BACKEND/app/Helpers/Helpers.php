@@ -811,3 +811,43 @@ if (!function_exists('decryptString')) {
         return Crypt::decryptString($string);
     }
 }
+
+if (!function_exists('exportCsvChunked')) {
+
+    function exportCsvChunked($query, array $headers, callable $rowCallback, string $filenamePrefix = 'export'): string
+    {
+        $filename = $filenamePrefix . '_' . now()->format('Ymd_His') . '.csv';
+        $directory = storage_path('app/public/exports');
+
+        if (!file_exists($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $path = $directory . '/' . $filename;
+
+        $file = fopen($path, 'w');
+
+        // Write headers
+        fputcsv($file, $headers);
+
+        $query->chunk(500, function ($records) use ($file, $rowCallback) {
+
+            foreach ($records as $record) {
+                $row = $rowCallback($record);
+                // if (is_array($row)) {
+                //     foreach ($row as $singleRow) {
+                //         fputcsv($file, $singleRow);
+                //     }
+                // } else {
+                    fputcsv($file, $row);
+                // }
+                
+            }
+
+        });
+
+        fclose($file);
+
+        return asset('storage/exports/' . $filename);
+    }
+}

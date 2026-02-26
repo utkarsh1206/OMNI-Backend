@@ -218,23 +218,6 @@ class TicketReportRepository
                 );
             }
 
-            $payload = $this->extractPayload($request);
-
-            $query = SupportTicket::on($connectionName)
-                ->with([
-                    'notifications.user',
-                    'assignedAgent',
-                    'priority',
-                    'ticketType',
-                    'ticketStatus'
-                ]);
-
-            $query = $this->applyFilters($query, $request, $payload);
-
-            $tickets = $query->orderByDesc('id')->get();
-
-            $formatted = $this->formatTickets($tickets, true);
-
             $availableColumns =  [
                 'Ticket ID',
                 'Customer Name',
@@ -255,11 +238,6 @@ class TicketReportRepository
                 $availableColumns
             ));
 
-            // $skippedColumns = array_diff($selectedColumns, $availableColumns);
-            // if (!empty($skippedColumns)) {
-            //     generateLogs('info', 'Skipped invalid columns', $skippedColumns);
-            // }
-
             // If nothing valid left
             if (empty($validColumns)) {
                 return $this->apiResponse->getResponseStructure(
@@ -271,13 +249,93 @@ class TicketReportRepository
 
             $headers = $validColumns;
 
-            $rows = $formatted->map(function ($row) use ($validColumns) {
-                return collect($validColumns)
-                    ->map(fn($column) => $row[$column] ?? '-')
-                    ->toArray();
-            })->toArray();
+            $payload = $this->extractPayload($request);
 
-            $url = exportCsv($headers, $rows, 'ticket_report');
+            $query = SupportTicket::on($connectionName)
+                ->leftJoin('users as assigned_agents', 'assigned_agents.id', '=', 'support_tickets.assign_to_id')
+                ->leftJoin('priorities', 'priorities.id', '=', 'support_tickets.default_priority')
+                ->leftJoin('ticket_types', 'ticket_types.id', '=', 'support_tickets.default_type')
+                ->leftJoin('support_ticket_statuses', 'support_ticket_statuses.id', '=', 'support_tickets.default_status')
+
+                // Latest Resolve Notification
+                ->leftJoin(DB::raw("
+        (
+            SELECT support_ticket_id, MAX(created_at) as resolve_time
+            FROM support_ticket_notifications
+            WHERE status = 'Resolve'
+            GROUP BY support_ticket_id
+        ) as resolved
+        "), 'resolved.support_ticket_id', '=', 'support_tickets.id')
+
+                // First Notification User (Customer)
+                ->leftJoin(DB::raw("
+            (
+                SELECT stn.support_ticket_id, u.username as customer_name
+                FROM support_ticket_notifications stn
+                LEFT JOIN users u ON u.id = stn.created_by
+                WHERE stn.id IN (
+                    SELECT MIN(id)
+                    FROM support_ticket_notifications
+                    GROUP BY support_ticket_id
+                )
+            ) as customer
+        "), 'customer.support_ticket_id', '=', 'support_tickets.id')
+
+                ->select([
+                    'support_tickets.id',
+                    'support_tickets.support_ticket_id',
+                    'support_tickets.description',
+                    'support_tickets.is_escalated',
+                    'support_tickets.created_at',
+                    'support_tickets.updated_at',
+                    'assigned_agents.username as assigned_agent',
+                    'priorities.name as priority_name',
+                    'ticket_types.type as ticket_type',
+                    'support_ticket_statuses.name as status_name',
+                    'resolved.resolve_time',
+                    'customer.customer_name'
+                ]);
+
+            $query = $this->applyFilters($query, $request, $payload);
+
+            $totalRecords = (clone $query)->count();
+
+            generateLogs('info', 'Ticket Export - Total records found: ' . $totalRecords);
+
+            $url = exportCsvChunked(
+                $query->orderByDesc('support_tickets.id'),
+                $validColumns,
+                function ($ticket) use ($validColumns) {
+
+                    $rowData = [
+                        'Ticket ID'        => $ticket->support_ticket_id,
+                        'Customer Name'    => $ticket->customer_name ?? '',
+                        'Ticket Type'      => $ticket->ticket_type ?? 'Unknown',
+                        'Priority'         => $ticket->priority_name ?? 'Unknown',
+                        'Status'           => $ticket->status_name ?? 'Unknown',
+                        'Created Date'     => $ticket->created_at
+                            ? Carbon::parse($ticket->created_at)->format('Y-m-d H:i:s')
+                            : '',
+                        'Last Updated'     => $ticket->updated_at
+                            ? Carbon::parse($ticket->updated_at)->format('Y-m-d H:i:s')
+                            : '',
+                        'Assigned Agent'   => $ticket->assigned_agent ?? 'Unknown',
+                        'Resolution Time'  => $ticket->resolve_time
+                            ? Carbon::parse($ticket->resolve_time)->format('Y-m-d H:i:s')
+                            : '',
+                        'Comments'         => $ticket->description,
+                        'Escalation'       => $ticket->is_escalated,
+                    ];
+
+                    return collect($validColumns)
+                        ->map(fn($col) => $rowData[$col] ?? '-')
+                        ->toArray();
+                },
+                'ticket_report'
+            );
+
+            generateLogs('info', "url of ticket report : " . $url);
+
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 ['file_url' => $url],
@@ -294,7 +352,7 @@ class TicketReportRepository
         if ($request->has('startDate') && $request->has('endDate')) {
             $startDate = Carbon::parse($request->input('startDate'));
             $endDate = Carbon::parse($request->input('endDate'));
-            $query->whereBetween('created_at', [$startDate, $endDate]);
+            $query->whereBetween('support_tickets.created_at', [$startDate, $endDate]);
         }
 
         if ($request->has('ticket_id')) {

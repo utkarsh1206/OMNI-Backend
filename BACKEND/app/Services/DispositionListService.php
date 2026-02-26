@@ -9,11 +9,11 @@ use Illuminate\Validation\ValidationException;
 
 class DispositionListService
 {
-    public function getDispositions(Request $request)
+    public function getDispositions(Request $request, $connectionName = null)
     {
         $campaign_id = $request->input('campaign_id');
 
-        $config = getNeoxConfig();
+        $config = getNeoxConfig($connectionName);
 
         if (isset($config['status']) && $config['status'] === 'error') {
             throw new \Exception($config['message'] ?? 'Configuration error');

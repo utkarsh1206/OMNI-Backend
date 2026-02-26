@@ -252,40 +252,40 @@ class SlaReportRepository
             $payload = $this->extractPayload($request);
 
             $ticketsquery = $this->applyFilters($ticketsquery, $request, $payload);
-            $tickets = $ticketsquery->get();
+            // $tickets = $ticketsquery->get();
 
-            // SLA Resolution Target Calculation
-            $incidentIds = $tickets->pluck('incident_id')->unique();
+            // // SLA Resolution Target Calculation
+            // $incidentIds = $tickets->pluck('incident_id')->unique();
 
-            $incidentSLA = IncidentType::on($connectionName)->whereIn('id', $incidentIds)
-                ->pluck('sla_id', 'id');
+            // $incidentSLA = IncidentType::on($connectionName)->whereIn('id', $incidentIds)
+            //     ->pluck('sla_id', 'id');
 
-            $slaIds = $incidentSLA->values()->unique();
+            // $slaIds = $incidentSLA->values()->unique();
 
-            $slaTargets = SlaTarget::on($connectionName)->whereIn('sla_id', $slaIds)
-                ->get()
-                ->groupBy(fn($item) => $item->sla_id . '_' . $item->priority_type);
+            // $slaTargets = SlaTarget::on($connectionName)->whereIn('sla_id', $slaIds)
+            //     ->get()
+            //     ->groupBy(fn($item) => $item->sla_id . '_' . $item->priority_type);
 
-            $tickets->each(function ($ticket) use ($incidentSLA, $slaTargets) {
+            // $tickets->each(function ($ticket) use ($incidentSLA, $slaTargets) {
 
-                $slaId = $incidentSLA[$ticket->incident_id] ?? null;
+            //     $slaId = $incidentSLA[$ticket->incident_id] ?? null;
 
-                $resolveTime = $slaId
-                    ? ($slaTargets[$slaId . '_' . $ticket->default_priority] ?? null)
-                    : null;
+            //     $resolveTime = $slaId
+            //         ? ($slaTargets[$slaId . '_' . $ticket->default_priority] ?? null)
+            //         : null;
 
-                $minutes = $resolveTime?->first()?->resolve_time_value;
+            //     $minutes = $resolveTime?->first()?->resolve_time_value;
 
-                if ($minutes !== null) {
-                    $ticket->resolution_target_time = sprintf(
-                        '%02d:%02d:00',
-                        intdiv($minutes, 60),
-                        $minutes % 60
-                    );
-                } else {
-                    $ticket->resolution_target_time = null;
-                }
-            });
+            //     if ($minutes !== null) {
+            //         $ticket->resolution_target_time = sprintf(
+            //             '%02d:%02d:00',
+            //             intdiv($minutes, 60),
+            //             $minutes % 60
+            //         );
+            //     } else {
+            //         $ticket->resolution_target_time = null;
+            //     }
+            // });
 
             $exportableColumns = [
                 'User Name' => fn($t) => $t->user_name ?? 'Unknown',
@@ -318,26 +318,31 @@ class SlaReportRepository
                 );
             }
 
-            $headers = $selectedColumns;
+            // Use chunked export helper 
+            $fileUrl = exportCsvChunked($ticketsquery, $selectedColumns, function ($ticket) use ($selectedColumns, $exportableColumns) {
+                return array_map(fn($column) => $exportableColumns[$column]($ticket), $selectedColumns);
+            }, 'sla_reports');
 
-            $rows = $tickets->map(function ($ticket) use ($selectedColumns, $exportableColumns) {
-                // $row = [];
+            // $headers = $selectedColumns;
 
-                // foreach ($selectedColumns as $column) {
-                //     if (!isset($exportableColumns[$column])) {
-                //         continue;
-                //     }
-                //     $row[] = $exportableColumns[$column]($ticket);
-                // }
+            // $rows = $tickets->map(function ($ticket) use ($selectedColumns, $exportableColumns) {
+            // $row = [];
 
-                // return $row;
-                return array_map(
-                    fn($column) => $exportableColumns[$column]($ticket),
-                    $selectedColumns
-                );
-            })->toArray();
+            // foreach ($selectedColumns as $column) {
+            //     if (!isset($exportableColumns[$column])) {
+            //         continue;
+            //     }
+            //     $row[] = $exportableColumns[$column]($ticket);
+            // }
 
-            $fileUrl = exportCsv($headers, $rows, 'sla_reports');
+            // return $row;
+            //     return array_map(
+            //         fn($column) => $exportableColumns[$column]($ticket),
+            //         $selectedColumns
+            //     );
+            // })->toArray();
+
+            // $fileUrl = exportCsv($headers, $rows, 'sla_reports');
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
