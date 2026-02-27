@@ -116,6 +116,7 @@ use App\Http\Controllers\Api\HashController;
 use App\Http\Controllers\Api\LeadMailController;
 use App\Http\Controllers\Api\ListTemplateMapController;
 use App\Http\Controllers\Api\TicketAssignmentController;
+use App\Http\Controllers\Api\UnifiedChatController;
 use App\Http\Controllers\Api\WhatsappBroadcastController;
 use App\Http\Middleware\CheckPermissionMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -540,6 +541,13 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::delete('/{groupId}/messages/{messageId}', [GroupChatController::class, 'deleteGroupMessage']);
 
         Route::get('/group-list', [GroupChatController::class, 'getUserGroupIds']);
+    });
+
+    Route::prefix('chats')->group(function () {
+        Route::get('/', [UnifiedChatController::class, 'getChats']);
+        Route::get('/messages', [UnifiedChatController::class, 'getMessages']);
+        Route::post('/messages/send', [UnifiedChatController::class, 'sendMessage']);
+        Route::post('/messages/mark-read', [UnifiedChatController::class, 'markRead']);
     });
 });
 
