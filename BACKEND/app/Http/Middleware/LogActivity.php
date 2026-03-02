@@ -13,6 +13,12 @@ class LogActivity
     public function handle(Request $request, Closure $next)
     {
         $response = $next($request);
+        
+        // ❌ Skip logging GET requests
+        if ($request->method() === 'GET') {
+            return $response;
+        }
+
         $method = $request->method();
         $path = $request->path();
         $actionType = $this->determineActionType($method, $path);

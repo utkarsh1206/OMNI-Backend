@@ -166,6 +166,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('audit-logs/{audit_log}', [AuditController::class, 'update'])->middleware(CheckPermissionMiddleware::class . ":audit_reports," . PermissionAction::EDIT->value);
     Route::patch('audit-logs/{audit_log}', [AuditController::class, 'update'])->middleware(CheckPermissionMiddleware::class . ":audit_reports," . PermissionAction::EDIT->value);
     Route::delete('audit-logs/{audit_log}', [AuditController::class, 'destroy'])->middleware(CheckPermissionMiddleware::class . ":audit_reports," . PermissionAction::DELETE->value);
+    Route::post('audit-logs/csv', [AuditController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":audit_reports," . PermissionAction::DOWNLOAD->value);;
 
     Route::post('logout', [LoginController::class, 'logout']);
 
