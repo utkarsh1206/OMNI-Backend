@@ -111,10 +111,12 @@ use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\NetworkCheckController;
 use App\Http\Controllers\Api\CustomChatBotController;
 use App\Http\Controllers\Api\EmailScheduleController;
+use App\Http\Controllers\Api\GroupChatController;
 use App\Http\Controllers\Api\HashController;
 use App\Http\Controllers\Api\LeadMailController;
 use App\Http\Controllers\Api\ListTemplateMapController;
 use App\Http\Controllers\Api\TicketAssignmentController;
+use App\Http\Controllers\Api\UnifiedChatController;
 use App\Http\Controllers\Api\WhatsappBroadcastController;
 use App\Http\Middleware\CheckPermissionMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -517,6 +519,37 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('/send-WA-broadcast', [WhatsappBroadcastController::class, 'sendBulk']);
 
     Route::apiResource('email-schedule', EmailScheduleController::class);
+
+    Route::prefix('groups')->group(function () {
+        // Group Management
+        Route::get('/', [GroupChatController::class, 'getGroups']);
+        Route::post('/', [GroupChatController::class, 'createGroup']);
+        Route::put('/{groupId}', [GroupChatController::class, 'updateGroup']);
+        Route::delete('/{groupId}', [GroupChatController::class, 'deleteGroup']);
+
+        // Ownership & Participation
+        Route::put('/{groupId}/transfer', [GroupChatController::class, 'transferOwnership']);
+        Route::get('/{groupId}/participants', [GroupChatController::class, 'getGroupMembers']);
+        Route::post('/{groupId}/participants', [GroupChatController::class, 'addParticipants']);
+        Route::delete('/{groupId}/participants/{userId}', [GroupChatController::class, 'removeParticipant']);
+        Route::post('/{groupId}/leave', [GroupChatController::class, 'leaveGroup']);
+        Route::put('/{groupId}/participants/{userId}', [GroupChatController::class, 'updateMemberPermission']);
+
+        // Messaging Logic
+        Route::get('/{groupId}/messages', [GroupChatController::class, 'getGroupMessages']);
+        Route::post('/{groupId}/messages', [GroupChatController::class, 'storeGroupMessage']);
+        Route::post('/{groupId}/messages/read', [GroupChatController::class, 'markGroupMessagesRead']);
+        Route::delete('/{groupId}/messages/{messageId}', [GroupChatController::class, 'deleteGroupMessage']);
+
+        Route::get('/group-list', [GroupChatController::class, 'getUserGroupIds']);
+    });
+
+    Route::prefix('chats')->group(function () {
+        Route::get('/', [UnifiedChatController::class, 'getChats']);
+        Route::get('/messages', [UnifiedChatController::class, 'getMessages']);
+        Route::post('/messages/send', [UnifiedChatController::class, 'sendMessage']);
+        Route::post('/messages/mark-read', [UnifiedChatController::class, 'markRead']);
+    });
 });
 
 Route::get('countries', [CountryController::class, 'index']);
