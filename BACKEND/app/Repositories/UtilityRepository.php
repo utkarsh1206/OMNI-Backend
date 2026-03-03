@@ -143,8 +143,9 @@ class UtilityRepository
     {
         $payload = extractPayload($request->bearerToken());
         // $database = $payload['db'] ?? 'omnichannel';
-         # $domain = $payload['domain'];
-        $database = convertToLower(Str::replace(".", "_", auth()->user()->domain)) ?? 'omnichannel';
+        # $domain = $payload['domain'];
+        // $database = convertToLower(Str::replace(".", "_", auth()->user()->domain)) ?? 'omnichannel';
+        $database = DB::getDatabaseName();
         # $database = $payload['db'] ?? 'omnichannel';
 
         $backupFolder = storage_path('app/public/exports');
