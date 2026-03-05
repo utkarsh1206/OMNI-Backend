@@ -101,7 +101,9 @@ class UnifiedChatRepository
                     'name' => $chat->name,
                     'online_status' => $chat->online_status,
                     'last_message' => $chat->last_message_text,
-                    'last_message_time' => $chat->last_message_time,
+                    'last_message_time' => $chat->last_message_time
+                        ? Carbon::parse($chat->last_message_time)->toJSON()
+                        : null,
                     'unread_count' => (int) $chat->unread_count,
                 ];
             });
