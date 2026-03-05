@@ -43,6 +43,22 @@ class LiveAgentRepository
             $query->where('status', $status);
         }
 
+        $token = $request->bearerToken(); // Get token from header
+        $payload = extractPayload($token);
+
+        $roleId = $payload['role_id'] ?? null;
+        $campaignFromToken = $payload['campaign'] ?? null;
+
+        if ($roleId == 3) {
+
+            if ($campaignFromToken) {
+                $query->where('campaign_id', $campaignFromToken);
+            } else {
+                // No campaign in token → show nothing
+                $query->whereRaw('1 = 0');
+            }
+        }
+
         return $page === 'all'
             ? ['data' => $query->get()]
             : [
