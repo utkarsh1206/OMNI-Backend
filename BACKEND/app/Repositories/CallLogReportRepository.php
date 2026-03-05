@@ -128,29 +128,45 @@ class CallLogReportRepository
         $endDate = Carbon::parse($filters['endDate'])->toDateTimeString();
 
         $query = NeoxCallLog::on($connectionName)
-            ->select([
-                'neox_call_logs.call_unique_id',
-                'campaign_id',
-                'inbound_group_id',
-                'user_group',
-                DB::raw('DATE_FORMAT(call_date, "%Y-%m-%d %H:%i:%s") as call_date'),
-                'call_type',
-                'caller_username',
-                'caller_user_extension',
-                'called_phone_number',
-                'call_did_pattern',
-                DB::raw('DATE_FORMAT(SEC_TO_TIME(call_total_duration), "%H:%i:%s") as call_total_duration'),
-                DB::raw('SEC_TO_TIME(call_talk_duration) as call_talk_duration'),
-                'call_status',
-                'call_dispo_status',
-                'call_term_reason',
-                'comments',
-                'call_recording_url',
-                'custom_cdr_leads.lead_json',
-            ])
-            ->leftJoin('custom_cdr_leads', 'custom_cdr_leads.call_unique_id', '=', 'neox_call_logs.call_unique_id')
-            ->where('type', 'call_history')
-            ->whereBetween('call_date', [$startDate, $endDate]);
+        ->select([
+            'neox_call_logs.call_unique_id',
+            'campaign_id',
+            'inbound_group_id',
+            'user_group',
+            DB::raw('DATE_FORMAT(call_date, "%Y-%m-%d %H:%i:%s") as call_date'),
+            'call_type',
+            'caller_username',
+            'caller_user_extension',
+            'called_phone_number',
+            'call_did_pattern',
+            DB::raw('DATE_FORMAT(SEC_TO_TIME(call_total_duration), "%H:%i:%s") as call_total_duration'),
+            DB::raw('SEC_TO_TIME(call_talk_duration) as call_talk_duration'),
+            DB::raw("CASE WHEN call_talk_duration = 0 THEN 'Abandoned' ELSE 'Answered' END as call_connectivity_status"),
+            'call_status',
+            'call_dispo_status',
+            'call_term_reason',
+            'comments',
+            'call_recording_url',
+            'cdr.lead_json'
+        ])
+        ->join(DB::raw("
+            (
+                SELECT MAX(id) as id
+                FROM neox_call_logs
+                WHERE type='call_history'
+                GROUP BY call_unique_id
+            ) latest
+        "), 'latest.id', '=', 'neox_call_logs.id')
+    
+        ->leftJoin(DB::raw("
+            (
+                SELECT call_unique_id, MAX(lead_json) as lead_json
+                FROM custom_cdr_leads
+                GROUP BY call_unique_id
+            ) as cdr
+        "), 'cdr.call_unique_id', '=', 'neox_call_logs.call_unique_id')
+    
+        ->whereBetween('call_date', [$startDate, $endDate]);
         if ($user && $user->role_id == 3) {
             $query->where('caller_username', $user->username);
         }
@@ -221,6 +237,7 @@ class CallLogReportRepository
             'DID' => fn($l) => $l->call_did_pattern,
             'Type of Call' => fn($l) => $l->call_type,
             'Term Reason' => fn($l) => $l->call_term_reason,
+            'Call Connectivity Status' => fn($l) => $l->call_connectivity_status,
         ];
 
         $selectedColumns = array_values(array_filter(
