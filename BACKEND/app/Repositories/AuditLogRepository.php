@@ -132,7 +132,7 @@ class AuditLogRepository
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
-                ['download_url' => $url],
+                ['file_url' => $url],
                 trans('message.data_exported')
             );
         } catch (Exception $ex) {
