@@ -52,11 +52,26 @@ class UserActivityReportRepository
             // Get the authenticated user
             $user = auth()->user();
 
+            $currentTime = now(config('app.timezone'))->format('Y-m-d H:i:s');
+
             // Build the base query
             $query = UserLoginLog::select([
                 'user_id',
                 'login_date',
-                DB::raw("SUM(TIMESTAMPDIFF(SECOND, CONCAT(login_date, ' ', login_time), CONCAT(logout_date, ' ', logout_time))) as total_seconds"),
+                // DB::raw("SUM(TIMESTAMPDIFF(SECOND, CONCAT(login_date, ' ', login_time), CONCAT(logout_date, ' ', logout_time))) as total_seconds"),
+                DB::raw("
+                    SUM(
+                        TIMESTAMPDIFF(
+                            SECOND,
+                            CONCAT(login_date, ' ', login_time),
+                            CASE 
+                                WHEN logout_date IS NULL OR logout_time IS NULL 
+                                THEN '{$currentTime}'
+                                ELSE CONCAT(logout_date, ' ', logout_time)
+                            END
+                        )
+                    ) as total_seconds
+                "),
                 DB::raw("COUNT(*) as login_count")
             ])
                 // ->whereNotNull('logout_time')
@@ -540,10 +555,22 @@ class UserActivityReportRepository
                 $user = auth()->user();
             }
 
+            $currentTime = now(config('app.timezone'))->format('Y-m-d H:i:s');
+
             $logs = UserLoginLog::on($connectionName)->select([
                 'user_id',
                 'login_date',
-                DB::raw("SUM(TIMESTAMPDIFF(SECOND, CONCAT(login_date, ' ', login_time), CONCAT(logout_date, ' ', logout_time))) as total_seconds"),
+                DB::raw("SUM(
+                        TIMESTAMPDIFF(
+                            SECOND,
+                            CONCAT(login_date, ' ', login_time),
+                            CASE 
+                                WHEN logout_date IS NULL OR logout_time IS NULL 
+                                THEN '{$currentTime}'
+                                ELSE CONCAT(logout_date, ' ', logout_time)
+                            END
+                        )
+                    ) as total_seconds"),
                 DB::raw("COUNT(*) as login_count")
             ])
                 // ->whereNotNull('logout_time')
@@ -612,8 +639,12 @@ class UserActivityReportRepository
                     SUM(
                         TIMESTAMPDIFF(
                             SECOND,
-                            CONCAT(login_date,' ',login_time),
-                            CONCAT(logout_date,' ',logout_time)
+                            CONCAT(login_date, ' ', login_time),
+                            CASE 
+                                WHEN logout_date IS NULL OR logout_time IS NULL 
+                                THEN '{$currentTime}'
+                                ELSE CONCAT(logout_date, ' ', logout_time)
+                            END
                         )
                     ) as total_log_sec
                 ")
@@ -621,9 +652,9 @@ class UserActivityReportRepository
                 ->groupBy('user_id', 'login_date')
                 ->get();
 
-                $loginLogs = $loginData->keyBy(function ($i) {
-                    return Carbon::parse($i->login_date)->toDateString() . '_' . $i->user_id;
-                });
+            $loginLogs = $loginData->keyBy(function ($i) {
+                return Carbon::parse($i->login_date)->toDateString() . '_' . $i->user_id;
+            });
 
             $callData = DB::connection($connectionName)
                 ->table('neox_call_logs')
@@ -642,13 +673,13 @@ class UserActivityReportRepository
                 ->groupBy('caller_username', 'activity_date')
                 ->get();
 
-                $usernameToUserId = $usernames->flip();
+            $usernameToUserId = $usernames->flip();
 
-                $callLogs = $callData->keyBy(function ($i) use ($usernameToUserId) {
-                    $userId = $usernameToUserId[$i->caller_username] ?? null;
-                
-                    return Carbon::parse($i->activity_date)->toDateString() . '_' . $userId;
-                });
+            $callLogs = $callData->keyBy(function ($i) use ($usernameToUserId) {
+                $userId = $usernameToUserId[$i->caller_username] ?? null;
+
+                return Carbon::parse($i->activity_date)->toDateString() . '_' . $userId;
+            });
 
             // Pause Resume
             $pauseResume = PauseResumeUserLog::on($connectionName)
@@ -842,7 +873,7 @@ class UserActivityReportRepository
                     $csvRows[] = [''];
                     $csvRows[] = ['--- DAILY USER ACTIVITY ---'];
                     $csvRows[] = ['Date/Time', 'Activity', 'Total Login Duration', 'Pause Duration', 'Pause Code', 'Resume Duration', 'Call Duration', 'Dispose Duration', 'Dispose Code'];
-            
+
                     if ($daily->isNotEmpty()) {
 
                         foreach ($daily as $activity) {
@@ -871,7 +902,7 @@ class UserActivityReportRepository
                                 $activity->dispo_code ?? ''
                             ];
                         }
-                    } 
+                    }
 
                     $csvRows[] = ['--- TOTAL DURATIONS ---'];
                     $csvRows[] = [
@@ -880,7 +911,7 @@ class UserActivityReportRepository
                         'Total Resume Duration',
                         'Total Call Duration',
                         'Total Disposition Duration'
-                    ]; 
+                    ];
                     $csvRows[] = [
                         $total->total_login_d ?? '00:00:00',
                         $total->total_pause_d ?? '00:00:00',
@@ -907,7 +938,7 @@ class UserActivityReportRepository
                     if ($pauseData->isNotEmpty()) {
 
                         foreach ($pauseData as $p) {
-                    
+
                             $csvRows[] = [
                                 $p->user_status ?? '',
                                 Carbon::parse($p->created_at)
@@ -916,7 +947,6 @@ class UserActivityReportRepository
                                 $p->pause_code_id ?? ''
                             ];
                         }
-                    
                     }
 
                     $csvRows[] = [''];
@@ -930,7 +960,6 @@ class UserActivityReportRepository
                     $csvRows[] = [''];
                     $csvRows[] = ['--- END OF DETAILED DATA ---'];
                     $csvRows[] = [''];
-
                 }
             }
 
