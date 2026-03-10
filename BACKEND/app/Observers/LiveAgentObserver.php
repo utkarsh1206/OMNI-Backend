@@ -54,6 +54,8 @@ class LiveAgentObserver
      */
     public function deleted(LiveAgents $liveAgent): void
     {
+        logUserLogoutActivity($liveAgent->user_id, $liveAgent->campaign_id);
+
         if ($liveAgent->bypassObserver ?? false) {
             return;
         }

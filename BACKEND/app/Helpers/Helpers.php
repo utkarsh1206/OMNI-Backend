@@ -11,6 +11,9 @@ use App\Models\Permission;
 use App\Models\RolePermission;
 use App\Models\Tenant;
 use App\Models\TenantModule;
+use App\Models\UserDailyActivity;
+use App\Models\UserLoginLog;
+use Carbon\Carbon;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
@@ -253,7 +256,7 @@ if (!function_exists('getNeoxConfig')) {
         return [
             'neox_local_ip' => $config->neox_local_ip,
             'neox_token' => $config->neox_token,
-            'sip_server_url' => $config->sip_server_url ?? '', 
+            'sip_server_url' => $config->sip_server_url ?? '',
             'sip_ua_uri_domain' => $config->sip_ua_uri_domain ?? '',
         ];
     }
@@ -669,7 +672,7 @@ if (! function_exists('getTemplatePlaceholders')) {
             } else {
                 $trackingUrl = '';
             }
-            
+
             $placeholders = [
                 "customer_name"      => $ticket->contact_name ?? '',
                 "ticket_number"      => $ticket->support_ticket_id ?? '',
@@ -839,15 +842,77 @@ if (!function_exists('exportCsvChunked')) {
                 //         fputcsv($file, $singleRow);
                 //     }
                 // } else {
-                    fputcsv($file, $row);
+                fputcsv($file, $row);
                 // }
-                
-            }
 
+            }
         });
 
         fclose($file);
 
         return asset('storage/exports/' . $filename);
+    }
+}
+
+if (!function_exists('logUserLogoutActivity')) {
+
+    function logUserLogoutActivity($userId, $campaignId)
+    {
+        $latestActivity = UserDailyActivity::where('user_id', $userId)
+            ->where('campaign_id', $campaignId)
+            ->orderByDesc('id')
+            ->first();
+
+        // If no activity is found, we exit
+        if (!$latestActivity) {
+            return null;
+        }
+
+        $start = Carbon::parse($latestActivity->created_at);
+        $end = Carbon::now();
+        $timeDiff = $start->diff($end)->format('%H:%I:%S');
+
+        // Update login log
+        $latestLog = UserLoginLog::where('user_id', $userId)
+            ->where('campaign_id', $campaignId)
+            ->orderByDesc('login_date')
+            ->orderByDesc('login_time')
+            ->first();
+
+        if ($latestLog) {
+            $latestLog->update([
+                'logout_date' => Carbon::today()->toDateString(),
+                'logout_time' => Carbon::now()->toTimeString(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+
+        // Calculate login duration
+        $duration = null;
+
+        $loginActivity = UserDailyActivity::where('user_id', $userId)
+            ->where('campaign_id', $campaignId)
+            ->where('activity', 'Login')
+            ->whereDate('created_at', Carbon::today())
+            ->orderByDesc('id')
+            ->first();
+
+        if ($loginActivity) {
+            $diffInSeconds = Carbon::parse($loginActivity->created_at)
+                ->diffInSeconds(Carbon::now());
+
+            $duration = gmdate('H:i:s', $diffInSeconds);
+        }
+
+        // Save logout activity
+        UserDailyActivity::create([
+            'campaign_id' => $campaignId,
+            'user_id' => $userId,
+            'activity' => 'Logout',
+            'total_login_duration' => $duration,
+            $latestActivity->activity === 'Pause' ? 'pause_duration' : 'resume_duration' => $timeDiff
+        ]);
+
+        return $duration;
     }
 }
