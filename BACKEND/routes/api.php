@@ -110,10 +110,13 @@ use App\Http\Controllers\Api\ThirdPartyCrmController;
 use App\Http\Controllers\Api\TicketTypeController;
 use App\Http\Controllers\Api\NetworkCheckController;
 use App\Http\Controllers\Api\CustomChatBotController;
+use App\Http\Controllers\Api\EmailScheduleController;
+use App\Http\Controllers\Api\GroupChatController;
 use App\Http\Controllers\Api\HashController;
 use App\Http\Controllers\Api\LeadMailController;
 use App\Http\Controllers\Api\ListTemplateMapController;
 use App\Http\Controllers\Api\TicketAssignmentController;
+use App\Http\Controllers\Api\UnifiedChatController;
 use App\Http\Controllers\Api\WhatsappBroadcastController;
 use App\Http\Middleware\CheckPermissionMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -165,6 +168,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('audit-logs/{audit_log}', [AuditController::class, 'update'])->middleware(CheckPermissionMiddleware::class . ":audit_reports," . PermissionAction::EDIT->value);
     Route::patch('audit-logs/{audit_log}', [AuditController::class, 'update'])->middleware(CheckPermissionMiddleware::class . ":audit_reports," . PermissionAction::EDIT->value);
     Route::delete('audit-logs/{audit_log}', [AuditController::class, 'destroy'])->middleware(CheckPermissionMiddleware::class . ":audit_reports," . PermissionAction::DELETE->value);
+    Route::post('audit-logs/csv', [AuditController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":audit_reports," . PermissionAction::DOWNLOAD->value);;
 
     Route::post('logout', [LoginController::class, 'logout']);
 
@@ -225,7 +229,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('email-logs/{email_log}', [EmailLogController::class, 'update'])->middleware(CheckPermissionMiddleware::class . ":email_logs," . PermissionAction::EDIT->value);
     Route::patch('email-logs/{email_log}', [EmailLogController::class, 'update'])->middleware(CheckPermissionMiddleware::class . ":email_logs," . PermissionAction::EDIT->value);
     Route::delete('email-logs/{email_log}', [EmailLogController::class, 'destroy'])->middleware(CheckPermissionMiddleware::class . ":email_logs," . PermissionAction::DELETE->value);
-    Route::get('email_logs/csv', [EmailLogController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":email_logs," . PermissionAction::DOWNLOAD->value);
+    Route::post('email_logs/csv', [EmailLogController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":email_logs," . PermissionAction::DOWNLOAD->value);
 
     Route::get('usersList', [UserListController::class, 'index']);
 
@@ -342,7 +346,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     // Ticket Report
     Route::get('ticketReport', [TicketReportController::class, 'ticketReport'])->middleware(CheckPermissionMiddleware::class . ":ticket_reports," . PermissionAction::VIEW->value);
-    Route::get('ticketReport/csv', [TicketReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":ticket_reports," . PermissionAction::DOWNLOAD->value);
+    Route::post('ticketReport/csv', [TicketReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":ticket_reports," . PermissionAction::DOWNLOAD->value);
 
     Route::prefix('/ticket/summary')->group(function () {
         Route::get('ticket-type', [TicketReportController::class, 'ticketTypeSummary']);
@@ -356,7 +360,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     // SLA Report
     Route::get('slareport', [SlaReportController::class, 'generateReport'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::VIEW->value);
-    Route::get('slareport/csv', [SlaReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::DOWNLOAD->value);
+    Route::post('slareport/csv', [SlaReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::DOWNLOAD->value);
     Route::get('sla-priority', [SlaReportController::class, 'prioritySLA'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::VIEW->value);
     Route::get('sla-ticket-type', [SlaReportController::class, 'ticketTypeSLA'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::VIEW->value);
     Route::get('sla-incident', [SlaReportController::class, 'incidentSLA'])->middleware(CheckPermissionMiddleware::class . ":sla_reports," . PermissionAction::VIEW->value);
@@ -405,7 +409,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::prefix('call-log-report')->group(function () {
         Route::get('list', [CallLogReportController::class, 'list'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::VIEW->value);
-        Route::get('csv', [CallLogReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::DOWNLOAD->value);
+        Route::post('csv', [CallLogReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::DOWNLOAD->value);
         Route::get('chart-summary', [CallLogReportController::class, 'getChartSummary'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::VIEW->value);
         Route::get('status-summary', [CallLogReportController::class, 'getStatusSummary'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::VIEW->value);
         Route::get('usergroup-summary', [CallLogReportController::class, 'getByUserGroup'])->middleware(CheckPermissionMiddleware::class . ":call_log_reports," . PermissionAction::VIEW->value);
@@ -415,7 +419,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::prefix('user-activity-report')->group(function () {
         Route::get('list', [UserActivityReportController::class, 'list'])->middleware(CheckPermissionMiddleware::class . ":user_activity_reports," . PermissionAction::VIEW->value);
         Route::get('user-activity', [UserActivityReportController::class, 'userActivity'])->middleware(CheckPermissionMiddleware::class . ":user_activity_reports," . PermissionAction::VIEW->value);
-        Route::get('csv', [UserActivityReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":user_activity_reports," . PermissionAction::DOWNLOAD->value);
+        Route::post('csv', [UserActivityReportController::class, 'exportCsv'])->middleware(CheckPermissionMiddleware::class . ":user_activity_reports," . PermissionAction::DOWNLOAD->value);
         Route::get('graph', [UserActivityReportController::class, 'graphData'])->middleware(CheckPermissionMiddleware::class . ":user_activity_reports," . PermissionAction::VIEW->value);
     });
 
@@ -513,6 +517,39 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('/auto-assign/{ticketId}', [TicketAssignmentController::class, 'autoAssignApi']);
 
     Route::post('/send-WA-broadcast', [WhatsappBroadcastController::class, 'sendBulk']);
+
+    Route::apiResource('email-schedule', EmailScheduleController::class);
+
+    Route::prefix('groups')->group(function () {
+        // Group Management
+        Route::get('/', [GroupChatController::class, 'getGroups']);
+        Route::post('/', [GroupChatController::class, 'createGroup']);
+        Route::put('/{groupId}', [GroupChatController::class, 'updateGroup']);
+        Route::delete('/{groupId}', [GroupChatController::class, 'deleteGroup']);
+
+        // Ownership & Participation
+        Route::put('/{groupId}/transfer', [GroupChatController::class, 'transferOwnership']);
+        Route::get('/{groupId}/participants', [GroupChatController::class, 'getGroupMembers']);
+        Route::post('/{groupId}/participants', [GroupChatController::class, 'addParticipants']);
+        Route::delete('/{groupId}/participants/{userId}', [GroupChatController::class, 'removeParticipant']);
+        Route::post('/{groupId}/leave', [GroupChatController::class, 'leaveGroup']);
+        Route::put('/{groupId}/participants/{userId}', [GroupChatController::class, 'updateMemberPermission']);
+
+        // Messaging Logic
+        Route::get('/{groupId}/messages', [GroupChatController::class, 'getGroupMessages']);
+        Route::post('/{groupId}/messages', [GroupChatController::class, 'storeGroupMessage']);
+        Route::post('/{groupId}/messages/read', [GroupChatController::class, 'markGroupMessagesRead']);
+        Route::delete('/{groupId}/messages/{messageId}', [GroupChatController::class, 'deleteGroupMessage']);
+
+        Route::get('/group-list', [GroupChatController::class, 'getUserGroupIds']);
+    });
+
+    Route::prefix('chats')->group(function () {
+        Route::get('/', [UnifiedChatController::class, 'getChats']);
+        Route::get('/messages', [UnifiedChatController::class, 'getMessages']);
+        Route::post('/messages/send', [UnifiedChatController::class, 'sendMessage']);
+        Route::post('/messages/mark-read', [UnifiedChatController::class, 'markRead']);
+    });
 });
 
 Route::get('countries', [CountryController::class, 'index']);

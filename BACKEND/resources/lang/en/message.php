@@ -217,6 +217,10 @@ return [
 
     'mapping_modified' => 'List Mail Template Mapping Modified successfully.',
 
-    'assignment_rule_created' => 'Assignment Rule Created successfully.'
+    'assignment_rule_created' => 'Assignment Rule Created successfully.',
+
+    'email_schedule_created' => 'Email schedule created successfully.',
+    'email_schedule_updated' => 'Email schedule update successfully.',
+    'email_schedule_deleted' => 'Email schedule deleted successfully.'
 ]
 ?>

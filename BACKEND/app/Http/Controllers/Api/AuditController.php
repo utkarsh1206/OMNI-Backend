@@ -137,4 +137,9 @@ class AuditController extends Controller
         $info = ActivityLog::find($id);
         return $this->auditRepostory->view($info);
     }
+
+    public function exportCsv(Request $request)
+    {
+        return $this->auditRepostory->exportCsv($request);
+    }
 }

@@ -68,17 +68,17 @@ class LogoutApiController extends Controller
             }
 
             if (isset($result['code']) && $result['code'] === 0) {
-                $this->updateUserLoginLog($request->id, $request->campaign_id);
-                $duration = $this->calculateLoginDuration($request->id, $request->campaign_id);
+                // $this->updateUserLoginLog($request->id, $request->campaign_id);
+                // $duration = $this->calculateLoginDuration($request->id, $request->campaign_id);
 
-                $activityData = [
-                    'campaign_id' => $request->campaign_id,
-                    'user_id' => $request->id,
-                    'activity' => 'Logout',
-                    'total_login_duration' => $duration,
-                ];
+                // $activityData = [
+                //     'campaign_id' => $request->campaign_id,
+                //     'user_id' => $request->id,
+                //     'activity' => 'Logout',
+                //     'total_login_duration' => $duration,
+                // ];
 
-                UserDailyActivity::create($activityData);
+                // UserDailyActivity::create($activityData);
 
                 return (response()->json($result))->original + ['neox_status' => true];
             }
@@ -90,38 +90,38 @@ class LogoutApiController extends Controller
         }
     }
 
-    private function updateUserLoginLog($userId, $campaignId)
-    {
-        $latestLog = UserLoginLog::where('user_id', $userId)
-            ->where('campaign_id', $campaignId)
-            ->orderByDesc('login_date')
-            ->orderByDesc('login_time')
-            ->first();
+    // private function updateUserLoginLog($userId, $campaignId)
+    // {
+    //     $latestLog = UserLoginLog::where('user_id', $userId)
+    //         ->where('campaign_id', $campaignId)
+    //         ->orderByDesc('login_date')
+    //         ->orderByDesc('login_time')
+    //         ->first();
 
-        if ($latestLog) {
-            $latestLog->update([
-                'logout_date' => Carbon::today()->toDateString(),
-                'logout_time' => Carbon::now()->toTimeString(),
-                'updated_at' => Carbon::now(),
-            ]);
-        }
-    }
+    //     if ($latestLog) {
+    //         $latestLog->update([
+    //             'logout_date' => Carbon::today()->toDateString(),
+    //             'logout_time' => Carbon::now()->toTimeString(),
+    //             'updated_at' => Carbon::now(),
+    //         ]);
+    //     }
+    // }
 
-    private function calculateLoginDuration($userId, $campaignId)
-    {
-        $loginActivity = UserDailyActivity::where('user_id', $userId)
-            ->where('campaign_id', $campaignId)
-            ->where('activity', 'Login')
-            ->whereDate('created_at', Carbon::today())
-            ->orderByDesc('id')
-            ->first();
+    // private function calculateLoginDuration($userId, $campaignId)
+    // {
+    //     $loginActivity = UserDailyActivity::where('user_id', $userId)
+    //         ->where('campaign_id', $campaignId)
+    //         ->where('activity', 'Login')
+    //         ->whereDate('created_at', Carbon::today())
+    //         ->orderByDesc('id')
+    //         ->first();
 
-        if ($loginActivity) {
-            $diffInSeconds = Carbon::parse($loginActivity->created_at)->diffInSeconds(Carbon::now());
+    //     if ($loginActivity) {
+    //         $diffInSeconds = Carbon::parse($loginActivity->created_at)->diffInSeconds(Carbon::now());
 
-            return gmdate('H:i:s', $diffInSeconds);
-        }
+    //         return gmdate('H:i:s', $diffInSeconds);
+    //     }
 
-        return null;
-    }
+    //     return null;
+    // }
 }

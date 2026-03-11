@@ -287,7 +287,7 @@ class TenantLicenseController extends Controller
         $tenant_data_count = DB::table('tenant_licenses')
             ->join('tenants', 'tenants.id', '=', 'tenant_licenses.tenant_id')
             ->selectRaw('SUM(agent_ct) as agent, SUM(live_agent_ct) as live_agent, SUM(manager_ct) as manager')
-            // ->where('tenant_id', '!=', $tenantId)
+            ->where('tenant_id', '!=', $tenantId)
             ->first();
 
         $DBnumber_of_agents = $tenant_data_count->agent ?? 0;

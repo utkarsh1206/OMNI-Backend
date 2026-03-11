@@ -24,7 +24,7 @@ class NotifyCustomer implements ShouldBroadcastNow
         $this->customerId = $customerId;
         $this->domain  = convertToLower(Str::replace('.', '_', $domain));
         $this->message = $data;
-        generateLogs('info', 'broadcast Data: '.json_encode(['notifyCustomer' => $this->message]));
+        generateLogs('info', 'Notify Customer Broadcast Data: ' . json_encode(['notifyCustomer' => $this->message]));
     }
 
     /**
@@ -47,9 +47,9 @@ class NotifyCustomer implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: '.json_encode(['notifyCustomer' => $this->message]));
+        generateLogs('info', 'Notify Customer BroadcastWith Data: ' . json_encode(['notifyCustomer' => $this->message]));
         return [
-            'notifyCustomer' => $this->message, 
+            'notifyCustomer' => $this->message,
         ];
     }
 }

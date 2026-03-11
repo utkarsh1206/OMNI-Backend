@@ -82,17 +82,17 @@ class PhoneRepository
 
             $phone = Phone::create($validatedData);
 
-            $host = parse_url($sipServerUrl, PHP_URL_HOST);
+            // $host = parse_url($sipServerUrl, PHP_URL_HOST);
 
-            $newRequestUrl = "http://{$host}:6000/api/users";
+            // $newRequestUrl = "http://{$host}:6000/api/users";
 
-            $newPayload = [
-                'username' => $validatedData['extension'],
-                'password' => $validatedData['pass'],
-                'domain'   => $sipUaUriDomain,
-            ];
+            // $newPayload = [
+            //     'username' => $validatedData['extension'],
+            //     'password' => $validatedData['pass'],
+            //     'domain'   => $sipUaUriDomain,
+            // ];
 
-            sendHttpRequest($newRequestUrl, 'POST', $newPayload);
+            // sendHttpRequest($newRequestUrl, 'POST', $newPayload);
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),

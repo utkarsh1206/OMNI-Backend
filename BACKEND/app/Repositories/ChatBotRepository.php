@@ -427,49 +427,59 @@ class ChatBotRepository
     public function getCustomerIds()
     {
         try {
-            // $customers = ChatbotMessageRequest::where('agent_id', auth()->id())
-            //     ->whereNotNull('customer_id')
-            //     ->orderBy('id', 'desc')
-            //     ->get()
-            //     ->map(function ($req) {
-            //         $contact = Contact::where('id', $req->customer_id)
-            //             ->whereNull('deleted_at')
-            //             ->first();
+            $request = request();
+            $searchTerm = $request->input('search', '');
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
-            //         return [
-            //             'customer_id' => (string) $req->customer_id,
-            //             'name'        => $contact
-            //                 ? trim(($contact->first_name ?? '') . ' ' . ($contact->last_name ?? ''))
-            //                 : 'Unknown',
-            //         ];
-            //     })
-            //     ->values();
+            $query = ChatbotMessageRequest::where('chatbot_message_requests.agent_id', auth()->id())
+                ->whereNotNull('chatbot_message_requests.customer_id')
+                ->leftJoin('contacts', 'chatbot_message_requests.customer_id', '=', 'contacts.id')
+                ->whereNull('contacts.deleted_at')
+                ->select(
+                    'chatbot_message_requests.customer_id',
+                    DB::raw('MAX(chatbot_message_requests.id) as latest_id'),
+                    DB::raw('MAX(contacts.first_name) as first_name'),
+                    DB::raw('MAX(contacts.last_name) as last_name')
+                );
 
-            $customers = ChatbotMessageRequest::select('customer_id')
-                ->selectRaw('MAX(id) as latest_id')
-                ->where('agent_id', auth()->id())
-                ->whereNotNull('customer_id')
-                ->groupBy('customer_id')
-                ->orderByDesc('latest_id')
-                ->get()
-                ->map(function ($req) {
-                    $contact = Contact::where('id', $req->customer_id)
-                        ->whereNull('deleted_at')
-                        ->first();
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('contacts.first_name', 'like', "%{$searchTerm}%")
+                        ->orWhere('contacts.last_name', 'like', "%{$searchTerm}%")
+                        ->orWhereRaw("CONCAT(contacts.first_name, ' ', contacts.last_name) LIKE ?", ["%{$searchTerm}%"]);
+                });
+            }
 
-                    return [
-                        'chat_request_id'   => encryptString($req->latest_id),
-                        'customer_id' => $req->customer_id,
-                        'name'        => $contact
-                            ? trim(($contact->first_name ?? '') . ' ' . ($contact->last_name ?? ''))
-                            : 'Unknown',
-                    ];
-                })
-                ->values();
+            $query->groupBy('chatbot_message_requests.customer_id')
+                ->orderByDesc('latest_id');
+
+            $results = ($page == config('omni.ALL_PAGE'))
+                ? $query->get()
+                : $query->paginate($perPage);
+
+            $collection = ($page == config('omni.ALL_PAGE')) ? $results : $results->getCollection();
+
+            $transformed = $collection->map(function ($req) {
+                $fullName = trim(($req->first_name ?? '') . ' ' . ($req->last_name ?? ''));
+
+                return [
+                    'chat_request_id' => encryptString($req->latest_id),
+                    'customer_id'     => $req->customer_id,
+                    'name'            => !empty($fullName) ? $fullName : 'Unknown',
+                ];
+            });
+
+            if ($page == config('omni.ALL_PAGE')) {
+                $finalResponse = $transformed;
+            } else {
+                $results->setCollection($transformed);
+                $finalResponse = $results;
+            }
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
-                $customers,
+                $finalResponse,
                 trans('message.data_fetch')
             );
         } catch (Exception $ex) {

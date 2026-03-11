@@ -131,11 +131,13 @@ class PauseResumeRepository
             ->first();
 
         if ($lastActivity) {
+            $timeDiff = $this->timeDifference($lastActivity->created_at);
+
             UserDailyActivity::create([
                 'campaign_id'    => $campaignId,
                 'user_id'        => $userId,
                 'activity'       => $currentActivity,
-                $currentActivity === 'Pause' ? 'resume_duration' : 'pause_duration' => $this->timeDifference($lastActivity->created_at),
+                $currentActivity === 'Pause' ? 'resume_duration' : 'pause_duration' => $timeDiff,
                 'pause_code'     => $currentActivity === 'Pause' ? $pauseCode : null,
             ]);
         }

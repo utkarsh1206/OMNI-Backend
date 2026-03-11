@@ -24,7 +24,7 @@ class EndConversationCustomer implements ShouldBroadcastNow
         $this->customerId = $customerId;
         $this->domain  = convertToLower(Str::replace('.', '_', $domain));
         $this->message = $data;
-        generateLogs('info', 'broadcast Data: '.json_encode(['EndConversationCustomer' => $this->message]));
+        generateLogs('info', 'End Conversation Broadcast Data: '.json_encode(['EndConversationCustomer' => $this->message]));
     }
 
     /**
@@ -47,7 +47,7 @@ class EndConversationCustomer implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: '.json_encode(['notifyCustomer' => $this->message]));
+        generateLogs('info', 'End Conversation with Customer BroadcastWith Data: '.json_encode(['notifyCustomer' => $this->message]));
         return [
             'EndConversationCustomer' => $this->message, 
         ];

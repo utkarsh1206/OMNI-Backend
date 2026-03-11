@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Models\LiveAgents;
 use App\Events\AgentLiveStatus;
+use App\Models\Contact;
 use App\Models\Detail;
 
 class WebhookCallController extends Controller
@@ -303,10 +304,36 @@ class WebhookCallController extends Controller
                 getDbConnection($domain_name, true);
                 // DB::setDefaultConnection($data->getName());
 
+                $callUniqueId = $request->input('call_unique_id');
+                $confState = $request->input('conf_state') ?: null;
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
 
-                $agentName = $request->caller_username;
+                $agentName = (strpos($callUniqueId, 'SOT') === 0)
+                    ? $request->input('parent_user_id')
+                    : $request->input('caller_username');
+
+                if (strpos($callUniqueId, 'SOT') === 0) {
+                    $data['caller_username'] = $agentName;
+                    $data['conf_state'] = $confState;
+                }
+                // -------------
+                // -------------
+                $contactName = null;
+                $mobile = $request->called_phone_number;
+
+                if ($mobile) {
+                    $contact = Contact::where('mobile', $mobile)->first(['first_name', 'last_name']);
+
+                    if ($contact) {
+                        $contactName = trim($contact->first_name . ' ' . $contact->last_name);
+                    }
+                }
+                $data['called_contact_name'] = $contactName;
+                // -------------
+                // -------------
+
+                // $agentName = $request->caller_username;
                 $agentId = Users::select('id')->where('username', $agentName)->first();
 
                 if ($type !== 'call_initiated') {
@@ -362,6 +389,8 @@ class WebhookCallController extends Controller
                 return 'outgoing';
             case 'VB':
                 return 'vb';
+            case 'SO':
+                return 'conference_call';
             default:
                 return 'unknown';
         }

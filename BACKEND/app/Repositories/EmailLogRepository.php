@@ -92,33 +92,46 @@ class EmailLogRepository
     /**
      * Export email logs to CSV format.
      */
-    public function exportToCsv($request)
+    public function exportToCsv($request, $connectionName = null)
     {
-        $query = DB::table('email_logs')
-            ->leftJoin('users', 'email_logs.user_id', '=', 'users.id')
-            ->select(
-                'email_logs.id',
-                'email_logs.from_email',
-                'email_logs.email_json',
-                'email_logs.module_name',
-                'email_logs.subject',
-                'email_logs.body',
-                'email_logs.status',
-                'email_logs.created_at',
-                'users.username',
-                'users.email as user_email',
-                'users.mobile as user_mobile'
+        $selectedColumns = $request->input('selected_columns', []);
+
+        if (empty($selectedColumns)) {
+            return $this->apiResponse->getResponseStructure(
+                trans('message.error'),
+                null,
+                'No columns selected for export'
             );
-        // ->leftJoin('mail_template', 'email_logs.email_template_id', '=', 'mail_template.id')
-        // ->select(
-        //     'email_logs.from_email',
-        //     'users.email as to_email',
-        //     'users.first_name as username',
-        //     'users.mobile as contact',
-        //     'mail_template.subject as subject',
-        //     'email_logs.created_at',
-        //     'email_logs.status'
-        // )
+        }
+
+        // Keep only valid exportable columns
+        $selectedColumns = array_values(array_filter(
+            $selectedColumns,
+            fn($column) => isset($this->exportableColumns[$column])
+        ));
+
+        $query = DB::connection($connectionName)
+            ->table('email_logs')
+            ->leftJoin('users', 'email_logs.user_id', '=', 'users.id');
+
+        // Dynamically build SELECT
+        $selects = [];
+        foreach ($selectedColumns as $column) {
+            if (!isset($this->exportableColumns[$column])) {
+                continue;
+            }
+
+            if (isset($this->exportableColumns[$column]['db'])) {
+                $selects[] = $this->exportableColumns[$column]['db'] . ' as ' . $column;
+            }
+
+            // Required for JSON handling
+            if ($column === 'to_email') {
+                $selects[] = 'email_logs.email_json';
+            }
+        }
+
+        $query->select(array_unique($selects));
 
         if ($request->has('user_id') && $request->user_id) {
             $query->where('email_logs.user_id', $request->user_id);
@@ -155,28 +168,26 @@ class EmailLogRepository
         $logs = $query->orderBy('email_logs.id', 'desc')->get();
 
         // Define headers
-        $headers = ['Username', 'From Email', 'To Email', 'Module', 'Email Subject', 'Created On', 'Status'];
+        $headers = $headers = array_map(
+            fn($column) => $column,
+            $selectedColumns
+        );
 
         // Prepare rows
-        $rows = $logs->map(function ($log) {
-            $emailJson = json_decode($log->email_json, true);
-            return [
-                $log->username,
-                $log->from_email,
-                $emailJson['to'] ?? '-',
-                $log->module_name,
-                $log->subject,
-                $log->created_at,
-                $log->status,
-            ];
+        $rows = $logs->map(function ($log) use ($selectedColumns) {
+            $row = [];
+            foreach ($selectedColumns as $column) {
+                if (isset($this->exportableColumns[$column]['callback'])) {
+                    $row[] = $this->{$this->exportableColumns[$column]['callback']}($log);
+                } else {
+                    $row[] = $log->{$column} ?? '';
+                }
+            }
+
+            return $row;
         })->toArray();
 
         $fileUrl = exportCsv($headers, $rows, 'email_logs');
-
-        // return response()->json([
-        //     'success' => true,
-        //     'file_url' => $fileUrl
-        // ]);
 
         return $this->apiResponse->getResponseStructure(
             trans('message.success'),
@@ -184,4 +195,36 @@ class EmailLogRepository
             trans('message.report_generated')
         );
     }
+
+    private function extractToEmail($log): string
+    {
+        $emailJson = json_decode($log->email_json ?? '{}', true);
+        return is_array($emailJson['to'] ?? null)
+            ? implode(', ', $emailJson['to'])
+            : ($emailJson['to'] ?? '-');
+    }
+
+    private array $exportableColumns = [
+        'Contact User' => [
+            'db'     => 'users.username',
+        ],
+        'From Mail' => [
+            'db'     => 'email_logs.from_email',
+        ],
+        'To Mail' => [
+            'callback' => 'extractToEmail',
+        ],
+        'Module' => [
+            'db'     => 'email_logs.module_name',
+        ],
+        'Email Subject' => [
+            'db'     => 'email_logs.subject',
+        ],
+        'Created On' => [
+            'db'     => 'email_logs.created_at',
+        ],
+        'Status' => [
+            'db'     => 'email_logs.status',
+        ],
+    ];
 }
