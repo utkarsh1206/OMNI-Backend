@@ -7,15 +7,19 @@ use App\Http\Requests\RecordApiRequest;
 use Illuminate\Http\Request;
 use Exception;
 use App\Http\Response\CustomApiResponse;
+use App\Repositories\RecordApiRepository;
+use App\Services\ApiRequestService;
 use Illuminate\Support\Facades\Validator;
 
 class RecordApiController extends Controller
 {
-    private $apiResponse;
+    private $apiRequestService;
+    private $recordApiRepository;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(ApiRequestService $apiRequestService, RecordApiRepository $recordApiRepository)
     {
-        $this->apiResponse = $customApiResponse;
+        $this->apiRequestService = $apiRequestService;
+        $this->recordApiRepository = $recordApiRepository;
     }
 
 
@@ -64,31 +68,43 @@ class RecordApiController extends Controller
 
     public function callRecordingApi(Request $request)
     {
-        try {
-            $config = getNeoxConfig();
-            // Check configuration status and handle error centrally
-            if (isset($config['status']) && $config['status'] === 'error') {
-                return response()->json($config);
-            }
+        // try {
+        //     $config = getNeoxConfig();
+        //     // Check configuration status and handle error centrally
+        //     if (isset($config['status']) && $config['status'] === 'error') {
+        //         return response()->json($config);
+        //     }
 
-            $ip = $config['neox_local_ip'];
-            $neoxToken = $config['neox_token'];
+        //     $ip = $config['neox_local_ip'];
+        //     $neoxToken = $config['neox_token'];
 
-            $url = "https://{$ip}/api/agent/actions/v2/agent_record.php";
+        //     $url = "https://{$ip}/api/agent/actions/v2/agent_record.php";
 
-            // Get validation rules from FormRequest
-            $rules = (new RecordApiRequest())->rules();
+        //     // Get validation rules from FormRequest
+        //     $rules = (new RecordApiRequest())->rules();
 
-            // Validate request using extracted rules
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()]);
-            }
+        //     // Validate request using extracted rules
+        //     $validator = Validator::make($request->all(), $rules);
+        //     if ($validator->fails()) {
+        //         return response()->json(['errors' => $validator->errors()]);
+        //     }
 
-            $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
-            return sendHttpRequest($url, 'POST', $validatedData);
-        } catch (Exception $e) {
-            return $this->apiResponse->handleAndResponseException($e);
+        //     $validatedData = array_merge($validator->validated(), ['token' => $neoxToken]);
+        //     return sendHttpRequest($url, 'POST', $validatedData);
+        // } catch (Exception $e) {
+        //     return $this->apiResponse->handleAndResponseException($e);
+        // }
+
+        $apiResult = $this->apiRequestService->handleApiRequest(
+            $request,
+            'agent_record',
+            RecordApiRequest::class
+        );
+
+        if ($apiResult instanceof \Illuminate\Http\JsonResponse) {
+            $apiResult = $apiResult->getData(true);
         }
+
+        return $this->recordApiRepository->handleCallRecording($apiResult, $request);
     }
 }

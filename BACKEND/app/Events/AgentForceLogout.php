@@ -42,7 +42,7 @@ class AgentForceLogout implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: ' . json_encode(
+        generateLogs('info', 'Agent Force Logout BroadcastWith Data: ' . json_encode(
             [
                 'AgentForceLogout' => $this->userId,
                 'Domain' => $this->domain

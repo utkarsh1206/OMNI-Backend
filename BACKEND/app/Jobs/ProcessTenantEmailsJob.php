@@ -76,11 +76,17 @@ class ProcessTenantEmailsJob implements ShouldQueue
                 return;
             }
 
-            $emailConfig = EmailConfigure::on($connection)
-                ->where('type', 'gmail')
-                ->first();
+            // $emailConfigs = EmailConfigure::on($connection)
+            //     ->where('type', 'gmail')
+            //     ->get();
+            // where not null imap
+            $emailConfigs = EmailConfigure::on($connection)
+                ->whereNotNull('imap_host')
+                ->whereNotNull('imap_user')
+                ->whereNotNull('imap_password')
+                ->get();
 
-            if (!$emailConfig) {
+            if ($emailConfigs->isEmpty()) {
                 generateScheduleLogs(
                     "warning",
                     "No email configuration found" . json_encode([
@@ -92,58 +98,17 @@ class ProcessTenantEmailsJob implements ShouldQueue
                 return;
             }
 
-            if (
-                !$emailConfig->imap_host ||
-                !$emailConfig->imap_password ||
-                !$emailConfig->imap_user
-            ) {
-                generateScheduleLogs(
-                    "warning",
-                    "No IMAP Configuration Found " . json_encode([
-                        'command_run_id' => $this->commandRunId,
-                        'job_run_id'     => $this->jobRunId,
-                        'tenant_id'      => $tenant->id,
-                    ])
-                );
-                return;
-            }
+            $fallbackSmtp = $emailConfigs->first(function ($config) {
+                return !empty($config->smtp_host) && !empty($config->smtp_user) && !empty($config->smtp_password);
+            });
 
-            $client = Client::make([
-                'host'       => $emailConfig->imap_host,
-                'port'       => $emailConfig->imap_port,
-                'encryption' => 'ssl',
-                'username'   => $emailConfig->imap_user,
-                'password'   => $emailConfig->imap_password,
-                'protocol'   => 'imap',
-            ]);
-
-            $client->connect();
-            $folder   = $client->getFolder('INBOX', 'UNSEEN');
-
-            $messages = $folder->messages()->unseen()->get();   // ->limit(20)->
-
-            generateScheduleLogs(
-                "info",
-                "Fetched unseen emails" . json_encode([
-                    'tenant_id'      => $tenant->id,
-                    'count'          => $messages->count(),
-                ])
-            );
-
-            // Configure SMTP dynamically
-            config([
-                'mail.default' => 'smtp',
-                'mail.mailers.smtp.host' => $emailConfig->smtp_host,
-                'mail.mailers.smtp.port' => $emailConfig->smtp_port,
-                'mail.mailers.smtp.username' => $emailConfig->smtp_user,
-                'mail.mailers.smtp.password' => $emailConfig->smtp_password,
-                'mail.mailers.smtp.encryption' => ($emailConfig->smtp_port == 587) ? 'TLS' : 'SSL',
-                'mail.from.address' => $emailConfig->sender_email,
-                'mail.from.name' => $emailConfig->sender_name,
-            ]);
-
-            foreach ($messages as $message) {
-                $this->storeEmailAsTicket($message, $emailConfig, $connection, $databaseName, $domain);
+            foreach ($emailConfigs as $emailConfig) {
+                try {
+                    $this->processSingleConfig($emailConfig, $fallbackSmtp, $connection, $databaseName, $domain);
+                } catch (Exception $e) {
+                    generateScheduleLogs("error", "Failed config ID {$emailConfig->id}: " . $e->getMessage());
+                    continue;
+                }
             }
 
             generateScheduleLogs(
@@ -162,6 +127,65 @@ class ProcessTenantEmailsJob implements ShouldQueue
                     'job_run_id'     => $this->jobRunId,
                     'tenant_id'      => $tenant->id,
                     'error'          => $e->getMessage(),
+                ])
+            );
+        }
+    }
+
+
+    private function processSingleConfig($emailConfig, $fallbackSmtp, $connection, $databaseName, $domain)
+    {
+        // if (!$emailConfig->imap_host || !$emailConfig->imap_password || !$emailConfig->imap_user) {
+        //     return;
+        // }
+
+        $client = Client::make([
+            'host'       => $emailConfig->imap_host,
+            'port'       => $emailConfig->imap_port,
+            'encryption' => 'ssl',
+            'username'   => $emailConfig->imap_user,
+            'password'   => $emailConfig->imap_password,
+            'protocol'   => 'imap',
+        ]);
+
+        $client->connect();
+        $folder = $client->getFolder('INBOX', 'UNSEEN');
+
+        $messages = $folder->messages()->unseen()->get();   // ->limit(20)->
+
+        generateScheduleLogs(
+            "info",
+            "Fetched unseen emails" . json_encode([
+                // 'tenant_id'      => $tenant->id,
+                'count'          => $messages->count(),
+            ])
+        );
+
+        if ($messages->count() > 0) {
+            $smtpProvider = (!empty($emailConfig->smtp_host)) ? $emailConfig : $fallbackSmtp;
+
+            if ($smtpProvider) {
+                config([
+                    'mail.default' => 'smtp',
+                    'mail.mailers.smtp.host' => $emailConfig->smtp_host,
+                    'mail.mailers.smtp.port' => $emailConfig->smtp_port,
+                    'mail.mailers.smtp.username' => $emailConfig->smtp_user,
+                    'mail.mailers.smtp.password' => $emailConfig->smtp_password,
+                    'mail.mailers.smtp.encryption' => ($emailConfig->smtp_port == 587) ? 'TLS' : 'SSL',
+                    'mail.from.address' => $emailConfig->sender_email,
+                    'mail.from.name' => $emailConfig->sender_name,
+                ]);
+            }
+            foreach ($messages as $message) {
+                $this->storeEmailAsTicket($message, $emailConfig, $connection, $databaseName, $domain);
+            }
+
+            generateScheduleLogs(
+                "info",
+                "Finished processing tenant emails" . json_encode([
+                    'command_run_id' => $this->commandRunId,
+                    'job_run_id'     => $this->jobRunId,
+                    // 'tenant_id'      => $tenant->id,
                 ])
             );
         }

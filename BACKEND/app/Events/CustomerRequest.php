@@ -23,7 +23,7 @@ class CustomerRequest implements ShouldBroadcastNow
     {
         $this->customerChat = $data;
         $this->domain = convertToLower(Str::replace('.', '_', $domain));
-        generateLogs('info', 'broadcast Data: '.json_encode(['CustomerId' => $this->customerChat]));
+        generateLogs('info', 'Customer Request Broadcast Data: '.json_encode(['CustomerId' => $this->customerChat]));
     }
 
     /**
@@ -46,7 +46,7 @@ class CustomerRequest implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: '.json_encode(['CustomerId' => $this->customerChat]));
+        generateLogs('info', 'Customer Request BroadcastWith Data: '.json_encode(['CustomerId' => $this->customerChat]));
         return [
             'CustomerId' => $this->customerChat, 
         ];

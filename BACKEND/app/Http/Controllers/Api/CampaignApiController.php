@@ -96,6 +96,14 @@ class CampaignApiController extends Controller
 
             // Send request to external API
             $apiResponse = sendHttpRequest($url, 'POST', $validatedData);
+
+            if (!$apiResponse || is_array($apiResponse)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'The DC server is currently unreachable. Please try again later.'
+                ], 503);
+            }
+
             $apiData = json_decode($apiResponse->getContent(), true);
 
             if (!isset($apiData['data']) || !is_array($apiData['data'])) {

@@ -24,13 +24,14 @@ class Message extends Model
         'first_name',
         'last_name',
         'external_user_id',
-        'external_user_phone'
+        'external_user_phone',
+        'group_id'
     ];
 
     protected $casts = [
         'external_message_time' => 'datetime', // Casts external_message_time to a Carbon instance
     ];
-    
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -68,5 +69,10 @@ class Message extends Model
             $q->where('user_id', $receiverId)
                 ->where('receiver_id', $userId);
         });
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class);
     }
 }

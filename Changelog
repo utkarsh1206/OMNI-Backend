@@ -1,3 +1,71 @@
+2026-01-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID : NOC-781, 782, 783, 784
+	* Previous Commit ID :  
+	* Version : Dev
+	* Laravel : add selectable columns and POST-based CSV export for reports
+	- Added support for dynamic column selection in CSV exports across:
+		- Call Log Report
+		- SLA Report
+		- Ticket Report
+		- User Activity Report
+	- Validated selected_columns input and return error when empty
+	- Refactored CSV formatting to map only requested columns
+	- Added optional database connection support for multi-tenant exports
+	- Included SLA resolution target and actual resolution time in SLA exports
+	- Improved ordering consistency (latest first) in exported data
+	- Switched CSV export endpoints from GET to POST to support request payloads
+	- Hardened payload and role handling to avoid null-related errors
+
+2026-01-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID : NOC-780
+	* Previous Commit ID :  
+	* Version : Dev
+	* Laravel :	Modified exportToCsv() method signature to accept an optional database connection parameter.
+	Added support for selected_columns in request payload to allow dynamic column-based CSV export.
+	Implemented validation to prevent export when no columns are selected.
+	Refactored query building to dynamically construct SELECT clauses based on user-selected columns.
+	Introduced configurable $exportableColumns mapping to control:
+	Database column selection
+	Alias handling
+	Custom data extraction via callbacks
+	Added callback-based processing for “To Email” field to safely extract recipient addresses from email_json.
+	Ensured required JSON fields are included only when needed for export.
+	Updated CSV headers and row generation logic to align with selected columns.
+	Improved export extensibility and maintainability by centralizing export column configuration.
+
+	Impact
+	Enables flexible, user-driven email log exports.
+	Improves compatibility with multiple database connections.
+	Prevents invalid export requests and enhances data accuracy.
+
+	Backward Compatibility
+	Existing export functionality remains unaffected when valid selected_columns are provided.
+
+2026-01-13 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
+	* NEWS
+	* Jira ID : NOC-748, 749,750,751, 752
+	* Previous Commit ID :  
+	* Version : Dev
+	* Laravel: Add email scheduling features and update related files
+		- Added new cron command for 'app:send-scheduled-email' in CronCommandsSeeder.php
+		- Introduced language lines for email scheduling in message.php
+		- Added API routes for managing email schedules in api.php
+
+		Implement CRUD API for Email Schedule
+
+	- Added CRUD functionality for Email Schedule:
+	- **Create**: Added store method to create email schedules.
+	- **Read**: Added list and show methods for fetching email schedules.
+	- **Update**: Added update method to modify existing email schedules.
+	- **Delete**: Added delete method to remove email schedules.
+	- Created EmailScheduleRepository for handling email schedules.
+	- Created migration for the email schedules table.
+	- Added EmailSchedule model to interact with the database.
+	- Added relevant language lines for email scheduling operations.
+	- Updated API routes to include endpoints for managing email schedules.
+
 2025-12-22 Gunjan Poshiya<gunjan.poshiya@stl.tech> 
 	* NEWS
 	* Jira ID : NOC-641, 637

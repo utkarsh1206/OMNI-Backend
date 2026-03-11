@@ -23,7 +23,7 @@ class CallConnected implements ShouldBroadcastNow
         $this->dialerData = $data;
         $this->dialerDomain = $domain;
         $this->dialerId = $id;
-        generateLogs('info', 'broadcast Data: ' . json_encode(['dialerData' => $this->dialerData]));
+        generateLogs('info', 'Call Connected Broadcast Data: ' . json_encode(['dialerData' => $this->dialerData]));
     }
 
     /**
@@ -46,7 +46,7 @@ class CallConnected implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: ' . json_encode(['dialerData' => $this->dialerData]));
+        generateLogs('info', 'Call Connected BroadcastWith Data: ' . json_encode(['dialerData' => $this->dialerData]));
         return [
             'dialCenter' => $this->dialerData,
         ];

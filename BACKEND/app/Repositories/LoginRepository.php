@@ -185,7 +185,14 @@ class LoginRepository
         $userId = $parseValue->authenticate()->id;
 
         // Delete user from Live Agents Table
-        LiveAgents::where('user_id', $userId)->delete();
+        // LiveAgents::where('user_id', $userId)->delete();
+
+        $agents = LiveAgents::where('user_id', $userId)->get();
+
+        foreach ($agents as $agent) {
+            $agent->bypassObserver = true;
+            $agent->delete();
+        }
         $parseValue->invalidate($token);
         return true;
     }

@@ -24,7 +24,7 @@ class ChatMessagesStored implements ShouldBroadcastNow
         $this->message = $data;
         $this->domain  = convertToLower(Str::replace('.', '_', $domain));
         $this->id = $id;
-        generateLogs('info', 'broadcast Data: '.json_encode(['customerChat' => $this->message]));
+        generateLogs('info', 'ChatMessages Stored Broadcast Data: '.json_encode(['customerChat' => $this->message]));
     }
 
     /**
@@ -47,7 +47,7 @@ class ChatMessagesStored implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        generateLogs('info', 'broadcastWith Data: '.json_encode(['chatMessagesStored' => $this->message]));
+        generateLogs('info', 'Chat Messages Stored BroadcastWith Data: '.json_encode(['chatMessagesStored' => $this->message]));
         return [
             'chatMessagesStored' => $this->message, 
         ];

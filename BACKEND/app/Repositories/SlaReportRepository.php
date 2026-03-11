@@ -50,7 +50,8 @@ class SlaReportRepository
                     'support_tickets.incident_id'
                 )
                 ->join('users', 'support_tickets.assign_to_id', '=', 'users.id')
-                ->addSelect('users.username as user_name');
+                ->addSelect('users.username as user_name')
+                ->orderBy('support_tickets.id', 'desc');
 
             $payload = $this->extractPayload($request);
 
@@ -219,10 +220,12 @@ class SlaReportRepository
         }
     }
 
-    public function exportCsv(Request $request)
+    public function exportCsv(Request $request, $connectionName = null)
     {
         try {
-            $ticketsquery = SupportTicket::with([
+            $selectedColumns = $request->input('selected_columns', []);
+
+            $ticketsquery = SupportTicket::on($connectionName)->with([
                 'notifications' => function ($query) {
                     $query->select(
                         'support_ticket_id',
@@ -238,34 +241,108 @@ class SlaReportRepository
                     'support_tickets.default_type',
                     'support_tickets.default_priority',
                     'support_tickets.created_at as opened_date',
-                    'support_tickets.is_escalated as sla_compliance'
+                    'support_tickets.is_escalated as sla_compliance',
+                    'support_tickets.actual_resolved_time',
+                    'support_tickets.incident_id'
                 )
                 ->join('users', 'support_tickets.assign_to_id', '=', 'users.id')
-                ->addSelect('users.username as user_name');
+                ->addSelect('users.username as user_name')
+                ->orderBy('support_tickets.id', 'desc');
 
             $payload = $this->extractPayload($request);
 
             $ticketsquery = $this->applyFilters($ticketsquery, $request, $payload);
-            $tickets = $ticketsquery->get();
+            // $tickets = $ticketsquery->get();
 
-            // Prepare CSV content
-            $headers = ['User Name', 'Ticket ID', 'Ticket Type', 'Priority', 'Opened Date', 'Resolved Date', 'SLA Compliance'];
+            // // SLA Resolution Target Calculation
+            // $incidentIds = $tickets->pluck('incident_id')->unique();
 
-            $rows = $tickets->map(function ($ticket) {
-                $resolvedDate = $ticket->notifications->first()->resolved_date ?? null;
-                $openedDate = Carbon::parse($ticket->opened_date)->toDateTimeString();
-                return [
-                    $ticket->user_name ?? 'Unknown',
-                    $ticket->ticket_id,
-                    $ticket->ticketType->type ?? 'Unknown',
-                    $ticket->priority->name ?? 'Unknown',
-                    $openedDate,
-                    $resolvedDate ? Carbon::parse($resolvedDate)->toDateTimeString() : null,
-                    $ticket->sla_compliance,
-                ];
-            })->toArray();
+            // $incidentSLA = IncidentType::on($connectionName)->whereIn('id', $incidentIds)
+            //     ->pluck('sla_id', 'id');
 
-            $fileUrl = exportCsv($headers, $rows, 'sla_reports');
+            // $slaIds = $incidentSLA->values()->unique();
+
+            // $slaTargets = SlaTarget::on($connectionName)->whereIn('sla_id', $slaIds)
+            //     ->get()
+            //     ->groupBy(fn($item) => $item->sla_id . '_' . $item->priority_type);
+
+            // $tickets->each(function ($ticket) use ($incidentSLA, $slaTargets) {
+
+            //     $slaId = $incidentSLA[$ticket->incident_id] ?? null;
+
+            //     $resolveTime = $slaId
+            //         ? ($slaTargets[$slaId . '_' . $ticket->default_priority] ?? null)
+            //         : null;
+
+            //     $minutes = $resolveTime?->first()?->resolve_time_value;
+
+            //     if ($minutes !== null) {
+            //         $ticket->resolution_target_time = sprintf(
+            //             '%02d:%02d:00',
+            //             intdiv($minutes, 60),
+            //             $minutes % 60
+            //         );
+            //     } else {
+            //         $ticket->resolution_target_time = null;
+            //     }
+            // });
+
+            $exportableColumns = [
+                'User Name' => fn($t) => $t->user_name ?? 'Unknown',
+                'Ticket ID' => fn($t) => $t->ticket_id,
+                'Ticket Type' => fn($t) => $t->ticketType->type ?? 'Unknown',
+                'Priority' => fn($t) => $t->priority->name ?? 'Unknown',
+                'Opened Date' => fn($t) =>
+                Carbon::parse($t->opened_date)->toDateTimeString(),
+
+                'Resolved Date' => fn($t) =>
+                optional($t->notifications->first())->resolved_date
+                    ? Carbon::parse($t->notifications->first()->resolved_date)->toDateTimeString()
+                    : null,
+
+                'Resolution Target Time' => fn($t) => $t->resolution_target_time,
+                'Resolution Actual Time' => fn($t) => $t->actual_resolved_time,
+                'SLA Compliance' => fn($t) => $t->sla_compliance,
+            ];
+
+            $selectedColumns = array_values(array_filter(
+                $selectedColumns,
+                fn($column) => isset($exportableColumns[$column])
+            ));
+
+            if (empty($selectedColumns)) {
+                return $this->apiResponse->getResponseStructure(
+                    trans('message.error'),
+                    null,
+                    'No columns selected for export'
+                );
+            }
+
+            // Use chunked export helper 
+            $fileUrl = exportCsvChunked($ticketsquery, $selectedColumns, function ($ticket) use ($selectedColumns, $exportableColumns) {
+                return array_map(fn($column) => $exportableColumns[$column]($ticket), $selectedColumns);
+            }, 'sla_reports');
+
+            // $headers = $selectedColumns;
+
+            // $rows = $tickets->map(function ($ticket) use ($selectedColumns, $exportableColumns) {
+            // $row = [];
+
+            // foreach ($selectedColumns as $column) {
+            //     if (!isset($exportableColumns[$column])) {
+            //         continue;
+            //     }
+            //     $row[] = $exportableColumns[$column]($ticket);
+            // }
+
+            // return $row;
+            //     return array_map(
+            //         fn($column) => $exportableColumns[$column]($ticket),
+            //         $selectedColumns
+            //     );
+            // })->toArray();
+
+            // $fileUrl = exportCsv($headers, $rows, 'sla_reports');
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
@@ -298,8 +375,8 @@ class SlaReportRepository
             $query->where('support_tickets.is_escalated', $request->input('slaCompliance'));
         }
 
-        if ($payload['role_id'] == 3) {
-            $query->where('assign_to_id', $payload['id']);
+        if (($payload['role_id'] ?? null) == 3) {
+            $query->where('assign_to_id', $payload['id'] ?? null);
         }
 
         if ($request->has('user')) {
@@ -311,6 +388,6 @@ class SlaReportRepository
 
     private function extractPayload(Request $request)
     {
-        return extractPayload($request->bearerToken());
+        return extractPayload($request->bearerToken()) ?? [];
     }
 }
