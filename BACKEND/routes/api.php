@@ -521,8 +521,11 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('email-schedule', EmailScheduleController::class);
 
     Route::prefix('groups')->group(function () {
+        Route::get('/group-list', [GroupChatController::class, 'getUserGroupIds']);
+
         // Group Management
         Route::get('/', [GroupChatController::class, 'getGroups']);
+        Route::get('/{groupId}', [GroupChatController::class, 'getGroupDetails'])->where('groupId', '[0-9]+');
         Route::post('/', [GroupChatController::class, 'createGroup']);
         Route::put('/{groupId}', [GroupChatController::class, 'updateGroup']);
         Route::delete('/{groupId}', [GroupChatController::class, 'deleteGroup']);
@@ -540,8 +543,6 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('/{groupId}/messages', [GroupChatController::class, 'storeGroupMessage']);
         Route::post('/{groupId}/messages/read', [GroupChatController::class, 'markGroupMessagesRead']);
         Route::delete('/{groupId}/messages/{messageId}', [GroupChatController::class, 'deleteGroupMessage']);
-
-        Route::get('/group-list', [GroupChatController::class, 'getUserGroupIds']);
     });
 
     Route::prefix('chats')->group(function () {

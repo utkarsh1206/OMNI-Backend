@@ -726,6 +726,62 @@ class GroupChatRepository
         }
     }
 
+    public function getGroupDetails($request, $groupId)
+    {
+        try {
+
+            $participantCheck = $this->ensureParticipant($groupId);
+            if (!($participantCheck instanceof GroupParticipant)) {
+                return $participantCheck;
+            }
+
+            $includeMembers = $request->query('include_members') === 'Y';
+
+            $group = Group::with(['owner'])->findOrFail($groupId);
+
+            $response = [
+                'id' => $group->id,
+                'name' => $group->name,
+                'type' => $group->type,
+                'owner_id' => $group->owner_id,
+                'created_by' => $group->created_by,
+                'created_at' => $group->created_at,
+                'owner_name' => $group->owner
+                    ? $group->owner->first_name . ' ' . $group->owner->last_name
+                    : null,
+            ];
+
+            if ($includeMembers) {
+
+                $members = GroupParticipant::with('user')
+                    ->where('group_id', $groupId)
+                    ->whereNull('left_at')
+                    ->get()
+                    ->map(function ($participant) {
+
+                        return [
+                            'user_id' => $participant->user_id,
+                            'name' => $participant->user->first_name . ' ' . $participant->user->last_name,
+                            'role' => $participant->role,
+                            'can_send_message' => $participant->can_send_message,
+                            'joined_at' => $participant->joined_at
+                        ];
+                    });
+
+                $response['participants'] = $members;
+            }
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $response,
+                trans('message.data_fetch')
+            );
+        } catch (Exception $ex) {
+            generateLogs('error', 'Error fetching group details', $ex->getMessage());
+            return $this->apiResponse->handleAndResponseException($ex);
+        }
+    }
+
     public function updateMemberPermission($request, $groupId, $userId)
     {
         try {

@@ -75,6 +75,11 @@ class GroupChatController extends Controller
         return $this->groupChatRepository->getGroups($request);
     }
 
+    public function getGroupDetails(Request $request, $groupId)
+    {
+        return $this->groupChatRepository->getGroupDetails($request, $groupId);
+    }
+
     public function getGroupMembers($groupId)
     {
         return $this->groupChatRepository->getGroupMembers($groupId);
@@ -87,6 +92,7 @@ class GroupChatController extends Controller
 
     public function getUserGroupIds(Request $request)
     {
+        generateLogs("debug", "Called funciton get usergroup ids");
         return $this->groupChatRepository->getUserGroupIds();
     }
 }
