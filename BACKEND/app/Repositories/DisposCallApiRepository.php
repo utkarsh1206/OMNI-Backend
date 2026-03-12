@@ -14,6 +14,7 @@ use App\Models\Users;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DisposCallApiRepository
 {
@@ -164,16 +165,20 @@ class DisposCallApiRepository
     private function logDailyActivity(Request $request, Users $user, LiveAgents $liveCallData)
     {
         try {
+            DB::beginTransaction();
             $today = Carbon::today()->toDateString();
 
             $lastActivity = UserDailyActivity::where('user_id', $user->id)
                 ->where('campaign_id', $liveCallData->campaign_id)
-                ->where('activity', 'Disconnect')
+                // ->where('activity', 'Disconnect')
                 ->whereDate('created_at', $today)
                 ->orderByDesc('id')
                 ->first();
 
-            if (!$lastActivity) return;
+            if (!$lastActivity) {
+                DB::commit();
+                return;
+            }
 
             $dispoDuration = Carbon::parse($lastActivity->created_at)
                 ->diff(Carbon::now())
@@ -187,7 +192,24 @@ class DisposCallApiRepository
                 'dispo_code'    => $request->disposition_status,
                 'call_unique_id' => $liveCallData->uniqueid,
             ]);
+
+            if ($liveCallData->dial_method == "MANUAL") {
+                $status = "Pause";
+            } elseif ($liveCallData->dial_method == "INBOUND_MAN" || $liveCallData->dial_method == "RATIO") {
+                $status = "Resume";
+            }
+
+            if ($status) {
+                UserDailyActivity::create([
+                    'user_id'       => $user->id,
+                    'campaign_id'   => $liveCallData->campaign_id,
+                    'activity'      => $status,
+                ]);
+            }
+
+            DB::commit();
         } catch (Exception $e) {
+            DB::rollBack();
             generateLogs('error', 'logDailyActivity failed: ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
@@ -197,7 +219,7 @@ class DisposCallApiRepository
     {
         try {
             // $status = ($liveCallData->call_direction === 'in_call') ? 'Pause' : 'Resume';
-           
+
             // LiveAgents::where('user_id', $user->id)
             //     ->where('extension', $request->phone)
             //     ->where('uniqueid', $liveCallData->uniqueid)

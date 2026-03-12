@@ -15,6 +15,7 @@ use App\Models\LiveAgents;
 use App\Events\AgentLiveStatus;
 use App\Models\Contact;
 use App\Models\Detail;
+use App\Models\UserDailyActivity;
 
 class WebhookCallController extends Controller
 {
@@ -353,6 +354,60 @@ class WebhookCallController extends Controller
                             broadcast(new AgentLiveStatus($liveAgent, $agentId->id, $domain));
                         }
                     }
+                }
+
+
+                if ($type == 'call_initiated') {
+                    if ($callType == 'outgoing') {
+                        $activity = 'OutCall';
+                    } 
+                    if ($callType == 'incoming') {
+                        $activity = 'InCall';
+                    }
+
+                    $latestActivity = getLatestUserActivity($agentId->id, $request->campaign_id);
+
+                    if (!$latestActivity) {
+                        return null;
+                    }
+
+                    // Calculate time difference from last activity
+                    $timeDiff = calculateTimeDiff($latestActivity->created_at);
+                    $durationField = $latestActivity->activity === 'Pause'
+                    ? 'pause_duration'
+                    : 'resume_duration';
+
+                    UserDailyActivity::create([
+                        'campaign_id'    => $request->campaign_id,
+                        'user_id'        => $agentId->id,
+                        'call_unique_id' => $request->call_unique_id,
+                        'activity'       => $activity,
+                        $durationField   => $timeDiff,
+                        
+                    ]);
+                } else if ($type == 'call_connected'){
+
+                }
+
+                if ($type == 'call_hangup') {
+                    $activityData = [
+                        'campaign_id' => $request->campaign_id,
+                        'user_id' => $agentId->id,
+                        'call_unique_id' => $request->call_unique_id,
+                        'activity' => 'Endcall',
+                    ];
+
+                    $lastActivity = getLatestUserActivity($agentId->id, $request->campaign_id);
+
+                    if (!$lastActivity) {
+                        return null;
+                    }
+
+                    if ($lastActivity) {
+                        $activityData['call_duration'] = calculateTimeDiff($lastActivity->created_at);
+                    }
+        
+                    UserDailyActivity::create($activityData);
                 }
 
                 $callLog = $this->saveCallLogs($data, $agentId->id, $domain);
