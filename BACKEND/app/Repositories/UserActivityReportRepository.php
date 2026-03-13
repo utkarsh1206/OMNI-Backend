@@ -52,33 +52,35 @@ class UserActivityReportRepository
             // Get the authenticated user
             $user = auth()->user();
 
-            $currentTime = now(config('app.timezone'))->format('Y-m-d H:i:s');
+            $currentTime = now()->format('Y-m-d H:i:s');
 
-            // Build the base query
             $query = UserLoginLog::select([
                 'user_id',
                 'login_date',
-                // DB::raw("SUM(TIMESTAMPDIFF(SECOND, CONCAT(login_date, ' ', login_time), CONCAT(logout_date, ' ', logout_time))) as total_seconds"),
                 DB::raw("
                     SUM(
                         TIMESTAMPDIFF(
                             SECOND,
-                            CONCAT(login_date, ' ', login_time),
-                            CASE 
-                                WHEN logout_date IS NULL OR logout_time IS NULL 
-                                THEN '{$currentTime}'
-                                ELSE CONCAT(logout_date, ' ', logout_time)
+                            CONCAT(login_date,' ',login_time),
+                            CASE
+                                WHEN logout_date IS NOT NULL AND logout_time IS NOT NULL
+                                    THEN CONCAT(logout_date,' ',logout_time)
+
+                                WHEN login_date = CURDATE()
+                                    THEN NOW()
+
+                                ELSE CONCAT(login_date,' 23:59:59')
                             END
                         )
                     ) as total_seconds
                 "),
                 DB::raw("COUNT(*) as login_count")
             ])
-                // ->whereNotNull('logout_time')
-                ->whereBetween('login_date', [$startDatetime, $endDatetime])
-                ->groupBy('login_date', 'user_id')
-                ->with('user')
-                ->orderByDesc('login_date');
+            ->whereBetween('login_date', [$startDatetime, $endDatetime])
+            ->groupBy('login_date','user_id')
+            ->with('user')
+            ->orderByDesc('login_date');
+            // 23:59:59 is used to represent: End of the login day,Fallback when logout missing
 
             // Apply user_id filter if role_id is 3
             if ($user->role_id == 3) {
@@ -269,20 +271,28 @@ class UserActivityReportRepository
     private function getCallHistoryData($call_type, $user_name, $date, $connectionName = null)
     {
         try {
-            return NeoxCallLog::on($connectionName)->select(
-                'caller_user_extension',
-                'called_phone_number',
-                DB::raw('SEC_TO_TIME(call_talk_duration) as call_talk_duration'),
-                DB::raw('SEC_TO_TIME(CAST(call_total_duration AS UNSIGNED)) as call_total_duration'),
-                'call_dispo_status',
-                'created_at',
-                'call_date'
+            return NeoxCallLog::on($connectionName)
+            ->from('neox_call_logs as ci') // call_initiated
+            ->join('neox_call_logs as ch', function ($join) {
+                $join->on('ci.call_unique_id', '=', 'ch.call_unique_id')
+                     ->where('ch.type', 'call_history');
+            })
+            ->select(
+                'ch.caller_user_extension',
+                'ch.called_phone_number',
+                DB::raw('SEC_TO_TIME(ch.call_talk_duration) as call_talk_duration'),
+                DB::raw('SEC_TO_TIME(CAST(ch.call_total_duration AS UNSIGNED)) as call_total_duration'),
+                'ch.call_dispo_status',
+                'ch.created_at',
+                'ci.call_date',
+                'ci.call_unique_id'
             )
-                ->where('call_type', $call_type)
-                ->where('caller_username', $user_name)
-                ->whereDate('call_date', $date)
-                ->where('type', 'call_history')
-                ->get();
+            ->where('ci.type', 'call_initiated')
+            ->where('ch.call_type', $call_type)
+            ->where('ch.caller_username', $user_name)
+            ->whereDate('ci.call_date', $date)
+            ->orderByDesc('call_date')
+            ->get();
         } catch (Exception $e) {
             generateLogs('error', 'Error in UserActivityReportRepository@getCallHistoryData: ' . $e->getMessage());
             throw $e;
@@ -415,92 +425,135 @@ class UserActivityReportRepository
     public function getReportData($userId, $campaignId = '', $date, $connectionName = null)
     {
         try {
-            $subConditions = [];
-            $loginConditions = [];
-
-            if ($date) {
-                $dateCondition = "DATE(created_at) = '{$date}'";
-                $subConditions[] = $dateCondition;
-                $loginConditions[] = "login_date = '{$date}'";
-            }
-
-            $subConditions[] = "u.id = {$userId}";
-
-            if (!empty($campaignId)) {
-                $subConditions[] = "campaign_id = '{$campaignId}'";
-                $loginConditions[] = "campaign_id = '{$campaignId}'";
-            }
-
-            $subCondStr = ' AND ' . implode(' AND ', $subConditions);
-            $loginCondStr = !empty($loginConditions) ? ' AND ' . implode(' AND ', $loginConditions) : '';
-
-            $result = DB::connection($connectionName)->table('users as u')
-                ->leftJoin('user_login_logs as ul', function ($join) use ($loginCondStr) {
-                    $join->on('ul.user_id', '=', 'u.id');
-                    if (!empty($loginCondStr)) {
-                        $join->whereRaw(ltrim($loginCondStr, ' AND '));
-                    }
-                })
-                ->selectRaw("
-                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.type = 'call_history' AND nl.caller_username = u.username {$subCondStr}) as calls,
-                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.call_type = 'outgoing' AND nl.type = 'call_history' AND nl.caller_username = u.username {$subCondStr}) as outgoing_call,
-                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.call_type = 'incoming' AND nl.type = 'call_history' AND nl.caller_username = u.username {$subCondStr}) as incoming_call,
-                (SELECT COUNT(*) FROM neox_call_logs nl WHERE nl.type = 'CALL_CONNECTED' AND nl.caller_username = u.username {$subCondStr}) as answered,
-                IFNULL((SELECT SEC_TO_TIME(ROUND(SUM(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'call_history' AND nl.caller_username = u.username {$subCondStr}), '00:00:00') as total_talk,
-                IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(call_talk_duration))) FROM neox_call_logs nl WHERE nl.type = 'call_history' AND nl.caller_username = u.username {$subCondStr}), '00:00:00') as talk_avg,
-                COUNT(ul.id) as login_count,
-                IF(MIN(ul.login_date) IS NOT NULL, CONCAT(MIN(ul.login_date), ' ', MIN(ul.login_time)), 'Not Logged') as first_login,
-                IF(MAX(ul.login_date) IS NOT NULL, CONCAT(MAX(ul.login_date), ' ', MAX(ul.login_time)), 'Not Logged') as last_log,
-                IF(MAX(ul.logout_date) IS NOT NULL, CONCAT(MAX(ul.logout_date), ' ', MAX(ul.logout_time)), 'Not Logged') as last_logout,
-                IFNULL((
-                    SELECT SEC_TO_TIME(SUM(
-                        TIMESTAMPDIFF(
-                            SECOND,
-                            STR_TO_DATE(CONCAT(login_date, ' ', login_time), '%Y-%m-%d %H:%i:%s'),
-                            STR_TO_DATE(CONCAT(logout_date, ' ', logout_time), '%Y-%m-%d %H:%i:%s')
-                        )
-                    ))
-                    FROM user_login_logs
-                    WHERE user_id = u.id
-                    AND logout_time != '00:00:00'
-                    " . ($date ? "AND login_date = '{$date}'" : "") . "
-                ), 0) as total_log_time,
-                IFNULL((SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(total_pause_time))) 
-                        FROM pause_resume_user_logs 
-                        WHERE user_id = u.id 
-                        " . ($date ? "AND DATE(created_at) = '{$date}'" : "") . " 
-                        GROUP BY user_id), '00:00:00') as pause_time,
-                IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(TIME_TO_SEC(total_pause_time)))) 
-                        FROM pause_resume_user_logs 
-                        WHERE user_id = u.id 
-                        " . ($date ? "AND DATE(created_at) = '{$date}'" : "") . " 
-                        GROUP BY user_id), '00:00:00') as pause_time_avg,
-                IFNULL((SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(total_resume_time))) 
-                        FROM pause_resume_user_logs 
-                        WHERE user_id = u.id 
-                        " . ($date ? "AND DATE(created_at) = '{$date}'" : "") . " 
-                        GROUP BY user_id), '00:00:00') as resume_time,
-                IFNULL((SELECT SEC_TO_TIME(ROUND(AVG(TIME_TO_SEC(total_resume_time)))) 
-                        FROM pause_resume_user_logs 
-                        WHERE user_id = u.id 
-                        " . ($date ? "AND DATE(created_at) = '{$date}'" : "") . " 
-                        GROUP BY user_id), '00:00:00') as resume_time_avg
-                ")
-                ->where('u.id', $userId)
-                ->groupBy('u.id', 'u.username')
-                ->orderByDesc('u.id')
-                ->first();
-
-            if ($result) {
-                foreach (['first_login', 'last_log', 'last_logout'] as $field) {
-                    $timestamp = $result->$field;
-                    if (!$timestamp || strtotime($timestamp) < strtotime('1972-01-01')) {
-                        $result->$field = 'Not Logged';
-                    } else {
-                        $result->$field = Carbon::parse($timestamp)->format('Y-m-d H:i:s');
-                    }
-                }
-            }
+            $result = DB::connection($connectionName)
+            ->table('users as u')
+            
+            /* CALL SUMMARY */
+            ->leftJoinSub(
+                DB::table('neox_call_logs')
+                    ->selectRaw("
+                        caller_username,
+                        SUM(type='call_history') as calls,
+                        SUM(type='call_history' AND call_type='outgoing') as outgoing_call,
+                        SUM(type='call_history' AND call_type='incoming') as incoming_call,
+                        SUM(type='CALL_CONNECTED') as answered,
+                        SEC_TO_TIME(SUM(CASE WHEN type='call_history' THEN call_talk_duration ELSE 0 END)) as total_talk,
+                        SEC_TO_TIME(ROUND(AVG(CASE WHEN type='call_history' THEN call_talk_duration END))) as talk_avg
+                    ")
+                    ->when($date,function($q) use ($date){
+                        $start = Carbon::parse($date)->startOfDay();
+                        $end   = Carbon::parse($date)->endOfDay();
+                        $q->whereBetween('created_at',[$start,$end]);
+                    })
+                    ->when($campaignId,function($q) use ($campaignId){
+                        $q->where('campaign_id',$campaignId);
+                    })
+                    ->groupBy('caller_username'),
+                'call_data',
+                'call_data.caller_username',
+                '=',
+                'u.username'
+            )
+            
+            /* LOGIN SUMMARY */
+            ->leftJoinSub(
+                DB::table('user_login_logs')
+                    ->selectRaw("
+                        user_id,
+                        COUNT(*) as login_count,
+                        CONCAT(MIN(login_date),' ',MIN(login_time)) as first_login,
+                        CONCAT(MAX(login_date),' ',MAX(login_time)) as last_log,
+                        CONCAT(MAX(logout_date),' ',MAX(logout_time)) as last_logout,
+                        SEC_TO_TIME(
+                            SUM(
+                                TIMESTAMPDIFF(
+                                    SECOND,
+                                    CONCAT(login_date,' ',login_time),
+                                    CASE
+                                        WHEN logout_date IS NOT NULL AND logout_time IS NOT NULL
+                                            THEN CONCAT(logout_date,' ',logout_time)
+                        
+                                        WHEN login_date = CURDATE()
+                                            THEN NOW()
+                        
+                                        ELSE TIMESTAMP(login_date,'23:59:59')
+                                    END
+                                )
+                            )
+                        ) as total_log_time
+                    ")
+                    ->when($date,function($q) use ($date){
+                        $q->where('login_date',$date);
+                    })
+                    ->when($campaignId,function($q) use ($campaignId){
+                        $q->where('campaign_id',$campaignId);
+                    })
+                    ->groupBy('user_id'),
+                'login_data',
+                'login_data.user_id',
+                '=',
+                'u.id'
+            )
+            
+            /* USER DAILY ACTIVITY SUMMARY */
+            ->leftJoinSub(
+                DB::table('user_daily_activities')
+                    ->selectRaw("
+                        user_id,
+                        SEC_TO_TIME(SUM(TIME_TO_SEC(pause_duration))) as pause_time,
+                        SEC_TO_TIME(
+                            ROUND(
+                                SUM(TIME_TO_SEC(pause_duration)) /
+                                NULLIF(SUM(activity='Pause'),0)
+                            )
+                        ) as pause_time_avg,
+                        SEC_TO_TIME(SUM(TIME_TO_SEC(resume_duration))) as resume_time,
+                        SEC_TO_TIME(
+                            ROUND(
+                                SUM(TIME_TO_SEC(resume_duration)) /
+                                NULLIF(SUM(activity='Resume'),0)
+                            )
+                        ) as resume_time_avg,
+                        SEC_TO_TIME(SUM(TIME_TO_SEC(dispo_duration))) as total_dispose_d
+                    ")
+                    ->when($date,function($q) use ($date){
+                        $start = Carbon::parse($date)->startOfDay();
+                        $end   = Carbon::parse($date)->endOfDay();
+                        $q->whereBetween('created_at',[$start,$end]);
+                    })
+                    ->when($campaignId,function($q) use ($campaignId){
+                        $q->where('campaign_id',$campaignId);
+                    })
+                    ->groupBy('user_id'),
+                'activity_data',
+                'activity_data.user_id',
+                '=',
+                'u.id'
+            )
+            
+            ->selectRaw("
+                COALESCE(call_data.calls,0) as calls,
+                COALESCE(call_data.outgoing_call,0) as outgoing_call,
+                COALESCE(call_data.incoming_call,0) as incoming_call,
+                COALESCE(call_data.answered,0) as answered,
+                COALESCE(call_data.total_talk,'00:00:00') as total_talk,
+                COALESCE(call_data.talk_avg,'00:00:00') as talk_avg,
+            
+                COALESCE(login_data.login_count,0) as login_count,
+                COALESCE(login_data.first_login,'Not Logged') as first_login,
+                COALESCE(login_data.last_log,'Not Logged') as last_log,
+                COALESCE(login_data.last_logout,'Not Logged') as last_logout,
+                COALESCE(login_data.total_log_time,'00:00:00') as total_log_time,
+            
+                COALESCE(activity_data.pause_time,'00:00:00') as pause_time,
+                COALESCE(activity_data.pause_time_avg,'00:00:00') as pause_time_avg,
+                COALESCE(activity_data.resume_time,'00:00:00') as resume_time,
+                COALESCE(activity_data.resume_time_avg,'00:00:00') as resume_time_avg,
+                COALESCE(activity_data.total_dispose_d,'00:00:00') as total_dispose_d
+            ")
+            
+            ->where('u.id',$userId)
+            ->first();
 
             return $result;
         } catch (Exception $e) {
@@ -987,46 +1040,42 @@ class UserActivityReportRepository
             $user = auth()->user();
 
             // Pause Count Query
-            $pauseQuery = PauseResumeUserLog::selectRaw('count(id) as total')
-                ->where('user_status', 'Pause')
-                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()]);
-
-            // Resume Count Query
-            $resumeQuery = PauseResumeUserLog::selectRaw('count(id) as total')
-                ->where('user_status', 'Resume')
-                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()]);
+            $activityQuery = DB::table('user_daily_activities')
+            ->selectRaw("
+                SUM(activity='Pause') as pause_count,
+                SUM(activity='Resume') as resume_count
+            ")
+            ->whereBetween('created_at', [$start_date, $end_date]);
 
             $incomingQuery = DB::table('neox_call_logs')
                 ->selectRaw('count(id) as total')
                 ->whereRaw(" call_type = 'incoming'")
-                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()])
-                ->where('type', 'call_history');
+                ->where('type', 'call_history')
+                ->whereBetween('created_at', [$start_date, $end_date]);
 
             // Outgoing Call Count
             $outgoingQuery = DB::table('neox_call_logs')
                 ->selectRaw('count(id) as total')
                 ->whereRaw(" call_type = 'outgoing'")
-                ->whereBetween(DB::raw('DATE(created_at)'), [$start_date->toDateString(), $end_date->toDateString()])
-                ->where('type', 'call_history');
+                ->where('type', 'call_history')
+                ->whereBetween('created_at', [$start_date, $end_date]);
 
             // Apply user filter if role_id is 3
             if ($user->role_id == 3) {
-                $pauseQuery->where('user_id', $user->id);
-                $resumeQuery->where('user_id', $user->id);
+                $activityQuery->where('user_id', $user->id);
                 $incomingQuery->where('caller_username', $user->username);
                 $outgoingQuery->where('caller_username', $user->username);
             }
 
             // Execute queries
-            $pauseCount = $pauseQuery->first();
-            $resumeCount = $resumeQuery->first();
+            $activityCount = $activityQuery->first();
             $i_count = $incomingQuery->first();
             $o_count = $outgoingQuery->first();
 
             // Return the counts as a JSON response
             $data = [
-                'pause_count' => $pauseCount->total,
-                'resume_count' => $resumeCount->total,
+                'pause_count' => $activityCount->pause_count ?? 0,
+                'resume_count' => $activityCount->resume_count ?? 0,
                 'incoming_count' => $i_count->total,
                 'outgoing_count' => $o_count->total,
             ];
