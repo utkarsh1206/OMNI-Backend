@@ -854,25 +854,60 @@ if (!function_exists('exportCsvChunked')) {
     }
 }
 
-if (!function_exists('logUserLogoutActivity')) {
+if (!function_exists('getLatestUserActivity')) {
 
-    function logUserLogoutActivity($userId, $campaignId)
+    function getLatestUserActivity($userId, $campaignId)
     {
-        $latestActivity = UserDailyActivity::where('user_id', $userId)
+        return UserDailyActivity::where('user_id', $userId)
             ->where('campaign_id', $campaignId)
-            ->orderByDesc('id')
+            ->latest('id')
             ->first();
+    }
+}
 
-        // If no activity is found, we exit
-        if (!$latestActivity) {
+if (!function_exists('calculateTimeDiff')) {
+
+    function calculateTimeDiff($startTime, $endTime = null)
+    {
+        $start = Carbon::parse($startTime);
+        $end = $endTime ? Carbon::parse($endTime) : Carbon::now();
+
+        return $start->diff($end)->format('%H:%I:%S');
+    }
+}
+
+if (!function_exists('getTodayLoginActivity')) {
+
+    function getTodayLoginActivity($userId, $campaignId)
+    {
+        return UserDailyActivity::where('user_id', $userId)
+            ->where('campaign_id', $campaignId)
+            ->where('activity', 'Login')
+            ->whereDate('created_at', Carbon::today())
+            ->latest('id')
+            ->first();
+    }
+}
+
+if (!function_exists('calculateLoginDuration')) {
+
+    function calculateLoginDuration($loginActivity)
+    {
+        if (!$loginActivity) {
             return null;
         }
 
-        $start = Carbon::parse($latestActivity->created_at);
-        $end = Carbon::now();
-        $timeDiff = $start->diff($end)->format('%H:%I:%S');
+        $seconds = Carbon::parse($loginActivity->created_at)
+            ->diffInSeconds(Carbon::now());
 
-        // Update login log
+        return gmdate('H:i:s', $seconds);
+    }
+}
+
+if (!function_exists('updateUserLoginLog')) {
+
+    function updateUserLoginLog($userId, $campaignId)
+    {
         $latestLog = UserLoginLog::where('user_id', $userId)
             ->where('campaign_id', $campaignId)
             ->orderByDesc('login_date')
@@ -886,31 +921,41 @@ if (!function_exists('logUserLogoutActivity')) {
                 'updated_at' => Carbon::now(),
             ]);
         }
+    }
+}
 
-        // Calculate login duration
-        $duration = null;
+if (!function_exists('logUserLogoutActivity')) {
 
-        $loginActivity = UserDailyActivity::where('user_id', $userId)
-            ->where('campaign_id', $campaignId)
-            ->where('activity', 'Login')
-            ->whereDate('created_at', Carbon::today())
-            ->orderByDesc('id')
-            ->first();
+    function logUserLogoutActivity($userId, $campaignId, )
+    {
+        $latestActivity = getLatestUserActivity($userId, $campaignId);
 
-        if ($loginActivity) {
-            $diffInSeconds = Carbon::parse($loginActivity->created_at)
-                ->diffInSeconds(Carbon::now());
-
-            $duration = gmdate('H:i:s', $diffInSeconds);
+        if (!$latestActivity) {
+            return null;
         }
 
-        // Save logout activity
+        // Calculate time difference from last activity
+        $timeDiff = calculateTimeDiff($latestActivity->created_at);
+
+        // Update login log table
+        updateUserLoginLog($userId, $campaignId);
+
+        // Calculate total login duration
+        $loginActivity = getTodayLoginActivity($userId, $campaignId);
+        $duration = calculateLoginDuration($loginActivity);
+
+        // Decide which duration field to update
+        $durationField = $latestActivity->activity === 'Pause'
+            ? 'pause_duration'
+            : 'resume_duration';
+
+        // Insert logout activity
         UserDailyActivity::create([
             'campaign_id' => $campaignId,
             'user_id' => $userId,
             'activity' => 'Logout',
             'total_login_duration' => $duration,
-            $latestActivity->activity === 'Pause' ? 'pause_duration' : 'resume_duration' => $timeDiff
+            $durationField => $timeDiff,
         ]);
 
         return $duration;
