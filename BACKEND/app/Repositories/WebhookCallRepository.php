@@ -28,12 +28,69 @@ class WebhookCallRepository
     }
 
     // Save to neox_temp_call_logs table
-    public function saveTempCallLog($tempData, $id, $domain)
+    // public function saveTempCallLog($tempData, $id, $domain)
+    // {
+    //     generateLogs('info', 'Temp-Data: ' . json_encode($tempData));
+
+    //     if (isset($tempData['call_unique_id']) && strpos($tempData['call_unique_id'], 'SOT') === 0) {
+
+    //         $stateMapping = [
+    //             'ADDPARTY_SUCCESS'    => ConferenceAddPartySuccessful::class,
+    //             'ADDPARTY_FAIL'       => ConferenceAddPartyFailed::class,
+    //             'REMOVEPARTY_SUCCESS' => ConferenceRemovePartySuccessful::class,
+    //             'STARTCONF_SUCCESS'   => ConferenceStartSuccess::class,
+    //             'ADDPARTY_INIT'       => ConferenceAddPartyInit::class,
+    //             'STARTCONF_INIT'      => ConferenceStartInit::class,
+    //             'STARTCONF_FAIL'      => ConferenceStartFail::class,
+    //         ];
+
+    //         $confState = $tempData['conf_state'] ?? 'NONE';
+
+    //         $eventClass = $stateMapping[$confState] ?? ConferenceCallEvent::class;
+    //         // broadcast(new ConferenceCallEvent($tempData, $id, $domain));
+    //         // Broadcast to the NEW conference channel
+    //         broadcast(new $eventClass($tempData, $id, $domain));
+    //     } else {
+
+    //         $broadcastEvents = [
+    //             'call_initiated' => CallInitiated::class,
+    //             'call_connected' => CallConnected::class,
+    //             'call_hangup'    => CallHangup::class,
+    //         ];
+
+    //         if (isset($broadcastEvents[$tempData['type']])) {
+    //             broadcast(new $broadcastEvents[$tempData['type']]($tempData, $id, $domain));
+    //         }
+    //     }
+    //     // broadcast(new DialCenterData($tempData));
+    //     return NeoxTempCallLog::create($tempData);
+    // }
+
+    public function saveTempCallLog($tempData, array $ids, $domain)
     {
         generateLogs('info', 'Temp-Data: ' . json_encode($tempData));
 
-        if (isset($tempData['call_unique_id']) && strpos($tempData['call_unique_id'], 'SOT') === 0) {
+        $broadcastEvents = [
+            'call_initiated' => CallInitiated::class,
+            'call_connected' => CallConnected::class,
+            'call_hangup'    => CallHangup::class,
+        ];
 
+        if ($ids['agent_id'] && isset($broadcastEvents[$tempData['type']])) {
+            // broadcast(new $broadcastEvents[$tempData['type']]($tempData, $ids['agent_id'], $domain));
+            $isSot = (isset($tempData['call_unique_id']) && strpos($tempData['call_unique_id'], 'SOT') === 0);
+
+            $confState = $tempData['conf_state'] ?? null;
+            $invalidStates = [null, '', 'none', 'NONE', 'None'];
+            $hasNoConfState = in_array($confState, $invalidStates, true);
+
+            if (!($isSot && $hasNoConfState)) {
+                broadcast(new $broadcastEvents[$tempData['type']]($tempData, $ids['agent_id'], $domain));
+            }
+        }
+
+        if ($ids['parent_id'] && isset($tempData['call_unique_id']) && strpos($tempData['call_unique_id'], 'SOT') === 0) {
+            
             $stateMapping = [
                 'ADDPARTY_SUCCESS'    => ConferenceAddPartySuccessful::class,
                 'ADDPARTY_FAIL'       => ConferenceAddPartyFailed::class,
@@ -45,24 +102,11 @@ class WebhookCallRepository
             ];
 
             $confState = $tempData['conf_state'] ?? 'NONE';
-
             $eventClass = $stateMapping[$confState] ?? ConferenceCallEvent::class;
-            // broadcast(new ConferenceCallEvent($tempData, $id, $domain));
-            // Broadcast to the NEW conference channel
-            broadcast(new $eventClass($tempData, $id, $domain));
-        } else {
 
-            $broadcastEvents = [
-                'call_initiated' => CallInitiated::class,
-                'call_connected' => CallConnected::class,
-                'call_hangup'    => CallHangup::class,
-            ];
-
-            if (isset($broadcastEvents[$tempData['type']])) {
-                broadcast(new $broadcastEvents[$tempData['type']]($tempData, $id, $domain));
-            }
+            broadcast(new $eventClass($tempData, $ids['parent_id'], $domain));
         }
-        // broadcast(new DialCenterData($tempData));
+
         return NeoxTempCallLog::create($tempData);
     }
 

@@ -284,6 +284,7 @@ class WebhookCallController extends Controller
 
             // Update or create call history using the repository
             $callHistory = $this->webhookCallRepository->updateOrCreateCallHistory($data, $connection);
+            generateLogs("info", "Call History Webhook Initiated: " . json_encode($callHistory));
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $callHistory,
@@ -306,17 +307,39 @@ class WebhookCallController extends Controller
                 // DB::setDefaultConnection($data->getName());
 
                 $callUniqueId = $request->input('call_unique_id');
+                // $isSOT = (strpos($callUniqueId, 'SOT') === 0);
+
+                $ids = ['agent_id' => null, 'parent_id' => null];
+
+                $agentUser = Users::select('id')->where('username', $request->input('caller_username'))->first();
+                $ids['agent_id'] = $agentUser?->id;
+
+                // if ($isSOT) {
+                //     $parentUser = Users::select('id')->where('username', $request->input('parent_user_id'))->first();
+                //     $ids['parent_id'] = $parentUser?->id;
+                // }
+
                 $confState = $request->input('conf_state') ?: null;
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
 
-                $agentName = (strpos($callUniqueId, 'SOT') === 0)
-                    ? $request->input('parent_user_id')
-                    : $request->input('caller_username');
+                // generateLogs("info", "\n\n\n Call Unique ID: " . $callUniqueId);
+                // generateLogs("info", "\n Conf State: " . $confState);
+                // generateLogs("info", "\n Call Type: " . $callType);
+
+                // $agentName = (strpos($callUniqueId, 'SOT') === 0)
+                //     ? $request->input('parent_user_id')
+                //     : $request->input('caller_username');
+
+                // generateLogs("info", "\n Agent Name: " . $agentName);
 
                 if (strpos($callUniqueId, 'SOT') === 0) {
-                    $data['caller_username'] = $agentName;
+                    // $data['caller_username'] = $agentName;
+                    $data['caller_username'] = $request->input('caller_username');
                     $data['conf_state'] = $confState;
+
+                    generateLogs("info", "\n Caller Username: " . $data['caller_username']);
+                    generateLogs("info", "\n Conf State(2): " . $data['conf_state']);
                 }
                 // -------------
                 // -------------
@@ -335,13 +358,37 @@ class WebhookCallController extends Controller
                 // -------------
 
                 // $agentName = $request->caller_username;
-                $agentId = Users::select('id')->where('username', $agentName)->first();
+                // $agentId = Users::select('id')->where('username', $agentName)->first();
+
+                // generateLogs("info", "\n Agent ID: " . json_encode($agentId));
+
+                // if ($type !== 'call_initiated') {
+                //     if ($agentId) {
+                //         $liveAgent = LiveAgents::where('user_id', $agentId->id)
+                //             ->where('extension', $data['caller_user_extension'])
+                //             ->first();
+                //         if ($liveAgent) {
+                //             $liveAgent->bypassObserver = true;
+                //             $liveAgent->status = $data['user_status'];
+                //             $liveAgent->uniqueid = $data['call_unique_id'];
+                //             $liveAgent->customer = $data['called_phone_number'];
+                //             $liveAgent->call_date = $data['call_date'];
+                //             $liveAgent->call_direction = 'out_call';
+                //             $liveAgent->save();
+
+                //             broadcast(new AgentLiveStatus($liveAgent, $agentId->id, $domain));
+                //         }
+                //     }
+                // }
 
                 if ($type !== 'call_initiated') {
-                    if ($agentId) {
-                        $liveAgent = LiveAgents::where('user_id', $agentId->id)
+                    foreach ($ids as $role => $userId) {
+                        if (!$userId) continue;
+
+                        $liveAgent = LiveAgents::where('user_id', $userId)
                             ->where('extension', $data['caller_user_extension'])
                             ->first();
+
                         if ($liveAgent) {
                             $liveAgent->bypassObserver = true;
                             $liveAgent->status = $data['user_status'];
@@ -351,11 +398,10 @@ class WebhookCallController extends Controller
                             $liveAgent->call_direction = 'out_call';
                             $liveAgent->save();
 
-                            broadcast(new AgentLiveStatus($liveAgent, $agentId->id, $domain));
+                            broadcast(new AgentLiveStatus($liveAgent, $userId, $domain));
                         }
                     }
                 }
-
 
                 if ($type == 'call_initiated') {
                     if ($callType == 'outgoing') {
@@ -365,7 +411,7 @@ class WebhookCallController extends Controller
                         $activity = 'InCall';
                     }
 
-                    $latestActivity = getLatestUserActivity($agentId->id, $request->campaign_id);
+                    $latestActivity = getLatestUserActivity($agentUser?->id, $request->campaign_id);
 
                     if (!$latestActivity) {
                         return null;
@@ -377,27 +423,32 @@ class WebhookCallController extends Controller
                     ? 'pause_duration'
                     : 'resume_duration';
 
+                    generateLogs("info", "\n User_id: " . $agentUser?->id);
                     UserDailyActivity::create([
                         'campaign_id'    => $request->campaign_id,
-                        'user_id'        => $agentId->id,
+                        'user_id'        => $agentUser?->id,
                         'call_unique_id' => $request->call_unique_id,
                         'activity'       => $activity,
                         $durationField   => $timeDiff,
                         
                     ]);
-                } else if ($type == 'call_connected'){
-
                 }
 
                 if ($type == 'call_hangup') {
                     $activityData = [
                         'campaign_id' => $request->campaign_id,
-                        'user_id' => $agentId->id,
+                        'user_id' => $agentUser?->id,
                         'call_unique_id' => $request->call_unique_id,
                         'activity' => 'Endcall',
                     ];
 
-                    $lastActivity = getLatestUserActivity($agentId->id, $request->campaign_id);
+                    // $lastActivity = getLatestUserActivity($ids, $request->campaign_id);
+
+                       $lastActivity = UserDailyActivity::where('user_id', $agentUser?->id)
+                        ->where('campaign_id', $request->campaign_id)
+                        ->whereIn('activity', ['InCall', 'OutCall'])
+                        ->latest('id')
+                        ->first();
 
                     if (!$lastActivity) {
                         return null;
@@ -410,7 +461,8 @@ class WebhookCallController extends Controller
                     UserDailyActivity::create($activityData);
                 }
 
-                $callLog = $this->saveCallLogs($data, $agentId->id, $domain);
+                // $callLog = $this->saveCallLogs($data, $agentId->id, $domain);
+                $callLog = $this->saveCallLogs($data, $ids, $domain);
 
                 return $this->apiResponse->getResponseStructure(
                     trans('message.success'),
@@ -507,7 +559,8 @@ class WebhookCallController extends Controller
     }
 
     // Save the call data to both main and temporary logs
-    private function saveCallLogs(array $data, int $id, string $domain)
+    // private function saveCallLogs(array $data, int $id, string $domain)
+    private function saveCallLogs(array $data, array $ids, string $domain)
     {
         // Save to neox_call_logs table
         $callLog = $this->webhookCallRepository->saveCallLog($data);
@@ -517,7 +570,8 @@ class WebhookCallController extends Controller
             'date' => Carbon::now()->toDateString(),
             'time' => Carbon::now()->toTimeString()
         ]);
-        $this->webhookCallRepository->saveTempCallLog($tempData, $id, $domain);
+        // $this->webhookCallRepository->saveTempCallLog($tempData, $id, $domain);
+        $this->webhookCallRepository->saveTempCallLog($tempData, $ids, $domain);
         return $callLog;
     }
 
