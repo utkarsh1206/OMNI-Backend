@@ -51,7 +51,7 @@ class DialCallApiRepository
 
             $callData = $this->buildCallData($user->id, $request, $uniqueId);
 
-            $this->trackUserActivity($request, $user, $uniqueId);
+            // $this->trackUserActivity($request, $user, $uniqueId);
 
             $this->updateAfterSuccessfulDial($request, $uniqueId);
 
@@ -145,11 +145,24 @@ class DialCallApiRepository
     public function trackUserActivity($request, $user, $uniqueId)
     {
         try {
+            $latestActivity = getLatestUserActivity($user->id, $request->campaign_id);
+
+            if (!$latestActivity) {
+                return null;
+            }
+
+            // Calculate time difference from last activity
+            $timeDiff = calculateTimeDiff($latestActivity->created_at);
+            $durationField = $latestActivity->activity === 'Pause'
+            ? 'pause_duration'
+            : 'resume_duration';
+
             UserDailyActivity::create([
                 'campaign_id'    => $request->campaign_id,
                 'user_id'        => $user->id,
                 'call_unique_id' => $uniqueId,
                 'activity'       => 'Outcall',
+                $durationField   => $timeDiff,
             ]);
         } catch (Exception $e) {
             generateLogs('error', 'Tracking user activity failed: ', $e->getMessage());

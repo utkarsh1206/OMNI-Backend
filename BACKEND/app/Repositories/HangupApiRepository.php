@@ -34,8 +34,8 @@ class HangupApiRepository
 
             $callLogData = $this->updateOrCreateCallLogs($logData);
             $liveCallRecord = $this->updateOrCreateLiveCall($logData);
-            $this->logUserActivity($user, $request, $liveCallData);
-            $this->logDisconnectIfNeeded($liveCallData, $user, $request);
+            // $this->logUserActivity($user, $request, $liveCallData);
+            // $this->logDisconnectIfNeeded($liveCallData, $user, $request);
 
             $data = [
                 'message' => $result['message'],
@@ -65,8 +65,8 @@ class HangupApiRepository
 
             $this->updateOrCreateCallLogs($logData);
             $this->updateOrCreateLiveCall($logData);
-            $this->logUserActivity($user, $request, $liveCallData);
-            $this->logDisconnectIfNeeded($liveCallData, $user, $request);
+            // $this->logUserActivity($user, $request, $liveCallData);
+            // $this->logDisconnectIfNeeded($liveCallData, $user, $request);
 
             $data = [
                 'message' => $result['message'],

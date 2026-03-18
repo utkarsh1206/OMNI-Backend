@@ -126,7 +126,7 @@ class PauseResumeRepository
     {
         $lastActivity = UserDailyActivity::where('user_id', $userId)
             ->where('campaign_id', $campaignId)
-            ->where('activity', $previousActivity)
+            ->where('activity', '!=', $currentActivity)
             ->orderByDesc('id')
             ->first();
 
