@@ -11,7 +11,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Events\GroupMemberAdded;
 use App\Events\GroupMemberRemoved;
-use App\Events\GroupMessageReceived;
+use App\Events\GroupMessageDeleted;
 use App\Models\Message;
 use App\Models\MessageAttachment;
 
@@ -26,15 +26,6 @@ class GroupChatRepository
 
     private function ensureParticipant($groupId)
     {
-        // $exists = GroupParticipant::where('group_id', $groupId)
-        //     ->where('user_id', auth()->user()->id)
-        //     ->whereNull('left_at')
-        //     ->exists();
-
-        // if (!$exists) {
-        //     throw new Exception('You are not a participant of this group');
-        // }
-
         $participant = GroupParticipant::where('group_id', $groupId)
             ->where('user_id', auth()->user()->id)
             ->whereNull('left_at')
@@ -53,43 +44,6 @@ class GroupChatRepository
         return $participant;
     }
 
-    // private function validateMessagePermission(Group $group, GroupParticipant $participant)
-    // {
-    //     if ($group->type === 'broadcast') {
-    //         if (!in_array($participant->role, ['owner', 'admin'])) {
-    //             throw new Exception('Only owner/admin can send messages in broadcast group');
-    //         }
-    //     } else {
-    //         if (!$participant->can_send_message) {
-    //             throw new Exception('You do not have permission to send messages in this group');
-    //         }
-    //     }
-    // }
-    private function validateMessagePermission(Group $group, GroupParticipant $participant)
-    {
-        if ($group->type === 'broadcast') {
-            if (!in_array($participant->role, ['owner', 'admin'])) {
-                return $this->apiResponse->getResponseStructure(
-                    trans('message.error'),
-                    null,
-                    'Only owner/admin can send messages in broadcast group',
-                    403
-                );
-            }
-        } else {
-            if (!$participant->can_send_message) {
-                return $this->apiResponse->getResponseStructure(
-                    trans('message.error'),
-                    null,
-                    'You do not have permission to send messages in this group',
-                    403
-                );
-            }
-        }
-
-        return true;
-    }
-
     /**
      * Authorization helper
      */
@@ -100,7 +54,6 @@ class GroupChatRepository
             ->first();
 
         if (!$participant || !in_array($participant->role, ['owner', 'admin'])) {
-            // throw new Exception('Unauthorized action');
             return $this->apiResponse->getResponseStructure(
                 trans('message.error'),
                 null,
@@ -291,62 +244,6 @@ class GroupChatRepository
         }
     }
 
-    // public function addParticipants($request, $groupId)
-    // {
-    //     try {
-    //         $request->validate([
-    //             'participants' => 'required|array',
-    //             'participants.*' => 'exists:users,id'
-    //         ]);
-
-    //         $group = Group::findOrFail($groupId);
-    //         $authCheck = $this->authorizeAdminOrOwner($group);
-
-    //         if ($authCheck !== true) {
-    //             return $authCheck;
-    //         }
-
-    //         $currentCount = GroupParticipant::where('group_id', $groupId)
-    //             ->whereNull('left_at')
-    //             ->count();
-
-    //         $newCount = count($request->participants);
-
-    //         if (($currentCount + $newCount) > 100) {
-    //             throw new Exception('Group member limit exceeded');
-    //         }
-
-    //         foreach ($request->participants as $userId) {
-
-    //             $exists = GroupParticipant::where('group_id', $groupId)
-    //                 ->where('user_id', $userId)
-    //                 ->whereNull('left_at')
-    //                 ->exists();
-
-    //             if ($exists) {
-    //                 continue;
-    //             }
-
-    //             GroupParticipant::create([
-    //                 'group_id' => $groupId,
-    //                 'user_id' => $userId,
-    //                 'role' => 'member',
-    //                 'joined_at' => Carbon::now()
-    //             ]);
-
-    //             broadcast(new GroupMemberAdded($groupId, $userId, auth()->user()->domain));
-    //         }
-
-    //         return $this->apiResponse->getResponseStructure(
-    //             trans('message.success'),
-    //             '',
-    //             'Participants added successfully'
-    //         );
-    //     } catch (Exception $ex) {
-    //         generateLogs('error', 'Error in adding participants', $ex->getMessage());
-    //         return $this->apiResponse->handleAndResponseException($ex);
-    //     }
-    // }
 
     public function addParticipants($request, $groupId)
     {
@@ -438,11 +335,21 @@ class GroupChatRepository
                 throw new Exception('Owner cannot be removed');
             }
 
+            // Fetch user details
+            $user = Users::select('first_name', 'last_name')
+                ->where('id', $userId)
+                ->first();
+
             $participant->update([
                 'left_at' => Carbon::now()
             ]);
 
-            broadcast(new GroupMemberRemoved($groupId, $userId, auth()->user()->domain));
+            broadcast(new GroupMemberRemoved(
+                $groupId,
+                $userId,
+                $user->first_name . ' ' . $user->last_name,
+                auth()->user()->domain
+            ));
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
@@ -474,11 +381,16 @@ class GroupChatRepository
                 throw new Exception('Owner must transfer ownership before leaving the group');
             }
 
+            // Fetch user details
+            $user = Users::select('first_name', 'last_name')
+                ->where('id', $userId)
+                ->first();
+
             $participant->update([
                 'left_at' => Carbon::now()
             ]);
 
-            broadcast(new GroupMemberRemoved($groupId, $userId, auth()->user()->domain));
+            broadcast(new GroupMemberRemoved($groupId, $userId, $user->first_name . ' ' . $user->last_name, auth()->user()->domain));
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
@@ -491,139 +403,15 @@ class GroupChatRepository
         }
     }
 
-    public function getGroupMessages($request, $groupId)
-    {
-        try {
-            $search = $request->input('search', '');
-            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
-            $page = $request->input('page', config('omni.DEFAULT_PAGE'));
-
-            $check = $this->ensureParticipant($groupId);
-            if (!($check instanceof GroupParticipant)) {
-                return $check;
-            }
-
-            $messages = Message::where('group_id', $groupId)
-                ->where('type', 'agent_chat')
-                ->orderBy('created_at', 'desc');
-
-            if ($search) {
-                $messages->where('text', 'like', "%{$search}%");
-            }
-
-            $data = ($page == config('omni.ALL_PAGE'))
-                ? $messages->get()
-                : $messages->paginate($perPage);
-
-            return $this->apiResponse->getResponseStructure(
-                trans('message.success'),
-                $data,
-                trans('message.data_fetch')
-            );
-        } catch (Exception $ex) {
-            generateLogs('error', 'Error fetching group messages', $ex->getMessage());
-            return $this->apiResponse->handleAndResponseException($ex);
-        }
-    }
-
-    public function storeGroupMessage($request, $groupId)
-    {
-        try {
-            // $this->ensureParticipant($groupId);
-
-            $participant = $this->ensureParticipant($groupId);
-            if (!($participant instanceof GroupParticipant)) {
-                return $participant;
-            }
-
-            $group = Group::findOrFail($groupId);
-
-            $this->validateMessagePermission($group, $participant);
-
-            $files = uploadAttachment($request, "attachment", "attachment");
-
-            $message = Message::create([
-                'user_id' => auth()->user()->id,
-                'group_id' => $groupId,
-                'type' => 'agent_chat',
-                'text' => $request->text,
-                'is_read' => 'unread',
-                'sender' => 'agent',
-                'external_message_time' => Carbon::now(),
-            ]);
-
-            if ($files) {
-                $fileData = [];
-                foreach ($files as $file) {
-                    $fileData[] = [
-                        'message_id' => $message->id,
-                        'attachments' => $file['fileName'],
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now(),
-                    ];
-                }
-                MessageAttachment::insert($fileData);
-            }
-
-            $message->load('attachments');
-
-            // // Broadcast to all participants
-            // $participants = GroupParticipant::where('group_id', $groupId)
-            //     ->whereNull('left_at')
-            //     ->pluck('user_id');
-
-            // foreach ($participants as $userId) {
-            //     broadcast(new GroupMessageReceived($message, $userId, auth()->user()->domain));
-            // }
-            broadcast(new GroupMessageReceived($message, auth()->user()->domain))->toOthers();
-
-            return $this->apiResponse->getResponseStructure(
-                trans('message.success'),
-                $message,
-                trans('message.message_created')
-            );
-        } catch (Exception $ex) {
-            generateLogs('error', 'Error sending group message', $ex->getMessage());
-            return $this->apiResponse->handleAndResponseException($ex);
-        }
-    }
-
-    public function markGroupMessagesRead($request, $groupId)
-    {
-        try {
-            $request->validate([
-                'last_message_id' => 'required|exists:messages,id'
-            ]);
-
-            $participant = GroupParticipant::where('group_id', $groupId)
-                ->where('user_id', auth()->user()->id)
-                ->whereNull('left_at')
-                ->firstOrFail();
-
-            $participant->update([
-                'last_read_message_id' => $request->last_message_id
-            ]);
-
-            return $this->apiResponse->getResponseStructure(
-                trans('message.success'),
-                '',
-                trans('message.message_read')
-            );
-        } catch (Exception $ex) {
-            generateLogs('error', 'Error marking group messages read', $ex->getMessage());
-            return $this->apiResponse->handleAndResponseException($ex);
-        }
-    }
     public function deleteGroupMessage($groupId, $messageId)
     {
         try {
-            $participant = GroupParticipant::where('group_id', $groupId)
-                ->where('user_id', auth()->user()->id)
-                ->whereIn('role', ['admin', 'owner'])
-                ->first();
+            $group = Group::findOrFail($groupId);
 
-            if (!$participant) {
-                throw new Exception('Unauthorized action');
+            $authCheck = $this->authorizeAdminOrOwner($group);
+
+            if ($authCheck !== true) {
+                return $authCheck;
             }
 
             $message = Message::where('group_id', $groupId)
@@ -632,6 +420,12 @@ class GroupChatRepository
 
             MessageAttachment::where('message_id', $messageId)->delete();
             $message->delete();
+
+            broadcast(new GroupMessageDeleted(
+                $groupId,
+                $messageId,
+                auth()->user()->domain
+            ))->toOthers();
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),

@@ -50,21 +50,6 @@ class GroupChatController extends Controller
         return $this->groupChatRepository->leaveGroup($groupId);
     }
 
-    public function getGroupMessages(Request $request, $groupId)
-    {
-        return $this->groupChatRepository->getGroupMessages($request, $groupId);
-    }
-
-    public function storeGroupMessage(Request $request, $groupId)
-    {
-        return $this->groupChatRepository->storeGroupMessage($request, $groupId);
-    }
-
-    public function markGroupMessagesRead(Request $request, $groupId)
-    {
-        return $this->groupChatRepository->markGroupMessagesRead($request, $groupId);
-    }
-
     public function deleteGroupMessage($groupId, $messageId)
     {
         return $this->groupChatRepository->deleteGroupMessage($groupId, $messageId);
@@ -92,7 +77,6 @@ class GroupChatController extends Controller
 
     public function getUserGroupIds(Request $request)
     {
-        generateLogs("debug", "Called funciton get usergroup ids");
         return $this->groupChatRepository->getUserGroupIds();
     }
 }

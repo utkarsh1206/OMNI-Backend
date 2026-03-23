@@ -539,9 +539,6 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::put('/{groupId}/participants/{userId}', [GroupChatController::class, 'updateMemberPermission']);
 
         // Messaging Logic
-        Route::get('/{groupId}/messages', [GroupChatController::class, 'getGroupMessages']);
-        Route::post('/{groupId}/messages', [GroupChatController::class, 'storeGroupMessage']);
-        Route::post('/{groupId}/messages/read', [GroupChatController::class, 'markGroupMessagesRead']);
         Route::delete('/{groupId}/messages/{messageId}', [GroupChatController::class, 'deleteGroupMessage']);
     });
 

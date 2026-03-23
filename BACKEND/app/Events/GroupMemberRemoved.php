@@ -15,16 +15,15 @@ class GroupMemberRemoved implements ShouldBroadcastNow
 
     private $groupId;
     private $userId;
+    private $fullName;
     private $domain;
 
-    public function __construct($groupId, $userId, $domain)
+    public function __construct($groupId, $userId, $fullName, $domain)
     {
         $this->groupId = $groupId;
         $this->userId = $userId;
+        $this->fullName = $fullName;
 
-        // $this->domain = convertToLower(
-        //     Str::replace('.', '_', request()->getHost())
-        // );
         $this->domain  = convertToLower(Str::replace('.', '_', $domain));
 
         generateLogs(
@@ -32,7 +31,8 @@ class GroupMemberRemoved implements ShouldBroadcastNow
             'GroupMemberRemoved Event Fired' .
                 json_encode([
                     'group_id' => $groupId,
-                    'user_id' => $userId
+                    'user_id' => $userId,
+                    'full_name' => $fullName,
                 ])
         );
     }
@@ -61,6 +61,7 @@ class GroupMemberRemoved implements ShouldBroadcastNow
             'type' => 'group_member_removed',
             'group_id' => $this->groupId,
             'user_id' => $this->userId,
+            'full_name' => $this->fullName,
         ];
     }
 }
