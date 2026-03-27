@@ -65,6 +65,7 @@ class TenantRepository
                 }
             }
 
+            $query = $query->orderBy('id', 'desc');
             // Paginate the results
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $tenants = $query->paginate($perPage);
