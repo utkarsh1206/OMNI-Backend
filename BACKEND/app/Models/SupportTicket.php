@@ -12,7 +12,7 @@ class SupportTicket extends Model
 {
     use SoftDeletes;
 
-    protected $appends = ['contact_name', 'assigned_agent_name', 'custom_fields', 'status_name', 'user_email'];
+    protected $appends = ['contact_name', 'assigned_agent_name', 'custom_fields', 'status_name', 'user_email', 'sla_targets'];
 
     protected $hidden = ['contact', 'assignedAgent', 'supportTicketCustomFieldValues'];
 
@@ -189,5 +189,10 @@ class SupportTicket extends Model
     public function assignmentHistory()
     {
         return $this->hasMany(AssignmentHistory::class, 'ticket_id');
+    }
+
+    public function getSlaTargetsAttribute()
+    {
+        return $this->incidentType?->slaSetting?->targets;
     }
 }
