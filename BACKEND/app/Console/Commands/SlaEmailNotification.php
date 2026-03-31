@@ -246,7 +246,12 @@ class SlaEmailNotification extends Command
 
     public function notifyViaEmail($newConnectionName, $tickets, $type, $module)
     {
-        setEmailConfig($newConnectionName);
+        try {
+            setEmailConfig($newConnectionName);
+        } catch (Exception $e) {
+            generateLogs("error", "Failed to set email config: " . $e->getMessage());
+            return false;
+        }
 
         $senderEmail = config('mail.from.address');
 
@@ -298,7 +303,13 @@ class SlaEmailNotification extends Command
 
     public function notifyAdminViaEmail($newConnectionName, $tickets, $adminUser, $type, $module)
     {
-        setEmailConfig($newConnectionName);
+        try {
+            setEmailConfig($newConnectionName);
+        } catch (Exception $e) {
+            generateLogs("error", "Failed to set email config: " . $e->getMessage());
+            return false;
+        }
+
         $senderEmail = config('mail.from.address');
 
         try {

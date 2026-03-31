@@ -60,7 +60,13 @@ if (! function_exists('setEmailConfig')) {
             $query = $query->setConnection($connectionName);
         }
 
-        $emailConfig = $query->where('type', 'gmail')->first();
+        $emailConfig = $query->where('type', 'gmail')
+            ->whereNotNull('smtp_host')
+            ->whereNotNull('smtp_user')
+            ->whereNotNull('smtp_port')
+            ->whereNotNull('sender_email')
+            ->whereNull('deleted_at')
+            ->first();
 
         if (!$emailConfig) {
             throw new Exception("No email config found for connection: {$connectionName}");
@@ -926,7 +932,7 @@ if (!function_exists('updateUserLoginLog')) {
 
 if (!function_exists('logUserLogoutActivity')) {
 
-    function logUserLogoutActivity($userId, $campaignId, )
+    function logUserLogoutActivity($userId, $campaignId,)
     {
         $latestActivity = getLatestUserActivity($userId, $campaignId);
 

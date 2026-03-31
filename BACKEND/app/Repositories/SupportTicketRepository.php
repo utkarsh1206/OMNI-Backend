@@ -527,7 +527,13 @@ class SupportTicketRepository
             if ($request->default_status == "Resolved") {
                 // $this->sendSms($apiUser, "Ticket Resolved", $apiUser->mobile, $supportticket);
                 $toEmails = $supportTicket->assignedUser->email ?? '';
-                setEmailConfig();
+                try {
+                    setEmailConfig();
+                } catch (Exception $e) {
+                    generateLogs("error", "Failed to set email config: " . $e->getMessage());
+                    return false;
+                }
+
 
                 $mailTemplate = MailTemplate::where("type", "agent_solve_the_ticket")->where('status', 'Active')->first();
                 $subject =  $mailTemplate->subject ?? '';
@@ -697,7 +703,13 @@ class SupportTicketRepository
         // $emailConfig = EmailConfigure::where('type', 'gmail')->first();
         // if (isset($emailConfig) && !empty($emailConfig)) {
 
-        setEmailConfig();
+        try {
+            setEmailConfig();
+        } catch (Exception $e) {
+            generateLogs("error", "Failed to set email config: " . $e->getMessage());
+            return false;
+        }
+
         $sender_email = config('mail.from.address');
         $defaultSubject = "A new ticket " . $ticket->support_ticket_id . " has been created";
         /** ------------------------
