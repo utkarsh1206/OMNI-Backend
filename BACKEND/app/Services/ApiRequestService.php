@@ -28,15 +28,31 @@ class ApiRequestService
 
             // Extract IP and Token from the configuration
             $ip = $config['neox_local_ip'];
-            $neoxToken = $config['neox_token'];
+
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                $apiUser = auth()->user();
+                $neoxToken = setTenantUin($apiUser);
+            } else {
+                $neoxToken = $config['neox_token'];
+            }
+
+            // NOC-996, TODO DC Hosted, START
+            $url_req_param = "";
+            $jWTtoken = $request->bearerToken() ?: $request->auth_token;
+            if (config('omni.IS_DC_MULTITENANT') == 1 && $jWTtoken) {
+                $payload = $jWTtoken ? extractPayload($jWTtoken) : null;
+                $url_req_param = "?domain=" . $payload['domain'];
+            }
+            // NOC-996, END
 
             // Handle case where IP or token is missing
             if (!$ip || !$neoxToken) {
                 return response()->json(['error' => 'Missing required configuration']);
             }
 
+            // NOC-996, TODO DC Hosted, Added request parameter domain ie. $url_req_param.
             // Build the URL dynamically based on the action
-            $url = "https://{$ip}/api/agent/actions/v2/{$action}.php";
+            $url = "https://{$ip}/api/agent/actions/v2/{$action}.php$url_req_param";
 
             // Get validation rules from FormRequest
             $rules = (new $formRequestClass())->rules();

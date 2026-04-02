@@ -22,11 +22,18 @@ class IngroupListRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'user' => 'required|string',
-            'pass' => 'nullable|string',
+        $rules = [
             'campaign_id' => 'required|string',
+            'pass' => 'nullable|string',
         ];
+    
+        if (config('omni.IS_DC_MULTITENANT') == 1) {
+            $rules['user_id'] = 'required|string';
+        } else {
+            $rules['user'] = 'required|string';
+        }
+    
+        return $rules;
     }
 
     /**

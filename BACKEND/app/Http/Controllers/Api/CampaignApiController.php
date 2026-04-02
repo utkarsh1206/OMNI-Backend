@@ -6,14 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CampaignApiRequest;
 use App\Http\Response\CustomApiResponse;
 use App\Models\EcdialLists;
+use App\Services\ApiRequestService;
 use Exception;
 
 class CampaignApiController extends Controller
 {
     private $apiResponse;
+    private $apiRequestService;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(CustomApiResponse $customApiResponse, ApiRequestService $apiRequestService)
     {
+        $this->apiRequestService = $apiRequestService;
         $this->apiResponse = $customApiResponse;
     }
 
@@ -91,11 +94,19 @@ class CampaignApiController extends Controller
             }
 
             $ip = $config['neox_local_ip'];
-            $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
-            $validatedData = $request->validated();
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                $apiResponse = $this->apiRequestService->handleApiRequest(
+                    $request,
+                    'agent_campaign',
+                    CampaignApiRequest::class,
+                );
+            } else {
+                $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
+                $validatedData = $request->validated();
 
-            // Send request to external API
-            $apiResponse = sendHttpRequest($url, 'POST', $validatedData);
+                // Send request to external API
+                $apiResponse = sendHttpRequest($url, 'POST', $validatedData);
+            }
 
             if (!$apiResponse || is_array($apiResponse)) {
                 return response()->json([
@@ -213,10 +224,18 @@ class CampaignApiController extends Controller
 
             $ip = $config['neox_local_ip'];
 
-            $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
-            $validatedData = $request->validated();
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                return $this->apiRequestService->handleApiRequest(
+                    $request,
+                    'agent_campaign',
+                    CampaignApiRequest::class,
+                );
+            } else {
+                $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
+                $validatedData = $request->validated();
 
-            return sendHttpRequest($url, 'POST', $validatedData);
+                return sendHttpRequest($url, 'POST', $validatedData);
+            }
         } catch (Exception $e) {
             generateLogs('error', "Error in campaignListApi: ", $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -288,11 +307,22 @@ class CampaignApiController extends Controller
             }
 
             $ip = $config['neox_local_ip'];
-            $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
-            $validatedData = $request->validated();
 
-            // Send HTTP request
-            $response = sendHttpRequest($url, 'POST', $validatedData);
+            // NOC-996, TODO DC-Hosted integration, Condition based so omni run with multi tenant and without multitenant.
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                $response = $this->apiRequestService->handleApiRequest(
+                    $request,
+                    'agent_campaign',
+                    CampaignApiRequest::class,
+                );
+            } else {
+                $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
+
+                $validatedData = $request->validated();
+
+                // Send HTTP request
+                $response = sendHttpRequest($url, 'POST', $validatedData);
+            }
 
             // Convert JsonResponse to array
             $responseData = $response->getData(true);

@@ -41,7 +41,13 @@ class ModifyRequestMiddleware
 
         // $modifiedData['user_id'] = $payload['username'];
         if (empty($request->user_id) && isset($payload['username'])) {
-            $modifiedData['user_id'] = $payload['username'];
+            // NOC-996, TODO DC Hosted, START
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                $modifiedData['user_id'] = $payload['username'] . '@' . $payload['domain'];
+            } else {
+                $modifiedData['user_id'] = $payload['username'];
+            }
+            // NOC-996, END
         }
 
         if (empty($request->id) && isset($payload['id'])) {
