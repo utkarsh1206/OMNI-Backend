@@ -40,7 +40,10 @@ return [
    'default_priority' => 1,   // High
    'default_status' => 1,  // Open
 
+   // NOC-995 To-Do Hosted MultiTenant START
    'IS_DC_MULTITENANT' => env('IS_DC_MULTITENANT', 0),
+   'HOSTED_URL' => env('HOSTED_URL', "http://localhost:8443"),
    'TENANT_AUTH_USER' => env('TENANT_AUTH_USER', "admin"),
    'TENANT_AUTH_PASS' => env('TENANT_AUTH_PASS', "Admin@123"),
+   // NOC-995 To-Do Hosted MultiTenant END
 ];

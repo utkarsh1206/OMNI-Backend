@@ -633,8 +633,8 @@ if (! function_exists('setTenantData')) {
     }
 }
 
-if (! function_exists('setTenantUin')) {
-    function setTenantUin($userInfo)
+if (! function_exists('getTenantUin')) {
+    function getTenantUin($userInfo)
     {
         establishMasterConnection($userInfo->domain, "omnichannel", "mysql");
         $tenantUin = Detail::select("uin")->where('domain', $userInfo->domain)->first();

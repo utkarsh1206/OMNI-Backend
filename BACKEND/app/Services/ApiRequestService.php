@@ -31,7 +31,7 @@ class ApiRequestService
 
             if (config('omni.IS_DC_MULTITENANT') == 1) {
                 $apiUser = auth()->user();
-                $neoxToken = setTenantUin($apiUser);
+                $neoxToken = getTenantUin($apiUser);
             } else {
                 $neoxToken = $config['neox_token'];
             }
