@@ -6,16 +6,21 @@ use Illuminate\Http\Request;
 use App\Models\Tenant;
 use App\Http\Response\CustomApiResponse;
 use App\Models\Users;
+use App\Services\HostedTenantService;   // NOC-995 To-Do Hosted MultiTenant
 use Exception;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class TenantRepository
 {
     private $apiResponse;
+    protected $hostedTenantService; // NOC-995 To-Do Hosted MultiTenant
 
-    public function __construct(CustomApiResponse $customApiResponse)
-    {
+    public function __construct(
+        CustomApiResponse $customApiResponse,
+        HostedTenantService $hostedTenantService    // NOC-995 To-Do Hosted MultiTenant
+    ) {
         $this->apiResponse = $customApiResponse;
+        $this->hostedTenantService = $hostedTenantService;  // NOC-995 To-Do Hosted MultiTenant
     }
 
     public function list(Request $request)
@@ -65,6 +70,7 @@ class TenantRepository
                 }
             }
 
+            $query = $query->orderBy('id', 'desc');
             // Paginate the results
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $tenants = $query->paginate($perPage);
@@ -81,12 +87,31 @@ class TenantRepository
     {
         try {
             $createData = $this->prepareTenantData($request);
+            // NOC-995 To-Do Hosted MultiTenant START
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                $externalPayload = [
+                    "owner_name"      => $request->first_name . ' ' . $request->last_name,
+                    "domain"          => $request->domain_name,
+                    "email_id"        => $request->email,
+                    "phone"           => $request->mobile,
+                    "enterprise_name" => $request->company_name,
+                    "contact_address" => $request->contact_address ?? 'N/A',
+                ];
+
+                $this->hostedTenantService->createExternalTenant($externalPayload);
+            }
+            // NOC-995 To-Do Hosted MultiTenant END
 
             if ($request->hasFile('tenant_logo')) {
                 $createData['tenant_logo'] = $this->uploadTenantLogo($request);
             }
             $tenants = Tenant::create($createData);
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenants, trans('message.tenant_create_msg'));
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $tenants,
+                trans('message.tenant_create_msg')
+            );
         } catch (Exception $e) {
             generateLogs('error', 'Error in Storing Tenant : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -97,6 +122,20 @@ class TenantRepository
     {
         try {
             $updateData = $this->prepareTenantData($request);
+            // NOC-995 To-Do Hosted MultiTenant START
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                $externalPayload = [
+                    "owner_name"      => ($request->first_name ?? $tenant->first_name) . ' ' . ($request->last_name ?? $tenant->last_name),
+                    "email_id"        => $request->email ?? $tenant->email,
+                    "phone"           => $request->mobile ?? $tenant->mobile,
+                    "status"          => strtolower($request->status ?? $tenant->status),
+                    "alternate_phone" => $request->alternate_phone ?? '',
+                    "contact_address" => $request->contact_address ?? 'N/A',
+                ];
+
+                $this->hostedTenantService->updateExternalTenant($tenant->domain_name, $externalPayload);
+            }
+            // NOC-995 To-Do Hosted MultiTenant END
 
             if ($request->hasFile('tenant_logo')) {
                 $updateData['tenant_logo'] = $this->uploadTenantLogo($request);
@@ -116,8 +155,24 @@ class TenantRepository
     public function delete($tenant)
     {
         try {
+            // NOC-995 To-Do Hosted MultiTenant START
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                $domain = $tenant->domain_name;
+
+                if (empty($domain)) {
+                    throw new Exception("Domain name is missing for this tenant. Cannot delete from external system.");
+                }
+
+                $this->hostedTenantService->deleteExternalTenant($domain);
+            }
+            // NOC-995 To-Do Hosted MultiTenant END
+
             $tenant->delete();
-            return $this->apiResponse->getResponseStructure(trans('message.success'), $tenant, trans('message.tenant_delete_msg'));
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $tenant,
+                trans('message.tenant_delete_msg')
+            );
         } catch (Exception $e) {
             generateLogs('error', 'Error in Deleting Tenant : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
@@ -189,18 +244,43 @@ class TenantRepository
     {
         try {
             $tenantInfo = Tenant::find($request->tenant_id);
-                if (!$tenantInfo) {
-                        return response()->json([
-                            'message' => trans("message.tenant_not_found"),
-                        ], ResponseHTTP::HTTP_NOT_FOUND);
-                    }
-                $tenantInfo->status = $request->status;
-                $tenantInfo->save();
-                getDbConnection($tenantInfo->domain_name,true);
-                Users::query()->update(['status' => $request->status]);
-                establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
-                return $this->apiResponse->getResponseStructure(trans('message.success'), $tenantInfo, trans('message.tenant_update_msg'));
 
+            if (!$tenantInfo) {
+                return response()->json([
+                    'message' => trans("message.tenant_not_found"),
+                ], ResponseHTTP::HTTP_NOT_FOUND);
+            }
+
+            // NOC-995 To-Do Hosted MultiTenant Start
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+
+                $externalPayload = [
+                    "owner_name"      => $tenantInfo->first_name . ' ' . $tenantInfo->last_name,
+                    "email_id"        => $tenantInfo->email,
+                    "phone"           => $tenantInfo->mobile,
+                    "status"          => strtolower($request->status),
+                    "alternate_phone" => $tenantInfo->alternate_phone ?? '',
+                    "contact_address" => $tenantInfo->contact_address ?? 'N/A',
+                ];
+
+                $this->hostedTenantService->updateExternalTenant($tenantInfo->domain_name, $externalPayload);
+            }
+            // NOC-995 To-Do Hosted MultiTenant END
+
+            $tenantInfo->status = $request->status;
+            $tenantInfo->save();
+
+            getDbConnection($tenantInfo->domain_name, true);
+
+            Users::query()->update(['status' => $request->status]);
+
+            establishMasterConnection(auth()->user()->domain, "omnichannel", "mysql");
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                $tenantInfo,
+                trans('message.tenant_update_msg')
+            );
         } catch (Exception $e) {
             generateLogs('error', 'Error in change status Tenant : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);

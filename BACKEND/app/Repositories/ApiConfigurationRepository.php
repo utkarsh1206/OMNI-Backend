@@ -114,7 +114,7 @@ class ApiConfigurationRepository
                         $smsConfigurations = ApiConfiguration::create([
                             'provider_id' => $smsProviers->id ?? 0,
                             'config_key' => $key,
-                            'config_value' => $value,
+                            'config_value' => $value ?? 0,
                             'api_config_type_id' => $request->api_config_type_id,
                         ]);
                     }

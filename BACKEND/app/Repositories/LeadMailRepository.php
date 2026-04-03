@@ -31,7 +31,12 @@ class LeadMailRepository
                 ], ResponseHTTP::HTTP_NOT_FOUND);
             }
 
-            setEmailConfig();
+            try {
+                setEmailConfig();
+            } catch (Exception $e) {
+                generateLogs("error", "Failed to set email config: " . $e->getMessage());
+                return false;
+            }
 
             sendProcessedEmail(
                 $request->email,

@@ -255,7 +255,11 @@ class TicketReportRepository
                 ->leftJoin('users as assigned_agents', 'assigned_agents.id', '=', 'support_tickets.assign_to_id')
                 ->leftJoin('priorities', 'priorities.id', '=', 'support_tickets.default_priority')
                 ->leftJoin('ticket_types', 'ticket_types.id', '=', 'support_tickets.default_type')
-                ->leftJoin('support_ticket_statuses', 'support_ticket_statuses.id', '=', 'support_tickets.default_status')
+                // ->leftJoin('support_ticket_statuses', 'support_ticket_statuses.id', '=', 'support_tickets.default_status')
+                ->leftJoin('support_ticket_statuses', function ($join) {
+                    $join->on('support_ticket_statuses.id', '=', 'support_tickets.default_status')
+                         ->where('support_ticket_statuses.status', 'active');
+                })
 
                 // Latest Resolve Notification
                 ->leftJoin(DB::raw("
@@ -291,6 +295,8 @@ class TicketReportRepository
                     'assigned_agents.username as assigned_agent',
                     'priorities.name as priority_name',
                     'ticket_types.type as ticket_type',
+                    'support_tickets.default_status',
+                    'support_ticket_statuses.id as joined_status_id',
                     'support_ticket_statuses.name as status_name',
                     'resolved.resolve_time',
                     'customer.customer_name'
@@ -312,7 +318,7 @@ class TicketReportRepository
                         'Customer Name'    => $ticket->customer_name ?? '',
                         'Ticket Type'      => $ticket->ticket_type ?? 'Unknown',
                         'Priority'         => $ticket->priority_name ?? 'Unknown',
-                        'Status'           => $ticket->status_name ?? 'Unknown',
+                        'Status'           => $ticket->status_name ?: 'Unknown',
                         'Created Date'     => $ticket->created_at
                             ? Carbon::parse($ticket->created_at)->format('Y-m-d H:i:s')
                             : '',
