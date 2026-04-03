@@ -97,7 +97,7 @@ class PauseResumeApiController extends Controller
         $userId = $request->id;
         $campaignId = $request->campaign_id;
         $action = $request->action;
-        $pauseCode = $request->pause_code ?? null;
+        $pauseCode = $request->pause_code_id ?? null;
         $extension = $request->phone;
 
         if (isset($result['code']) && $result['code'] === 0) {
