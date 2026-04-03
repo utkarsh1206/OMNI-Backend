@@ -229,7 +229,7 @@ class SupportTicketRepository
         try {
             $apiUser = auth()->user();
 
-            $uin = setTenantUin($apiUser);
+            $uin = getTenantUin($apiUser);
 
             DB::beginTransaction();
             // Handle file attachments
