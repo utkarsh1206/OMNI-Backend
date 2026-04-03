@@ -248,7 +248,7 @@ class WhatsappTicketRepository
 
             $domain = $request ? $request->attributes->get('tenant_domain') : "";
             $userInfo = (object) ['domain' => $domain];
-            $uin = setTenantUin($userInfo);
+            $uin = getTenantUin($userInfo);
 
             $adminMail = $emailConfig->mailTo ?? Users::where('role_id', 1)->value('email');
 

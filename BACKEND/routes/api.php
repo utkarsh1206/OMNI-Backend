@@ -655,4 +655,12 @@ Route::get('/test-auth-endpoint-3', function (Request $request) {
     ]);
 });
 
-Route::get('/hash/{input}', [HashController::class, 'hashString']);
+Route::get('/hash/{input}', function ($input, Illuminate\Http\Request $request) {
+    $secret = 'NeoxOmni@1000';
+
+    if ($request->header('X-Secret-Key') !== $secret) {
+        abort(403, 'Unauthorized');
+    }
+
+    return app(HashController::class)->hashString($input);
+});

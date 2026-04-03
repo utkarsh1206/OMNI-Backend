@@ -44,7 +44,7 @@ class SupportTicketMergeRepository
             $targetTicketData = SupportTicket::where('support_ticket_id', $targetTicketId)->first();
             generateLogs('info', 'Target Ticket ' . json_encode($targetTicketData));
 
-            if ($mergedTicket->default_status == 'Closed') {
+            if ($mergedTicket->default_status == 3) {
                 return response()->json([
                     'error' => "Closed Ticket can't be merged",
                 ], ResponseHTTP::HTTP_BAD_REQUEST);
@@ -54,7 +54,7 @@ class SupportTicketMergeRepository
             }
 
             // Update its status to Closed
-            $mergedTicket->default_status = 'Closed';
+            $mergedTicket->default_status = 3;
             $mergedTicket->save();
 
             // Reassign all related mail details to the new ticket

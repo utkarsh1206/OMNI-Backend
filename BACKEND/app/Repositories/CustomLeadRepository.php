@@ -187,14 +187,16 @@ class CustomLeadRepository
 
             // Subquery to get latest created_at per mobile
             $subQuery = DB::table($table)
-                ->select(DB::raw('MAX(created_at) as latest_created_at'), 'mobile')
+                // ->select(DB::raw('MAX(created_at) as latest_created_at'), 'mobile')
+                ->select(DB::raw('MAX(id) as latest_id'), 'mobile')
                 ->groupBy('mobile');
 
             // Join original table with subquery to get full lead info
             $query = DB::table($table . ' as main')
                 ->joinSub($subQuery, 'latest', function ($join) {
                     $join->on('main.mobile', '=', 'latest.mobile')
-                        ->on('main.created_at', '=', 'latest.latest_created_at');
+                        // ->on('main.created_at', '=', 'latest.latest_created_at');
+                        ->on('main.id', '=', 'latest.latest_id');
                 })
                 ->select('main.*');
 

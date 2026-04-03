@@ -47,7 +47,11 @@ class EvaluationReviewRepository
     public function getReview(array $data, string $type)
     {
         try {
-            $userId = Users::where('username', $data['user_id'])->value('id');
+            // $userId = Users::where('username', $data['user_id'])->value('id');
+            $userId = ($data['user_id'] === 'Unknown')
+                ? 0
+                : (Users::where('username', $data['user_id'])->value('id') ?? 0);
+
             $idField = $this->reviewService->getUniqueIdField($type);
 
             $review = $this->reviewService->getModelQuery($type)

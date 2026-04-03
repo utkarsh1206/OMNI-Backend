@@ -58,41 +58,54 @@ class PhoneRepository
             $validatedData['voicemail_id'] = $validatedData['extension'];
             $validatedData['active'] = "Y";
 
-            // Retrieve configuration
-            $config = getNeoxConfig();
+            // NOC-995 To-Do Hosted MultiTenant START
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                $user = auth()->user();
+                $token = getTenantUin($user);
+                $domain = $user->domain;
+                $ip = config('omni.HOSTED_URL');
 
-            $sipServerUrl = $config['sip_server_url'] ?? null;
-            $sipUaUriDomain = $config['sip_ua_uri_domain'] ?? null;
+                $url = "{$ip}/api/admin/actions/v2/phone_create.php?domain={$domain}";
 
-            if (empty($sipServerUrl) || empty($sipUaUriDomain)) {
-                return $this->apiResponse->getResponseStructure(
-                    trans('message.error'),
-                    null,
-                    'Please Set the SIP Configuration first',
-                    ResponseHTTP::HTTP_BAD_REQUEST
-                );
+                $payload = [
+                    'token'     => $token,
+                    'extension' => $validatedData['extension'],
+                    'loginId'   => $validatedData['login'],
+                    'password'  => $validatedData['pass'],
+                    'active'    => $validatedData['active'],
+                    'local_gmt' => $validatedData['local_gmt']
+                ];
+
+                $response = sendHttpRequest($url, 'POST', $payload);
+
+                if (!isset($response['code']) || $response['code'] !== 0) {
+                    throw new Exception("External Multi-tenant API failed to create Phone: Code: " . ($response['code'] ?? 'Unknown Code') . " Message :" . ($response['message'] ?? 'Unknown response'));
+                }
+            }   // NOC-995 To-Do Hosted MultiTenant END
+            else {
+                // Retrieve configuration
+                $config = getNeoxConfig();
+
+                $sipServerUrl = $config['sip_server_url'] ?? null;
+                $sipUaUriDomain = $config['sip_ua_uri_domain'] ?? null;
+
+                if (empty($sipServerUrl) || empty($sipUaUriDomain)) {
+                    return $this->apiResponse->getResponseStructure(
+                        trans('message.error'),
+                        null,
+                        'Please Set the SIP Configuration first',
+                        ResponseHTTP::HTTP_BAD_REQUEST
+                    );
+                }
+
+                $ip = $config['neox_local_ip'];
+
+                $url = "https://{$ip}/api/admin/actions/v2/phone_create.php";
+
+                sendHttpRequest($url, 'POST', $validatedData);
             }
 
-            $ip = $config['neox_local_ip'];
-
-            $url = "https://{$ip}/api/admin/actions/v2/phone_create.php";
-            // $validatedData = $request->validated();
-
-            sendHttpRequest($url, 'POST', $validatedData);
-
             $phone = Phone::create($validatedData);
-
-            // $host = parse_url($sipServerUrl, PHP_URL_HOST);
-
-            // $newRequestUrl = "http://{$host}:6000/api/users";
-
-            // $newPayload = [
-            //     'username' => $validatedData['extension'],
-            //     'password' => $validatedData['pass'],
-            //     'domain'   => $sipUaUriDomain,
-            // ];
-
-            // sendHttpRequest($newRequestUrl, 'POST', $newPayload);
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
@@ -133,14 +146,37 @@ class PhoneRepository
                 return response()->json(['message' => trans("message.phone_not_found")], ResponseHTTP::HTTP_NOT_FOUND);
             }
 
-            $config = getNeoxConfig();
+            // NOC-995 To-Do Hosted MultiTenant START
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                $user = auth()->user();
+                $token = getTenantUin($user);
+                $domain = $user->domain;
+                $ip = config('omni.HOSTED_URL');
 
-            $ip = $config['neox_local_ip'];
+                $url = "{$ip}/api/admin/actions/v2/phone_delete.php?domain={$domain}";
 
-            $url = "https://{$ip}/api/admin/actions/v2/phone_delete.php";
+                $payload = [
+                    'token'     => $token,
+                    'extension' => $extension
+                ];
 
-            $data = ['extension' => $extension];
-            sendHttpRequest($url, 'POST', $data);
+                $response = sendHttpRequest($url, 'POST', $payload);
+
+                // Verify if the API response is successful (code 0)
+                if (!isset($response['code']) || $response['code'] !== 0) {
+                    throw new Exception("External Multi-tenant API failed to delete Phone: Code: " . ($response['code'] ?? 'Unknown Code') . " Message: " . ($response['message'] ?? 'Unknown response'));
+                }
+            }   // NOC-995 To-Do Hosted MultiTenant END
+            else {
+                $config = getNeoxConfig();
+
+                $ip = $config['neox_local_ip'];
+
+                $url = "https://{$ip}/api/admin/actions/v2/phone_delete.php";
+
+                $data = ['extension' => $extension];
+                sendHttpRequest($url, 'POST', $data);
+            }
 
             $phone->delete();
             return $this->apiResponse->getResponseStructure(trans('message.success'), $phone, trans('message.phone_deleted'));

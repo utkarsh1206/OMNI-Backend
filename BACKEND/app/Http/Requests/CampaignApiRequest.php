@@ -22,9 +22,15 @@ class CampaignApiRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            "user" => "string",
-        ];
+        $rules = [];
+
+        if (config('omni.IS_DC_MULTITENANT') == 1) {
+            $rules['user_id'] = 'nullable|string';
+        } else {
+            $rules['user'] = 'string';
+        }
+
+        return $rules;
     }
 
     /**

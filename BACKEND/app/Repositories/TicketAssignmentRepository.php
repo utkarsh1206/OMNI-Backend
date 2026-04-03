@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class TicketAssignmentRepository
 {
@@ -394,7 +395,13 @@ class TicketAssignmentRepository
             $mailTemplate->body = strtr($mailTemplate->body, $templateData);
         }
 
-        setEmailConfig();
+        try {
+            setEmailConfig();
+        } catch (Throwable $e) {
+            generateLogs("error", "Failed to set email config: " . $e->getMessage());
+            throw $e;
+        }
+
 
         $sender_email = config('mail.from.address');
         $defaultSubject = "A new ticket " . $ticket->support_ticket_id . " has been created";

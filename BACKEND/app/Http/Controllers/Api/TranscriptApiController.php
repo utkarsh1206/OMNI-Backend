@@ -81,7 +81,8 @@ class TranscriptApiController extends Controller
             }
 
             $ip = $config['neox_local_ip'];
-            $url = "https://{$ip}/admin/file_browse/call_transcript_omni.php";
+            // $url = "https://{$ip}/admin/file_browse/call_transcript_omni.php";
+            $url = "http://127.0.0.1:3479/transcribe";
 
             // Get validation rules from FormRequest
             $rules = (new TranscriptApiRequest())->rules();
@@ -95,7 +96,8 @@ class TranscriptApiController extends Controller
             $validatedData = $validator->validated();
 
             // Default directory if only filename is provided
-            $defaultDirectory = '/opt/CLRNdialcenter/bin/php/admin/file_browse/recordings/';
+            // $defaultDirectory = '/opt/CLRNdialcenter/bin/php/admin/file_browse/recordings/';
+            $defaultDirectory = '/opt/CLRNomni/omni-backend/BACKEND/storage/app/public/recordings/';
             $filePath = $validatedData['file_path'];
 
             // If no directory in file_path, prepend default directory
@@ -119,7 +121,7 @@ class TranscriptApiController extends Controller
             }
 
             // Call the external API
-            $response = Http::timeout(0)->post($url, $validatedData);
+            $response = Http::timeout(0)->withOptions(['verify' => false])->post($url, $validatedData);
 
             if (!$response->successful()) {
                 return response()->json(['error' => 'Failed to generate transcript.'], 500);

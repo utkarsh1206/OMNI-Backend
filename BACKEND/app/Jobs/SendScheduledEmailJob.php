@@ -27,7 +27,12 @@ class SendScheduledEmailJob implements ShouldQueue
 
     public function handle(): void
     {
-        setEmailConfig($this->connectionName);
+        try {
+            setEmailConfig($this->connectionName);
+        } catch (\Throwable $e) {
+            generateLogs("error", "Failed to set email config: " . $e->getMessage());
+            throw $e;
+        }
 
         // Important for multi-database setups
         $schedule = $this->schedule->setConnection($this->connectionName);
@@ -54,7 +59,8 @@ class SendScheduledEmailJob implements ShouldQueue
                 ->send(new ScheduledReportMail($schedule, $data));
             generateScheduleLogs(
                 'info',
-                'Scheduled email sent successfully', json_encode($schedule)
+                'Scheduled email sent successfully',
+                json_encode($schedule)
             );
         } catch (\Throwable $e) {
             generateScheduleLogs(

@@ -126,7 +126,7 @@ class EmailLogRepository
             }
 
             // Required for JSON handling
-            if ($column === 'to_email') {
+            if ($column === 'To Mail') {
                 $selects[] = 'email_logs.email_json';
             }
         }

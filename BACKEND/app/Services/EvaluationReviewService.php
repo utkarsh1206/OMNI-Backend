@@ -65,9 +65,9 @@ class EvaluationReviewService
             $loggedInUser = $data['loggedInUser'];
             $agent = Users::where('username', $data['user_id'])->value('id');
 
-            if (!$agent) {
-                throw new Exception('User not found.');
-            }
+            // if (!$agent) {
+            //     throw new Exception('User not found.');
+            // }
 
             $processedData = $this->processQuestionsAndAnswers($data);
 
@@ -76,7 +76,7 @@ class EvaluationReviewService
             
             $recordData = [
                 $idField => $data[$idField],
-                'user_id' => $agent,
+                'user_id' => $agent ?? 0,
                 'questions' => $processedData['questions'],
                 'selected_answer' => $processedData['answers'],
                 'comment' => $data['additional_comments'],
