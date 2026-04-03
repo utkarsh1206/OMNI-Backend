@@ -5,10 +5,18 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\IngroupListRequest;
+use App\Services\ApiRequestService;
 use Illuminate\Support\Facades\Validator;
 
 class IngroupApiController extends Controller
 {
+     private $apiRequestService;
+
+    public function __construct(ApiRequestService $apiRequestService)
+    {
+        $this->apiRequestService = $apiRequestService;
+    }
+
     /**
      * @OA\Post(
      *     path="/api/ext-api/ingroup-list",
@@ -69,18 +77,31 @@ class IngroupApiController extends Controller
         }
 
         $ip = $config['neox_local_ip'];
-        $url = "https://{$ip}/api/admin/actions/v2/ingroup_list.php";
 
-        // Get validation rules from FormRequest
-        $rules = (new IngroupListRequest())->rules();
+        // NOC-996, TODO DC-Hosted integration, Condition based so omni run with multi tenant and without multitenant.
+        if (config('omni.IS_DC_MULTITENANT') == 1) {
+            // $url = "https://{$ip}/api/agent/actions/v2/agent_ingroup.php?domain=$domainName";
+            return $this->apiRequestService->handleApiRequest(
+                $request,
+                'agent_ingroup',
+                IngroupListRequest::class,
+            );
+        } else {
+            $url = "https://{$ip}/api/admin/actions/v2/ingroup_list.php";
 
-        // Validate request using extracted rules
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()]);
+
+            // Get validation rules from FormRequest
+            $rules = (new IngroupListRequest())->rules();
+
+            // Validate request using extracted rules
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()]);
+            }
+
+            $validatedData = $validator->validated();
+            return sendHttpRequest($url, 'POST', $validatedData);
         }
-
-        $validatedData = $validator->validated();
-        return sendHttpRequest($url, 'POST', $validatedData);
+        // NOC-996, END 
     }
 }

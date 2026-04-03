@@ -156,6 +156,48 @@ class UserRepository
                 ], ResponseHTTP::HTTP_BAD_REQUEST);
             }
 
+            $authUser = auth()->user();
+            $userGroup = UserGroup::find($request->usergroup_id);
+
+            if ($request->filled('user_role_id')) {
+                $roles = Role::find([$request->user_role_id])->first();
+                if ($roles->type == 1 && $userGroup) {
+
+                    // NOC-995 To-Do Hosted MultiTenant START
+                    if (config('omni.IS_DC_MULTITENANT') == 1) {
+                        $ip = config('omni.HOSTED_URL');
+                        $hostedBody = [
+                            "token"     => getTenantUin($authUser),
+                            "user_id"   => $request->username . '@' . $authUser->domain,
+                            "password"   => $request->password,
+                            "fullName"   => $request->first_name . ' ' . $request->last_name,
+                            "user_group" => $userGroup->name,
+                        ];
+                        $hostedUrl = "{$ip}/api/admin/actions/v2/create_agent.php?domain={$authUser->domain}";
+
+                        $response = sendHttpRequest($hostedUrl, 'POST', $hostedBody);
+                        $resData = json_decode($response, true);
+
+                        if (!isset($resData['code']) || $resData['code'] !== 0) {
+                            throw new Exception("Hosted API Error: Code: " . ($resData['code'] ?? 'Unknown Code') . " Message :" . ($resData['message'] ?? 'Unknown response'));
+                        }
+                    }   // NOC-995 To-Do Hosted MultiTenant END
+                    else {
+                        $config = getNeoxConfig();
+                        $ip = $config['neox_local_ip'];
+
+                        $neoxBody = [
+                            'userId' => $request->username,
+                            'password' => $request->password,
+                            'fullName' => $request->first_name . ' ' . $request->last_name,
+                            'userGroup' => $userGroup->name,
+                        ];
+                        $url = "https://{$ip}/Neox_ContactCenter_API/crud/user_omni/create.php";
+                        sendHttpRequest($url, 'POST', $neoxBody);
+                    }
+                }
+            }
+
             $users = Users::create([
                 'username' => $request->username,
                 // "tenant_id" => $request->tenant_id,
@@ -163,7 +205,7 @@ class UserRepository
                 "first_name" => $request->first_name,
                 "last_name" => $request->last_name,
                 "email" => $request->email,
-                "username" => $request->username,
+                // "username" => $request->username,
                 "password" => bcrypt($request->password),
                 "domain" => auth()->user()->domain,
                 "mobile" => $request->mobile,
@@ -185,26 +227,6 @@ class UserRepository
             if ($request->filled('user_role_id')) {
                 $roles = Role::find([$request->user_role_id]);
                 $users->roles()->sync($roles);
-            }
-
-            $config = getNeoxConfig();
-            $ip = $config['neox_local_ip'];
-
-            if ($request->filled('user_role_id')) {
-                $roles = Role::find([$request->user_role_id])->first();
-                if ($roles->type == 1) {
-                    $userGroup = UserGroup::find($request->usergroup_id);
-                    if ($userGroup) {
-                        $neoxBody = [
-                            'userId' => $request->username,
-                            'password' => $request->password,
-                            'fullName' => $request->first_name . ' ' . $request->last_name,
-                            'userGroup' => $userGroup->name,
-                        ];
-                        $url = "https://{$ip}/Neox_ContactCenter_API/crud/user_omni/create.php";
-                        sendHttpRequest($url, 'POST', $neoxBody);
-                    }
-                }
             }
 
             return $this->apiResponse->getResponseStructure(trans('message.success'), $users, trans('message.users_created'), ResponseHTTP::HTTP_CREATED);
@@ -356,19 +378,37 @@ class UserRepository
     public function delete($user)
     {
         try {
-            $username = $user->username; // Capture before delete
+            $username = $user->username;
+
+            // NOC-995 To-Do Hosted MultiTenant START
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                $currentUser = auth()->user();
+                $domain = $currentUser->domain;
+                $token = getTenantUin($currentUser);
+                $ip = config('omni.HOSTED_URL');
+
+                $url = "{$ip}/api/admin/actions/v2/delete_agent.php?domain={$domain}";
+                $payload = [
+                    "token" => $token,
+                    "user_id" => "{$username}@{$domain}"
+                ];
+                $response = sendHttpRequest($url, 'POST', $payload);
+
+                if (!isset($response['code']) || $response['code'] != 0) {
+                    throw new Exception("External Multi-tenant API failed to delete user: Code: " . ($resData['code'] ?? 'Unknown Code') . " Message :" . ($resData['message'] ?? 'Unknown response'));
+                }
+            }   // NOC-995 To-Do Hosted MultiTenant END
+            else {
+                $config = getNeoxConfig();
+                $ip = $config['neox_local_ip'];
+                $url = "https://{$ip}/Neox_ContactCenter_API/crud/user_omni/delete.php";
+
+                $data = ['userId' => $username];
+
+                sendHttpRequest($url, 'POST', $data);
+            }
+
             $user->delete();
-
-            // Fetch config and build webhook URL
-            $config = getNeoxConfig();
-            $ip = $config['neox_local_ip'];
-            $url = "https://{$ip}/Neox_ContactCenter_API/crud/user_omni/delete.php";
-
-            // Prepare payload
-            $data = ['userId' => $username];
-
-            // Send HTTP request to webhook
-            sendHttpRequest($url, 'POST', $data);
 
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),

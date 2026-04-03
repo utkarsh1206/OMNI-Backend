@@ -22,10 +22,17 @@ class DispositionListRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'user' => 'required|string',
+        $rules = [
             'campaign_id' => 'required|string',
         ];
+    
+        if (config('omni.IS_DC_MULTITENANT') == 1) {
+            $rules['user_id'] = 'required|string';
+        } else {
+            $rules['user'] = 'required|string';
+        }
+    
+        return $rules;
     }
 
     /**

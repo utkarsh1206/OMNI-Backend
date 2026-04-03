@@ -5,19 +5,22 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DispositionListRequest;
 use App\Http\Response\CustomApiResponse;
+use App\Services\ApiRequestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class DispositionApiController extends Controller
 {
     private $apiResponse;
+     private $apiRequestService;
 
-    public function __construct(CustomApiResponse $customApiResponse)
+    public function __construct(CustomApiResponse $customApiResponse, ApiRequestService $apiRequestService)
     {
         $this->apiResponse = $customApiResponse;
+        $this->apiRequestService = $apiRequestService;
     }
 
-   /**
+    /**
      * @OA\Post(
      *     path="/api/ext-api/dispo-list",
      *     tags={"Disposition List"},
@@ -69,19 +72,30 @@ class DispositionApiController extends Controller
             return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.local_ip_not_found'));
         }
 
-        $url = "https://{$ip}/api/admin/actions/v2/disposition_list.php";
+        // NOC-996, TODO DC-Hosted integration, Condition based so omni run with multi tenant and without multitenant.
+        if (config('omni.IS_DC_MULTITENANT') == 1) {
+            return $this->apiRequestService->handleApiRequest(
+                $request,
+                'disposition_list',
+                DispositionListRequest::class,
+            );
+        } else {
+            $url = "https://{$ip}/api/admin/actions/v2/disposition_list.php";
 
-        // Get validation rules from FormRequest
-        $rules = (new DispositionListRequest())->rules();
 
-        // Validate request using extracted rules
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()]);
+            // Get validation rules from FormRequest
+            $rules = (new DispositionListRequest())->rules();
+
+            // Validate request using extracted rules
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()]);
+            }
+
+            $validatedData = $validator->validated();
+
+            return sendHttpRequest($url, 'POST', $validatedData);
         }
-
-        $validatedData = $validator->validated();
-
-        return sendHttpRequest($url, 'POST', $validatedData);
+        // NOC-996, END
     }
 }
