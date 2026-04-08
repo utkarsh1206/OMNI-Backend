@@ -62,7 +62,7 @@ class PhoneRepository
             if (config('omni.IS_DC_MULTITENANT') == 1) {
                 $user = auth()->user();
                 $token = getTenantUin($user);
-                $domain = $user->domain;
+                $domain = strToLower($user->domain);
                 $ip = config('omni.HOSTED_URL');
 
                 $url = "{$ip}/api/admin/actions/v2/phone_create.php?domain={$domain}";
@@ -78,7 +78,21 @@ class PhoneRepository
 
                 $response = sendHttpRequest($url, 'POST', $payload);
 
-                if (!isset($response['code']) || $response['code'] !== 0) {
+                if ($response instanceof \Illuminate\Http\JsonResponse) {
+                    // Extract array directly
+                    $resData = $response->getData(true);
+                } elseif (is_array($response)) {
+                    // Already an array, no need to decode
+                    $resData = $response;
+                } elseif (is_string($response)) {
+                    // Decode JSON string
+                    $resData = json_decode($response, true);
+                } else {
+                    $resData = ['message' => 'Unexpected response type'];
+                }
+                generateLogs("info", "response: " . json_encode($resData));
+
+                if (!isset($resData['code']) || $resData['code'] !== 0) {
                     throw new Exception("External Multi-tenant API failed to create Phone: Code: " . ($response['code'] ?? 'Unknown Code') . " Message :" . ($response['message'] ?? 'Unknown response'));
                 }
             }   // NOC-995 To-Do Hosted MultiTenant END
@@ -150,7 +164,7 @@ class PhoneRepository
             if (config('omni.IS_DC_MULTITENANT') == 1) {
                 $user = auth()->user();
                 $token = getTenantUin($user);
-                $domain = $user->domain;
+                $domain = strToLower($user->domain);
                 $ip = config('omni.HOSTED_URL');
 
                 $url = "{$ip}/api/admin/actions/v2/phone_delete.php?domain={$domain}";
@@ -162,8 +176,22 @@ class PhoneRepository
 
                 $response = sendHttpRequest($url, 'POST', $payload);
 
+                if ($response instanceof \Illuminate\Http\JsonResponse) {
+                    // Extract array directly
+                    $resData = $response->getData(true);
+                } elseif (is_array($response)) {
+                    // Already an array, no need to decode
+                    $resData = $response;
+                } elseif (is_string($response)) {
+                    // Decode JSON string
+                    $resData = json_decode($response, true);
+                } else {
+                    $resData = ['message' => 'Unexpected response type'];
+                }
+                generateLogs("info", "response: " . json_encode($resData));
+
                 // Verify if the API response is successful (code 0)
-                if (!isset($response['code']) || $response['code'] !== 0) {
+                if (!isset($resData['code']) || $resData['code'] !== 0) {
                     throw new Exception("External Multi-tenant API failed to delete Phone: Code: " . ($response['code'] ?? 'Unknown Code') . " Message: " . ($response['message'] ?? 'Unknown response'));
                 }
             }   // NOC-995 To-Do Hosted MultiTenant END

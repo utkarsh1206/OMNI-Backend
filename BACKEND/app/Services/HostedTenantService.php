@@ -47,7 +47,7 @@ class HostedTenantService
         $data = $response->json() ?? [];
 
         // Check for specific success codes: 0 (General Success) or 1000021 (Already Exists/Specific Success)
-        if ($response->successful() && in_array($data['code'], [0, 1000021])) {
+        if (in_array($data['code'], [0, 1000021])) {
             return $data;
         }
 
@@ -85,9 +85,7 @@ class HostedTenantService
 
         $response = Http::withoutVerifying()
             ->withHeaders(['Authorization' => $token])
-            ->delete("{$this->baseUrl}/tenantDelete.php", [
-                'domain' => $domainName
-            ]);
+            ->delete("{$this->baseUrl}/tenantDelete.php?domain={$domainName}");
 
         $data = $response->json() ?? [];
 
@@ -97,5 +95,35 @@ class HostedTenantService
         }
 
         throw new Exception("External API Deletion Failed: Code: " . ($data['code'] ?? 'Unknown Code') . " Message: " . ($data['message'] ?? 'Unknown Error'));
+    }
+
+
+    /**
+     * Notify External System of the generated UIN for a domain
+     * POST .../omniApiTokenForDCAgent.php?domain=example.com
+     */
+    public function syncUinToExternalSystem(string $domainName, string $uin)
+    {
+        try {
+            $token = $this->getToken();
+            $domainLower = strToLower($domainName);
+
+            $response = Http::withoutVerifying()
+                ->withHeaders(['Authorization' => $token])
+                ->post("{$this->baseUrl}/omniApiTokenForDCAgent.php?domain={$domainLower}", [
+                    'UIN' => $uin
+                ]);
+
+            $data = $response->json() ?? [];
+
+            if (!$response->successful() || (isset($data['code']) && $data['code'] !== 0)) {
+                generateLogs('error', 'UIN Sync Failed for domain: ' . $domainName, json_encode($data));
+            }
+
+            return $data;
+        } catch (Exception $e) {
+            generateLogs('error', 'Exception during UIN Sync for domain: ' . $domainName, $e->getMessage());
+            return null;
+        }
     }
 }

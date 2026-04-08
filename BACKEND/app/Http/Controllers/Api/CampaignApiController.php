@@ -7,6 +7,8 @@ use App\Http\Requests\CampaignApiRequest;
 use App\Http\Response\CustomApiResponse;
 use App\Models\EcdialLists;
 use App\Services\ApiRequestService;
+use App\Models\Detail;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 
 class CampaignApiController extends Controller
@@ -88,19 +90,38 @@ class CampaignApiController extends Controller
                 return response()->json(['error' => 'Domain name is required']);
             }
 
-            $config = getNeoxConfig($domainName);
-            if (isset($config['status']) && $config['status'] === 'error') {
-                return response()->json($config);
-            }
-
-            $ip = $config['neox_local_ip'];
             if (config('omni.IS_DC_MULTITENANT') == 1) {
-                $apiResponse = $this->apiRequestService->handleApiRequest(
-                    $request,
-                    'agent_campaign',
-                    CampaignApiRequest::class,
-                );
+
+                $details = Detail::where('domain', $domainName)->first();
+
+                if (!$details || !$details->uin) {
+                    generateLogs("error", "UIN not found in Details table for domain: " . $domainName);
+                    return response()->json(['error' => 'Authentication token (UIN) not found'], 404);
+                }
+
+                $token = $details->uin;
+                $ip = config('omni.HOSTED_URL');
+                $lowerDomain = strtolower($domainName);
+                $url = "{$ip}/api/agent/actions/v2/agent_campaign.php?domain={$lowerDomain}";
+
+                $postData = [
+                    "token" => $token,
+                    "user_id" => $request->user . "@" . $lowerDomain,
+                ];
+
+                generateLogs("info", "Sending request to: " . $url . " with token: " . $token . " and user_id: " . $request->user . "@" . $lowerDomain);
+
+                $apiResponse = sendHttpRequest($url, 'POST', $postData);
+
+                generateLogs("info", "Got the API Response: " . json_encode($apiResponse));
             } else {
+
+                $config = getNeoxConfig($domainName);
+                if (isset($config['status']) && $config['status'] === 'error') {
+                    return response()->json($config);
+                }
+
+                $ip = $config['neox_local_ip'];
                 $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
                 $validatedData = $request->validated();
 
@@ -225,11 +246,23 @@ class CampaignApiController extends Controller
             $ip = $config['neox_local_ip'];
 
             if (config('omni.IS_DC_MULTITENANT') == 1) {
-                return $this->apiRequestService->handleApiRequest(
-                    $request,
-                    'agent_campaign',
-                    CampaignApiRequest::class,
-                );
+                $authUser = Auth::user();
+                $tenantUin = getTenantUin($authUser);
+                $domain = $authUser->domain;
+
+                $token = $tenantUin;
+                $ip = config('omni.HOSTED_URL');
+                $lowerDomain = strtolower($domain);
+                $url = "{$ip}/api/admin/actions/v2/campaign_list.php?domain={$lowerDomain}";
+
+                $postData = [
+                    "token" => $token,
+                ];
+
+
+                $response = sendHttpRequest($url, 'POST', $postData);
+
+                return $response;
             } else {
                 $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
                 $validatedData = $request->validated();
@@ -310,11 +343,26 @@ class CampaignApiController extends Controller
 
             // NOC-996, TODO DC-Hosted integration, Condition based so omni run with multi tenant and without multitenant.
             if (config('omni.IS_DC_MULTITENANT') == 1) {
-                $response = $this->apiRequestService->handleApiRequest(
-                    $request,
-                    'agent_campaign',
-                    CampaignApiRequest::class,
-                );
+
+                $authUser = Auth::user();
+                $tenantUin = getTenantUin($authUser);
+                $domain = $authUser->domain;
+
+
+                $token = $tenantUin;
+                $ip = config('omni.HOSTED_URL');
+                $lowerDomain = strtolower($domain);
+                $url = "{$ip}/api/admin/actions/v2/campaign_list.php?domain={$lowerDomain}";
+
+                $postData = [
+                    "token" => $token,
+                ];
+
+                generateLogs("info", "Sending request to: " . $url . " with token: " . $token);
+
+                $response = sendHttpRequest($url, 'POST', $postData);
+
+                generateLogs("info", "Got the API Response: " . json_encode($response));
             } else {
                 $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
 
