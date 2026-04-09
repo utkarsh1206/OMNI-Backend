@@ -28,7 +28,8 @@ class DisposCallApiRepository
     public function processDisposCall($apiResult, $request)
     {
         try {
-            $user = $this->getUserByUsername($request->user_id);
+            $user_id = explode('@', $request->user_id)[0];
+            $user = $this->getUserByUsername($user_id);
             $liveCallData = $this->getLiveCallData($user, $request);
 
             if (isset($apiResult['code']) && $apiResult['code'] === 0) {

@@ -165,7 +165,7 @@ class UserRepository
 
                     // NOC-995 To-Do Hosted MultiTenant START
                     if (config('omni.IS_DC_MULTITENANT') == 1) {
-                        $ip = config('omni.HOSTED_URL');
+                        $ip = rtrim(config('omni.HOSTED_URL'), '/');
                         $hostedBody = [
                             "token"     => getTenantUin($authUser),
                             "user_id"   => $request->username . '@' . $authUser->domain,
@@ -385,7 +385,7 @@ class UserRepository
                 $currentUser = auth()->user();
                 $domain = $currentUser->domain;
                 $token = getTenantUin($currentUser);
-                $ip = config('omni.HOSTED_URL');
+                $ip = rtrim(config('omni.HOSTED_URL'), '/');
 
                 $url = "{$ip}/api/admin/actions/v2/delete_agent.php?domain={$domain}";
                 $payload = [
