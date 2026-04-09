@@ -63,7 +63,7 @@ class PhoneRepository
                 $user = auth()->user();
                 $token = getTenantUin($user);
                 $domain = strToLower($user->domain);
-                $ip = config('omni.HOSTED_URL');
+                $ip = rtrim(config('omni.HOSTED_URL'), '/');
 
                 $url = "{$ip}/api/admin/actions/v2/phone_create.php?domain={$domain}";
 
@@ -165,7 +165,7 @@ class PhoneRepository
                 $user = auth()->user();
                 $token = getTenantUin($user);
                 $domain = strToLower($user->domain);
-                $ip = config('omni.HOSTED_URL');
+                $ip = rtrim(config('omni.HOSTED_URL'), '/');
 
                 $url = "{$ip}/api/admin/actions/v2/phone_delete.php?domain={$domain}";
 

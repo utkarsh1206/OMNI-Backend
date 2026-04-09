@@ -100,7 +100,7 @@ class CampaignApiController extends Controller
                 }
 
                 $token = $details->uin;
-                $ip = config('omni.HOSTED_URL');
+                $ip = rtrim(config('omni.HOSTED_URL'), '/');
                 $lowerDomain = strtolower($domainName);
                 $url = "{$ip}/api/agent/actions/v2/agent_campaign.php?domain={$lowerDomain}";
 
@@ -251,7 +251,7 @@ class CampaignApiController extends Controller
                 $domain = $authUser->domain;
 
                 $token = $tenantUin;
-                $ip = config('omni.HOSTED_URL');
+                $ip = rtrim(config('omni.HOSTED_URL'), '/');
                 $lowerDomain = strtolower($domain);
                 $url = "{$ip}/api/admin/actions/v2/campaign_list.php?domain={$lowerDomain}";
 
@@ -350,7 +350,7 @@ class CampaignApiController extends Controller
 
 
                 $token = $tenantUin;
-                $ip = config('omni.HOSTED_URL');
+                $ip = rtrim(config('omni.HOSTED_URL'), '/');
                 $lowerDomain = strtolower($domain);
                 $url = "{$ip}/api/admin/actions/v2/campaign_list.php?domain={$lowerDomain}";
 

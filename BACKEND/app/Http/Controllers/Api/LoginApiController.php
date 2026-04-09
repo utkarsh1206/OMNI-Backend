@@ -37,7 +37,7 @@ class LoginApiController extends Controller
 				return response()->json(['error' => 'Authentication token (UIN) not found'], 404);
 			}
 			$token = $details->uin;
-			$ip = config('omni.HOSTED_URL');
+			$ip = rtrim(config('omni.HOSTED_URL'), '/');
 			$lowerDomain = strtolower($domainName);
 
 			$url = "{$ip}/api/agent/actions/v2/agent_login.php?domain={$lowerDomain}";

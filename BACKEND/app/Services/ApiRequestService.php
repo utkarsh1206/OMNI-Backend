@@ -30,7 +30,7 @@ class ApiRequestService
             if (config('omni.IS_DC_MULTITENANT') == 1) {
                 $apiUser = auth()->user();
                 $neoxToken = getTenantUin($apiUser);
-                $ip = config('omni.HOSTED_URL');
+                $ip = rtrim(config('omni.HOSTED_URL'), '/');
             } else {
                 $neoxToken = $config['neox_token'];
                 $ip = $config['neox_local_ip'];
