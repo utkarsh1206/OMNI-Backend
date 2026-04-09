@@ -27,21 +27,20 @@ class ApiRequestService
             }
 
             // Extract IP and Token from the configuration
-            $ip = $config['neox_local_ip'];
-
             if (config('omni.IS_DC_MULTITENANT') == 1) {
                 $apiUser = auth()->user();
                 $neoxToken = getTenantUin($apiUser);
+                $ip = rtrim(config('omni.HOSTED_URL'), '/');
             } else {
                 $neoxToken = $config['neox_token'];
+                $ip = $config['neox_local_ip'];
             }
-
             // NOC-996, TODO DC Hosted, START
             $url_req_param = "";
             $jWTtoken = $request->bearerToken() ?: $request->auth_token;
             if (config('omni.IS_DC_MULTITENANT') == 1 && $jWTtoken) {
                 $payload = $jWTtoken ? extractPayload($jWTtoken) : null;
-                $url_req_param = "?domain=" . $payload['domain'];
+                $url_req_param = "?domain=" . strToLower($payload['domain']);
             }
             // NOC-996, END
 
@@ -52,7 +51,12 @@ class ApiRequestService
 
             // NOC-996, TODO DC Hosted, Added request parameter domain ie. $url_req_param.
             // Build the URL dynamically based on the action
-            $url = "https://{$ip}/api/agent/actions/v2/{$action}.php$url_req_param";
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                $extIp = $ip;
+            } else {
+                $extIp = "https://{$ip}";
+            }
+            $url = "$extIp/api/agent/actions/v2/{$action}.php$url_req_param";
 
             // Get validation rules from FormRequest
             $rules = (new $formRequestClass())->rules();
