@@ -368,7 +368,10 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('neox-configurations', NeoxConfigurationController::class);
 
     Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
+    	Route::post('/camp-list-filtered', [CampaignApiController::class, 'campaignListFilteredApi']);
+    	Route::post('/camp-list-all', [CampaignApiController::class, 'campaignListAllApi']);
         Route::post('dispo-list', [DispositionApiController::class, 'dispositionListApi']);
+    	Route::post('ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
         Route::post('hold-call', [HoldCallApiController::class, 'holdCallApi']);
         Route::post('logout', [LogoutApiController::class, 'agentLogoutApi']);
         Route::post('dial-call', [DialCallApiController::class, 'dialCallApi']);
@@ -562,9 +565,6 @@ Route::get('cities', [CityController::class, 'index']);
 
 Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
     Route::post('/camp-list', [CampaignApiController::class, 'campaignListApi']);
-    Route::post('/camp-list-all', [CampaignApiController::class, 'campaignListAllApi']);
-    Route::post('/camp-list-filtered', [CampaignApiController::class, 'campaignListFilteredApi']);
-    Route::post('ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
     Route::post('refresh-logout', [LogoutRefreshApiController::class, 'agentLogoutRefreshApi']);
     Route::post('login', [LoginApiController::class, 'agentLoginApi']);
 });

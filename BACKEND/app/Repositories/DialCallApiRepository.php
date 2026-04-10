@@ -45,7 +45,8 @@ class DialCallApiRepository
     private function handleSuccessfulCall($uniqueId, $request)
     {
         try {
-            $user = $this->getUserByUsername($request->user_id);
+            $user_id = explode('@', $request->user_id)[0];
+            $user = $this->getUserByUsername($user_id);
 
             $this->updateLiveAgentUniqueId($user->id, $request->phone, $uniqueId, $request->dialed_phone_number);
 
@@ -154,8 +155,8 @@ class DialCallApiRepository
             // Calculate time difference from last activity
             $timeDiff = calculateTimeDiff($latestActivity->created_at);
             $durationField = $latestActivity->activity === 'Pause'
-            ? 'pause_duration'
-            : 'resume_duration';
+                ? 'pause_duration'
+                : 'resume_duration';
 
             UserDailyActivity::create([
                 'campaign_id'    => $request->campaign_id,

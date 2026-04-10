@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class IngroupApiController extends Controller
 {
-     private $apiRequestService;
+    private $apiRequestService;
 
     public function __construct(ApiRequestService $apiRequestService)
     {
@@ -80,7 +80,6 @@ class IngroupApiController extends Controller
 
         // NOC-996, TODO DC-Hosted integration, Condition based so omni run with multi tenant and without multitenant.
         if (config('omni.IS_DC_MULTITENANT') == 1) {
-            // $url = "https://{$ip}/api/agent/actions/v2/agent_ingroup.php?domain=$domainName";
             return $this->apiRequestService->handleApiRequest(
                 $request,
                 'agent_ingroup',

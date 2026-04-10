@@ -24,7 +24,8 @@ class HangupApiRepository
     public function handleSuccessfulHangup($request, $result)
     {
         try {
-            $user = Users::where('username', $request->user_id)->firstOrFail();
+            $user_id = explode('@', $request->user_id)[0];
+            $user = Users::where('username', $user_id)->firstOrFail();
             $liveCallData = $this->getLiveCallData($user, $request);
 
             $this->updatePauseLog($user, $request);
@@ -58,7 +59,8 @@ class HangupApiRepository
     public function handleFailedHangup($request, $result)
     {
         try {
-            $user = Users::where('username', $request->user_id)->firstOrFail();
+            $user_id = explode('@', $request->user_id)[0];
+            $user = Users::where('username', $user_id)->firstOrFail();
             $liveCallData = $this->getLiveCallData($user, $request);
 
             $logData = $this->prepareLogData($user, $request, $liveCallData);
@@ -117,7 +119,7 @@ class HangupApiRepository
             // LiveAgents::where('user_id', $user->id)
             //     ->where('extension', $request->phone)
             //     ->update(['status' => 'Disposition']);
-            
+
             $liveAgent = LiveAgents::where('user_id', $user->id)
                 ->where('extension', $request->phone)
                 ->first();
@@ -125,7 +127,7 @@ class HangupApiRepository
             if ($liveAgent) {
                 $liveAgent->status = 'Disposition';
                 $liveAgent->save();
-            }     
+            }
         } catch (Exception $e) {
             generateLogs('error', "Error in updateAgentStatus: ", $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
