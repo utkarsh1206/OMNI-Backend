@@ -19,10 +19,12 @@ class TenantObserver
 
         $databaseName = Str::replace(".", "_", request()->domain_name);
 
+        $uin = (string) Str::uuid();
+
         $tenantDetails = [
             'db' => $databaseName,
             'domain' => request()->domain_name,
-            'uin' => (string) Str::uuid(),
+            'uin' => $uin,
             'username'  => env('DB_USERNAME', 'root'),
             'password'  => env('DB_PASSWORD', 'Sterlite@2025'),
         ];
@@ -73,6 +75,15 @@ class TenantObserver
                 '--class' => 'TenantSeeder',
                 '--force' => true, // Run seeders in production if necessary
             ]);
+
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                try {
+                    $hostedService = app(\App\Services\HostedTenantService::class);
+                    $hostedService->syncUinToExternalSystem(request()->domain_name, $uin);
+                } catch (\Exception $e) {
+                    generateLogs('error', 'Service Resolution Error in Observer: ', $e->getMessage());
+                }
+            }
         }
     }
 }

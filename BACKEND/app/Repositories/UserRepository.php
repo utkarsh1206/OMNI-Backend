@@ -165,18 +165,32 @@ class UserRepository
 
                     // NOC-995 To-Do Hosted MultiTenant START
                     if (config('omni.IS_DC_MULTITENANT') == 1) {
-                        $ip = config('omni.HOSTED_URL');
+                        $ip = rtrim(config('omni.HOSTED_URL'), '/');
+                        $domainLower = strToLower($authUser->domain);
                         $hostedBody = [
                             "token"     => getTenantUin($authUser),
-                            "user_id"   => $request->username . '@' . $authUser->domain,
+                            "user_id"   => $request->username . '@' . $domainLower,
                             "password"   => $request->password,
                             "fullName"   => $request->first_name . ' ' . $request->last_name,
                             "user_group" => $userGroup->name,
                         ];
-                        $hostedUrl = "{$ip}/api/admin/actions/v2/create_agent.php?domain={$authUser->domain}";
+                        $hostedUrl = "{$ip}/api/admin/actions/v2/create_agent.php?domain={$domainLower}";
 
                         $response = sendHttpRequest($hostedUrl, 'POST', $hostedBody);
-                        $resData = json_decode($response, true);
+                        //$resData = json_decode($response, true);
+                        if ($response instanceof \Illuminate\Http\JsonResponse) {
+                            // Extract array directly
+                            $resData = $response->getData(true);
+                        } elseif (is_array($response)) {
+                            // Already an array, no need to decode
+                            $resData = $response;
+                        } elseif (is_string($response)) {
+                            // Decode JSON string
+                            $resData = json_decode($response, true);
+                        } else {
+                            $resData = ['message' => 'Unexpected response type'];
+                        }
+                        generateLogs("info", "response: " . json_encode($resData));
 
                         if (!isset($resData['code']) || $resData['code'] !== 0) {
                             throw new Exception("Hosted API Error: Code: " . ($resData['code'] ?? 'Unknown Code') . " Message :" . ($resData['message'] ?? 'Unknown response'));
@@ -383,9 +397,9 @@ class UserRepository
             // NOC-995 To-Do Hosted MultiTenant START
             if (config('omni.IS_DC_MULTITENANT') == 1) {
                 $currentUser = auth()->user();
-                $domain = $currentUser->domain;
+                $domain = strToLower($currentUser->domain);
                 $token = getTenantUin($currentUser);
-                $ip = config('omni.HOSTED_URL');
+                $ip = rtrim(config('omni.HOSTED_URL'), '/');
 
                 $url = "{$ip}/api/admin/actions/v2/delete_agent.php?domain={$domain}";
                 $payload = [
@@ -394,7 +408,21 @@ class UserRepository
                 ];
                 $response = sendHttpRequest($url, 'POST', $payload);
 
-                if (!isset($response['code']) || $response['code'] != 0) {
+                if ($response instanceof \Illuminate\Http\JsonResponse) {
+                    // Extract array directly
+                    $resData = $response->getData(true);
+                } elseif (is_array($response)) {
+                    // Already an array, no need to decode
+                    $resData = $response;
+                } elseif (is_string($response)) {
+                    // Decode JSON string
+                    $resData = json_decode($response, true);
+                } else {
+                    $resData = ['message' => 'Unexpected response type'];
+                }
+                generateLogs("info", "response: " . json_encode($resData));
+
+                if (!isset($resData['code']) || $resData['code'] != 0) {
                     throw new Exception("External Multi-tenant API failed to delete user: Code: " . ($resData['code'] ?? 'Unknown Code') . " Message :" . ($resData['message'] ?? 'Unknown response'));
                 }
             }   // NOC-995 To-Do Hosted MultiTenant END
