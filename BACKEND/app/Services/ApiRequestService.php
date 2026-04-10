@@ -38,9 +38,15 @@ class ApiRequestService
             // NOC-996, TODO DC Hosted, START
             $url_req_param = "";
             $jWTtoken = $request->bearerToken() ?: $request->auth_token;
-            if (config('omni.IS_DC_MULTITENANT') == 1 && $jWTtoken) {
-                $payload = $jWTtoken ? extractPayload($jWTtoken) : null;
-                $url_req_param = "?domain=" . strToLower($payload['domain']);
+            #NOC - 955, 966 Hosted Change Start
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
+                if ($jWTtoken == null && $action == 'disposition_list') {
+                    $url_req_param = "?domain=" . strToLower($domainName);
+                } else {
+                    $payload = $jWTtoken ? extractPayload($jWTtoken) : null;
+                    $url_req_param = "?domain=" . strToLower($payload['domain']);
+                }
+                #NOC - 955, 966 Hosted Change End
             }
             // NOC-996, END
 
