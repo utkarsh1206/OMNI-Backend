@@ -27,40 +27,41 @@ class LoginApiController extends Controller
             return response()->json(['error' => 'Domain name is required']);
         }
 
-		if (config('omni.IS_DC_MULTITENANT') == 1) {
-			establishMasterConnection($domainName, "omnichannel", "mysql");
-			$details = Detail::where('domain', $domainName)->first();
-			$connection   = str_replace(".", "_", $domainName);
-			establishDatabaseConnect($connection, $connection);
+        if (config('omni.IS_DC_MULTITENANT') == 1) {
+            establishMasterConnection($domainName, "omnichannel", "mysql");
+            $details = Detail::where('domain', $domainName)->first();
+            $connection   = str_replace(".", "_", $domainName);
+            establishDatabaseConnect($connection, $connection);
 
-			if (!$details || !$details->uin) {
-				return response()->json(['error' => 'Authentication token (UIN) not found'], 404);
-			}
-			$token = $details->uin;
-			$ip = rtrim(config('omni.HOSTED_URL'), '/');
-			$lowerDomain = strtolower($domainName);
+            if (!$details || !$details->uin) {
+                return response()->json(['error' => 'Authentication token (UIN) not found'], 404);
+            }
+            $token = $details->uin;
+            $ip = rtrim(config('omni.HOSTED_URL'), '/');
+            $lowerDomain = strtolower($domainName);
 
-			$url = "{$ip}/api/agent/actions/v2/agent_login.php?domain={$lowerDomain}";
+            $url = "{$ip}/api/agent/actions/v2/agent_login.php?domain={$lowerDomain}";
 
-			$postData = [
-				"token"=> $token,
-				"user_id" => $request->user_id . "@" . $lowerDomain,
-				"password" => $request->password,
-				"campaign_id" => $request->campaign_id,
-				"user_phone_number" => $request->user_phone_number,
-			];
-	
-			$result = sendHttpRequest($url, 'POST', $postData);
+            $postData = [
+                "token" => $token,
+                "user_id" => $request->user_id . "@" . $lowerDomain,
+                "password" => $request->password,
+                "campaign_id" => $request->campaign_id,
+                "user_phone_number" => $request->user_phone_number,
+            ];
 
-	                generateLogs("info", "Got the API Response: " . json_encode($result));
-		} else {
-        // Pass domain name to the common service to fetch configuration and process the request
-        $result = $this->apiRequestService->handleApiRequest(
-            $request,
-            'agent_login',
-            LoginApiRequest::class,
-            $domainName
-        );
+            $result = sendHttpRequest($url, 'POST', $postData);
+
+            generateLogs("info", "Got the API Response: " . json_encode($result));
+        } else {
+            // Pass domain name to the common service to fetch configuration and process the request
+            $result = $this->apiRequestService->handleApiRequest(
+                $request,
+                'agent_login',
+                LoginApiRequest::class,
+                $domainName
+            );
+        }
 
         // Check if the result is a JsonResponse
         if ($result instanceof \Illuminate\Http\JsonResponse) {
