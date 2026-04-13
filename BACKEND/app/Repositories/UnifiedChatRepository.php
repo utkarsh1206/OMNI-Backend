@@ -79,7 +79,7 @@ class UnifiedChatRepository
                     // Unread count (comparing against last_read_message_id)
                     DB::raw("(SELECT COUNT(*) FROM messages 
                           WHERE messages.group_id = groups.id 
-                          AND messages.id > COALESCE(group_participants.last_read_message_id, 0)) as unread_count")
+                          AND messages.id > COALESCE(group_participants.last_read_message_id, 0)) as unread_count"),
                 ])
                 ->where('group_participants.user_id', $userId)
                 ->whereNull('group_participants.left_at')
