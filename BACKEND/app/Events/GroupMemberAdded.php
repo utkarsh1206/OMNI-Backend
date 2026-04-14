@@ -54,7 +54,7 @@ class GroupMemberAdded implements ShouldBroadcastNow
     {
         generateLogs(
             'info',
-            'GroupMemberRemoved Payload' .
+            'GroupMemberAdded Payload' .
                 json_encode([
                     'type' => 'group_member_added',
                     'group_id' => $this->groupId,
