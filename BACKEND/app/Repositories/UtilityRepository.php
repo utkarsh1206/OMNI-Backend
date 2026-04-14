@@ -148,13 +148,6 @@ class UtilityRepository
 
         if ($payload['role_id'] == 0) {
             $domain = $request->tenant_domain;
-            $database = str_replace(".", "_", $request->domain_name);
-        } else {
-            $database = DB::getDatabaseName();
-        }
-
-        # $database = $payload['db'] ?? 'omnichannel';
-        if ($payload['role_id'] == 0) {
             $connection = getdbConnection($domain);
         } else {
             $connection = DB::connection(); // default connection
