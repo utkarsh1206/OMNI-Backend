@@ -385,6 +385,8 @@ class UtilityRepository
                 });
             }
 
+            $query = $query->orderByDesc('id');
+
             $perPage = $request->input('per_page', config('omni.PER_PAGE'));
             $page = $request->input('page', config('omni.DEFAULT_PAGE'));
 
