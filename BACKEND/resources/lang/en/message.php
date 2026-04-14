@@ -221,6 +221,9 @@ return [
 
     'email_schedule_created' => 'Email schedule created successfully.',
     'email_schedule_updated' => 'Email schedule update successfully.',
-    'email_schedule_deleted' => 'Email schedule deleted successfully.'
+    'email_schedule_deleted' => 'Email schedule deleted successfully.',
+
+    'backup_not_found' => 'No backup found for this tenant. Please take backup before deletion.',
+    'backup_older' => 'Latest backup is older than 24 hours. Please take a fresh backup.'
 ]
 ?>
