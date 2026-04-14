@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class IngroupApiController extends Controller
 {
-     private $apiRequestService;
+    private $apiRequestService;
 
     public function __construct(ApiRequestService $apiRequestService)
     {

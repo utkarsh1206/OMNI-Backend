@@ -77,14 +77,20 @@ class CallLogReportRepository
     /**
      * Exports the call log data as CSV.
      */
-    public function exportCsvData(Request $request, $connectionName = null)
+    public function exportCsvData(Request $request, $connectionName = null, $domain = null)     #NOC - 955, 966 Hosted Change
     {
         try {
             $selectedColumns = $request->input('selected_columns', []);
 
             $callLogs = $this->buildCallLogQuery($request, true, $connectionName)->get();
             $headers = [];
-            $formattedRows = $this->formatCallLogsForCsv($callLogs, $headers, $selectedColumns, $connectionName);
+
+            #NOC - 955, 966 Hosted Change
+            if (!$domain) {
+                $payload = extractPayload($request->bearerToken());
+                $domain = $payload['domain'];
+            }
+            $formattedRows = $this->formatCallLogsForCsv($callLogs, $headers, $selectedColumns, $connectionName, $domain, $request);        #NOC - 955, 966 Hosted Change
             $url = exportCsv($headers, $formattedRows, 'call_logs');
 
             // $csvUrl = exportCsvChunked($callLogs, $headers, function ($log) use ($selectedColumns, $connectionName) {
@@ -128,28 +134,28 @@ class CallLogReportRepository
         $endDate = Carbon::parse($filters['endDate'])->toDateTimeString();
 
         $query = NeoxCallLog::on($connectionName)
-        ->select([
-            'neox_call_logs.call_unique_id',
-            'campaign_id',
-            'inbound_group_id',
-            'user_group',
-            DB::raw('DATE_FORMAT(call_date, "%Y-%m-%d %H:%i:%s") as call_date'),
-            'call_type',
-            'caller_username',
-            'caller_user_extension',
-            'called_phone_number',
-            'call_did_pattern',
-            DB::raw('DATE_FORMAT(SEC_TO_TIME(call_total_duration), "%H:%i:%s") as call_total_duration'),
-            DB::raw('SEC_TO_TIME(call_talk_duration) as call_talk_duration'),
-            DB::raw("CASE WHEN call_talk_duration = 0 THEN 'Abandoned' ELSE 'Answered' END as call_connectivity_status"),
-            'call_status',
-            'call_dispo_status',
-            'call_term_reason',
-            'comments',
-            'call_recording_url',
-            'cdr.lead_json'
-        ])
-        ->join(DB::raw("
+            ->select([
+                'neox_call_logs.call_unique_id',
+                'campaign_id',
+                'inbound_group_id',
+                'user_group',
+                DB::raw('DATE_FORMAT(call_date, "%Y-%m-%d %H:%i:%s") as call_date'),
+                'call_type',
+                'caller_username',
+                'caller_user_extension',
+                'called_phone_number',
+                'call_did_pattern',
+                DB::raw('DATE_FORMAT(SEC_TO_TIME(call_total_duration), "%H:%i:%s") as call_total_duration'),
+                DB::raw('SEC_TO_TIME(call_talk_duration) as call_talk_duration'),
+                DB::raw("CASE WHEN call_talk_duration = 0 THEN 'Abandoned' ELSE 'Answered' END as call_connectivity_status"),
+                'call_status',
+                'call_dispo_status',
+                'call_term_reason',
+                'comments',
+                'call_recording_url',
+                'cdr.lead_json'
+            ])
+            ->join(DB::raw("
             (
                 SELECT MAX(id) as id
                 FROM neox_call_logs
@@ -157,16 +163,16 @@ class CallLogReportRepository
                 GROUP BY call_unique_id
             ) latest
         "), 'latest.id', '=', 'neox_call_logs.id')
-    
-        ->leftJoin(DB::raw("
+
+            ->leftJoin(DB::raw("
             (
                 SELECT call_unique_id, MAX(lead_json) as lead_json
                 FROM custom_cdr_leads
                 GROUP BY call_unique_id
             ) as cdr
         "), 'cdr.call_unique_id', '=', 'neox_call_logs.call_unique_id')
-    
-        ->whereBetween('call_date', [$startDate, $endDate]);
+
+            ->whereBetween('call_date', [$startDate, $endDate]);
         if ($user && $user->role_id == 3) {
             $query->where('caller_username', $user->username);
         }
@@ -205,7 +211,7 @@ class CallLogReportRepository
      * Formats the call logs for CSV export.
      */
 
-    protected function formatCallLogsForCsv($logs, &$headers = [], $selectedColumns = [], $connectionName = null)
+    protected function formatCallLogsForCsv($logs, &$headers = [], $selectedColumns = [], $connectionName = null, $domain = null, $request)     #NOC - 955, 966 Hosted Change
     {
         $dispoCache = [];
         $dynamicKeys = [];
@@ -256,20 +262,34 @@ class CallLogReportRepository
         }
 
         $headers = $selectedColumns;
-        
+
         // Map formatted rows
-        $rows = $logs->map(function ($log) use (&$dispoCache, $dynamicKeysMap, $staticColumns, $selectedColumns, $connectionName) {
+        $rows = $logs->map(function ($log) use (&$dispoCache, $dynamicKeysMap, $staticColumns, $selectedColumns, $connectionName, $domain, $request)    #NOC - 955, 966 Hosted Change
+        {
             $campaignId = $log->campaign_id;
             $dispoLabel = $log->call_dispo_status;
 
             //  Disposition description resolution
             if ($campaignId && !isset($dispoCache[$campaignId])) {
-                $request = new Request([
-                    'campaign_id' => $campaignId,
-                    'user' => $log->caller_username
-                ]);
+                #NOC - 955, 966 Hosted Change START
+                $newData = (config('omni.IS_DC_MULTITENANT') == 1)
+                    ? [
+                        'campaign_id' => $campaignId,
+                        'user_id' => $log->caller_username . "@" . strToLower($domain),
+                    ]
+                    : [
+                        'campaign_id' => $campaignId,
+                        'user' => $log->caller_username
+                    ];
 
-                $response = $this->dispositionService->getDispositions($request, $connectionName);
+                $newRequest = new \Illuminate\Http\Request($newData);
+                if (!empty($request)) {
+                    $newRequest->merge($request->all());
+                }
+                $request = $newRequest;
+                $response = $this->dispositionService->getDispositions($request, $connectionName, $domain);
+                #NOC - 955, 966 Hosted Change END
+
                 if ($response instanceof \Illuminate\Http\JsonResponse) {
                     $response = $response->getData(true);
                 }

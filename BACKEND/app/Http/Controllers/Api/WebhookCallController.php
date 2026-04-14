@@ -88,6 +88,7 @@ class WebhookCallController extends Controller
      */
     public function callInitiated(WebhookCallRequest $request)
     {
+        generateLogs("info", "\n\n\t\tCall-Initiated Called\n\n");
         return $this->handleCallRequest($request, 'call_initiated');
     }
 
@@ -148,6 +149,7 @@ class WebhookCallController extends Controller
      */
     public function callConnected(WebhookCallRequest $request)
     {
+        generateLogs("info", "\n\n\t\tCall-Connected Called\n\n");
         return $this->handleCallRequest($request, 'call_connected');
     }
 
@@ -208,6 +210,7 @@ class WebhookCallController extends Controller
      */
     public function callHangup(WebhookCallRequest $request)
     {
+        generateLogs("info", "\n\n\t\tCall-Hangup Called\n\n");
         return $this->handleCallRequest($request, 'call_hangup');
     }
 
@@ -275,6 +278,7 @@ class WebhookCallController extends Controller
      */
     public function callHistory(Request $request)
     {
+        generateLogs("info", "\n\n\t\tCall-History Called\n\n");
         if ($request->has('call_unique_id')) {
             $callType = $this->determineCallTypeFromHistory($request);
             $data = $this->prepareHistoryData($request, $callType);
@@ -406,7 +410,7 @@ class WebhookCallController extends Controller
                 if ($type == 'call_initiated') {
                     if ($callType == 'outgoing') {
                         $activity = 'OutCall';
-                    } 
+                    }
                     if ($callType == 'incoming') {
                         $activity = 'InCall';
                     }
@@ -420,8 +424,8 @@ class WebhookCallController extends Controller
                     // Calculate time difference from last activity
                     $timeDiff = calculateTimeDiff($latestActivity->created_at);
                     $durationField = $latestActivity->activity === 'Pause'
-                    ? 'pause_duration'
-                    : 'resume_duration';
+                        ? 'pause_duration'
+                        : 'resume_duration';
 
                     generateLogs("info", "\n User_id: " . $agentUser?->id);
                     UserDailyActivity::create([
@@ -430,7 +434,7 @@ class WebhookCallController extends Controller
                         'call_unique_id' => $request->call_unique_id,
                         'activity'       => $activity,
                         $durationField   => $timeDiff,
-                        
+
                     ]);
                 }
 
@@ -444,7 +448,7 @@ class WebhookCallController extends Controller
 
                     // $lastActivity = getLatestUserActivity($ids, $request->campaign_id);
 
-                       $lastActivity = UserDailyActivity::where('user_id', $agentUser?->id)
+                    $lastActivity = UserDailyActivity::where('user_id', $agentUser?->id)
                         ->where('campaign_id', $request->campaign_id)
                         ->whereIn('activity', ['InCall', 'OutCall'])
                         ->latest('id')
@@ -457,7 +461,7 @@ class WebhookCallController extends Controller
                     if ($lastActivity) {
                         $activityData['call_duration'] = calculateTimeDiff($lastActivity->created_at);
                     }
-        
+
                     UserDailyActivity::create($activityData);
                 }
 
