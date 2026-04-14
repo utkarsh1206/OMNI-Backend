@@ -60,7 +60,8 @@ class SendScheduledEmail extends Command
                             ->where('is_active', 1)
                             ->get();
 
-                        $schedules->each(function ($schedule) use ($now, $connectionName) {
+                        #NOC - 955, 966 Hosted Change
+                        $schedules->each(function ($schedule) use ($now, $connectionName, $tenant) {
                             $nowTz = now(env('APP_CSVTIMEZONE'));
 
                             $scheduledDateTime = $nowTz->copy()
@@ -155,7 +156,9 @@ class SendScheduledEmail extends Command
                             dispatch(new SendScheduledEmailJob(
                                 $schedule,
                                 $connectionName,
-                                $payload
+                                $payload,
+                                $tenant->domain_name,
+                                #NOC - 955, 966 Hosted Change
                             ));
 
                             /* Update last executed */

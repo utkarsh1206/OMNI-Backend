@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class ReportDataService
 {
-    public function generate($connectionName, $report_name, array $payload)
+    public function generate($connectionName, $report_name, array $payload, $domain)
     {
         $request = new Request($payload);
 
@@ -22,7 +22,7 @@ class ReportDataService
 
         if ($report_name == "Call Logs") {
             $response = app(CallLogReportRepository::class)
-                ->exportCsvData($request, $connectionName);
+                ->exportCsvData($request, $connectionName, $domain);
         }
         if ($report_name == "Email Logs") {
             $response = app(EmailLogRepository::class)

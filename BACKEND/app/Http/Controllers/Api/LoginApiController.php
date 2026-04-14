@@ -27,6 +27,7 @@ class LoginApiController extends Controller
             return response()->json(['error' => 'Domain name is required']);
         }
 
+        #NOC - 955, 966 Hosted Change Start
         if (config('omni.IS_DC_MULTITENANT') == 1) {
             establishMasterConnection($domainName, "omnichannel", "mysql");
             $details = Detail::where('domain', $domainName)->first();
@@ -53,7 +54,8 @@ class LoginApiController extends Controller
             $result = sendHttpRequest($url, 'POST', $postData);
 
             generateLogs("info", "Got the API Response: " . json_encode($result));
-        } else {
+        }   #NOC - 955, 966 Hosted Change END
+        else {
             // Pass domain name to the common service to fetch configuration and process the request
             $result = $this->apiRequestService->handleApiRequest(
                 $request,
