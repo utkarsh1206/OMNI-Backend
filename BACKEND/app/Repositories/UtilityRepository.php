@@ -145,8 +145,26 @@ class UtilityRepository
         // $database = $payload['db'] ?? 'omnichannel';
         # $domain = $payload['domain'];
         // $database = convertToLower(Str::replace(".", "_", auth()->user()->domain)) ?? 'omnichannel';
-        $database = DB::getDatabaseName();
+
+        if ($payload['role_id'] == 0) {
+            $domain = $request->tenant_domain;
+            $database = str_replace(".", "_", $request->domain_name);
+        } else {
+            $database = DB::getDatabaseName();
+        }
+
         # $database = $payload['db'] ?? 'omnichannel';
+        if ($payload['role_id'] == 0) {
+            $connection = getdbConnection($domain);
+        } else {
+            $connection = DB::connection(); // default connection
+        }
+        // Test connection
+        try {
+            $pdo = $connection->getPdo();
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Invalid database'], 500);
+        }
 
         $backupFolder = storage_path('app/public/exports');
         $filename = 'db_backup_' . now()->format('Ymd_His') . '.sql';
@@ -156,17 +174,21 @@ class UtilityRepository
             mkdir($backupFolder, 0755, true);
         }
 
-        $tables = DB::select('SHOW TABLES');
-        $tableKey = 'Tables_in_' . $database;
+
+        // $tables = DB::select('SHOW TABLES');
+        $tables = $connection->select('SHOW TABLES');
+        // $tableKey = 'Tables_in_' . $database;
         $sqlContent = '';
 
         $sqlContent .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
 
         foreach ($tables as $table) {
-            $tableName = $table->$tableKey;
+            // $tableName = $table->$tableKey;
+            $tableName = array_values((array) $table)[0];
 
             // Get the CREATE TABLE statement
-            $createTableRow = DB::selectOne("SHOW CREATE TABLE `$tableName`");
+            // $createTableRow = DB::selectOne("SHOW CREATE TABLE `$tableName`");
+            $createTableRow = $connection->selectOne("SHOW CREATE TABLE `$tableName`");
             $createTableStatement = $createTableRow->{'Create Table'};
 
             $sqlContent .= "-- ----------------------------\n";
@@ -176,7 +198,8 @@ class UtilityRepository
             $sqlContent .= $createTableStatement . ";\n\n";
 
             // Get the data of the table
-            $rows = DB::table($tableName)->get();
+            // $rows = DB::table($tableName)->get();
+            $rows = $connection->table($tableName)->get();
             if ($rows->isNotEmpty()) {
                 $sqlContent .= "-- ----------------------------\n";
                 $sqlContent .= "-- Data for table `$tableName`\n";
@@ -203,11 +226,12 @@ class UtilityRepository
                 }
 
                 // Inline value escape logic
-                $escapedValues = array_map(function ($value) {
+                $escapedValues = array_map(function ($value) use ($pdo) {
                     if (is_null($value)) {
                         return 'NULL';
                     }
-                    return DB::getPdo()->quote($value);
+                    // return DB::getPdo()->quote($value);
+                    return $pdo->quote($value);
                 }, array_values($row));
 
                 $batch[] = '(' . implode(', ', $escapedValues) . ')';
@@ -254,7 +278,7 @@ class UtilityRepository
             'file_size' => $fileSize,
         ];
 
-        $this->store($fileDetails, 'Export');
+        $this->store($fileDetails, 'Export', $payload['role_id'], $request->tenant_domain);
 
         return $this->apiResponse->getResponseStructure(trans('message.success'), [], trans('message.export_success'));
     }
@@ -343,8 +367,16 @@ class UtilityRepository
         try {
             $searchTerm = $request->input('search', '');
 
+            $payload = extractPayload($request->bearerToken());
+
+            $columns = ['id', 'file_name', 'file_size', 'user_id', 'created_at'];
+
+            if ($payload['role_id'] == 0) {
+                $columns[] = 'tenant_domain';
+            }
+
             // Start the query for tenants
-            $query = Download::select('id', 'file_name', 'file_size', 'user_id', 'created_at')->where('type', $type);
+            $query = Download::select($columns)->where('type', $type);
 
             // If there's a search term, apply it to the query
             if (!empty($searchTerm)) {
@@ -376,15 +408,32 @@ class UtilityRepository
         }
     }
 
-    private function store($file, $type)
+    private function store($file, $type, $role_id, $domain = null)
     {
         try {
-            return Download::create([
+            // return Download::create([
+            //     'file_name' => $file['file_name'],
+            //     'file_size' => $file['file_size'],
+            //     'user_id' => $this->authId,
+            //     'type' => $type
+            // ]);
+
+            $data = [
                 'file_name' => $file['file_name'],
                 'file_size' => $file['file_size'],
-                'user_id' => $this->authId,
-                'type' => $type
-            ]);
+                'user_id'   => $this->authId,
+                'type'      => $type,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            if ($role_id == 0 && $domain) {
+                $data['tenant_domain'] = $domain;
+            }
+
+            $connection = DB::connection();
+
+            return $connection->table('downloads')->insert($data);
         } catch (Exception $ex) {
             generateLogs('error', 'Error in Storing Database Details: ', $ex->getMessage());
             return $this->apiResponse->handleAndResponseException($ex);
