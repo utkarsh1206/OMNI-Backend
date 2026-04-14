@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 class DispositionApiController extends Controller
 {
     private $apiResponse;
-     private $apiRequestService;
+    private $apiRequestService;
 
     public function __construct(CustomApiResponse $customApiResponse, ApiRequestService $apiRequestService)
     {
@@ -74,6 +74,14 @@ class DispositionApiController extends Controller
 
         // NOC-996, TODO DC-Hosted integration, Condition based so omni run with multi tenant and without multitenant.
         if (config('omni.IS_DC_MULTITENANT') == 1) {
+            if ($request->has('user')) {
+                $request->merge([
+                    'user_id' => $request->input('user')
+                ]);
+
+                $request->offsetUnset('user');
+            }
+
             return $this->apiRequestService->handleApiRequest(
                 $request,
                 'disposition_list',
