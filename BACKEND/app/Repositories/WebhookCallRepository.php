@@ -8,6 +8,7 @@ use App\Events\CallInitiated;
 use App\Events\Conference\ConferenceAddPartyFailed;
 use App\Events\Conference\ConferenceAddPartyInit;
 use App\Events\Conference\ConferenceAddPartySuccessful;
+use App\Events\Conference\ConferenceDisconnect;
 use App\Events\Conference\ConferenceRemovePartySuccessful;
 use App\Events\Conference\ConferenceStartFail;
 use App\Events\Conference\ConferenceStartInit;
@@ -62,6 +63,7 @@ class WebhookCallRepository
                 'ADDPARTY_INIT'       => ConferenceAddPartyInit::class,
                 'STARTCONF_INIT'      => ConferenceStartInit::class,    // DOESN'T SEEM REQUIRED
                 'STARTCONF_FAIL'      => ConferenceStartFail::class,
+                'DISCONNECTCONF'      => ConferenceDisconnect::class,
             ];
 
             $manualAccept = $tempData['manual_accept'] ?? false;
