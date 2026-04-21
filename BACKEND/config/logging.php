@@ -129,9 +129,10 @@ return [
         ],
 
         'scheduler' => [
-            'driver' => 'single',
-            'path' => storage_path('logs/cron/schedule-' . date('Y-m-d') . '.log'),
-            'level' => 'debug',
+            'driver' => 'daily',
+            'path' => storage_path('logs/cron/schedule.log'),
+            'level' => 'warning',
+            'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
     ],
