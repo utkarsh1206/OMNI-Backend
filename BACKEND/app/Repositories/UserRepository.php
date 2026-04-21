@@ -16,7 +16,7 @@ use Exception;
 use Illuminate\Support\Facades\Hash;
 use App\Models\LiveAgents;
 use App\Events\AgentForceLogout;
-use Illuminate\Support\Facades\Session;
+use App\Models\ConferenceDetail;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class UserRepository
@@ -357,16 +357,12 @@ class UserRepository
     public function profileUpdate(Request $request, $user)
     {
         try {
-            // $user->update($request->all());
             $user->update([
-                // "tenant_id" => $request->tenant_id,
                 "type" => $request->type,
                 "first_name" => $request->first_name,
                 "last_name" => $request->last_name,
                 "email" => $request->email,
                 "username" => $request->username,
-                // "password" => bcrypt($request->password),
-                // "domain" => $request->domain,
                 "mobile" => $request->mobile,
                 "status" => $request->status,
                 "role_id" => $request->role_id,
@@ -559,9 +555,6 @@ class UserRepository
             $licenseInfo = TenantLicense::where("tenant_id", $tenantInfo->id)->first(["manager_ct", "agent_ct"]);
 
             getDbConnection($domain, true);
-            // $roleArr  = Role::where("id", $request->role_id)->pluck("id");
-            // $currentCount  = RoleUser::whereIn("role_id", $roleArr)->count("user_id");
-            // $totalDesiredCount  = $request->type == 0 ? $licenseInfo->manager_ct : $licenseInfo->agent_ct;
 
             $roleData = Role::where("id", $request->role_id)->get(["id", "type"]);
             $roleIds = $roleData->pluck("id");
@@ -600,8 +593,15 @@ class UserRepository
             // Handle case where no agents are found
             if ($liveAgents->isNotEmpty()) {
                 foreach ($liveAgents as $liveAgent) {
+                    $userId = $liveAgent->user_id;
+                    $currentExtension = $liveAgent->extension;
                     $liveAgent->bypassObserver = true;
                     $liveAgent->delete();
+
+                    ConferenceDetail::where('user_id', $userId)
+                        ->where('caller_user_extension', $currentExtension)
+                        ->delete();
+
                     broadcast(new AgentForceLogout($liveAgent->user_id, $request->attributes->get('tenant_domain')));
                 }
 

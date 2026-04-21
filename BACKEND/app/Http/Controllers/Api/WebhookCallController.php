@@ -10,11 +10,10 @@ use App\Models\Users;
 use App\Repositories\WebhookCallRepository;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Support\Facades\DB;
 use App\Models\LiveAgents;
 use App\Events\AgentLiveStatus;
+use App\Models\ConferenceDetail;
 use App\Models\Contact;
-use App\Models\Detail;
 use App\Models\UserDailyActivity;
 
 class WebhookCallController extends Controller
@@ -48,7 +47,7 @@ class WebhookCallController extends Controller
      *              @OA\Property(property="call_unique_id", type="string", example="CI123456"),
      *             @OA\Property(property="campaign_id", type="string", example="CMP001"),
      *             @OA\Property(property="caller_username", type="string", example="omniagent2"),
-     *             @OA\Property(property="caller_user_extension", type="intiger", example="8002"),
+     *             @OA\Property(property="caller_user_extension", type="integer", example="8002"),
      *             @OA\Property(property="user_group", type="string", example="Sales"),
      *             @OA\Property(property="inbound_group_id", type="string", example="IG001"),
      *             @OA\Property(property="called_phone_number", type="string", example="567890"),
@@ -110,7 +109,7 @@ class WebhookCallController extends Controller
      *              @OA\Property(property="call_unique_id", type="string", example="CI123456"),
      *             @OA\Property(property="campaign_id", type="string", example="CMP001"),
      *             @OA\Property(property="caller_username", type="string", example="omniagent2"),
-     *             @OA\Property(property="caller_user_extension", type="intiger", example="8002"),
+     *             @OA\Property(property="caller_user_extension", type="integer", example="8002"),
      *             @OA\Property(property="user_group", type="string", example="Sales"),
      *             @OA\Property(property="inbound_group_id", type="string", example="IG001"),
      *             @OA\Property(property="called_phone_number", type="string", example="567890")
@@ -171,7 +170,7 @@ class WebhookCallController extends Controller
      *              @OA\Property(property="call_unique_id", type="string", example="CI123456"),
      *             @OA\Property(property="campaign_id", type="string", example="CMP001"),
      *             @OA\Property(property="caller_username", type="string", example="omniagent2"),
-     *             @OA\Property(property="caller_user_extension", type="intiger", example="8002"),
+     *             @OA\Property(property="caller_user_extension", type="integer", example="8002"),
      *             @OA\Property(property="user_group", type="string", example="Sales"),
      *             @OA\Property(property="inbound_group_id", type="string", example="IG001"),
      *             @OA\Property(property="called_phone_number", type="string", example="567890")
@@ -286,6 +285,11 @@ class WebhookCallController extends Controller
             $domain_name = $request->domain_name;
             $connection = getDbConnection($domain_name);
 
+            if ($callType === 'conference_call') {
+                ConferenceDetail::where('call_unique_id', $request->call_unique_id)
+                    ->delete();
+            }
+
             // Update or create call history using the repository
             $callHistory = $this->webhookCallRepository->updateOrCreateCallHistory($data, $connection);
             generateLogs("info", "Call History Webhook Initiated: " . json_encode($callHistory));
@@ -308,45 +312,43 @@ class WebhookCallController extends Controller
 
             if ($request->has('call_unique_id')) {
                 getDbConnection($domain_name, true);
-                // DB::setDefaultConnection($data->getName());
 
                 $callUniqueId = $request->input('call_unique_id');
-                // $isSOT = (strpos($callUniqueId, 'SOT') === 0);
+                $isSOT = (strpos($callUniqueId, 'SOT') === 0);
+
+                $parentCallId = $request->input('parent_call_id') ?? null;
+                $isParentSot =  is_string($parentCallId) && strpos($parentCallId, 'SOT') === 0;
 
                 $ids = ['agent_id' => null, 'parent_id' => null];
 
                 $agentUser = Users::select('id')->where('username', $request->input('caller_username'))->first();
                 $ids['agent_id'] = $agentUser?->id;
 
-                // if ($isSOT) {
-                //     $parentUser = Users::select('id')->where('username', $request->input('parent_user_id'))->first();
-                //     $ids['parent_id'] = $parentUser?->id;
-                // }
+                if ($isSOT) {
+                    $parentUser = Users::select('id')->where('username', $request->input('parent_user_id'))->first();
+                    $ids['parent_id'] = $parentUser?->id;
+                }
+
+                if ($isParentSot) {
+                    $parentUser = Users::select('id')->where('username', $request->input('caller_username'))->first();
+                    $ids['parent_id'] = $parentUser?->id;   // Parent Agent in the frontend
+                }
 
                 $confState = $request->input('conf_state') ?: null;
                 $callType = $this->determineCallType($request);
                 $data = $this->prepareCallData($request, $type, $callType);
 
-                // generateLogs("info", "\n\n\n Call Unique ID: " . $callUniqueId);
-                // generateLogs("info", "\n Conf State: " . $confState);
-                // generateLogs("info", "\n Call Type: " . $callType);
+                if ($isSOT || $isParentSot) {
+                    if ($type === 'call_hangup') {
+                        $this->webhookCallRepository->deleteConference($callUniqueId);
+                    } else {
+                        $this->webhookCallRepository->upsertConference($request->all(), $ids, $type);
+                    }
 
-                // $agentName = (strpos($callUniqueId, 'SOT') === 0)
-                //     ? $request->input('parent_user_id')
-                //     : $request->input('caller_username');
-
-                // generateLogs("info", "\n Agent Name: " . $agentName);
-
-                if (strpos($callUniqueId, 'SOT') === 0) {
-                    // $data['caller_username'] = $agentName;
                     $data['caller_username'] = $request->input('caller_username');
                     $data['conf_state'] = $confState;
-
-                    generateLogs("info", "\n Caller Username: " . $data['caller_username']);
-                    generateLogs("info", "\n Conf State(2): " . $data['conf_state']);
                 }
-                // -------------
-                // -------------
+
                 $contactName = null;
                 $mobile = $request->called_phone_number;
 
@@ -357,33 +359,8 @@ class WebhookCallController extends Controller
                         $contactName = trim($contact->first_name . ' ' . $contact->last_name);
                     }
                 }
+
                 $data['called_contact_name'] = $contactName;
-                // -------------
-                // -------------
-
-                // $agentName = $request->caller_username;
-                // $agentId = Users::select('id')->where('username', $agentName)->first();
-
-                // generateLogs("info", "\n Agent ID: " . json_encode($agentId));
-
-                // if ($type !== 'call_initiated') {
-                //     if ($agentId) {
-                //         $liveAgent = LiveAgents::where('user_id', $agentId->id)
-                //             ->where('extension', $data['caller_user_extension'])
-                //             ->first();
-                //         if ($liveAgent) {
-                //             $liveAgent->bypassObserver = true;
-                //             $liveAgent->status = $data['user_status'];
-                //             $liveAgent->uniqueid = $data['call_unique_id'];
-                //             $liveAgent->customer = $data['called_phone_number'];
-                //             $liveAgent->call_date = $data['call_date'];
-                //             $liveAgent->call_direction = 'out_call';
-                //             $liveAgent->save();
-
-                //             broadcast(new AgentLiveStatus($liveAgent, $agentId->id, $domain));
-                //         }
-                //     }
-                // }
 
                 if ($type !== 'call_initiated') {
                     foreach ($ids as $role => $userId) {
@@ -410,9 +387,10 @@ class WebhookCallController extends Controller
                 if ($type == 'call_initiated') {
                     if ($callType == 'outgoing') {
                         $activity = 'OutCall';
-                    }
-                    if ($callType == 'incoming') {
+                    } elseif ($callType == 'incoming') {
                         $activity = 'InCall';
+                    } else {
+                        $activity = 'Undefined';
                     }
 
                     $latestActivity = getLatestUserActivity($agentUser?->id, $request->campaign_id);
@@ -434,7 +412,6 @@ class WebhookCallController extends Controller
                         'call_unique_id' => $request->call_unique_id,
                         'activity'       => $activity,
                         $durationField   => $timeDiff,
-
                     ]);
                 }
 
@@ -446,8 +423,6 @@ class WebhookCallController extends Controller
                         'activity' => 'Endcall',
                     ];
 
-                    // $lastActivity = getLatestUserActivity($ids, $request->campaign_id);
-
                     $lastActivity = UserDailyActivity::where('user_id', $agentUser?->id)
                         ->where('campaign_id', $request->campaign_id)
                         ->whereIn('activity', ['InCall', 'OutCall'])
@@ -458,14 +433,11 @@ class WebhookCallController extends Controller
                         return null;
                     }
 
-                    if ($lastActivity) {
-                        $activityData['call_duration'] = calculateTimeDiff($lastActivity->created_at);
-                    }
+                    $activityData['call_duration'] = calculateTimeDiff($lastActivity->created_at);
 
                     UserDailyActivity::create($activityData);
                 }
 
-                // $callLog = $this->saveCallLogs($data, $agentId->id, $domain);
                 $callLog = $this->saveCallLogs($data, $ids, $domain);
 
                 return $this->apiResponse->getResponseStructure(
@@ -531,6 +503,7 @@ class WebhookCallController extends Controller
             'call_type' => $callType,
             'json_data' => json_encode($request->all()),
             'user_status' => $status,
+            'parent_call_id' => $request->input('parent_call_id') ?? null,
         ];
     }
 
@@ -563,7 +536,6 @@ class WebhookCallController extends Controller
     }
 
     // Save the call data to both main and temporary logs
-    // private function saveCallLogs(array $data, int $id, string $domain)
     private function saveCallLogs(array $data, array $ids, string $domain)
     {
         // Save to neox_call_logs table
@@ -574,7 +546,8 @@ class WebhookCallController extends Controller
             'date' => Carbon::now()->toDateString(),
             'time' => Carbon::now()->toTimeString()
         ]);
-        // $this->webhookCallRepository->saveTempCallLog($tempData, $id, $domain);
+
+        // Calls the BROADCAST etc
         $this->webhookCallRepository->saveTempCallLog($tempData, $ids, $domain);
         return $callLog;
     }
@@ -587,5 +560,45 @@ class WebhookCallController extends Controller
             null,
             trans('message.not_accessible')
         );
+    }
+
+    public function acceptConferenceCall(Request $request)
+    {
+        try {
+            $callUniqueId = $request->input('call_unique_id');
+
+            if (!$callUniqueId) {
+                return $this->sendErrorResponse();
+            }
+
+            $conference = ConferenceDetail::where('call_unique_id', $callUniqueId)->first();
+
+            if (!$conference) {
+                return $this->sendErrorResponse();
+            }
+
+            $domain_name = $conference->actual_url_parameter['domain_name'] ?? null;
+            $domain = strtolower(preg_replace('/[[:punct:]]+/', '_', $domain_name));
+
+            $tempData = $conference->actual_url_parameter;
+
+            $tempData['type'] = 'call_connected';
+            $tempData['manual_accept'] = true;
+
+            $ids = [
+                'agent_id' => $conference->user_id,
+                'parent_id' => $conference->parent_uid,
+            ];
+
+            $this->webhookCallRepository->saveTempCallLog($tempData, $ids, $domain);
+
+            return $this->apiResponse->getResponseStructure(
+                trans('message.success'),
+                null,
+                'Conference accepted and broadcasted successfully'
+            );
+        } catch (Exception $e) {
+            return $this->apiResponse->handleAndResponseException($e);
+        }
     }
 }

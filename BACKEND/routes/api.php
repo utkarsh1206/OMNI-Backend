@@ -573,6 +573,7 @@ Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  
 Route::post('call-connected', [WebhookCallController::class, 'callConnected']); // -not to be used in frontend
 Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);   // -not to be used in frontend
 Route::post('call-history', [WebhookCallController::class, 'callHistory']); // -not to be used in frontend
+Route::post('/conference/accept', [WebhookCallController::class, 'acceptConferenceCall']);
 
 Route::apiResource('pause-code', 'App\Http\Controllers\Api\PauseCodeController');
 
