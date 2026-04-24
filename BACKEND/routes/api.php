@@ -89,11 +89,13 @@ use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
+use App\Http\Controllers\Api\ApiConfigController;
 use App\Http\Controllers\Api\ApiEndpointController;
 use App\Http\Controllers\Api\ApiImportController;
 use App\Http\Controllers\Api\ApiMappingController;
 use App\Http\Controllers\Api\AssignmentHistoryController;
 use App\Http\Controllers\Api\AssignmentRuleController;
+use App\Http\Controllers\Api\AuthProviderController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
 use App\Http\Controllers\Api\EvaluationQuestionUsageTypeController;
 use App\Http\Controllers\Api\EvaluationReviewController;
@@ -199,6 +201,9 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('sms-providers', SmsProviderController::class);  // not in frontend yet
 
     Route::apiResource('api-configurations', ApiConfigurationController::class);
+
+    Route::apiResource('api-configs', ApiConfigController::class);
+    Route::apiResource('auth-providers', AuthProviderController::class);
 
     //Route::apiResource('accounts', AccountController::class);
     Route::get('accounts', [AccountController::class, 'index'])->middleware(CheckPermissionMiddleware::class . ":accounts," . PermissionAction::VIEW->value);;
