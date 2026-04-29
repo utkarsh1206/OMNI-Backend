@@ -16,7 +16,7 @@ use Exception;
 use Illuminate\Support\Facades\Hash;
 use App\Models\LiveAgents;
 use App\Events\AgentForceLogout;
-use Illuminate\Support\Facades\Session;
+use App\Models\ConferenceDetail;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class UserRepository
@@ -165,18 +165,32 @@ class UserRepository
 
                     // NOC-995 To-Do Hosted MultiTenant START
                     if (config('omni.IS_DC_MULTITENANT') == 1) {
-                        $ip = config('omni.HOSTED_URL');
+                        $ip = rtrim(config('omni.HOSTED_URL'), '/');
+                        $domainLower = strToLower($authUser->domain);
                         $hostedBody = [
                             "token"     => getTenantUin($authUser),
-                            "user_id"   => $request->username . '@' . $authUser->domain,
+                            "user_id"   => $request->username . '@' . $domainLower,
                             "password"   => $request->password,
                             "fullName"   => $request->first_name . ' ' . $request->last_name,
                             "user_group" => $userGroup->name,
                         ];
-                        $hostedUrl = "{$ip}/api/admin/actions/v2/create_agent.php?domain={$authUser->domain}";
+                        $hostedUrl = "{$ip}/api/admin/actions/v2/create_agent.php?domain={$domainLower}";
 
                         $response = sendHttpRequest($hostedUrl, 'POST', $hostedBody);
-                        $resData = json_decode($response, true);
+                        //$resData = json_decode($response, true);
+                        if ($response instanceof \Illuminate\Http\JsonResponse) {
+                            // Extract array directly
+                            $resData = $response->getData(true);
+                        } elseif (is_array($response)) {
+                            // Already an array, no need to decode
+                            $resData = $response;
+                        } elseif (is_string($response)) {
+                            // Decode JSON string
+                            $resData = json_decode($response, true);
+                        } else {
+                            $resData = ['message' => 'Unexpected response type'];
+                        }
+                        generateLogs("info", "response: " . json_encode($resData));
 
                         if (!isset($resData['code']) || $resData['code'] !== 0) {
                             throw new Exception("Hosted API Error: Code: " . ($resData['code'] ?? 'Unknown Code') . " Message :" . ($resData['message'] ?? 'Unknown response'));
@@ -343,16 +357,12 @@ class UserRepository
     public function profileUpdate(Request $request, $user)
     {
         try {
-            // $user->update($request->all());
             $user->update([
-                // "tenant_id" => $request->tenant_id,
                 "type" => $request->type,
                 "first_name" => $request->first_name,
                 "last_name" => $request->last_name,
                 "email" => $request->email,
                 "username" => $request->username,
-                // "password" => bcrypt($request->password),
-                // "domain" => $request->domain,
                 "mobile" => $request->mobile,
                 "status" => $request->status,
                 "role_id" => $request->role_id,
@@ -383,9 +393,9 @@ class UserRepository
             // NOC-995 To-Do Hosted MultiTenant START
             if (config('omni.IS_DC_MULTITENANT') == 1) {
                 $currentUser = auth()->user();
-                $domain = $currentUser->domain;
+                $domain = strToLower($currentUser->domain);
                 $token = getTenantUin($currentUser);
-                $ip = config('omni.HOSTED_URL');
+                $ip = rtrim(config('omni.HOSTED_URL'), '/');
 
                 $url = "{$ip}/api/admin/actions/v2/delete_agent.php?domain={$domain}";
                 $payload = [
@@ -394,7 +404,21 @@ class UserRepository
                 ];
                 $response = sendHttpRequest($url, 'POST', $payload);
 
-                if (!isset($response['code']) || $response['code'] != 0) {
+                if ($response instanceof \Illuminate\Http\JsonResponse) {
+                    // Extract array directly
+                    $resData = $response->getData(true);
+                } elseif (is_array($response)) {
+                    // Already an array, no need to decode
+                    $resData = $response;
+                } elseif (is_string($response)) {
+                    // Decode JSON string
+                    $resData = json_decode($response, true);
+                } else {
+                    $resData = ['message' => 'Unexpected response type'];
+                }
+                generateLogs("info", "response: " . json_encode($resData));
+
+                if (!isset($resData['code']) || $resData['code'] != 0) {
                     throw new Exception("External Multi-tenant API failed to delete user: Code: " . ($resData['code'] ?? 'Unknown Code') . " Message :" . ($resData['message'] ?? 'Unknown response'));
                 }
             }   // NOC-995 To-Do Hosted MultiTenant END
@@ -531,9 +555,6 @@ class UserRepository
             $licenseInfo = TenantLicense::where("tenant_id", $tenantInfo->id)->first(["manager_ct", "agent_ct"]);
 
             getDbConnection($domain, true);
-            // $roleArr  = Role::where("id", $request->role_id)->pluck("id");
-            // $currentCount  = RoleUser::whereIn("role_id", $roleArr)->count("user_id");
-            // $totalDesiredCount  = $request->type == 0 ? $licenseInfo->manager_ct : $licenseInfo->agent_ct;
 
             $roleData = Role::where("id", $request->role_id)->get(["id", "type"]);
             $roleIds = $roleData->pluck("id");
@@ -572,8 +593,15 @@ class UserRepository
             // Handle case where no agents are found
             if ($liveAgents->isNotEmpty()) {
                 foreach ($liveAgents as $liveAgent) {
+                    $userId = $liveAgent->user_id;
+                    $currentExtension = $liveAgent->extension;
                     $liveAgent->bypassObserver = true;
                     $liveAgent->delete();
+
+                    ConferenceDetail::where('user_id', $userId)
+                        ->where('caller_user_extension', $currentExtension)
+                        ->delete();
+
                     broadcast(new AgentForceLogout($liveAgent->user_id, $request->attributes->get('tenant_domain')));
                 }
 

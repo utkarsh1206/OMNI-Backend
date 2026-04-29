@@ -10,11 +10,10 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Api\LicenseController;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Response\CustomApiResponse;
+use App\Models\ConferenceDetail;
 use App\Models\LiveAgents;
 use App\Models\NeoxConfiguration;
 use App\Models\Phone;
-use App\Models\SipServerConfiguration;
-use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
@@ -47,7 +46,7 @@ class LoginRepository
         if (in_array($validator["flag"], [1, 2, 3])) {
 
             $licenseExpiryCheck = isLicenseExpired($request);
-            // If it's a Response object (invalid license), just return it directly
+
             if ($licenseExpiryCheck instanceof \Illuminate\Http\JsonResponse) {
                 return $licenseExpiryCheck;
             }
@@ -161,14 +160,9 @@ class LoginRepository
                 $dataArr['sip_server_url'] = $sipConfigForFlag2->sip_server_url;
                 $dataArr['sip_ua_uri_domain'] = $sipConfigForFlag2->sip_ua_uri_domain;
             }
-            
+
             if ($domain && !empty($this->details)) {
-                // establishMasterConnection($domain, "omnichannel", "mysql");
-                // $detail = DB::table('details')->where('domain', $domain)->first();
-                // getdbConnection($domain, false);
-                // if ($detail) {
                 $dataArr['uin'] = $this->details->uin;
-                //}
             }
 
             return is_string($token) ? $this->apiResponse->getResponseStructure(trans('message.success'), $dataArr, trans('message.login')) : $token;
@@ -185,14 +179,19 @@ class LoginRepository
         $userId = $parseValue->authenticate()->id;
 
         // Delete user from Live Agents Table
-        // LiveAgents::where('user_id', $userId)->delete();
 
         $agents = LiveAgents::where('user_id', $userId)->get();
 
         foreach ($agents as $agent) {
+            $currentExtension = $agent->extension;
             $agent->bypassObserver = true;
             $agent->delete();
+
+            ConferenceDetail::where('user_id', $userId)
+                ->where('caller_user_extension', $currentExtension)
+                ->delete();
         }
+
         $parseValue->invalidate($token);
         return true;
     }

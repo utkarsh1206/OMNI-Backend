@@ -193,7 +193,8 @@ if (!function_exists('getDbConnection')) {
         }
 
         // Get the database name associated with the domain from 'details' table
-        $details = DB::table('details')->where('domain', $domainName)
+        #NOC - 955, 966 Hosted Change
+        $details = DB::table('omnichannel.details')->where('domain', $domainName)
             ->orWhere('uin', $domainName)->first();
 
         if ($details) {

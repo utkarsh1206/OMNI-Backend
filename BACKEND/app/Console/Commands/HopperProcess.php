@@ -44,11 +44,22 @@ class HopperProcess extends Command
     public function handle()
     {
         generateScheduleLogs('info', 'Hopper Process started for all tenants.');
+        $tenantDetails = Detail::select('domain', 'uin')->get()->keyBy('domain');
+
         Tenant::orderBy('id')
-            ->chunkById(100, function ($tenants) {
+            ->chunkById(100, function ($tenants) use ($tenantDetails) {
                 foreach ($tenants as $tenant) {
                     try {
                         generateScheduleLogs('info', 'Hopper Process started for all tenants.' . $tenant->domain_name);
+                        $match = $tenantDetails->get($tenant->domain_name);
+
+                        if ($match) {
+                            $tenantUin = $match->uin;
+                        } else {
+                            generateScheduleLogs('warning', 'No UIN found for ' . $tenant->domain_name);
+                            continue;
+                        }
+
                         $newConnectionName = str_replace(".", "_", $tenant->domain_name);
                         $databaseName = str_replace(".", "_", $tenant->domain_name);
                         establishDatabaseConnect($newConnectionName, $databaseName);
@@ -65,7 +76,7 @@ class HopperProcess extends Command
                         $this->cleanupInactiveLists($newConnectionName, $options['allow_inactive']);
                         $this->callbackProcessor->processExpiredCallbacks($newConnectionName, $this->timeCalculator->getCurrentTime());
 
-                        $campaigns = $this->getCampaigns($newConnectionName, $options['campaign'], $domain_name);
+                        $campaigns = $this->getCampaigns($newConnectionName, $options['campaign'], $domain_name, $tenantUin);
 
                         foreach ($campaigns as $campaign) {
                             $this->campaignProcessor->processCampaign($newConnectionName, $campaign, $options);
@@ -141,25 +152,41 @@ class HopperProcess extends Command
         }
     }
 
-    private function getCampaigns($newConnectionName, $campaignId = null, $domainName)
+    private function getCampaigns($newConnectionName, $campaignId = null, $domainName, $tenantUin)
     {
         try {
-            $config = NeoxConfiguration::on($newConnectionName)->first(['neox_local_ip', 'neox_token']);
+            # NOC-955 TODO Hosted Multitenant Start
+            if (config('omni.IS_DC_MULTITENANT') == 1) {
 
-            if (isset($config['status']) && $config['status'] === 'error') {
-                generateScheduleLogs("error", "Config error");
-                return [];
+                $lowerDomain = strToLower($domainName);
+
+                $token = $tenantUin;
+                $ip = rtrim(config('omni.HOSTED_URL'), '/');
+                $url = "{$ip}/api/admin/actions/v2/campaign_list.php?domain={$lowerDomain}";
+
+                $postData = [
+                    "token" => $token,
+                ];
+
+                $response = sendHttpRequest($url, 'POST', $postData);
+            }   # NOC-955 TODO Hosted Multitenant END
+            else {
+                $config = NeoxConfiguration::on($newConnectionName)->first(['neox_local_ip', 'neox_token']);
+
+                if (isset($config['status']) && $config['status'] === 'error') {
+                    generateScheduleLogs("error", "Config error");
+                    return [];
+                }
+                $ip = $config['neox_local_ip'];
+                $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
+
+                $payload = [
+                    'domain_name' => $domainName,
+                    'isJWT' => 'No'
+                ];
+
+                $response = sendHttpRequest($url, 'POST', $payload);
             }
-
-            $ip = $config['neox_local_ip'];
-            $url = "https://{$ip}/api/admin/actions/v2/campaign_list.php";
-
-            $payload = [
-                'domain_name' => $domainName,
-                'isJWT' => 'No'
-            ];
-
-            $response = sendHttpRequest($url, 'POST', $payload);
 
             $apiData = json_decode($response->getContent(), true);
 

@@ -37,7 +37,9 @@ class HoldApiRepository
         DB::beginTransaction();
 
         try {
-            $user = $this->getUser($request->user_id);
+            $user_id = explode('@', $request->user_id)[0];
+            $user = $this->getUser($user_id);
+
             $liveCallData = $this->getLiveCallData($user, $request);
 
             $callStatus = $this->getCallStatus($request->action);

@@ -5,9 +5,12 @@ namespace App\Repositories;
 use Illuminate\Http\Request;
 use App\Models\Tenant;
 use App\Http\Response\CustomApiResponse;
+use App\Models\Detail;
+use App\Models\Download;
 use App\Models\Users;
 use App\Services\HostedTenantService;   // NOC-995 To-Do Hosted MultiTenant
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class TenantRepository
@@ -155,19 +158,77 @@ class TenantRepository
     public function delete($tenant)
     {
         try {
-            // NOC-995 To-Do Hosted MultiTenant START
-            if (config('omni.IS_DC_MULTITENANT') == 1) {
-                $domain = $tenant->domain_name;
+            $domain = $tenant->domain_name;
 
-                if (empty($domain)) {
-                    throw new Exception("Domain name is missing for this tenant. Cannot delete from external system.");
+            if (empty($domain)) {
+                // throw new Exception("Domain name missing. Cannot delete tenant.");
+                return response()->json([
+                    'error' => trans("message.domain_required"),
+                ], ResponseHTTP::HTTP_NOT_FOUND);
+            }
+
+            $latestBackup = $this->getLatestBackup($domain);
+            if (!$latestBackup) {
+                // throw new Exception("No backup found for this tenant. Please take backup before deletion.");
+                return response()->json([
+                    'error' => trans("message.backup_not_found"),
+                ], ResponseHTTP::HTTP_NOT_FOUND);
+            }
+
+            // Check backup freshness (e.g. last 24 hours)
+            if (now()->diffInHours($latestBackup->created_at) > 24) {
+                // throw new Exception("Latest backup is older than 24 hours. Please take a fresh backup.");
+
+                return response()->json([
+                    'error' => trans("message.backup_older"),
+                ], ResponseHTTP::HTTP_NOT_FOUND);
+            }
+
+            DB::beginTransaction();
+
+            try {
+                // NOC-995 To-Do Hosted MultiTenant START
+                if (config('omni.IS_DC_MULTITENANT') == 1) {
+                    $this->hostedTenantService->deleteExternalTenant($domain);
+                }
+                // NOC-995 To-Do Hosted MultiTenant END
+
+                // Delete from tenants table
+                // $tenant->delete();
+                $deletedTenant = Tenant::where('id', $tenant->id)
+                    ->forceDelete();
+
+                if (!$deletedTenant) {
+                    throw new Exception("Tenant deletion failed.");
                 }
 
-                $this->hostedTenantService->deleteExternalTenant($domain);
-            }
-            // NOC-995 To-Do Hosted MultiTenant END
+                // Delete from details table
+                $deletedDetail = Detail::where('domain', $domain)
+                    ->delete();
 
-            $tenant->delete();
+                if (!$deletedDetail) {
+                    throw new Exception("Details deletion failed.");
+                }
+
+                DB::commit();
+            } catch (Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+            try {
+                // Drop Tenant Database
+                // MySQL auto-commits when DDL runs, so Remove transaction BEFORE drop
+                $domain = str_replace(".", "_", $domain);
+                $this->dropTenantDatabase($domain);
+            } catch (Exception $e) {
+                generateLogs('error', 'DB Drop Failed : ', $e->getMessage());
+
+                return response()->json([
+                    'error' => 'Tenant removed but database drop failed. Manual action required.'
+                ], 500);
+            }
+
             return $this->apiResponse->getResponseStructure(
                 trans('message.success'),
                 $tenant,
@@ -285,5 +346,21 @@ class TenantRepository
             generateLogs('error', 'Error in change status Tenant : ', $e->getMessage());
             return $this->apiResponse->handleAndResponseException($e);
         }
+    }
+
+
+    private function getLatestBackup($domain)
+    {
+        return Download::where('tenant_domain', $domain)
+            ->where('type', 'Export')
+            ->orderBy('created_at', 'desc')
+            ->first();
+    }
+
+    private function dropTenantDatabase($domain)
+    {
+        $dbName = $domain;
+
+        DB::statement("DROP DATABASE IF EXISTS `$dbName`");
     }
 }

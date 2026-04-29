@@ -18,11 +18,13 @@ class SendScheduledEmailJob implements ShouldQueue
     public function __construct(
         public EmailSchedule $schedule,
         public string $connectionName,
-        public array $payload
+        public array $payload,
+        public string $domain   #NOC - 955, 966 Hosted Change
     ) {
         $this->schedule = $schedule;
         $this->connectionName = $connectionName;
         $this->payload = $payload;
+        $this->domain;  #NOC - 955, 966 Hosted Change
     }
 
     public function handle(): void
@@ -40,7 +42,9 @@ class SendScheduledEmailJob implements ShouldQueue
         $dataResponse = app(ReportDataService::class)->generate(
             $this->connectionName,
             $schedule->report_name,
-            $this->payload
+            $this->payload,
+            $this->domain,
+            #NOC - 955, 966 Hosted Change
         );
 
         $data = $dataResponse->getData(true);
