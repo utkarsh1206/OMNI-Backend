@@ -368,7 +368,10 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('neox-configurations', NeoxConfigurationController::class);
 
     Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
+    	Route::post('/camp-list-filtered', [CampaignApiController::class, 'campaignListFilteredApi']);
+    	Route::post('/camp-list-all', [CampaignApiController::class, 'campaignListAllApi']);
         Route::post('dispo-list', [DispositionApiController::class, 'dispositionListApi']);
+    	Route::post('ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
         Route::post('hold-call', [HoldCallApiController::class, 'holdCallApi']);
         Route::post('logout', [LogoutApiController::class, 'agentLogoutApi']);
         Route::post('dial-call', [DialCallApiController::class, 'dialCallApi']);
@@ -521,8 +524,11 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('email-schedule', EmailScheduleController::class);
 
     Route::prefix('groups')->group(function () {
+        Route::get('/group-list', [GroupChatController::class, 'getUserGroupIds']);
+
         // Group Management
         Route::get('/', [GroupChatController::class, 'getGroups']);
+        Route::get('/{groupId}', [GroupChatController::class, 'getGroupDetails'])->where('groupId', '[0-9]+');
         Route::post('/', [GroupChatController::class, 'createGroup']);
         Route::put('/{groupId}', [GroupChatController::class, 'updateGroup']);
         Route::delete('/{groupId}', [GroupChatController::class, 'deleteGroup']);
@@ -536,12 +542,7 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::put('/{groupId}/participants/{userId}', [GroupChatController::class, 'updateMemberPermission']);
 
         // Messaging Logic
-        Route::get('/{groupId}/messages', [GroupChatController::class, 'getGroupMessages']);
-        Route::post('/{groupId}/messages', [GroupChatController::class, 'storeGroupMessage']);
-        Route::post('/{groupId}/messages/read', [GroupChatController::class, 'markGroupMessagesRead']);
         Route::delete('/{groupId}/messages/{messageId}', [GroupChatController::class, 'deleteGroupMessage']);
-
-        Route::get('/group-list', [GroupChatController::class, 'getUserGroupIds']);
     });
 
     Route::prefix('chats')->group(function () {
@@ -562,9 +563,6 @@ Route::get('cities', [CityController::class, 'index']);
 
 Route::prefix('ext-api')->middleware([ModifyRequestMiddleware::class])->group(function () {
     Route::post('/camp-list', [CampaignApiController::class, 'campaignListApi']);
-    Route::post('/camp-list-all', [CampaignApiController::class, 'campaignListAllApi']);
-    Route::post('/camp-list-filtered', [CampaignApiController::class, 'campaignListFilteredApi']);
-    Route::post('ingroup-list', [IngroupApiController::class, 'ingroupListApi']);
     Route::post('refresh-logout', [LogoutRefreshApiController::class, 'agentLogoutRefreshApi']);
     Route::post('login', [LoginApiController::class, 'agentLoginApi']);
 });
@@ -575,6 +573,7 @@ Route::post('call-initiate', [WebhookCallController::class, 'callInitiated']);  
 Route::post('call-connected', [WebhookCallController::class, 'callConnected']); // -not to be used in frontend
 Route::post('call-hangup', [WebhookCallController::class, 'callHangup']);   // -not to be used in frontend
 Route::post('call-history', [WebhookCallController::class, 'callHistory']); // -not to be used in frontend
+Route::post('/conference/accept', [WebhookCallController::class, 'acceptConferenceCall']);
 
 Route::apiResource('pause-code', 'App\Http\Controllers\Api\PauseCodeController');
 

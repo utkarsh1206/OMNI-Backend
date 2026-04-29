@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\LiveAgents;
 use App\Events\AgentForceLogout;
+use App\Models\ConferenceDetail;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -47,21 +48,6 @@ class CleanEndOfDayData extends Command
 
         getDbConnection($uin, true);
 
-        // LiveAgents::chunk(100, function ($agents) use ($tenantDomain) {
-        //     foreach ($agents as $agent) {
-        //         broadcast(new AgentForceLogout($agent->user_id, $tenantDomain));
-
-        //         generateScheduleLogs(
-        //             'info',
-        //             "Broadcasted logout for User ID: {$agent->user_id} on domain: {$tenantDomain}"
-        //         );
-        //     }
-        // });
-        // LiveAgents::query()->delete();
-
-        // generateScheduleLogs('info', "Cleaning end of day data for tenant $uin completed.");
-        // $this->info("Successfully logged out agents and cleaned table for $uin.");
-
         $agentIds = LiveAgents::pluck('user_id');
 
         if ($agentIds->isNotEmpty()) {
@@ -72,6 +58,7 @@ class CleanEndOfDayData extends Command
             generateScheduleLogs('info', "Broadcasted logout to " . $agentIds->count() . " agents.");
         }
         LiveAgents::truncate();
+        ConferenceDetail::truncate();
 
         generateScheduleLogs('info', "Cleaning end of day data for tenant $uin completed. Table truncated.");
         $this->info("Successfully reset LiveAgents for $uin.");
