@@ -21,32 +21,9 @@ class ApiConfigRequest extends FormRequest
      */
     public function rules(): array
     {
-        // return [
-        //     'name' => 'required|string|max:255',
-        //     'type' => 'nullable|string',
-
-        //     'base_url' => 'required|string',
-        //     'endpoint' => 'required|string',
-
-        //     'method' => 'required|in:GET,POST,PUT,DELETE',
-
-        //     'auth_type' => 'required|in:none,api_key,basic',
-        //     'auth_provider_id' => 'nullable|exists:auth_providers,id',
-
-        //     'auth_input' => 'nullable|string',
-        //     'auth_location' => 'nullable|in:header,query,body',
-
-        //     'headers' => 'nullable|array',
-        //     'query_params' => 'nullable|array',
-        //     'body' => 'nullable|array',
-
-        //     'timeout' => 'nullable|integer',
-        //     'retry_count' => 'nullable|integer',
-        // ];
-
         $isCreate = $this->isMethod('POST');
         $rule = $isCreate ? 'required' : 'sometimes';
-
+     
         return [
             'name'             => [$rule, 'string', 'max:255'],
             'type'             => 'nullable|string',

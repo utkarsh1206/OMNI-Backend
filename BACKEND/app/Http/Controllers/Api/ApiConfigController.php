@@ -12,7 +12,7 @@ class ApiConfigController extends Controller
     {
         $data = $request->validated();
 
-        // 🔄 Parse inline auth input (your new UX feature)
+        // Parse inline auth input (your new UX feature)
         if (!empty($data['auth_input']) && $data['auth_type'] !== 'none') {
             $data['auth_config'] = [
                 'location' => $data['auth_location'],
@@ -51,12 +51,10 @@ class ApiConfigController extends Controller
     {
         $data = $request->validated();
 
-        // 🔐 Handle inline auth parsing
+        // Handle inline auth parsing
         if (!empty($data['auth_input']) && $data['auth_type'] !== 'none') {
             $data['auth_config'] = [
                 'location' => $data['auth_location'],
-                // 'params' => app(\App\Support\KeyValueParser::class)
-                // ->parse($data['auth_input'])
                 'params' => $this->parseKeyValueInput($data['auth_input']),
             ];
         }

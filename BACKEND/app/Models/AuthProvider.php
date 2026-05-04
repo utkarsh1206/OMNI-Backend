@@ -107,10 +107,10 @@ class AuthProvider extends Model
         $mapping = $this->response_mapping ?? [];
 
         return [
-            'access_token' => data_get($response, $mapping['access_token'] ?? null),
-            'refresh_token' => data_get($response, $mapping['refresh_token'] ?? null),
-            'expires_in'   => data_get($response, $mapping['expires_in'] ?? null),
-            'expires_at'   => data_get($response, $mapping['expires_at'] ?? null),
+            'access_token' => data_get($response, $mapping['access_token'] ?? 'access_token'),
+            'refresh_token' => data_get($response, $mapping['refresh_token'] ?? 'refresh_token'),
+            'expires_in'   => data_get($response, $mapping['expires_in'] ?? 'expires_in'),
+            'expires_at'   => data_get($response, $mapping['expires_at'] ?? 'expires_at'),
         ];
     }
 

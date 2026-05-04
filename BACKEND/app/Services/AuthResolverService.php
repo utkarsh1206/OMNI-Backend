@@ -12,12 +12,12 @@ class AuthResolverService
 
     public function resolve(ApiConfig $api, array $headers, array $query, array $body): array
     {
-        // ✅ Priority: auth_provider
+        // Priority: auth_provider
         if ($api->usesAuthProvider()) {
             return $this->resolveProvider($api, $headers, $query, $body);
         }
 
-        // ✅ Inline auth
+        // Inline auth
         if ($api->usesInlineAuth()) {
             return $this->resolveInline($api, $headers, $query, $body);
         }

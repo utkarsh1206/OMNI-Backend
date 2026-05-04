@@ -96,6 +96,8 @@ use App\Http\Controllers\Api\ApiMappingController;
 use App\Http\Controllers\Api\AssignmentHistoryController;
 use App\Http\Controllers\Api\AssignmentRuleController;
 use App\Http\Controllers\Api\AuthProviderController;
+use App\Http\Controllers\Api\MockApiController;
+use App\Http\Controllers\Api\TestApiCallerController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
 use App\Http\Controllers\Api\EvaluationQuestionUsageTypeController;
 use App\Http\Controllers\Api\EvaluationReviewController;
@@ -204,6 +206,8 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::apiResource('api-configs', ApiConfigController::class);
     Route::apiResource('auth-providers', AuthProviderController::class);
+
+    Route::post('test-caller/execute', [TestApiCallerController::class, 'execute']);
 
     //Route::apiResource('accounts', AccountController::class);
     Route::get('accounts', [AccountController::class, 'index'])->middleware(CheckPermissionMiddleware::class . ":accounts," . PermissionAction::VIEW->value);;
@@ -667,4 +671,13 @@ Route::get('/hash/{input}', function ($input, Illuminate\Http\Request $request) 
     }
 
     return app(HashController::class)->hashString($input);
+});
+
+
+Route::prefix('mock')->group(function () {
+    Route::get('basic-auth', [MockApiController::class, 'basicAuth']);
+    Route::get('api-key', [MockApiController::class, 'apiKey']);
+    Route::post('oauth/token', [MockApiController::class, 'oauthToken']);
+    Route::get('oauth/resource', [MockApiController::class, 'oauthResource']);
+    Route::post('echo', [MockApiController::class, 'echo']);
 });

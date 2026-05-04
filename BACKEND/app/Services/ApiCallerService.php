@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\ApiConfig;
 use App\Models\ApiLog;
+use Illuminate\Support\Str;
+
 
 class ApiCallerService
 {
@@ -23,7 +25,7 @@ class ApiCallerService
         $query   = array_merge($query, $override['query'] ?? []);
         $body    = array_merge($body, $override['body'] ?? []);
 
-        // 🔐 Resolve Authentication
+        // Resolve Authentication
         $authData = $this->authResolver->resolve($apiConfig, $headers, $query, $body);
 
         $headers = $authData['headers'];
@@ -32,7 +34,7 @@ class ApiCallerService
 
         $url = $apiConfig->getFullUrl();
 
-        // 🚀 Call API
+        // Call API
         $response = $this->httpClient->send(
             method: $apiConfig->method,
             url: $url,
@@ -43,7 +45,7 @@ class ApiCallerService
             retries: $apiConfig->retry_count
         );
 
-        // 🔁 Handle token expiry retry (if needed)
+        // Handle token expiry retry (if needed)
         if ($apiConfig->usesAuthProvider()) {
             $authProvider = $apiConfig->authProvider;
 
@@ -59,14 +61,15 @@ class ApiCallerService
             }
         }
 
-        // 🧾 Log
+        // Log
+        $errorMessage = $response['error'] ?? null;
         ApiLog::create([
             'api_config_id' => $apiConfig->id,
             'request' => compact('headers', 'query', 'body'),
             'response' => $response['body'],
             'status_code' => $response['status'],
             'success' => $response['status'] >= 200 && $response['status'] < 300,
-            'error_message' => $response['error'] ?? null,
+            'error_message' => Str::limit($errorMessage, 1000),
         ]);
 
         return $response;
