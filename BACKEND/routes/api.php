@@ -207,7 +207,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::apiResource('api-configs', ApiConfigController::class);
     Route::apiResource('auth-providers', AuthProviderController::class);
 
-    Route::post('test-caller/execute', [TestApiCallerController::class, 'execute']);
+    Route::post('test-caller/execute', [TestApiCallerController::class, 'execute']);    // For Testing
 
     //Route::apiResource('accounts', AccountController::class);
     Route::get('accounts', [AccountController::class, 'index'])->middleware(CheckPermissionMiddleware::class . ":accounts," . PermissionAction::VIEW->value);;
