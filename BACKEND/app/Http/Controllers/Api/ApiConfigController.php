@@ -7,6 +7,7 @@ use App\Http\Requests\ApiConfigRequest;
 use App\Http\Response\CustomApiResponse;
 use App\Models\ApiConfig;
 use Exception;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class ApiConfigController extends Controller
@@ -97,12 +98,57 @@ class ApiConfigController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $apis = ApiConfig::with('authProvider')
-                ->latest()
-                ->get();
+            $searchTerm = $request->input('search', '');
+
+            $filters = [
+                'name'      => $request->input('name'),
+                'type'      => $request->input('type'),
+                'method'    => $request->input('method'),
+                'status'    => $request->input('status'),
+                'auth_type' => $request->input('auth_type'),
+            ];
+
+            $query = ApiConfig::with('authProvider')->latest();
+
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                        ->orWhere('base_url', 'like', "%{$searchTerm}%")
+                        ->orWhere('endpoint', 'like', "%{$searchTerm}%");
+                });
+            }
+
+            if (!empty($filters['name'])) {
+                $query->where('name', 'like', "%{$filters['name']}%");
+            }
+
+            if (!empty($filters['type'])) {
+                $query->where('type', $filters['type']);
+            }
+
+            if (!empty($filters['method'])) {
+                $query->where('method', $filters['method']);
+            }
+
+            if (!empty($filters['auth_type'])) {
+                $query->where('auth_type', $filters['auth_type']);
+            }
+
+            if (!is_null($filters['status']) && $filters['status'] !== '') {
+                $status = filter_var($filters['status'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                if (!is_null($status)) {
+                    $query->where('status', $status);
+                }
+            }
+
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page    = $request->input('page', config('omni.DEFAULT_PAGE'));
+
+            $apis = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
+
             return $this->apiResponse->getResponseStructure(trans('message.success'), $apis, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in fetching API Configs: ', $ex->getMessage());

@@ -7,6 +7,7 @@ use App\Http\Requests\AuthProviderRequest;
 use App\Http\Response\CustomApiResponse;
 use App\Models\AuthProvider;
 use Exception;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as ResponseHTTP;
 
 class AuthProviderController extends Controller
@@ -65,12 +66,44 @@ class AuthProviderController extends Controller
         return false;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $providers = AuthProvider::with('token')
-                ->latest()
-                ->get();
+            $searchTerm = $request->input('search', '');
+
+            $filters = [
+                'name'   => $request->input('name'),
+                'type'   => $request->input('type'),
+                'method' => $request->input('method'),
+            ];
+
+            $query = AuthProvider::with('token')->latest();
+
+            if (!empty($searchTerm)) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                        ->orWhere('type', 'like', "%{$searchTerm}%")
+                        ->orWhere('token_url', 'like', "%{$searchTerm}%");
+                });
+            }
+
+            if (!empty($filters['name'])) {
+                $query->where('name', 'like', "%{$filters['name']}%");
+            }
+
+            if (!empty($filters['type'])) {
+                $query->where('type', $filters['type']);
+            }
+
+            if (!empty($filters['method'])) {
+                $query->where('method', $filters['method']);
+            }
+
+            $perPage = $request->input('per_page', config('omni.PER_PAGE'));
+            $page    = $request->input('page', config('omni.DEFAULT_PAGE'));
+
+            $providers = $page == config('omni.ALL_PAGE') ? $query->get() : $query->paginate($perPage);
+
             return $this->apiResponse->getResponseStructure(trans('message.success'), $providers, trans('message.data_fetch'));
         } catch (Exception $ex) {
             generateLogs('error', 'Error in fetching Auth Providers: ', $ex->getMessage());
