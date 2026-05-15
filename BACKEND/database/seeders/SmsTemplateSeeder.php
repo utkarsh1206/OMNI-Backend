@@ -25,6 +25,11 @@ class SmsTemplateSeeder extends Seeder
             'name' => 'Ticket Resolved',
             'content' => 'Hi {#customer name#}, this is to confirm that your recent support ticket {#ticket ##} has been resolved and closed. We thank you for your patience.Sterlite Technologies Ltd.',
         ]);        
+
+        SmsTemplate::create([
+            'name' => 'OTP Send',
+            'content' => 'Your OTP is {#var#}. It is valid for {#var#} minutes. Do not share this OTP with anyone.',
+        ]);        
     }
 }
 
