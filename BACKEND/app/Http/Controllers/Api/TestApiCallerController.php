@@ -29,14 +29,16 @@ class TestApiCallerController extends Controller
     {
         $request->validate([
             'api_config_id' => 'required|exists:api_configs,id',
-            'overrides' => 'nullable|array'
+            'overrides' => 'nullable|array',
+            'params'    => 'nullable|array',
         ]);
 
         $apiConfig = ApiConfig::findOrFail($request->api_config_id);
         $overrides = $request->input('overrides', []);
+        $params    = $request->input('params', []);
 
         try {
-            $response = $this->apiCaller->call($apiConfig, $overrides);
+            $response = $this->apiCaller->call($apiConfig, $overrides, $params);
 
             return response()->json([
                 'api_config' => $apiConfig->name,

@@ -14,7 +14,7 @@ class ApiCallerService
         protected HttpClientService $httpClient
     ) {}
 
-    public function call(ApiConfig $apiConfig, array $override = []): array
+    public function call(ApiConfig $apiConfig, array $override = [], array $params = []): array
     {
         $headers = $apiConfig->buildHeaders();
         $query   = $apiConfig->buildQuery();
@@ -25,6 +25,13 @@ class ApiCallerService
         $query   = array_merge($query, $override['query'] ?? []);
         $body    = array_merge($body, $override['body'] ?? []);
 
+        // Resolve dynamic {{placeholders}} with runtime params
+        if (!empty($params)) {
+            $headers = $this->resolvePlaceholders($headers, $params);
+            $query   = $this->resolvePlaceholders($query, $params);
+            $body    = $this->resolvePlaceholders($body, $params);
+        }
+
         // Resolve Authentication
         $authData = $this->authResolver->resolve($apiConfig, $headers, $query, $body);
 
@@ -32,7 +39,7 @@ class ApiCallerService
         $query   = $authData['query'];
         $body    = $authData['body'];
 
-        $url = $apiConfig->getFullUrl();
+        $url = $apiConfig->getFullUrl($params);
 
         // Call API
         $response = $this->httpClient->send(
@@ -57,7 +64,7 @@ class ApiCallerService
                 app(TokenManagerService::class)->refreshToken($authProvider);
 
                 // retry once
-                return $this->call($apiConfig, $override);
+                return $this->call($apiConfig, $override, $params);
             }
         }
 
@@ -73,5 +80,21 @@ class ApiCallerService
         ]);
 
         return $response;
+    }
+
+    private function resolvePlaceholders(array|string $value, array $params): array|string
+    {
+        if (is_string($value)) {
+            foreach ($params as $key => $replacement) {
+                $value = str_replace('{{' . $key . '}}', $replacement, $value);
+            }
+            return $value;
+        }
+
+        foreach ($value as $k => $v) {
+            $value[$k] = $this->resolvePlaceholders($v, $params);
+        }
+
+        return $value;
     }
 }

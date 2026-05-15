@@ -57,9 +57,17 @@ class ApiConfig extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function getFullUrl(): string
+    public function getFullUrl(array $params = []): string
     {
-        return rtrim($this->base_url, '/') . '/' . ltrim($this->endpoint, '/');
+        $endpoint = $this->endpoint;
+
+        if (!empty($params)) {
+            foreach ($params as $key => $value) {
+                $endpoint = str_replace('{{' . $key . '}}', $value, $endpoint);
+            }
+        }
+
+        return rtrim($this->base_url, '/') . '/' . ltrim($endpoint, '/');
     }
 
     public function usesAuthProvider(): bool

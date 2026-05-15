@@ -39,6 +39,8 @@ class ApiConfigRequest extends FormRequest
             'body'             => 'nullable|array',
             'timeout'          => 'nullable|integer',
             'retry_count'      => 'nullable|integer',
+            'response_mapping' => 'nullable|array',
+            'status'           => 'nullable|boolean',
         ];
     }
 
