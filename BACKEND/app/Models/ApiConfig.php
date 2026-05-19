@@ -72,12 +72,12 @@ class ApiConfig extends Model
 
     public function usesAuthProvider(): bool
     {
-        return !is_null($this->auth_provider_id);
+        return $this->auth_type === 'external' || !is_null($this->auth_provider_id);
     }
 
     public function usesInlineAuth(): bool
     {
-        return $this->auth_type !== 'none' && !$this->usesAuthProvider();
+        return in_array($this->auth_type, ['api_key', 'basic'], true) && !$this->usesAuthProvider();
     }
 
     /*

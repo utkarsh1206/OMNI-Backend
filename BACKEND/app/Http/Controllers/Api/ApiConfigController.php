@@ -23,13 +23,27 @@ class ApiConfigController extends Controller
     {
         try {
             $data = $request->validated();
+            $authType = $data['auth_type'] ?? 'none';
 
-            // Parse inline auth input (your new UX feature)
-            if (!empty($data['auth_input']) && $data['auth_type'] !== 'none') {
+            // Parse inline auth only for inline auth modes.
+            if (in_array($authType, ['api_key', 'basic'], true) && !empty($data['auth_input'])) {
                 $data['auth_config'] = [
                     'location' => $data['auth_location'],
                     'params' => $this->parseKeyValueInput($data['auth_input'])
                 ];
+            }
+
+            if ($authType === 'external') {
+                $data['auth_config'] = null;
+            }
+
+            if ($authType === 'none') {
+                $data['auth_provider_id'] = null;
+                $data['auth_config'] = null;
+            }
+
+            if (in_array($authType, ['api_key', 'basic'], true)) {
+                $data['auth_provider_id'] = null;
             }
 
             unset($data['auth_input'], $data['auth_location']);
@@ -67,27 +81,30 @@ class ApiConfigController extends Controller
     {
         try {
             $data = $request->validated();
+            $authType = $data['auth_type'] ?? $apiConfig->auth_type;
 
-            // Handle inline auth parsing
-            if (!empty($data['auth_input']) && $data['auth_type'] !== 'none') {
+            // Parse inline auth only for inline auth modes.
+            if (in_array($authType, ['api_key', 'basic'], true) && !empty($data['auth_input'])) {
                 $data['auth_config'] = [
                     'location' => $data['auth_location'],
                     'params' => $this->parseKeyValueInput($data['auth_input']),
                 ];
             }
 
-            unset($data['auth_input'], $data['auth_location']);
-
-            // If switching to auth_provider → clear inline auth
-            if (!empty($data['auth_provider_id'])) {
-                $data['auth_type'] = 'none';
+            if ($authType === 'external') {
                 $data['auth_config'] = null;
             }
 
-            // If switching to inline auth → remove provider
-            if (!empty($data['auth_type']) && $data['auth_type'] !== 'none') {
+            if ($authType === 'none') {
+                $data['auth_provider_id'] = null;
+                $data['auth_config'] = null;
+            }
+
+            if (in_array($authType, ['api_key', 'basic'], true)) {
                 $data['auth_provider_id'] = null;
             }
+
+            unset($data['auth_input'], $data['auth_location']);
 
             $apiConfig->update($data);
 
@@ -169,9 +186,9 @@ class ApiConfigController extends Controller
     public function destroy(ApiConfig $apiConfig)
     {
         try {
-            if ($apiConfig->status) {
-                return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.api_config_active'), ResponseHTTP::HTTP_UNPROCESSABLE_ENTITY);
-            }
+            // if ($apiConfig->status) {
+            //     return $this->apiResponse->getResponseStructure(trans('message.error'), null, trans('message.api_config_active'), ResponseHTTP::HTTP_UNPROCESSABLE_ENTITY);
+            // }
 
             $apiConfig->delete();
 
