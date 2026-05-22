@@ -15,6 +15,10 @@ return new class extends Migration
             return;
         }
 
+        if (!Schema::hasTable('api_configs')) {
+            return;
+        }
+
         DB::statement("ALTER TABLE `api_configs` MODIFY `auth_type` ENUM('none','api_key','basic','external') NOT NULL DEFAULT 'none'");
     }
 

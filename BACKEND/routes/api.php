@@ -312,6 +312,9 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::apiResource('/product-custom-fields', ProductCustomFieldController::class);
 
+    Route::get('/dynamic-list-fields/{id}/options', [DynamicListFieldController::class, 'fetchOptions']);
+    Route::get('/lists_fields/{id}/options', [DynamicListFieldController::class, 'fetchOptions']);
+    
     Route::apiResource('/lists_fields', EcdialListFieldController::class);
 
     Route::apiResource('chatbots', ChatBotController::class);

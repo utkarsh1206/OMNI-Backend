@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('api_logs')) {
+            return;
+        }
+
         Schema::create('api_logs', function (Blueprint $table) {
             $table->id();
 
