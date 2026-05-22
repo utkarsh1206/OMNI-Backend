@@ -33,19 +33,20 @@ return new class extends Migration
         DB::statement('ALTER TABLE ecdial_list_field_dependencies MODIFY list_id BIGINT UNSIGNED NOT NULL');
         DB::statement('ALTER TABLE ecdial_list_field_dependencies MODIFY child_field_name VARCHAR(255) NOT NULL');
 
-        DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
+        Schema::table('ecdial_list_field_dependencies', function (Blueprint $table) {
+            $table->dropForeign(['child_field_id']);
+            $table->dropForeign(['parent_field_id']);
+        });
+
         Schema::table('ecdial_list_field_dependencies', function (Blueprint $table) {
             $table->dropUnique('uniq_field_dependency_param');
             $table->dropIndex('idx_field_dependency_order');
-            $table->dropForeign(['child_field_id']);
-            $table->dropForeign(['parent_field_id']);
             $table->dropColumn(['child_field_id', 'parent_field_id']);
 
             $table->unique(['list_id', 'child_field_name', 'param_name', 'param_type'], 'uniq_field_dependency_name_param');
             $table->index(['list_id', 'child_field_name', 'sort_order'], 'idx_field_dependency_name_order');
             $table->index(['list_id', 'parent_field_name'], 'idx_field_dependency_parent_name');
         });
-        DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
     }
 
     /**
