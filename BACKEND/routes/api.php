@@ -56,6 +56,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\DynamicListFieldController;
 use App\Http\Controllers\Api\EcdialListsController;
 use App\Http\Controllers\Api\EcdialListFieldController;
+use App\Http\Controllers\Api\FieldBulkOptionsController;
 use App\Http\Controllers\Api\ChatBotController;
 use App\Http\Controllers\Api\ImportLeadController;
 use App\Http\Controllers\Api\CustomLeadController;
@@ -307,6 +308,9 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/branding', [UserController::class, 'getBranding']);
 
     Route::apiResource('live-agents', LiveAgentController::class);
+
+    Route::get('/dynamic-list-fields/bulk-options', [FieldBulkOptionsController::class, 'dynamicBulkOptions']);
+    Route::get('/lists_fields/bulk-options', [FieldBulkOptionsController::class, 'ecdialBulkOptions']);
 
     Route::apiResource('/dynamic-list-fields', DynamicListFieldController::class);
 
