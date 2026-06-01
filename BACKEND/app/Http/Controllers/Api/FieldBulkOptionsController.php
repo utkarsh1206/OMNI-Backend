@@ -5,13 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Response\CustomApiResponse;
 use App\Services\FieldBulkOptionsService;
+use App\Services\ListResolverService;
 use Illuminate\Http\Request;
 
 class FieldBulkOptionsController extends Controller
 {
     public function __construct(
         protected FieldBulkOptionsService $bulkOptionsService,
-        protected CustomApiResponse $apiResponse
+        protected CustomApiResponse $apiResponse,
+        protected ListResolverService $listResolverService
     ) {}
 
     /**
@@ -29,6 +31,12 @@ class FieldBulkOptionsController extends Controller
             return $this->apiResponse->getResponseStructure(null, [], 'Field API feature is not enabled.');
         }
 
+        $resolved = $this->listResolverService->resolveListId($request);
+        if ($resolved instanceof \Illuminate\Http\JsonResponse) {
+            return $resolved;
+        }
+
+        $request->merge(['list_id' => (int) $resolved['list_id']]);
         $request->validate(['list_id' => ['required', 'integer', 'exists:ecdial_lists,list_id']]);
 
         $data = $this->bulkOptionsService->fetchForDynamic((int) $request->input('list_id'));
@@ -51,6 +59,12 @@ class FieldBulkOptionsController extends Controller
             return $this->apiResponse->getResponseStructure(null, [], 'Field API feature is not enabled.');
         }
 
+        $resolved = $this->listResolverService->resolveListId($request);
+        if ($resolved instanceof \Illuminate\Http\JsonResponse) {
+            return $resolved;
+        }
+
+        $request->merge(['list_id' => (int) $resolved['list_id']]);
         $request->validate(['list_id' => ['required', 'integer', 'exists:ecdial_lists,list_id']]);
 
         $data = $this->bulkOptionsService->fetchForEcdial((int) $request->input('list_id'));

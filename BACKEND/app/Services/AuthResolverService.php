@@ -54,7 +54,11 @@ class AuthResolverService
         $provider = $api->authProvider;
 
         if ($provider->isTokenBased()) {
-            $token = $this->tokenManager->getValidToken($provider);
+            $token = data_get($provider->credentials, 'access_token');
+
+            if (!is_string($token) || trim($token) === '') {
+                $token = $this->tokenManager->getValidToken($provider);
+            }
 
             $headers['Authorization'] = 'Bearer ' . $token;
         }

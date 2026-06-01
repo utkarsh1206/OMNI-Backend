@@ -9,7 +9,9 @@ use App\Http\Requests\DynamicListFieldRequest;
 use Exception;
 use App\Http\Response\CustomApiResponse;
 use App\Models\EcdialListFieldDependency;
+use App\Models\EcdialLists;
 use App\Services\ApiCallerService;
+use Throwable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -316,6 +318,24 @@ class DynamicListFieldsRepository
             $field->load(['dependencyMappings' => function ($q) use ($field) {
                 $q->where('ecdial_list_field_dependencies.list_id', $field->list_id);
             }]);
+
+            $token = $request->bearerToken();
+            if ($token) {
+                try {
+                    $payload = extractPayload($token);
+                    if ($payload && isset($payload['campaign'], $payload['role_id']) && (int) $payload['role_id'] === 3) {
+                        $allowedListId = EcdialLists::where('campaign_id', $payload['campaign'])->value('list_id');
+                        if (!$allowedListId) {
+                            return $this->apiResponse->getResponseStructure(null, [], trans('message.list_not_found'));
+                        }
+                        if ((int) $field->list_id !== (int) $allowedListId) {
+                            return $this->apiResponse->getResponseStructure(null, [], trans('message.list_not_found'));
+                        }
+                    }
+                } catch (Throwable $th) {
+                    generateLogs('warning', 'Failed to verify list access from bearer payload in fetchOptions: ' . $th->getMessage());
+                }
+            }
 
             if ($field->uses_api !== 'Y' || empty($field->api_config_id)) {
                 return $this->apiResponse->getResponseStructure(null, [], trans('message.field_not_api_driven'));

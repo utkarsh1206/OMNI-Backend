@@ -682,9 +682,14 @@ Route::get('/hash/{input}', function ($input, Illuminate\Http\Request $request) 
 
 
 Route::prefix('mock')->group(function () {
+    Route::get('auth/config', [MockApiController::class, 'authConfig']);
+    Route::post('states', [MockApiController::class, 'states']);
     Route::get('basic-auth', [MockApiController::class, 'basicAuth']);
     Route::get('api-key', [MockApiController::class, 'apiKey']);
     Route::post('oauth/token', [MockApiController::class, 'oauthToken']);
     Route::get('oauth/resource', [MockApiController::class, 'oauthResource']);
+    Route::get('response/array-values', [MockApiController::class, 'arrayValuesResponse']);
+    Route::get('response/array-objects', [MockApiController::class, 'arrayObjectsResponse']);
+    Route::get('response/single-value', [MockApiController::class, 'singleValueResponse']);
     Route::post('echo', [MockApiController::class, 'echo']);
 });
