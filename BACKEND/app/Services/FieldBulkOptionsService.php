@@ -61,7 +61,8 @@ class FieldBulkOptionsService
             $leadRow = $this->loadLeadRow($listId, $leadId);
             $fieldColumnByName = EcdialListField::query()
                 ->where('list_id', $listId)
-                ->pluck('field_column', 'field_name')
+                ->pluck('field_name')
+                ->mapWithKeys(fn ($name) => [$name => strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $name))])
                 ->toArray();
         }
 
