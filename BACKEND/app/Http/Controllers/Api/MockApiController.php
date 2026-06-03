@@ -264,4 +264,157 @@ class MockApiController extends Controller
             'body' => $request->all(),
         ]);
     }
+
+    /**
+     * GET /api/mock/dependent/categories
+     *
+     * Parent field mock — returns array_values (list of category names).
+     * Use this as the independent field whose selected value drives
+     * both /dependent/sub-categories and /dependent/category-code.
+     *
+     * API Config wiring:
+     *   - method:              GET
+     *   - endpoint:            /api/mock/dependent/categories
+     *   - auth_type:           none
+     *   - response_type:       array_values
+     *   - response_data_path:  data.categories
+     */
+    public function dependentCategories()
+    {
+        return response()->json([
+            'status' => 'success',
+            'data'   => [
+                'categories' => ['electronics', 'clothing', 'furniture'],
+            ],
+            'meta' => [
+                'total'        => 3,
+                'generated_at' => now()->toIso8601String(),
+                'source'       => 'mock-dependent-categories',
+            ],
+        ]);
+    }
+
+    /**
+     * POST /api/mock/dependent/sub-categories
+     *
+     * Dependent field mock — returns array_objects.
+     * Driven by a shared parent field: "category".
+     *
+     * Request body:
+     *   { "category": "electronics" }   // or: clothing, furniture
+     *
+     * API Config wiring:
+     *   - method:              POST
+     *   - endpoint:            /api/mock/dependent/sub-categories
+     *   - auth_type:           none
+     *   - response_type:       array_objects
+     *   - response_data_path:  data.items
+     *   - response_label_key:  label
+     *   - response_value_key:  value
+     *
+     * Dependency mapping:
+     *   - parent_field_name:   <your parent field name>
+     *   - param_name:          category
+     *   - param_type:          body
+     */
+    public function dependentSubCategories(Request $request)
+    {
+        $catalog = [
+            'electronics' => [
+                ['label' => 'Mobile Phones',   'value' => 'mobile_phones',   'sortable' => true],
+                ['label' => 'Laptops',         'value' => 'laptops',         'sortable' => true],
+                ['label' => 'Headphones',      'value' => 'headphones',      'sortable' => false],
+                ['label' => 'Smart Watches',   'value' => 'smart_watches',   'sortable' => false],
+            ],
+            'clothing' => [
+                ['label' => 'Men\'s Wear',     'value' => 'mens_wear',       'sortable' => true],
+                ['label' => 'Women\'s Wear',   'value' => 'womens_wear',     'sortable' => true],
+                ['label' => 'Kids\' Wear',     'value' => 'kids_wear',       'sortable' => false],
+                ['label' => 'Sports Wear',     'value' => 'sports_wear',     'sortable' => true],
+            ],
+            'furniture' => [
+                ['label' => 'Living Room',     'value' => 'living_room',     'sortable' => true],
+                ['label' => 'Bedroom',         'value' => 'bedroom',         'sortable' => true],
+                ['label' => 'Office',          'value' => 'office',          'sortable' => false],
+                ['label' => 'Outdoor',         'value' => 'outdoor',         'sortable' => false],
+            ],
+        ];
+
+        $category = strtolower(trim((string) $request->input('category', '')));
+
+        if ($category === '' || !array_key_exists($category, $catalog)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Unknown or missing category. Valid values: electronics, clothing, furniture.',
+                'data'    => ['items' => []],
+            ], 422);
+        }
+
+        return response()->json([
+            'status'  => 'success',
+            'data'    => [
+                'items' => $catalog[$category],
+            ],
+            'meta' => [
+                'category'     => $category,
+                'total'        => count($catalog[$category]),
+                'generated_at' => now()->toIso8601String(),
+                'source'       => 'mock-dependent-sub-categories',
+            ],
+        ]);
+    }
+
+    /**
+     * POST /api/mock/dependent/category-code
+     *
+     * Dependent field mock — returns single_value.
+     * Driven by the same parent field: "category".
+     *
+     * Request body:
+     *   { "category": "electronics" }   // or: clothing, furniture
+     *
+     * API Config wiring:
+     *   - method:              POST
+     *   - endpoint:            /api/mock/dependent/category-code
+     *   - auth_type:           none
+     *   - response_type:       single_value
+     *   - response_data_path:  data.code
+     *
+     * Dependency mapping:
+     *   - parent_field_name:   <your parent field name>   (same parent as above)
+     *   - param_name:          category
+     *   - param_type:          body
+     */
+    public function dependentCategoryCode(Request $request)
+    {
+        generateLogs("info", "Received request for category-code with params: " . json_encode($request->all()));
+
+        $codes = [
+            'electronics' => 'CAT-ELEC-001',
+            'clothing'    => 'CAT-CLTH-002',
+            'furniture'   => 'CAT-FURN-003',
+        ];
+
+        $category = strtolower(trim((string) $request->input('category', '')));
+
+        if ($category === '' || !array_key_exists($category, $codes)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Unknown or missing category. Valid values: electronics, clothing, furniture.',
+                'data'    => ['code' => null],
+            ], 422);
+        }
+
+        return response()->json([
+            'status'  => 'success',
+            'data'    => [
+                'code' => $codes[$category],
+            ],
+            'meta' => [
+                'category'     => $category,
+                'generated_at' => now()->toIso8601String(),
+                'source'       => 'mock-dependent-category-code',
+            ],
+        ]);
+    }
 }

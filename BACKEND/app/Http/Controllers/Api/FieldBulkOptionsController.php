@@ -7,6 +7,7 @@ use App\Http\Response\CustomApiResponse;
 use App\Services\FieldBulkOptionsService;
 use App\Services\ListResolverService;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 
 class FieldBulkOptionsController extends Controller
 {
@@ -37,9 +38,19 @@ class FieldBulkOptionsController extends Controller
         }
 
         $request->merge(['list_id' => (int) $resolved['list_id']]);
-        $request->validate(['list_id' => ['required', 'integer', 'exists:ecdial_lists,list_id']]);
+        $request->validate([
+            'list_id' => ['required', 'integer', 'exists:ecdial_lists,list_id'],
+            'lead_id' => ['nullable', 'integer', 'min:1'],
+        ]);
 
-        $data = $this->bulkOptionsService->fetchForDynamic((int) $request->input('list_id'));
+        try {
+            $data = $this->bulkOptionsService->fetchForDynamic(
+                (int) $request->input('list_id'),
+                $request->filled('lead_id') ? (int) $request->input('lead_id') : null
+            );
+        } catch (InvalidArgumentException $ex) {
+            return $this->apiResponse->getResponseStructure(null, [], $ex->getMessage());
+        }
 
         return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_fetch'));
     }
@@ -65,9 +76,19 @@ class FieldBulkOptionsController extends Controller
         }
 
         $request->merge(['list_id' => (int) $resolved['list_id']]);
-        $request->validate(['list_id' => ['required', 'integer', 'exists:ecdial_lists,list_id']]);
+        $request->validate([
+            'list_id' => ['required', 'integer', 'exists:ecdial_lists,list_id'],
+            'lead_id' => ['nullable', 'integer', 'min:1'],
+        ]);
 
-        $data = $this->bulkOptionsService->fetchForEcdial((int) $request->input('list_id'));
+        try {
+            $data = $this->bulkOptionsService->fetchForEcdial(
+                (int) $request->input('list_id'),
+                $request->filled('lead_id') ? (int) $request->input('lead_id') : null
+            );
+        } catch (InvalidArgumentException $ex) {
+            return $this->apiResponse->getResponseStructure(null, [], $ex->getMessage());
+        }
 
         return $this->apiResponse->getResponseStructure(trans('message.success'), $data, trans('message.data_fetch'));
     }

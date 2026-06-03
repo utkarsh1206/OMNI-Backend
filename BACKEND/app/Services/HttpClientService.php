@@ -20,7 +20,7 @@ class HttpClientService
             ->retry($retries, 100);
 
         if (!empty($query)) {
-            $request->withQueryParameters($query);
+            $request = $request->withQueryParameters($query);
         }
 
         $response = match (strtoupper($method)) {

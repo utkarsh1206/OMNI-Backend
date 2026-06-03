@@ -32,6 +32,13 @@ class ApiCallerService
             $body    = $this->resolvePlaceholders($body, $params);
         }
 
+        // Compatibility fallback: many third-party GET endpoints expect
+        // request data via query string even when integrators mapped params as body.
+        if (strtoupper((string) $apiConfig->method) === 'GET' && !empty($body)) {
+            $query = array_merge($query, $body);
+            $body = [];
+        }
+
         // Resolve Authentication
         $authData = $this->authResolver->resolve($apiConfig, $headers, $query, $body);
 
