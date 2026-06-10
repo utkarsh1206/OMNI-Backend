@@ -224,6 +224,20 @@ return [
     'email_schedule_deleted' => 'Email schedule deleted successfully.',
 
     'backup_not_found' => 'No backup found for this tenant. Please take backup before deletion.',
-    'backup_older' => 'Latest backup is older than 24 hours. Please take a fresh backup.'
+    'backup_older' => 'Latest backup is older than 24 hours. Please take a fresh backup.',
+    // Auth Provider
+    'auth_provider_created' => 'Auth Provider created successfully.',
+    'auth_provider_updated' => 'Auth Provider updated successfully.',
+    'auth_provider_deleted' => 'Auth Provider deleted successfully.',
+    'auth_provider_not_found' => 'Auth Provider not found.',
+    'auth_provider_in_use' => 'Cannot delete. This auth provider is used by APIs.',
+    // API Config
+    'api_config_created' => 'API Config created successfully.',
+    'api_config_updated' => 'API Config updated successfully.',
+    'api_config_deleted' => 'API Config deleted successfully.',
+    'api_config_not_found' => 'API Config not found.',
+    'api_config_active' => 'Cannot delete an active API. Disable it first.',
+    'api_button_mapping_modified' => 'API button mapping modified successfully.',
+    'api_button_mapping_deleted' => 'API button mapping removed successfully.',
 ]
 ?>

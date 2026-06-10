@@ -56,6 +56,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\DynamicListFieldController;
 use App\Http\Controllers\Api\EcdialListsController;
 use App\Http\Controllers\Api\EcdialListFieldController;
+use App\Http\Controllers\Api\FieldBulkOptionsController;
 use App\Http\Controllers\Api\ChatBotController;
 use App\Http\Controllers\Api\ImportLeadController;
 use App\Http\Controllers\Api\CustomLeadController;
@@ -89,11 +90,16 @@ use App\Http\Controllers\Api\UserActivityReportController;
 use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
+use App\Http\Controllers\Api\ApiConfigController;
+use App\Http\Controllers\Api\ApiButtonConfigMapController;
 use App\Http\Controllers\Api\ApiEndpointController;
 use App\Http\Controllers\Api\ApiImportController;
 use App\Http\Controllers\Api\ApiMappingController;
 use App\Http\Controllers\Api\AssignmentHistoryController;
 use App\Http\Controllers\Api\AssignmentRuleController;
+use App\Http\Controllers\Api\AuthProviderController;
+use App\Http\Controllers\Api\MockApiController;
+use App\Http\Controllers\Api\TestApiCallerController;
 use App\Http\Controllers\Api\CustomCdrLeadController as ApiCustomCdrLeadController;
 use App\Http\Controllers\Api\EvaluationQuestionUsageTypeController;
 use App\Http\Controllers\Api\EvaluationReviewController;
@@ -200,6 +206,14 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::apiResource('api-configurations', ApiConfigurationController::class);
 
+    Route::apiResource('api-configs', ApiConfigController::class);
+    Route::apiResource('auth-providers', AuthProviderController::class);
+    Route::post('api-button-config-mappings', [ApiButtonConfigMapController::class, 'store']);
+    Route::get('api-button-config-mappings/{buttonKey}', [ApiButtonConfigMapController::class, 'show']);
+    Route::delete('api-button-config-mappings/{buttonKey}', [ApiButtonConfigMapController::class, 'destroy']);
+
+    Route::post('test-caller/execute', [TestApiCallerController::class, 'execute']);    // For Testing
+
     //Route::apiResource('accounts', AccountController::class);
     Route::get('accounts', [AccountController::class, 'index'])->middleware(CheckPermissionMiddleware::class . ":accounts," . PermissionAction::VIEW->value);;
     Route::post('accounts', [AccountController::class, 'store'])->middleware(CheckPermissionMiddleware::class . ":accounts," . PermissionAction::CREATE->value);
@@ -299,10 +313,16 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::apiResource('live-agents', LiveAgentController::class);
 
+    Route::get('/dynamic-list-fields/bulk-options', [FieldBulkOptionsController::class, 'dynamicBulkOptions']);
+    Route::get('/lists_fields/bulk-options', [FieldBulkOptionsController::class, 'ecdialBulkOptions']);
+
     Route::apiResource('/dynamic-list-fields', DynamicListFieldController::class);
 
     Route::apiResource('/product-custom-fields', ProductCustomFieldController::class);
 
+    Route::post('/dynamic-list-fields/{id}/options', [DynamicListFieldController::class, 'fetchOptions']);
+    Route::post('/lists_fields/{id}/options', [DynamicListFieldController::class, 'fetchOptions']);
+    
     Route::apiResource('/lists_fields', EcdialListFieldController::class);
 
     Route::apiResource('chatbots', ChatBotController::class);
@@ -456,6 +476,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('user/change-status', [UserController::class, 'changeStatus']);
 
     Route::post('generate-crm-token', [ThirdPartyCrmController::class, 'forward']);
+    Route::post('generate-crm-token/options', [ThirdPartyCrmController::class, 'options']);
 
     Route::post('/network-check', [NetworkCheckController::class, 'index']);
 
@@ -662,4 +683,23 @@ Route::get('/hash/{input}', function ($input, Illuminate\Http\Request $request) 
     }
 
     return app(HashController::class)->hashString($input);
+});
+
+
+Route::prefix('mock')->group(function () {
+    Route::get('auth/config', [MockApiController::class, 'authConfig']);
+    Route::post('states', [MockApiController::class, 'states']);
+    Route::get('basic-auth', [MockApiController::class, 'basicAuth']);
+    Route::get('api-key', [MockApiController::class, 'apiKey']);
+    Route::post('oauth/token', [MockApiController::class, 'oauthToken']);
+    Route::get('oauth/resource', [MockApiController::class, 'oauthResource']);
+    Route::get('response/array-values', [MockApiController::class, 'arrayValuesResponse']);
+    Route::get('response/array-objects', [MockApiController::class, 'arrayObjectsResponse']);
+    Route::get('response/single-value', [MockApiController::class, 'singleValueResponse']);
+    Route::post('echo', [MockApiController::class, 'echo']);
+    Route::post('simple/return-value', [MockApiController::class, 'simpleReturnValue']);
+    // Dependent field test: one parent (category) → two child fields
+    Route::get('categories', [MockApiController::class, 'dependentCategories']);
+    Route::get('dependent/sub-categories', [MockApiController::class, 'dependentSubCategories']);
+    Route::get('dependent/category-code',  [MockApiController::class, 'dependentCategoryCode']);
 });

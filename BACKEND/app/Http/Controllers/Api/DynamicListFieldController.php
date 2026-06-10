@@ -95,6 +95,13 @@ class DynamicListFieldController extends Controller
     {
         try {
             $listField = DynamicListField::findOrFail($ecdialListField);
+
+            if (config('omni.FIELD_API_ENABLED')) {
+                $listField->load(['apiConfig', 'dependencyMappings' => function ($q) use ($listField) {
+                    $q->where('ecdial_list_field_dependencies.list_id', $listField->list_id);
+                }]);
+            }
+
             return new DynamicListFieldResource($listField);
         } catch (Exception $e) {
             return $this->apiResponse->handleAndResponseException($e);
@@ -161,5 +168,15 @@ class DynamicListFieldController extends Controller
     public function destroy($id)
     {
         return $this->dynamicListFieldRepository->delete($id);
+    }
+
+    /**
+     * Trigger the API configured for the given dynamic field and return the options response.
+     *
+     * Pass dependency_values as a key-value map for multi-parameter dependencies.
+     */
+    public function fetchOptions(Request $request, $id)
+    {
+        return $this->dynamicListFieldRepository->fetchOptions((int) $id, $request);
     }
 }

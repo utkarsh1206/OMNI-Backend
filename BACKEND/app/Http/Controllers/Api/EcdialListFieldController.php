@@ -44,6 +44,13 @@ class EcdialListFieldController extends Controller
     {
         try {
             $listField = EcdialListField::findOrFail($ecdialListField);
+
+            if (config('omni.FIELD_API_ENABLED')) {
+                $listField->load(['apiConfig', 'dependencyMappings' => function ($q) use ($listField) {
+                    $q->where('ecdial_list_field_dependencies.list_id', $listField->list_id);
+                }]);
+            }
+
             return new EcdialListFieldResource($listField);
         } catch (Exception $e) {
             return $this->apiResponse->handleAndResponseException($e);
@@ -64,5 +71,16 @@ class EcdialListFieldController extends Controller
     public function destroy($id)
     {
         return $this->ecdialListFieldRepository->delete($id);
+    }
+
+    /**
+     * Trigger the API configured for the given field and return the options response.
+     *
+     * Pass dependency_values as a key-value map for multi-parameter dependencies.
+     * Legacy ?dependency_value=<value> is still accepted for single-dependency fields.
+     */
+    public function fetchOptions(Request $request, $id)
+    {
+        return $this->ecdialListFieldRepository->fetchOptions((int) $id, $request);
     }
 }

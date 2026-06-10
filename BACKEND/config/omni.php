@@ -46,4 +46,8 @@ return [
    'TENANT_AUTH_USER' => env('TENANT_AUTH_USER', "admin"),
    'TENANT_AUTH_PASS' => env('TENANT_AUTH_PASS', "Admin@123"),
    // NOC-995 To-Do Hosted MultiTenant END
+
+   // Feature flag: Enable API-driven field options (third-party API calls, dependency mappings, response mapping).
+   // Set to false (default) for existing clients who don't have the new DB tables/columns.
+   'FIELD_API_ENABLED' => env('FIELD_API_ENABLED', false),
 ];

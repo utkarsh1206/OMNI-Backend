@@ -64,7 +64,7 @@ class OtpRepository
                 }
 
                 if ($request->filled('mobile')) {
-                    $this->sendOtpSms($request->mobile, $otp, $otpData['expires_at']);
+                    $this->sendOtpSms($request->mobile, $otp, $expiresInMinutes);
                 }
 
                 return $this->apiResponse->getResponseStructure(
