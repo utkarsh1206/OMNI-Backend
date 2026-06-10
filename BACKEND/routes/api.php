@@ -91,6 +91,7 @@ use App\Http\Controllers\Api\UtilityController;
 use App\Http\Controllers\Api\CallBackController;
 use App\Http\Controllers\Api\AgentMessageController;
 use App\Http\Controllers\Api\ApiConfigController;
+use App\Http\Controllers\Api\ApiButtonConfigMapController;
 use App\Http\Controllers\Api\ApiEndpointController;
 use App\Http\Controllers\Api\ApiImportController;
 use App\Http\Controllers\Api\ApiMappingController;
@@ -207,6 +208,9 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::apiResource('api-configs', ApiConfigController::class);
     Route::apiResource('auth-providers', AuthProviderController::class);
+    Route::post('api-button-config-mappings', [ApiButtonConfigMapController::class, 'store']);
+    Route::get('api-button-config-mappings/{buttonKey}', [ApiButtonConfigMapController::class, 'show']);
+    Route::delete('api-button-config-mappings/{buttonKey}', [ApiButtonConfigMapController::class, 'destroy']);
 
     Route::post('test-caller/execute', [TestApiCallerController::class, 'execute']);    // For Testing
 
@@ -472,6 +476,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('user/change-status', [UserController::class, 'changeStatus']);
 
     Route::post('generate-crm-token', [ThirdPartyCrmController::class, 'forward']);
+    Route::post('generate-crm-token/options', [ThirdPartyCrmController::class, 'options']);
 
     Route::post('/network-check', [NetworkCheckController::class, 'index']);
 

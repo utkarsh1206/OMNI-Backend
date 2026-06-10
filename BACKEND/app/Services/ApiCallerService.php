@@ -93,13 +93,18 @@ class ApiCallerService
     {
         if (is_string($value)) {
             foreach ($params as $key => $replacement) {
-                $value = str_replace('{{' . $key . '}}', $replacement, $value);
+                $value = str_replace('{{' . $key . '}}', (string) ($replacement ?? ''), $value);
             }
             return $value;
         }
 
         foreach ($value as $k => $v) {
-            $value[$k] = $this->resolvePlaceholders($v, $params);
+            if (is_array($v) || is_string($v)) {
+                $value[$k] = $this->resolvePlaceholders($v, $params);
+                continue;
+            }
+
+            $value[$k] = $v;
         }
 
         return $value;

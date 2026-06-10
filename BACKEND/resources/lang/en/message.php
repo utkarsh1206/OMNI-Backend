@@ -237,5 +237,7 @@ return [
     'api_config_deleted' => 'API Config deleted successfully.',
     'api_config_not_found' => 'API Config not found.',
     'api_config_active' => 'Cannot delete an active API. Disable it first.',
+    'api_button_mapping_modified' => 'API button mapping modified successfully.',
+    'api_button_mapping_deleted' => 'API button mapping removed successfully.',
 ]
 ?>

@@ -51,6 +51,11 @@ class ApiConfig extends Model
         return $this->hasMany(ApiLog::class);
     }
 
+    public function buttonMappings(): HasMany
+    {
+        return $this->hasMany(ApiButtonConfigMapping::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Helpers
