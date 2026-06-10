@@ -28,6 +28,7 @@ class HttpClientService
             'POST'   => $request->post($url, $body),
             'PUT'    => $request->put($url, $body),
             'DELETE' => $request->delete($url, $body),
+            default  => throw new \InvalidArgumentException('Unsupported HTTP method: ' . $method),
         };
 
         return [
