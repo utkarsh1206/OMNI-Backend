@@ -697,6 +697,7 @@ Route::prefix('mock')->group(function () {
     Route::get('response/array-objects', [MockApiController::class, 'arrayObjectsResponse']);
     Route::get('response/single-value', [MockApiController::class, 'singleValueResponse']);
     Route::post('echo', [MockApiController::class, 'echo']);
+    Route::post('simple/return-value', [MockApiController::class, 'simpleReturnValue']);
     // Dependent field test: one parent (category) → two child fields
     Route::get('categories', [MockApiController::class, 'dependentCategories']);
     Route::get('dependent/sub-categories', [MockApiController::class, 'dependentSubCategories']);

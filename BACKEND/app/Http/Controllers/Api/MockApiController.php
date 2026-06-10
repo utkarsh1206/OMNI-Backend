@@ -266,6 +266,19 @@ class MockApiController extends Controller
     }
 
     /**
+     * POST /api/mock/simple/return-value
+     *
+     * Accepts payload key "Testing two" and mirrors it back as
+     * "response_testing_two" for api_config based simple return value testing.
+     */
+    public function simpleReturnValue(Request $request)
+    {
+        return response()->json([
+            'response_testing_two' => $request->input('Testing two'),
+        ]);
+    }
+
+    /**
      * GET /api/mock/dependent/categories
      *
      * Parent field mock — returns array_values (list of category names).
