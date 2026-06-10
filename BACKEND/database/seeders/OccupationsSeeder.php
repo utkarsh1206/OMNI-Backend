@@ -24,7 +24,7 @@ class OccupationsSeeder extends Seeder
             ['title' => 'Self-Employed Professional'],
             ['title' => 'Independent Worker'],
             ['title' => 'Farmer'],
-            ['title' => 'Shopkeeper New'],
+            ['title' => 'Shopkeeper'],
         ];
 
         foreach ($occupations as $occupation) {

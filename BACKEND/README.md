@@ -1,66 +1,244 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Neox OMNI Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Overview
 
-## About Laravel
+Neox OMNI is a web-based interface designed to manage multiple communication channels within a single platform.
+It provides four major user roles: Superadmin, Tenant Admin, User/Agent, and Manager. Each role has specific
+login access and permissions to relevant modules as defined by the administrator.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The User/Agent role enables handling calls and related activities through the Neox Dial Center CRM configuration.
+Neox OMNI also supports support ticket management with SLA tracking, reporting, and multi-channel communication,
+including Email, Agent Chat, Live Chat, SMS, and more.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+This repository folder contains the Laravel 11 backend for these modules.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Tech Stack
 
-## Learning Laravel
+- PHP 8.2+
+- Laravel 11
+- MySQL (tenant-aware architecture)
+- JWT authentication (`tymon/jwt-auth`)
+- Laravel Reverb (real-time/broadcast stack)
+- Vite for frontend assets used by backend views
+- Swagger/OpenAPI via `darkaonline/l5-swagger`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Core Modules
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- Authentication and role-aware API access
+- Ticketing and SLA workflows
+- Call and call-history related APIs
+- Chat and chatbot integrations
+- Customer portal OTP endpoints
+- External token-protected APIs
+- Multi-tenant scheduling and queue processing
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Roles
 
-## Laravel Sponsors
+- Superadmin
+- Tenant Admin
+- User/Agent
+- Manager
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Prerequisites
 
-### Premium Partners
+Install the following tools on your machine:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- PHP 8.2 or higher
+- Composer 2.x
+- Node.js 18+ and npm
+- MySQL
 
-## Contributing
+<!-- ## Environment Setup
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+No `.env.example` template is maintained currently.
 
-## Code of Conduct
+Use the active backend environment file as provided by your team:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- `BACKEND/.env`
 
-## Security Vulnerabilities
+Do not commit secrets or credentials. -->
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Installation
 
-## License
+From the `BACKEND` directory:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+composer install
+npm install
+```
+
+Generate the application key (if not already generated):
+
+```bash
+php artisan key:generate
+```
+
+Generate JWT secret when needed:
+
+```bash
+php artisan jwt:secret
+```
+
+Run migrations:
+
+```bash
+php artisan migrate
+```
+
+## Running Locally
+
+Native local workflow is the supported development mode.
+
+Start the backend API server:
+
+```bash
+php artisan serve
+```
+
+Start Vite Frontend in development mode:
+
+```bash
+npm start
+```
+
+Run required background services in separate terminals.
+
+Queue worker/listener:
+
+```bash
+php artisan queue:work
+```
+
+Scheduler:
+
+```bash
+php artisan schedule:work
+```
+
+Reverb server:
+
+```bash
+php artisan reverb:start
+```
+
+## Authentication Model
+
+Officially supported authentication in this backend:
+
+- JWT for core APIs
+- Custom external auth-token middleware for external use endpoints
+
+Notes:
+
+- JWT guards are configured for admin, users, and end users in `config/auth.php`.
+- External token flow is exposed in `routes/externalUse.php` via `generate-auth-token/{uinId}` and middleware-protected endpoints.
+
+## Multitenancy and Scheduling
+
+The backend uses tenant-aware behavior for runtime operations:
+
+- Dynamic tenant cron configuration execution from `routes/console.php`
+- Tenant-aware queue listener command: `php artisan app:tenant-queue-listen`
+- Queue tenant awareness is enabled in `config/multitenancy.php`
+
+Regular scheduled tasks include SLA notifications, hopper processing, scheduled email dispatch,
+and Telescope pruning.
+
+## API Documentation (Swagger)
+
+Swagger UI route:
+
+- `/api/documentation`
+
+Swagger docs route:
+
+- `/docs`
+
+Generate API docs:
+
+```bash
+php artisan l5-swagger:generate
+```
+
+Swagger configuration is maintained in `config/l5-swagger.php`.
+
+## Common Commands
+
+Install dependencies:
+
+```bash
+composer install
+npm install
+```
+
+Run tests:
+
+```bash
+php artisan test
+```
+
+Alternative PHPUnit command:
+
+```bash
+./vendor/bin/phpunit
+```
+
+Build assets:
+
+```bash
+npm run build
+```
+
+## Deployment (Nginx + PHP-FPM + PM2)
+
+Deployment target stack for this backend is:
+
+- Nginx
+- PHP-FPM
+- PM2 (for managed long-running processes where applicable)
+
+Recommended production checklist:
+
+1. Configure production `.env` values securely.
+2. Run dependency install in production mode.
+3. Run migrations.
+4. Cache framework metadata:
+
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+5. Ensure queue workers are supervised and auto-restarted.
+6. Ensure scheduler is running continuously.
+7. Ensure Reverb is running under process supervision when required.
+8. Restrict CORS and allowed origins for production security.
+
+## Troubleshooting
+
+If APIs return unauthorized responses:
+
+- Verify JWT secret exists and is correct.
+- Verify request token format and guard usage.
+- Verify external endpoints are called with valid auth token middleware credentials.
+
+If background jobs are not processed:
+
+- Verify queue connection settings.
+- Verify queue worker/listener process is running.
+- Verify tenant queue command usage where tenant-specific jobs are expected.
+
+If scheduled jobs do not run:
+
+- Verify `php artisan schedule:work` is running.
+- Verify tenant `cron_configurations` data and status values.
+
+If websocket events are missing:
+
+- Verify Reverb process is running.
+- Verify Reverb app key/secret/id and host settings.
+
+## Ownership
+
+Maintained by: Neox DevOps Team

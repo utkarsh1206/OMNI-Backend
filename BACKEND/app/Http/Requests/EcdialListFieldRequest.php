@@ -22,7 +22,7 @@ class EcdialListFieldRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'list_id' => 'required|exists:ecdial_lists,list_id',
             'field_name' => 'required|string|max:255',
             'field_label' => 'required|string|max:255',
@@ -44,6 +44,21 @@ class EcdialListFieldRequest extends FormRequest
             'duplicate_check' => 'required|in:Y,N',
             'status' => 'required|in:active,inactive',
         ];
+
+        if (config('omni.FIELD_API_ENABLED')) {
+            $rules += [
+                'uses_api' => 'required|in:Y,N',
+                'api_config_id' => 'required_if:uses_api,Y|nullable|exists:api_configs,id',
+                'dependency_mappings' => 'sometimes|array',
+                'dependency_mappings.*.parent_field_name' => 'nullable|string|max:255',
+                'dependency_mappings.*.param_name' => 'required_with:dependency_mappings|string|max:100',
+                'dependency_mappings.*.param_type' => 'required_with:dependency_mappings|in:query,body,header,path',
+                'dependency_mappings.*.sort_order' => 'nullable|integer|min:0',
+                'dependency_values' => 'sometimes|array',
+            ];
+        }
+
+        return $rules;
     }
 
     /**
